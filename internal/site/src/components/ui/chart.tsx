@@ -105,6 +105,9 @@ const ChartTooltipContent = React.forwardRef<
 			truncate?: boolean
 			showTotal?: boolean
 			totalLabel?: React.ReactNode
+			/** Overrides the summed total, for series that don't add up to the real total */
+			// biome-ignore lint/suspicious/noExplicitAny: recharts payload data interop
+			getTotal?: (data: any) => number | undefined
 		}
 >(
 	(
@@ -128,6 +131,7 @@ const ChartTooltipContent = React.forwardRef<
 			truncate = false,
 			showTotal = false,
 			totalLabel,
+			getTotal,
 		},
 		ref
 	) => {
@@ -162,11 +166,19 @@ const ChartTooltipContent = React.forwardRef<
 			let totalValue = 0
 			let hasNumericValue = false
 
-			for (const item of payload) {
-				const numericValue = typeof item.value === "number" ? item.value : Number(item.value)
-				if (Number.isFinite(numericValue)) {
-					totalValue += numericValue
+			if (getTotal) {
+				const value = getTotal(payload[0]?.payload)
+				if (typeof value === "number" && Number.isFinite(value)) {
+					totalValue = value
 					hasNumericValue = true
+				}
+			} else {
+				for (const item of payload) {
+					const numericValue = typeof item.value === "number" ? item.value : Number(item.value)
+					if (Number.isFinite(numericValue)) {
+						totalValue += numericValue
+						hasNumericValue = true
+					}
 				}
 			}
 
@@ -201,7 +213,7 @@ const ChartTooltipContent = React.forwardRef<
 			}
 
 			return `${formatNumber(totalValue)}${unit ?? ""}`
-		}, [color, content, formatter, nameKey, payload, showTotal, totalName, unit])
+		}, [color, content, formatter, getTotal, nameKey, payload, showTotal, totalName, unit])
 
 		const tooltipLabel = React.useMemo(() => {
 			if (hideLabel || !payload?.length) {

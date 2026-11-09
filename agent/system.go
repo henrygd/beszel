@@ -218,6 +218,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// network stats (per cache interval)
 	a.updateNetworkStats(cacheTimeMs, &systemStats)
 
+	// tcp connection counts by state
+	a.updateTcpConnections(cacheTimeMs, &systemStats)
+
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
