@@ -1,70 +1,33 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
 import { plural, t } from "@lingui/core/macro"
-import { Trans, useLingui } from "@lingui/react/macro"
+import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
-	BellIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
-	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
 	MemoryStickIcon,
-	MoreHorizontalIcon,
 	PackageIcon,
-	PauseCircleIcon,
-	PenBoxIcon,
-	PlayCircleIcon,
 	ServerIcon,
 	TerminalSquareIcon,
-	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
-import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $alerts, $userSettings } from "@/lib/stores"
-import {
-	cn,
-	copyToClipboard,
-	decimalString,
-	formatBytes,
-	formatTemperature,
-	parseSemVer,
-	secondsToUptimeString,
-} from "@/lib/utils"
+import { $userSettings } from "@/lib/stores"
+import { cn, decimalString, formatBytes, formatTemperature, parseSemVer, secondsToUptimeString } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
-import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
-import { AlertDialogContent as AlertsSheetContent } from "../alerts/alerts-sheet"
-import { $router, Link, navigate } from "../router"
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "../ui/alert-dialog"
-import { Button, buttonVariants } from "../ui/button"
-import { Dialog } from "../ui/dialog"
-import { Sheet, SheetContent } from "../ui/sheet"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
+import { $router, Link } from "../router"
+import { ActionsButton } from "../system-actions-button"
+import { Button } from "../ui/button"
 import {
 	BatteryMediumIcon,
 	EthernetIcon,
@@ -726,155 +689,3 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 		/>
 	)
 }
-
-/** Menu item that opens the alerts sheet; the bell is filled when the system has alerts configured. */
-const AlertsMenuItem = ({ systemId, onSelect }: { systemId: string; onSelect: () => void }) => {
-	const alerts = useStore($alerts)
-	const hasSystemAlert = alerts[systemId]?.size > 0
-	return (
-		<DropdownMenuItem onSelect={onSelect}>
-			<BellIcon className={cn("me-2.5 size-4", { "fill-primary": hasSystemAlert })} />
-			<Trans>Alerts</Trans>
-		</DropdownMenuItem>
-	)
-}
-
-async function deleteSystem(id: string) {
-	await pb.collection("systems").delete(id)
-	// leave the dashboard of the system that was just deleted
-	const page = $router.get()
-	if (page?.route === "system" && page.params.id === id) {
-		navigate(getPagePath($router, "home"))
-	}
-}
-
-type ActionsButtonProps = {
-	system: SystemRecord
-	variant?: "ghost" | "outline"
-	/** Include an item that opens the alerts sheet (used where no separate alerts button is shown). */
-	showAlerts?: boolean
-}
-
-export const ActionsButton = memo(({ system, variant = "ghost", showAlerts = false }: ActionsButtonProps) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	const editOpened = useRef(false)
-	const [alertsOpen, setAlertsOpen] = useState(false)
-	const alertsOpened = useRef(false)
-	const { t } = useLingui()
-	const { id, status, host, name } = system
-
-	return useMemo(() => {
-		return (
-			<>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant={variant} size={"icon"}>
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="w-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{showAlerts && (
-							<>
-								<AlertsMenuItem
-									systemId={id}
-									onSelect={() => {
-										alertsOpened.current = true
-										setAlertsOpen(true)
-									}}
-								/>
-								<DropdownMenuSeparator />
-							</>
-						)}
-						{!isReadOnlyUser() && (
-							<DropdownMenuItem
-								onSelect={() => {
-									editOpened.current = true
-									setEditOpen(true)
-								}}
-							>
-								<PenBoxIcon className="me-2.5 size-4" />
-								<Trans>Edit</Trans>
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuItem
-							className={cn(isReadOnlyUser() && "hidden")}
-							onClick={() => {
-								pb.collection("systems").update(id, {
-									status: status === SystemStatus.Paused ? SystemStatus.Pending : SystemStatus.Paused,
-								})
-							}}
-						>
-							{status === SystemStatus.Paused ? (
-								<>
-									<PlayCircleIcon className="me-2.5 size-4" />
-									<Trans>Resume</Trans>
-								</>
-							) : (
-								<>
-									<PauseCircleIcon className="me-2.5 size-4" />
-									<Trans>Pause</Trans>
-								</>
-							)}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(name)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy name</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy host</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				{/* alerts sheet */}
-				{showAlerts && (
-					<Sheet open={alertsOpen} onOpenChange={setAlertsOpen}>
-						<SheetContent className="max-h-full overflow-auto w-160 !max-w-full p-4 sm:p-6">
-							{alertsOpened.current && <AlertsSheetContent system={system} />}
-						</SheetContent>
-					</Sheet>
-				)}
-				{/* edit dialog */}
-				<Dialog open={editOpen} onOpenChange={setEditOpen}>
-					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-				</Dialog>
-				{/* deletion dialog */}
-				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>
-								<Trans>Are you sure you want to delete {name}?</Trans>
-							</AlertDialogTitle>
-							<AlertDialogDescription>
-								<Trans>
-									This action cannot be undone. This will permanently delete all current records for {name} from the
-									database.
-								</Trans>
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>
-								<Trans>Cancel</Trans>
-							</AlertDialogCancel>
-							<AlertDialogAction
-								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => deleteSystem(id)}
-							>
-								<Trans>Continue</Trans>
-							</AlertDialogAction>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</>
-		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen, alertsOpen, variant, showAlerts])
-})
