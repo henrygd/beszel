@@ -164,9 +164,10 @@ func mdraidSmartStatus(health mdraidHealth) string {
 		return "FAILED"
 	}
 	if health.degraded > 0 {
-		if isSparseSlotDegraded(health) {
+		if isSparseSlotDegraded(health) || isRedundantMirrorDegraded(health) {
 			// A sysfs snapshot cannot distinguish reserved slots from a removed
-			// member on sparse arrays, so report the ambiguity as a warning.
+			// member on sparse arrays, and a mirror with two or more active
+			// members is still redundant, so report these as a warning.
 			return "WARNING"
 		}
 		return "FAILED"
@@ -219,6 +220,19 @@ func isSparseSlotDegraded(health mdraidHealth) bool {
 	}
 	sparseSlots := health.raidDisks - health.populatedDisks
 	return sparseSlots > health.populatedDisks
+}
+
+// isRedundantMirrorDegraded reports whether a degraded RAID1 array still has at
+// least two active members, so every block still has a redundant copy. Synology
+// DSM sizes its system arrays (md0/md1) to the bay count, leaving unpopulated
+// bays as missing mirror slots; whether those were never used or a member was
+// lost, the remaining mirrors keep the array redundant.
+func isRedundantMirrorDegraded(health mdraidHealth) bool {
+	if !strings.EqualFold(strings.TrimSpace(health.level), "raid1") || health.degraded >= health.raidDisks {
+		return false
+	}
+	activeDisks := health.raidDisks - health.degraded
+	return activeDisks >= 2
 }
 
 // isMdraidBlockName matches /dev/mdN-style block device names.
