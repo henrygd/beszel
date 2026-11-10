@@ -1,5 +1,6 @@
 import type { RecordModel } from "pocketbase"
 import type { Unit, Os, BatteryState, HourFormat, ConnectionType, ServiceStatus, ServiceSubState } from "@/lib/enums"
+import type { ChartRange } from "@/lib/chart-range"
 
 // global window properties
 declare global {
@@ -423,7 +424,10 @@ export interface SemVer {
 export interface ChartOptions {
 	agentVersion: SemVer
 	orientation: "right" | "left"
+	/** Stats tier the data comes from. With a custom range, this is the finest tier covering it. */
 	chartTime: ChartTimes
+	/** Custom window being displayed instead of the latest chartTime period */
+	range?: ChartRange
 }
 
 export interface ChartData extends ChartOptions {

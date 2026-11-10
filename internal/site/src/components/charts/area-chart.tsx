@@ -113,7 +113,7 @@ export default function AreaChartDefault({
 		})
 	}, [areasKey, displayMaxToggled])
 
-	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created, chartData.range)
 
 	return useMemo(() => {
 		if (displayData.length === 0) {
