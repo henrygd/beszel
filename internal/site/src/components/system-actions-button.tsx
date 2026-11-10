@@ -89,7 +89,7 @@ export const ActionsButton = memo(({ system, variant = "ghost", showAlerts = fal
 							<MoreHorizontalIcon className="w-5" />
 						</Button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
+					<DropdownMenuContent align="end" className="min-w-38">
 						{showAlerts && (
 							<>
 								<AlertsMenuItem

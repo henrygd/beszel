@@ -211,7 +211,7 @@ export default function InfoBar({
 								<Settings2Icon className="size-4 opacity-80" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent className="min-w-44">
+						<DropdownMenuContent className="min-w-38">
 							<DropdownMenuLabel className="px-3.5">
 								<Trans context="Layout display options">Display</Trans>
 							</DropdownMenuLabel>
