@@ -51,6 +51,7 @@ import {
 	ArrowLeftRightIcon,
 	ArrowUpDownIcon,
 	ArrowUpIcon,
+	CrosshairIcon,
 	EthernetPortIcon,
 	EyeIcon,
 	GlobeIcon,
@@ -289,7 +290,7 @@ export default function NetworkMonitorsTableNew({
 			const systemName = $allSystemsById.get()[monitor.system]?.name ?? ""
 			// Include the raw target so searches for the hidden URL scheme still match.
 			const searchString =
-				`${getMonitorTarget(monitor)}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
+				`${monitor.name}${getMonitorTarget(monitor)}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
 			return matchesFilterGroups(searchString, parseFilterGroups(value))
 		},
 	})
@@ -720,18 +721,27 @@ function NetworkMonitorSheetContent({
 	const hasMonitorStats = comparing
 		? monitorStats.some((record) => record.stats != null)
 		: monitorStats.some((record) => record.stats?.[monitor.id] != null)
-	const monitorLabel = getMonitorTarget(monitor)
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent className="w-full sm:max-w-220 overflow-auto p-4 sm:p-6">
 				<SheetHeader className="mb-0 border-b p-0 pb-4">
-					<SheetTitle>{monitorLabel}</SheetTitle>
+					{/* the description already shows a tcp monitor's port */}
+					<SheetTitle>
+						{monitor.name || (monitor.protocol === "tcp" ? monitor.target : getMonitorTarget(monitor))}
+					</SheetTitle>
 					<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
 						<ServerIcon className="size-3.5 text-muted-foreground" />
 						<Link className="hover:underline" href={getPagePath($router, "system", { id: system?.id ?? "" })}>
 							{system?.name ?? ""}
 						</Link>
+						{monitor.name && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<CrosshairIcon className="size-3.5 text-muted-foreground" />
+								<span className="break-all">{monitor.target}</span>
+							</>
+						)}
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
 						{getMonitorProtocolLabel(monitor).toUpperCase()}

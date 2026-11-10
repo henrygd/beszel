@@ -3,6 +3,7 @@ import type { NetworkMonitorRecord } from "@/types"
 import {
 	getMonitorCompareState,
 	getMonitorIdentityKey,
+	getMonitorLabel,
 	getMonitorProtocolLabel,
 	getMonitorTarget,
 	MAX_COMPARE_MONITORS,
@@ -77,6 +78,15 @@ test("comparing targets charts them on the opened system, labelled by target", (
 	expect(ids(s.compareMonitors)).toEqual(["a1", "a2"])
 	expect(s.getLabel(a1)).toBe("one.example")
 	expect(s.getLabel(a2)).toBe("two.example")
+})
+
+test("named monitors are labelled by name instead of target", () => {
+	expect(getMonitorLabel({ target: "example.com", protocol: "tcp", port: 443 })).toBe("example.com:443")
+	expect(getMonitorLabel({ name: "API", target: "example.com", protocol: "tcp", port: 443 })).toBe("API")
+	const named = { ...a2, name: "Two" }
+	const s = state(a1, [a1, named], [], ["a2"])
+	expect(s.getLabel(a1)).toBe("one.example")
+	expect(s.getLabel(named)).toBe("Two")
 })
 
 test("comparing systems charts the opened target on them, labelled by system", () => {
