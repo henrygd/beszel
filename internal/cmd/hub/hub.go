@@ -29,6 +29,16 @@ func main() {
 	}
 
 	baseApp := getBaseApp()
+
+	// handle update before starting the app to prevent PocketBase from
+	// bootstrapping a data directory relative to the process working directory
+	if len(os.Args) > 1 && os.Args[1] == "update" {
+		if err := baseApp.RootCmd.Execute(); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	hub := hub.NewHub(baseApp)
 	if err := hub.StartHub(); err != nil {
 		log.Fatal(err)
@@ -47,14 +57,7 @@ func getBaseApp() *pocketbase.PocketBase {
 	baseApp.RootCmd.Use = beszel.AppName
 	baseApp.RootCmd.Short = ""
 	// add update command
-	updateCmd := &cobra.Command{
-		Use:    "update",
-		Short:  "Update " + beszel.AppName + " to the latest version",
-		Run:    hub.Update,
-		Hidden: ghupdate.SelfUpdateDisabled,
-	}
-	updateCmd.Flags().Bool("china-mirrors", false, "Use mirror (gh.beszel.dev) instead of GitHub")
-	baseApp.RootCmd.AddCommand(updateCmd)
+	baseApp.RootCmd.AddCommand(newUpdateCmd())
 	// add health command
 	baseApp.RootCmd.AddCommand(newHealthCmd())
 
@@ -65,6 +68,20 @@ func getBaseApp() *pocketbase.PocketBase {
 	})
 
 	return baseApp
+}
+
+func newUpdateCmd() *cobra.Command {
+	updateCmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update " + beszel.AppName + " to the latest version",
+		Run: func(cmd *cobra.Command, _ []string) {
+			useMirror, _ := cmd.Flags().GetBool("china-mirrors")
+			hub.Update(useMirror)
+		},
+		Hidden: ghupdate.SelfUpdateDisabled,
+	}
+	updateCmd.Flags().Bool("china-mirrors", false, "Use mirror (gh.beszel.dev) instead of GitHub")
+	return updateCmd
 }
 
 func newHealthCmd() *cobra.Command {

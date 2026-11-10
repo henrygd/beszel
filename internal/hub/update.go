@@ -5,28 +5,22 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/henrygd/beszel/internal/ghupdate"
-	"github.com/spf13/cobra"
 )
 
-// Update updates beszel to the latest version
-func Update(cmd *cobra.Command, _ []string) {
-	dataDir := os.TempDir()
-
-	// set dataDir to ./beszel_data if it exists
-	if _, err := os.Stat("./beszel_data"); err == nil {
-		dataDir = "./beszel_data"
-	}
-
-	// Check if china-mirrors flag is set
-	useMirror, _ := cmd.Flags().GetBool("china-mirrors")
-
+// Update updates beszel to the latest version.
+func Update(useMirror bool) {
 	// Get the executable path before update
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Keep the update workspace next to the executable so the final rename
+	// stays on the same filesystem regardless of the process working directory.
+	dataDir := filepath.Dir(exePath)
 
 	updated, err := ghupdate.Update(ghupdate.Config{
 		ArchiveExecutable: "beszel",
