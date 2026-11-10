@@ -452,6 +452,7 @@ Wants=beszel-hub.service
 
 [Service]
 Type=oneshot
+WorkingDirectory=$HUB_DIR
 ExecStart=$BIN_PATH update
 EOF
 
