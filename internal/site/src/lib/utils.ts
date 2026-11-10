@@ -223,14 +223,17 @@ export function formatMicroseconds(microseconds: number, fixedDigits = true): st
 
 	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
 
-	if (microseconds < 1_000_000) {
-		const milliseconds = microseconds / 1000
-		const digits = milliseconds >= 10 ? 1 : 2
+	// Pick the unit and digit count from the value as it will be printed, so a
+	// value that rounds up to the next threshold is shown as 1.00s or 10.0ms
+	// rather than 1000.0ms or 10.00ms.
+	const milliseconds = microseconds / 1000
+	if (Number(milliseconds.toFixed(1)) < 1000) {
+		const digits = Number(milliseconds.toFixed(2)) >= 10 ? 1 : 2
 		return `${digitFormatter(milliseconds, digits)}ms`
 	}
 
 	const seconds = microseconds / 1_000_000
-	const digits = seconds >= 10 ? 1 : 2
+	const digits = Number(seconds.toFixed(2)) >= 10 ? 1 : 2
 	return `${digitFormatter(seconds, digits)}s`
 }
 
