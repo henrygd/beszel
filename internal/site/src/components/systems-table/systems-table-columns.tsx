@@ -25,7 +25,7 @@ import {
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { isReadOnlyUser, pb, saveUserSettings } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $userSettings } from "@/lib/stores"
 import {
@@ -724,6 +724,14 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	)
 }
 
+async function deleteSystem(id: string) {
+	await pb.collection("systems").delete(id)
+	// single node mode has nothing to point at once its system is gone
+	if ($userSettings.get().singleNodeMode) {
+		await saveUserSettings({ singleNodeMode: false })
+	}
+}
+
 export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [editOpen, setEditOpen] = useState(false)
@@ -814,7 +822,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							</AlertDialogCancel>
 							<AlertDialogAction
 								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => pb.collection("systems").delete(id)}
+								onClick={() => deleteSystem(id)}
 							>
 								<Trans>Continue</Trans>
 							</AlertDialogAction>
