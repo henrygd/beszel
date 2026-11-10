@@ -19,6 +19,20 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(12_000_000)).toBe("12.0s")
 	})
 
+	test("moves to the next unit when rounding reaches it", () => {
+		expect(formatMicroseconds(999_960)).toBe("1.00s")
+		expect(formatMicroseconds(999_999)).toBe("1.00s")
+		expect(formatMicroseconds(999_940)).toBe("999.9ms")
+		expect(formatMicroseconds(9_996)).toBe("10.0ms")
+		expect(formatMicroseconds(9_990)).toBe("9.99ms")
+		expect(formatMicroseconds(9_996_000)).toBe("10.0s")
+		expect(formatMicroseconds(999_999, false)).toBe("1s")
+		expect(formatMicroseconds(9_996, false)).toBe("10ms")
+		expect(formatMicroseconds(9_995)).toBe("10.0ms")
+		expect(formatMicroseconds(999_950)).toBe("1.00s")
+		expect(formatMicroseconds(9_995_000)).toBe("10.0s")
+	})
+
 	test("formats with fixedDigits = false (used for chart y-axis ticks)", () => {
 		expect(formatMicroseconds(500, false)).toBe("500μs")
 		expect(formatMicroseconds(500.5, false)).toBe("500.5μs")
