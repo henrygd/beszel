@@ -4,6 +4,19 @@ is_freebsd() {
   [ "$(uname -s)" = "FreeBSD" ]
 }
 
+# If SELinux is enabled, reset the binary to the label its path should have.
+# The binary is extracted in a temp dir and moved, so it keeps the temp label
+# (user_tmp_t) that systemd is not allowed to execute.
+restore_selinux_context() {
+  if command -v getenforce >/dev/null 2>&1 && command -v restorecon >/dev/null 2>&1; then
+    SELINUX_MODE=$(getenforce) || return 0
+    if [ "$SELINUX_MODE" != "Disabled" ]; then
+      echo "SELinux is enabled (${SELINUX_MODE} mode). Restoring context of $1..."
+      restorecon -v "$1" >/dev/null 2>&1 || echo "Warning: Failed to restore SELinux context for $1."
+    fi
+  fi
+}
+
 # Function to ensure the proxy URL ends with a /
 ensure_trailing_slash() {
   if [ -n "$1" ]; then
@@ -358,6 +371,7 @@ fi
 chmod +x "$TEMP_DIR/beszel"
 mv "$TEMP_DIR/beszel" "$BIN_PATH"
 chown beszel:beszel "$BIN_PATH"
+restore_selinux_context "$BIN_PATH"
 rm -rf "$TEMP_DIR"
 
 if is_freebsd; then
