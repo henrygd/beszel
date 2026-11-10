@@ -222,18 +222,30 @@ export function formatMicroseconds(microseconds: number, fixedDigits = true): st
 	}
 
 	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
+	// Round the same way the formatter will, so the unit and digit count are
+	// picked from the value as it will be printed: a value that rounds up to
+	// the next threshold is shown as 1.00s or 10.0ms rather than 1000.0ms or
+	// 10.00ms. Intl.NumberFormat (decimalString) and toFixed (toFixedFloat) can
+	// round the same number differently, e.g. 9.995 -> "10.00" vs "9.99".
+	const printedValue = fixedDigits
+		? (num: number, digits: number) =>
+				Number(
+					new Intl.NumberFormat("en-US", {
+						minimumFractionDigits: digits,
+						maximumFractionDigits: digits,
+						useGrouping: false,
+					}).format(num)
+				)
+		: toFixedFloat
 
-	// Pick the unit and digit count from the value as it will be printed, so a
-	// value that rounds up to the next threshold is shown as 1.00s or 10.0ms
-	// rather than 1000.0ms or 10.00ms.
 	const milliseconds = microseconds / 1000
-	if (Number(milliseconds.toFixed(1)) < 1000) {
-		const digits = Number(milliseconds.toFixed(2)) >= 10 ? 1 : 2
+	if (printedValue(milliseconds, 1) < 1000) {
+		const digits = printedValue(milliseconds, 2) >= 10 ? 1 : 2
 		return `${digitFormatter(milliseconds, digits)}ms`
 	}
 
 	const seconds = microseconds / 1_000_000
-	const digits = Number(seconds.toFixed(2)) >= 10 ? 1 : 2
+	const digits = printedValue(seconds, 2) >= 10 ? 1 : 2
 	return `${digitFormatter(seconds, digits)}s`
 }
 

@@ -28,6 +28,9 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(9_996_000)).toBe("10.0s")
 		expect(formatMicroseconds(999_999, false)).toBe("1s")
 		expect(formatMicroseconds(9_996, false)).toBe("10ms")
+		expect(formatMicroseconds(9_995)).toBe("10.0ms")
+		expect(formatMicroseconds(999_950)).toBe("1.00s")
+		expect(formatMicroseconds(9_995_000)).toBe("10.0s")
 	})
 
 	test("formats with fixedDigits = false (used for chart y-axis ticks)", () => {
