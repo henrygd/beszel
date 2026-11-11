@@ -21,6 +21,10 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 	// only use server for DNS monitors, so the same target queried via different servers gets distinct monitors
 	if config.Protocol == "dns" {
 		args = append(args, config.Server)
+		// only add the record type when set, so monitors that use the default lookup keep their IDs
+		if config.RecordType != "" {
+			args = append(args, config.RecordType)
+		}
 	}
 	// Meet the record ID minimum without changing existing IDs of six or more characters.
 	return fmt.Sprintf("%06s", systems.MakeStableHashId(args...))
@@ -81,13 +85,19 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if protocol != "tcp" {
 			e.Record.Set("port", 0)
 		}
-		// only dns uses server - clear it for other protocols
+		// only dns uses server and record type - clear them for other protocols
 		if protocol != "dns" {
 			e.Record.Set("server", "")
+			e.Record.Set("recordType", "")
 		}
-		// only http uses TLS verification - clear it for other protocols
+		// only http uses TLS verification and JSON paths - clear them for other protocols
 		if protocol != "http" {
 			e.Record.Set("skipTlsVerify", false)
+			e.Record.Set("jsonPath", "")
+		}
+		// only http and dns check the response content
+		if protocol != "http" && protocol != "dns" {
+			e.Record.Set("keyword", "")
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
@@ -138,6 +148,10 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Server:   record.GetString("server"),
 		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
 		SkipTLSVerify: record.GetBool("skipTlsVerify"),
+		// Keyword and JSONPath are probe options too. RecordType is part of the ID for DNS monitors.
+		Keyword:    record.GetString("keyword"),
+		JSONPath:   record.GetString("jsonPath"),
+		RecordType: record.GetString("recordType"),
 	}
 }
 
@@ -162,7 +176,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "keyword", "jsonPath", "recordType"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

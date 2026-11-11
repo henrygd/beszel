@@ -179,6 +179,13 @@ export function getMonitorColumns({
 						</Badge>
 					)
 				}
+				if (row.original.protocol === "dns" && row.original.recordType) {
+					return (
+						<Badge className={cn("uppercase", protocolColors.dns)}>
+							{protocol} {row.original.recordType}
+						</Badge>
+					)
+				}
 				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
 			},
 		},

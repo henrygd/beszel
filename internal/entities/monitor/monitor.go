@@ -31,6 +31,16 @@ type Config struct {
 	// SkipTLSVerify disables certificate verification for HTTPS targets, such as
 	// those with self-signed certificates. Only used when Protocol is "http".
 	SkipTLSVerify bool `cbor:"6,keyasint,omitempty" db:"skipTlsVerify"`
+	// Keyword is the content a response must have for the probe to succeed. HTTP
+	// monitors look for it in the response body, or compare it with the value at
+	// JSONPath. DNS monitors compare it with the returned records. Empty skips the check.
+	Keyword string `cbor:"9,keyasint,omitempty"`
+	// JSONPath is a dot-separated path into a JSON response body, such as
+	// "status" or "services.0.state". Only used when Protocol is "http".
+	JSONPath string `cbor:"10,keyasint,omitempty" db:"jsonPath"`
+	// RecordType is the DNS record type to query: "A", "AAAA", "CNAME", "MX", "NS",
+	// or "TXT". Empty looks up both A and AAAA. Only used when Protocol is "dns".
+	RecordType string `cbor:"11,keyasint,omitempty" db:"recordType"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.

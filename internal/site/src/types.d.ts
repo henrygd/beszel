@@ -690,6 +690,12 @@ export interface NetworkMonitorRecord {
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Content the response must have: HTTP body text, the value at jsonPath, or a DNS record. */
+	keyword: string
+	/** Dot-separated path into a JSON response body, for HTTP targets. */
+	jsonPath: string
+	/** DNS record type to query. Empty looks up both A and AAAA. */
+	recordType: "" | "A" | "AAAA" | "CNAME" | "MX" | "NS" | "TXT"
 	res: number
 	resMin1h: number
 	resMax1h: number
