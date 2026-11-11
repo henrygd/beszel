@@ -188,7 +188,7 @@ export function UserAuthForm({
 		if (code) {
 			const state = params.get("state")
 			const provider: AuthProviderInfo = JSON.parse(localStorage.getItem("provider") ?? "{}")
-		    localStorage.removeItem("provider")
+			localStorage.removeItem("provider")
 			window.history.replaceState({}, "", window.location.pathname)
 			if (!state || provider.state !== state) {
 				showLoginFaliedToast()
@@ -208,14 +208,6 @@ export function UserAuthForm({
 			setTimeout(() => loginWithOauth(authProviders[0], false), 300)
 			return
 		}
-
-		// refresh auth if not in above states (required for trusted auth header)
-		pb.collection("users")
-			.authRefresh()
-			.then((res) => {
-				pb.authStore.save(res.token, res.record)
-				$authenticated.set(!!pb.authStore.isValid)
-			})
 	}, [])
 
 	if (!authMethods) {
