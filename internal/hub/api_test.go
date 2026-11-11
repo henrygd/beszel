@@ -1526,7 +1526,7 @@ func TestTrustedHeaderProxyAllowlist(t *testing.T) {
 	}
 }
 
-func TestAuthBypassWarnings(t *testing.T) {
+func TestTrustedHeaderWithoutProxyWarning(t *testing.T) {
 	var hubs []*beszelTests.TestHub
 
 	defer func() {
@@ -1549,13 +1549,8 @@ func TestAuthBypassWarnings(t *testing.T) {
 		expectNone    []string
 	}{
 		{
-			name:       "neither set",
-			expectNone: []string{"AUTO_LOGIN", "TRUSTED_AUTH_HEADER"},
-		},
-		{
-			name:          "auto login",
-			env:           map[string]string{"AUTO_LOGIN": "user@test.com"},
-			expectWarning: []string{"AUTO_LOGIN is set"},
+			name:       "header not set",
+			expectNone: []string{"TRUSTED_AUTH_HEADER"},
 		},
 		{
 			name:          "trusted header without allowlist",

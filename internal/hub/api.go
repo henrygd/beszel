@@ -77,7 +77,6 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 	// authenticate with trusted header
 	if autoLogin, _ := utils.GetEnv("AUTO_LOGIN"); autoLogin != "" {
-		slog.Warn("AUTO_LOGIN is set: requests without a session are logged in as this user from any client that can reach the hub")
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			return authorizeRequestWithEmail(e, autoLogin)
 		})
