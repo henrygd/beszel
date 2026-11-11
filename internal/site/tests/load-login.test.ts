@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import PocketBase, { type AuthMethodsList } from "pocketbase"
 import { loadLogin } from "../src/components/login/load-login"
 
-const context = { route: "home", search: "", loggedOut: false }
+const context = { route: "home", search: "", loggedOut: false, autoLogin: true }
 const methods: AuthMethodsList = {
 	password: { enabled: true, identityFields: ["email"] },
 	oauth2: { enabled: false, providers: [] },
@@ -80,6 +80,14 @@ describe("initial login authentication", () => {
 		})
 	}
 
+	test("does not probe when automatic authentication is not configured", async () => {
+		const { pb, requests } = client()
+		const result = await loadLogin(pb, { ...context, autoLogin: false }, new AbortController().signal)
+		expect(result.authenticated).toBe(false)
+		expect(result.authMethods.password.enabled).toBe(true)
+		expect(requests.some((path) => path.endsWith("/auth-refresh"))).toBe(false)
+	})
+
 	for (const route of ["forgot_password", "request_otp"]) {
 		test(`${route} does not attempt automatic authentication`, async () => {
 			const { pb, requests } = client()
@@ -124,27 +132,28 @@ describe("initial login authentication", () => {
 	}
 
 	for (const cancel of [true, false]) {
-		test(cancel
-			? "unmount cancels a pending probe"
-			: "a stalled probe times out and releases the login form", async () => {
-			const controller = new AbortController()
-			const started = Promise.withResolvers<void>()
-			let aborted = false
-			const { pb } = client({
-				refresh: (signal) =>
-					new Promise<Response>((_resolve, reject) => {
-						signal.addEventListener("abort", () => {
-							aborted = true
-							reject(new DOMException("Aborted", "AbortError"))
-						})
-						started.resolve()
-					}),
-			})
-			const result = loadLogin(pb, context, controller.signal)
-			await started.promise
-			if (cancel) controller.abort()
-			expect((await result).authenticated).toBe(false)
-			expect(aborted).toBe(true)
-		}, 15_000)
+		test(
+			cancel ? "unmount cancels a pending probe" : "a stalled probe times out and releases the login form",
+			async () => {
+				const controller = new AbortController()
+				const started = Promise.withResolvers<void>()
+				let aborted = false
+				const { pb } = client({
+					refresh: (signal) =>
+						new Promise<Response>((_resolve, reject) => {
+							signal.addEventListener("abort", () => {
+								aborted = true
+								reject(new DOMException("Aborted", "AbortError"))
+							})
+							started.resolve()
+						}),
+				})
+				const result = loadLogin(pb, context, controller.signal, cancel ? 10_000 : 20)
+				await started.promise
+				if (cancel) controller.abort()
+				expect((await result).authenticated).toBe(false)
+				expect(aborted).toBe(true)
+			}
+		)
 	}
 })

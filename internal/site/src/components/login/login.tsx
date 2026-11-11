@@ -14,32 +14,40 @@ import { OtpRequestForm } from "./otp-forms"
 
 export default function () {
 	const page = useStore($router)
-	const [login, setLogin] = useState<Awaited<ReturnType<typeof loadLogin>> & { route?: string }>()
+	const [login, setLogin] = useState<Awaited<ReturnType<typeof loadLogin>>>()
 	const isFirstRun = login?.firstRun ?? false
 	const { resolvedTheme } = useTheme()
 
+	// Load once on mount; switching between login routes reuses the result.
 	useEffect(() => {
 		const controller = new AbortController()
-		document.title = "Beszel"
+		const autoLogin = !!globalThis.BESZEL.AUTO_LOGIN
+		// keep the title neutral while automatic authentication may still succeed
+		document.title = autoLogin ? "Beszel" : `${t`Login`} / Beszel`
 		loadLogin(
 			pb,
-			{ route: page?.route, search: window.location.search, loggedOut: !!sessionStorage.getItem("lo") },
+			{
+				route: $router.get()?.route,
+				search: window.location.search,
+				loggedOut: !!sessionStorage.getItem("lo"),
+				autoLogin,
+			},
 			controller.signal
 		)
-			.then(({ firstRun, authMethods, authenticated }) => {
+			.then((result) => {
 				if (controller.signal.aborted) return
-				if (authenticated) {
+				if (result.authenticated) {
 					$authenticated.set(true)
 					return
 				}
 				document.title = `${t`Login`} / Beszel`
-				setLogin({ firstRun, authMethods, authenticated, route: page?.route })
+				setLogin(result)
 			})
 			.catch((error) => {
 				if (!controller.signal.aborted) console.error(error)
 			})
 		return () => controller.abort()
-	}, [page?.route])
+	}, [])
 
 	const subtitle = useMemo(() => {
 		if (isFirstRun) {
@@ -53,7 +61,7 @@ export default function () {
 		}
 	}, [isFirstRun, page])
 
-	if (!login || login.route !== page?.route) {
+	if (!login) {
 		return null
 	}
 

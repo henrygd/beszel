@@ -1,10 +1,22 @@
 import type PocketBase from "pocketbase"
 
-/** Load the login page only after automatic / trusted-header authentication has been tried. */
+interface LoginContext {
+	route?: string
+	search: string
+	loggedOut: boolean
+	/** Server has AUTO_LOGIN or TRUSTED_AUTH_HEADER configured. */
+	autoLogin: boolean
+}
+
+/**
+ * Load login page data. When automatic / trusted-header authentication is configured,
+ * try it before resolving so the form isn't shown to users who will be logged in anyway.
+ */
 export async function loadLogin(
 	pb: PocketBase,
-	{ route, search, loggedOut }: { route?: string; search: string; loggedOut: boolean },
-	signal: AbortSignal
+	{ route, search, loggedOut, autoLogin }: LoginContext,
+	signal: AbortSignal,
+	timeoutMs = 10_000
 ) {
 	const [{ firstRun }, authMethods] = await Promise.all([
 		pb
@@ -13,8 +25,10 @@ export async function loadLogin(
 		pb.collection("users").listAuthMethods({ signal, requestKey: null }),
 	])
 	const result = { firstRun, authMethods, authenticated: false }
-	// These flows are handled by their existing forms, without a session probe.
+	// Only probe when the server can authenticate an anonymous request. Other flows are
+	// handled by their existing forms.
 	if (
+		!autoLogin ||
 		signal.aborted ||
 		firstRun ||
 		route === "forgot_password" ||
@@ -29,12 +43,12 @@ export async function loadLogin(
 	const abort = () => controller.abort()
 	signal.addEventListener("abort", abort, { once: true })
 	// A stalled probe must not prevent access to the regular login form.
-	const timeout = setTimeout(abort, 10_000)
+	const timeout = setTimeout(abort, timeoutMs)
 	try {
 		await pb.collection("users").authRefresh({ signal: controller.signal, requestKey: null })
 		result.authenticated = pb.authStore.isValid
 	} catch {
-		// A rejected anonymous refresh is expected when automatic login is not configured.
+		// Rejected or timed out: fall back to the login form.
 	} finally {
 		clearTimeout(timeout)
 		signal.removeEventListener("abort", abort)
