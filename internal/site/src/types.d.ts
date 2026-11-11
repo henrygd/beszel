@@ -690,6 +690,8 @@ export interface NetworkMonitorRecord {
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Accepted HTTP status codes and ranges, such as "200-299,401". Empty means any status below 400. */
+	statusCodes: string
 	res: number
 	resMin1h: number
 	resMax1h: number
