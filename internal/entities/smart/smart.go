@@ -124,83 +124,20 @@ const NVMeCounterInvalid = "invalid (out of range)"
 
 func (c *NVMeCounter) UnmarshalJSON(data []byte) error {
 	*c = NVMeCounter{}
-	s := strings.TrimSpace(string(data))
+	s := string(data)
 	if s == "null" {
 		return nil
 	}
-	// Exponent forms such as 5.573250223385609e+26 appear when the JSON was
-	// re-encoded, so the number is read exactly rather than through float64.
-	digits, exp, ok := splitJSONNumber(s)
-	switch {
-	case !ok:
-		return fmt.Errorf("invalid NVMe counter %q", s)
-	case digits == "":
-		return nil // zero
-	case exp < 0:
-		return fmt.Errorf("invalid NVMe counter %q: not an integer", s)
-	case int64(len(digits))+exp > 20: // at least 10^20, past uint64
-		c.Overflow = true
-		return nil
-	}
-	v, err := strconv.ParseUint(digits+strings.Repeat("0", int(exp)), 10, 64)
+	v, err := strconv.ParseUint(s, 10, 64)
 	if errors.Is(err, strconv.ErrRange) {
 		c.Overflow = true
 		return nil
 	}
+	if err != nil {
+		return fmt.Errorf("invalid NVMe counter %q: %w", s, err)
+	}
 	c.Value = v
-	return err
-}
-
-// splitJSONNumber reads a non-negative JSON number as digits * 10^exp, where
-// digits has no leading or trailing zeros ("" for zero). The exponent stops
-// growing far beyond any input length, so a huge one such as
-// 1e18446744073709551619 cannot wrap around.
-func splitJSONNumber(s string) (digits string, exp int64, ok bool) {
-	isDigit := func(b byte) bool { return '0' <= b && b <= '9' }
-	i := 0
-	for i < len(s) && isDigit(s[i]) {
-		i++
-	}
-	if i == 0 {
-		return "", 0, false
-	}
-	mantissa, frac := s[:i], ""
-	if i < len(s) && s[i] == '.' {
-		j := i + 1
-		for j < len(s) && isDigit(s[j]) {
-			j++
-		}
-		if j == i+1 {
-			return "", 0, false
-		}
-		frac, i = s[i+1:j], j
-	}
-	if i < len(s) && (s[i] == 'e' || s[i] == 'E') {
-		i++
-		neg := i < len(s) && s[i] == '-'
-		if i < len(s) && (s[i] == '+' || s[i] == '-') {
-			i++
-		}
-		start := i
-		for ; i < len(s) && isDigit(s[i]); i++ {
-			if exp < 1<<40 {
-				exp = exp*10 + int64(s[i]-'0')
-			}
-		}
-		if i == start {
-			return "", 0, false
-		}
-		if neg {
-			exp = -exp
-		}
-	}
-	if i != len(s) {
-		return "", 0, false
-	}
-	digits = strings.TrimLeft(mantissa+frac, "0")
-	trimmed := strings.TrimRight(digits, "0")
-	exp += int64(len(digits)-len(trimmed)) - int64(len(frac))
-	return trimmed, exp, true
+	return nil
 }
 
 type ScsiErrorCounter struct {

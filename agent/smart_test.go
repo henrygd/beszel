@@ -269,7 +269,7 @@ func TestParseSmartctlNvmeLargeCounters(t *testing.T) {
 }
 
 // NVMe health counters are 128-bit, so smartctl can print values past uint64.
-// They are capped instead of failing json.Unmarshal and dropping the device (#2731).
+// They are reported as invalid instead of failing json.Unmarshal and dropping the device (#2731).
 func TestParseSmartctlNvmeCounterBeyondUint64(t *testing.T) {
 	deviceData := parseSmart(t, []byte(`{
 		"device": {"name": "/dev/nvme0", "type": "nvme"},
@@ -321,26 +321,21 @@ func TestParseSmartctlNvmeEveryCounterOverflow(t *testing.T) {
 	}
 }
 
-// Exponent-form counters and an overflowed TNVMCAP still parse the device;
-// an overflowed capacity is left unknown (0) rather than made up.
-func TestParseSmartctlNvmeExponentAndCapacity(t *testing.T) {
+// An overflowed TNVMCAP still parses the device; the capacity is left unknown
+// (0) rather than made up.
+func TestParseSmartctlNvmeCapacity(t *testing.T) {
 	deviceData := parseSmart(t, []byte(`{
 		"device": {"name": "/dev/nvme0", "type": "nvme"},
-		"serial_number": "NVME-EXP",
+		"serial_number": "NVME-OVERFLOW-CAP",
 		"smart_status": {"passed": true},
-		"nvme_total_capacity": 5.573250223385609e+26,
+		"nvme_total_capacity": 18446744073709551616,
 		"nvme_smart_health_information_log": {
 			"temperature": 35,
-			"power_on_hours": 5.573250223385609e+26,
-			"power_cycles": 1.2e2,
+			"power_cycles": 120,
 			"media_errors": null
 		}
 	}`), "")
 	assert.Zero(t, deviceData.Capacity)
-	hours := findAttr(deviceData.Attributes, "PowerOnHours")
-	require.NotNil(t, hours)
-	assert.Zero(t, hours.RawValue)
-	assert.Equal(t, smart.NVMeCounterInvalid, hours.RawString)
 	assertAttrValue(t, deviceData.Attributes, "PowerCycles", 120)
 	assertAttrValue(t, deviceData.Attributes, "MediaErrors", 0)
 
