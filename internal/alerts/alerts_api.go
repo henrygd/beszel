@@ -25,6 +25,8 @@ func UpsertAlerts(e *core.RequestEvent) error {
 		Name      string   `json:"name"`
 		Systems   []string `json:"systems"`
 		Overwrite bool     `json:"overwrite"`
+		// Channels is left unchanged when omitted.
+		Channels *[]string `json:"channels"`
 	}{}
 	err := e.BindBody(&reqData)
 	if err != nil || reqData.Name == "" || len(reqData.Systems) == 0 {
@@ -68,6 +70,9 @@ func UpsertAlerts(e *core.RequestEvent) error {
 
 			alertRecord.Set("value", reqData.Value)
 			alertRecord.Set("min", reqData.Min)
+			if reqData.Channels != nil {
+				alertRecord.Set("channels", *reqData.Channels)
+			}
 
 			if err := txApp.SaveNoValidate(alertRecord); err != nil {
 				return err

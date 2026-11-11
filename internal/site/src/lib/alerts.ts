@@ -175,7 +175,7 @@ export const alertManager = (() => {
   let unsub: () => void
 
   /** Fields to fetch from alerts collection */
-  const fields = "id,name,system,value,min,triggered"
+  const fields = "id,name,system,value,min,triggered,channels"
 
   // show the number of active alerts on the favicon
   $activeAlerts.listen((activeAlerts) => updateFavicon(activeAlerts.length))

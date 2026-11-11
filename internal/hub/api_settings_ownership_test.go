@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 	"github.com/stretchr/testify/require"
@@ -32,7 +31,6 @@ func TestSettingsOwnershipUpdates(t *testing.T) {
 			require.NoError(t, err)
 			superAuth, err := superuser.NewAuthToken()
 			require.NoError(t, err)
-			now := time.Now().UTC()
 
 			type testCase struct {
 				collection string
@@ -48,24 +46,12 @@ func TestSettingsOwnershipUpdates(t *testing.T) {
 			require.NoError(t, err)
 			// The settings recipient has no settings record, and the target system has
 			// no fingerprint, so uniqueness constraints cannot mask an ownership bypass.
-			_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-				"user": b.Id, "type": "one-time",
-				"start": now.Add(time.Hour).Format(time.RFC3339), "end": now.Add(2 * time.Hour).Format(time.RFC3339),
-			})
-			require.NoError(t, err)
+			// Quiet hours belong to admin-managed notification channels, not users.
 			cases := []testCase{
 				{
 					collection: "user_settings", field: "user", original: a.Id, target: empty.Id,
 					create: map[string]any{"user": a.Id, "settings": map[string]any{"chartTime": "1h"}},
 					edit:   map[string]any{"settings": map[string]any{"chartTime": "12h"}},
-				},
-				{
-					collection: "quiet_hours", field: "user", original: a.Id, target: b.Id,
-					create: map[string]any{
-						"user": a.Id, "type": "one-time", "start": now.Add(-time.Minute).Format(time.RFC3339),
-						"end": now.Add(time.Hour).Format(time.RFC3339),
-					},
-					edit: map[string]any{"end": now.Add(3 * time.Hour).Format(time.RFC3339)},
 				},
 				{
 					collection: "fingerprints", field: "system", original: systems[0].Id, target: targets[0].Id,
@@ -133,14 +119,6 @@ func TestSettingsOwnershipUpdates(t *testing.T) {
 						require.NoError(t, err)
 						require.Equal(t, tc.original, after.GetString(tc.field))
 					})
-					if tc.collection == "quiet_hours" {
-						t.Run("recipient notification state remains unchanged", func(t *testing.T) {
-							require.False(t, hub.IsNotificationSilenced(b.Id, ""))
-							response := patch(map[string]any{"user": b.Id}, auth)
-							require.Equal(t, http.StatusNotFound, response.Code)
-							require.False(t, hub.IsNotificationSilenced(b.Id, ""))
-						})
-					}
 					t.Run("superuser maintenance", func(t *testing.T) {
 						response := patch(map[string]any{tc.field: tc.target}, superAuth)
 						require.Equal(t, http.StatusOK, response.Code, response.Body.String())

@@ -20,6 +20,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	defer hub.Cleanup()
 
 	const isUserMatchesUser = `@request.auth.id != "" && user = @request.auth.id`
+	const isAdminRule = `@request.auth.role = "admin"`
 
 	const isUserInUsers = `@request.auth.id != "" && users.id ?= @request.auth.id`
 	const isUserInUsersNotReadonly = `@request.auth.id != "" && users.id ?= @request.auth.id && @request.auth.role != "readonly"`
@@ -96,14 +97,16 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserInSystemUsersNotReadonly+` && @request.body.system:changed = false`, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserInSystemUsersNotReadonly, *fingerprintsCollection.DeleteRule)
 
-	// quiet_hours collection
-	quietHoursCollection, err := hub.FindCollectionByNameOrId("quiet_hours")
-	require.NoError(t, err, "Failed to find quiet_hours collection")
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ListRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ViewRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false`, *quietHoursCollection.UpdateRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.DeleteRule)
+	// notification_channels and quiet_hours collections are admin-only
+	for _, name := range []string{"notification_channels", "quiet_hours"} {
+		collection, err := hub.FindCollectionByNameOrId(name)
+		require.NoError(t, err, "Failed to find %s collection", name)
+		assert.Equal(t, isAdminRule, *collection.ListRule)
+		assert.Equal(t, isAdminRule, *collection.ViewRule)
+		assert.Equal(t, isAdminRule, *collection.CreateRule)
+		assert.Equal(t, isAdminRule, *collection.UpdateRule)
+		assert.Equal(t, isAdminRule, *collection.DeleteRule)
+	}
 
 	// smart_devices collection
 	smartDevicesCollection, err := hub.FindCollectionByNameOrId("smart_devices")
@@ -178,6 +181,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	const isUserNotReadonly = `@request.auth.id != "" && @request.auth.role != "readonly"`
 
 	const isUserMatchesUser = `@request.auth.id != "" && user = @request.auth.id`
+	const isAdminRule = `@request.auth.role = "admin"`
 	const isUserAdmin = `@request.auth.id != "" && @request.auth.role = "admin"`
 
 	// alerts collection
@@ -225,14 +229,16 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUserNotReadonly+` && @request.body.system:changed = false`, *fingerprintsCollection.UpdateRule)
 	assert.Equal(t, isUserNotReadonly, *fingerprintsCollection.DeleteRule)
 
-	// quiet_hours collection
-	quietHoursCollection, err := hub.FindCollectionByNameOrId("quiet_hours")
-	require.NoError(t, err, "Failed to find quiet_hours collection")
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ListRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.ViewRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.CreateRule)
-	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false`, *quietHoursCollection.UpdateRule)
-	assert.Equal(t, isUserMatchesUser, *quietHoursCollection.DeleteRule)
+	// notification_channels and quiet_hours collections are admin-only
+	for _, name := range []string{"notification_channels", "quiet_hours"} {
+		collection, err := hub.FindCollectionByNameOrId(name)
+		require.NoError(t, err, "Failed to find %s collection", name)
+		assert.Equal(t, isAdminRule, *collection.ListRule)
+		assert.Equal(t, isAdminRule, *collection.ViewRule)
+		assert.Equal(t, isAdminRule, *collection.CreateRule)
+		assert.Equal(t, isAdminRule, *collection.UpdateRule)
+		assert.Equal(t, isAdminRule, *collection.DeleteRule)
+	}
 
 	// smart_devices collection
 	smartDevicesCollection, err := hub.FindCollectionByNameOrId("smart_devices")

@@ -67,6 +67,7 @@ export default function SettingsLayout() {
 			title: t`Notifications`,
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
+			admin: true,
 			preload: notificationsSettingsImport,
 		},
 		{
@@ -148,7 +149,7 @@ function SettingsContent({ name }: { name: string }) {
 		case "general":
 			return <GeneralSettings userSettings={userSettings} />
 		case "notifications":
-			return <NotificationsSettings userSettings={userSettings} />
+			return <NotificationsSettings />
 		case "config":
 			return <ConfigYamlSettings />
 		case "tokens":
