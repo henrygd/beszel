@@ -1,7 +1,7 @@
 name: 🚀 Feature request
 description: Request a new feature or change.
 title: "[Feature]: "
-labels: ["enhancement"]
+labels: ["enhancement", "needs-review"]
 body:
   - type: checkboxes
     attributes:
