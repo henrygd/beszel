@@ -13,6 +13,7 @@ body:
         - For **Bug reports**, use the [Bug Form](https://github.com/henrygd/beszel/issues/new?template=bug_report.yml).
         - Any requests for new translations should be requested within the [crowdin project](https://crowdin.com/project/beszel).
         - Create one issue per feature request. This helps us keep track of requests and prioritize them accordingly.
+        - Feature requests that don't follow this template (for example, removed sections or vague descriptions) may be closed without review.
 
       options:
       - label: I have searched open and closed feature requests to make sure this or similar feature request does not already exist.
@@ -34,24 +35,51 @@ body:
       required: true
 
   - type: textarea
-    id: description
+    id: motivation
     attributes:
-      label: Description
+      label: Problem / Use Case
       description: |
-        Describe the solution or feature you'd like. Explain what problem this solves or what value it adds.
-        **Important:** Be specific and detailed. Vague requests like "make it better" will be closed.
+        What problem are you trying to solve, or what can't you do today? Describe your situation, not the solution.
       placeholder: |
-        Example:
-        - What is the feature?
-        - What problem does it solve?
-        - How should it work?
+        - What are you trying to do?
+        - What's missing or getting in the way today?
     validations:
       required: true
 
   - type: textarea
-    id: motivation
+    id: description
     attributes:
-      label: Motivation / Use Case
-      description: Why do you want this feature? What problem does it solve?
+      label: Proposed Solution
+      description: |
+        How should the feature work? Describe what it does and where it shows up (hub UI, agent, alerts, etc.).
+        **Important:** Be specific and detailed. Vague requests like "make it better" will be closed.
+      placeholder: |
+        - What should the feature do?
+        - Where would you see or configure it?
     validations:
       required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you tried any workarounds or other ways to solve this? (optional)
+
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you like to implement this?
+      description: If yes, please wait until the request has been reviewed before opening a pull request.
+      options:
+        - "Yes"
+        - "No"
+        - Maybe, with some guidance
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > New feature requests get the `needs-review` label. **Please don't open a pull request while this label is applied.**
+        > Wait until a maintainer has reviewed the request and removed the label, otherwise the PR may be closed.
