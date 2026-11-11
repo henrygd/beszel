@@ -85,6 +85,9 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
 		// only honor the header from these peers, if set
 		trustedProxies, restricted := parseTrustedProxies()
+		if !restricted {
+			slog.Warn("TRUSTED_AUTH_HEADER is set without TRUSTED_PROXY_IPS: the header is trusted from any client that can reach the hub", "header", trustedHeader)
+		}
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			if restricted && !isTrustedProxy(trustedProxies, e.Request.RemoteAddr) {
 				return e.Next()
