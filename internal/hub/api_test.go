@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"sort"
@@ -1518,6 +1519,81 @@ func TestTrustedHeaderProxyAllowlist(t *testing.T) {
 				TestAppFactory:  testAppFactory,
 				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
 					beszelTests.CreateUser(app, "user@test.com", "password123")
+				},
+			}
+			scenario.Test(t)
+		})
+	}
+}
+
+func TestAuthBypassWarnings(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	testCases := []struct {
+		name          string
+		env           map[string]string
+		expectWarning []string
+		expectNone    []string
+	}{
+		{
+			name:       "neither set",
+			expectNone: []string{"AUTO_LOGIN", "TRUSTED_AUTH_HEADER"},
+		},
+		{
+			name:          "auto login",
+			env:           map[string]string{"AUTO_LOGIN": "user@test.com"},
+			expectWarning: []string{"AUTO_LOGIN is set"},
+		},
+		{
+			name:          "trusted header without allowlist",
+			env:           map[string]string{"TRUSTED_AUTH_HEADER": "X-Beszel-Trusted"},
+			expectWarning: []string{"TRUSTED_AUTH_HEADER is set without TRUSTED_PROXY_IPS", "header=X-Beszel-Trusted"},
+		},
+		{
+			name:       "trusted header with allowlist",
+			env:        map[string]string{"TRUSTED_AUTH_HEADER": "X-Beszel-Trusted", "TRUSTED_PROXY_IPS": "10.0.0.5"},
+			expectNone: []string{"TRUSTED_AUTH_HEADER"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for key, value := range tc.env {
+				t.Setenv(key, value)
+			}
+
+			var logs bytes.Buffer
+			previous := slog.Default()
+			slog.SetDefault(slog.New(slog.NewTextHandler(&logs, &slog.HandlerOptions{Level: slog.LevelWarn})))
+			t.Cleanup(func() { slog.SetDefault(previous) })
+
+			scenario := beszelTests.ApiScenario{
+				Name:            "GET /api/health",
+				Method:          http.MethodGet,
+				URL:             "/api/health",
+				ExpectedStatus:  200,
+				ExpectedContent: []string{"API is healthy"},
+				TestAppFactory:  testAppFactory,
+				AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+					for _, want := range tc.expectWarning {
+						require.Contains(t, logs.String(), want)
+					}
+					for _, unwanted := range tc.expectNone {
+						require.NotContains(t, logs.String(), unwanted)
+					}
 				},
 			}
 			scenario.Test(t)
