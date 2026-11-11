@@ -258,3 +258,46 @@ func TestMonitorRollupExcludesPreviousInterval(t *testing.T) {
 	require.Len(t, rollups, 1)
 	require.Equal(t, 8, rollups[0].GetInt("total_count"))
 }
+
+// TestMonitorRollupOffsetPhase covers 20m monitor records whose phase is offset 10 minutes from the 120m rollup
+// (e.g. after the hub missed one run). The oldest one was created 110 minutes
+// ago, just after the previous 120m rollup, and has not been rolled up yet.
+func TestMonitorRollupOffsetPhase(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+	user, err := tests.CreateUser(hub, "m@example.com", "testtesttest")
+	require.NoError(t, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "m", "host": "localhost", "port": "45876", "status": "up", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	monitor, err := tests.CreateRecord(hub, "network_monitors", map[string]any{
+		"system": sys.Id, "target": "1.1.1.1", "protocol": "icmp", "interval": 60, "enabled": true,
+	})
+	require.NoError(t, err)
+	now := time.Now()
+	seed := func(typ string, created time.Time, total int) {
+		_, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
+			"system": sys.Id, "monitor": monitor.Id, "type": typ, "created": created.UnixMilli(),
+			"res_min": 8, "res_max": 20, "total_count": total, "success_count": total, "res_sum": total,
+		})
+		require.NoError(t, err)
+	}
+	seed("120m", now.Add(-120*time.Minute-50*time.Millisecond), 1000) // previous 120m rollup
+	for i := range 6 {
+		// created at -110m, -90m, ... -10m, by runs that started 50ms earlier in their second than this one
+		seed("20m", now.Add(-time.Duration(10+20*i)*time.Minute-50*time.Millisecond), 4)
+	}
+	records.NewRecordManager(hub).CreateLongerRecords()
+	rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": "120m"})
+	require.NoError(t, err)
+	require.Len(t, rollups, 2)
+	got := 0
+	for _, r := range rollups {
+		if c := r.GetInt("total_count"); c != 1000 {
+			got = c
+		}
+	}
+	require.Equal(t, 24, got)
+}

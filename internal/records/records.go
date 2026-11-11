@@ -20,23 +20,23 @@ type RecordManager struct {
 }
 
 type LongerRecordData struct {
-	shorterType         string
-	longerType          string
-	shorterTimeDuration time.Duration
-	longerTimeDuration  time.Duration
-	minShorterRecords   int
+	shorterType        string
+	longerType         string
+	longerTimeDuration time.Duration
+	minShorterRecords  int
 }
 
 // shorterRecordCutoff returns the time after which shorter records are included in a longer record.
 //
 // 1m records are samples created independently of this job, so the window is the full longer period.
 // Other types are created by this job, a few ms after it starts. The record created one full period
-// ago covers the previous period but lands right on the window boundary, so move the cutoff halfway
-// to the first record that belongs in the window to exclude it regardless of timing variation.
+// ago covers the previous period but lands right on the window boundary. Records created by this job
+// are always a multiple of the job interval (10 minutes) apart, so moving the cutoff forward by half
+// that interval excludes it without ever landing on another record.
 func (d *LongerRecordData) shorterRecordCutoff(now time.Time) time.Time {
 	cutoff := now.Add(d.longerTimeDuration)
 	if d.shorterType != "1m" {
-		cutoff = cutoff.Add(d.shorterTimeDuration / 2)
+		cutoff = cutoff.Add(5 * time.Minute)
 	}
 	return cutoff
 }
@@ -58,33 +58,29 @@ func (rm *RecordManager) CreateLongerRecords() {
 	now := time.Now().UTC()
 	longerRecordData := []LongerRecordData{
 		{
-			shorterType:         "1m",
-			shorterTimeDuration: time.Minute,
+			shorterType: "1m",
 			// change to 9 from 10 to allow edge case timing or short pauses
 			minShorterRecords:  9,
 			longerType:         "10m",
 			longerTimeDuration: -10 * time.Minute,
 		},
 		{
-			shorterType:         "10m",
-			shorterTimeDuration: 10 * time.Minute,
-			minShorterRecords:   2,
-			longerType:          "20m",
-			longerTimeDuration:  -20 * time.Minute,
+			shorterType:        "10m",
+			minShorterRecords:  2,
+			longerType:         "20m",
+			longerTimeDuration: -20 * time.Minute,
 		},
 		{
-			shorterType:         "20m",
-			shorterTimeDuration: 20 * time.Minute,
-			minShorterRecords:   6,
-			longerType:          "120m",
-			longerTimeDuration:  -120 * time.Minute,
+			shorterType:        "20m",
+			minShorterRecords:  6,
+			longerType:         "120m",
+			longerTimeDuration: -120 * time.Minute,
 		},
 		{
-			shorterType:         "120m",
-			shorterTimeDuration: 120 * time.Minute,
-			minShorterRecords:   4,
-			longerType:          "480m",
-			longerTimeDuration:  -480 * time.Minute,
+			shorterType:        "120m",
+			minShorterRecords:  4,
+			longerType:         "480m",
+			longerTimeDuration: -480 * time.Minute,
 		},
 	}
 	// wrap the operations in a transaction
