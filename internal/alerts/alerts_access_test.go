@@ -4,10 +4,8 @@ package alerts_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"sync/atomic"
 	"testing"
 	"testing/synctest"
 	"time"
@@ -36,7 +34,6 @@ func alertAPIRouter(t *testing.T, hub *beszelTests.TestHub) http.Handler {
 func alertAPIRequest(t *testing.T, handler http.Handler, token, method, path string, body any, status int) map[string]any {
 	t.Helper()
 	req := httptest.NewRequest(method, path, jsonReader(body))
-	req.RemoteAddr = nextAlertClientAddr()
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", token)
 	res := httptest.NewRecorder()
@@ -45,14 +42,6 @@ func alertAPIRequest(t *testing.T, handler http.Handler, token, method, path str
 	var result map[string]any
 	require.NoError(t, json.Unmarshal(res.Body.Bytes(), &result))
 	return result
-}
-
-var alertClientSeq atomic.Uint32
-
-// Each access check uses a separate client address so request limits do not apply.
-func nextAlertClientAddr() string {
-	n := alertClientSeq.Add(1)
-	return fmt.Sprintf("198.51.100.%d:1234", 1+(n%254))
 }
 
 func TestAlertRecordSystemAccess(t *testing.T) {

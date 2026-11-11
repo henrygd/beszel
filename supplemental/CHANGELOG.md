@@ -21,7 +21,7 @@ type Stats struct {
 }
 ```
 
-- Limit how often password sign-in can be attempted
+- Limit sign-in attempts to 10 per minute per address (#2642)
 
 - Add TLS certificate expiry alert for network monitors (#2627)
 
