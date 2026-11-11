@@ -99,6 +99,7 @@ export interface SystemInfo {
 }
 
 export interface SystemStats {
+	mx?: Partial<SystemStats>
 	/** cpu percent */
 	cpu: number
 	/** peak cpu */
@@ -305,6 +306,7 @@ export interface ContainerStatsRecord extends RecordModel {
 }
 
 interface ContainerStats {
+	mx?: { c: number; m: number; b: [number, number] }
 	/** name */
 	n: string
 	/** cpu percent */
@@ -716,6 +718,7 @@ export interface MonitorCertInfo {
 
 /** Response times in microseconds and packet loss percentage (0-100). */
 export interface MonitorStats {
+	loss_max?: number
 	/** null when no probe succeeded, so there is no response time */
 	res_avg: number | null
 	res_min: number | null
@@ -725,6 +728,7 @@ export interface MonitorStats {
 
 /** Raw per-monitor record stored in the DB. */
 export interface RawMonitorStatsRecord {
+	loss_max?: number
 	res_min: number
 	res_max: number
 	total_count: number

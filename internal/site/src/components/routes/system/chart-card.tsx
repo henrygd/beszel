@@ -3,7 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { XIcon } from "lucide-react"
 import React, { type JSX, memo, useCallback, useEffect, useState } from "react"
-import { $containerFilter, $maxValues } from "@/lib/stores"
+import { $chartTime, $containerFilter, $maxValues } from "@/lib/stores"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
 import Spinner from "../../spinner"
@@ -93,6 +93,7 @@ export function ChartCard({
 	cornerEl,
 	legend,
 	className,
+	maxSelectable = true,
 }: {
 	title: string
 	description: React.ReactNode
@@ -102,8 +103,12 @@ export function ChartCard({
 	cornerEl?: JSX.Element | null
 	legend?: boolean
 	className?: string
+	maxSelectable?: boolean
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
+	const max = useStore($maxValues)
+	const chartTime = useStore($chartTime)
+	const selector = maxSelectable && !["1m", "1h"].includes(chartTime) ? <SelectAvgMax max={max} /> : null
 
 	return (
 		<Card
@@ -117,7 +122,12 @@ export function ChartCard({
 			<CardHeader className="gap-1.5 relative p-0 mb-3 sm:mb-4">
 				<CardTitle>{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="grid sm:justify-end sm:absolute sm:top-0 sm:end-0 my-1 sm:my-0">{cornerEl}</div>}
+				{(cornerEl || selector) && (
+					<div className="flex flex-wrap gap-2 sm:justify-end my-1">
+						{cornerEl}
+						{selector}
+					</div>
+				)}
 			</CardHeader>
 			<div className={cn("ps-0 -me-1 -ms-3.5 relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
 				{

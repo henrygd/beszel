@@ -75,7 +75,7 @@ async function fetchMonitorStats(
 			created: getPbTimestamp(chartTime, from, true),
 			type: chartTimeData[chartTime].type,
 		}),
-		fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created",
+		fields: "monitor,res_min,res_max,loss_max,total_count,success_count,res_sum,created",
 		sort: "created",
 	})
 	return mergeMonitorStats(rawRecords, bucketMs)
@@ -231,7 +231,7 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		const bucketMs = getBucketMs(monitorIds, chartTime)
 		const { expr, params } = monitorIdsFilter(monitorIds)
 		const pbOptions = {
-			fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created,type",
+			fields: "monitor,res_min,res_max,loss_max,total_count,success_count,res_sum,created,type",
 			filter: pb.filter(`${expr} && type={:type}`, {
 				...params,
 				type: chartTimeData[chartTime].type,
