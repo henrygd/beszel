@@ -25,6 +25,17 @@ export function LazySmartTable({ systemId }: { systemId: string }) {
 	)
 }
 
+const NutTable = lazy(() => import("./nut-table"))
+
+export function LazyNutTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <NutTable systemId={systemId} />}
+		</div>
+	)
+}
+
 const ZfsTable = lazy(() => import("./storage-pools-table"))
 
 export function LazyZfsTable({ systemId }: { systemId: string }) {
