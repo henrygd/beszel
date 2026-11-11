@@ -34,11 +34,6 @@ func newContainerAlertTestFixture(t *testing.T, min int) *containerAlertTestFixt
 	require.NoError(t, err)
 	systemRecord := systems[0]
 
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
-
 	alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "ContainerHealth",
 		"system": systemRecord.Id,

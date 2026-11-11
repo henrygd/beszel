@@ -191,9 +191,6 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 		}
 		now := time.Now()
 		for _, alert := range alerts {
-			if !userHasSystem(tx, alert.GetString("user"), systemID) {
-				continue
-			}
 			var state networkMonitorAlertState
 			if err := alert.UnmarshalJSONField("state", &state); err != nil {
 				return err
@@ -241,7 +238,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 						}
 						history := core.NewRecord(collection)
 						history.Load(map[string]any{
-							"alert_id": alert.Id, "user": alert.GetString("user"), "system": systemID,
+							"alert_id": alert.Id, "system": systemID,
 							"name": name, "monitor_name": label, "value": obs.value,
 						})
 						if err := tx.Save(history); err != nil {
@@ -257,8 +254,9 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 					changed = true
 					title, message := networkMonitorAlertMessage(name, obs, label, system.GetString("name"), threshold)
 					messages = append(messages, AlertMessageData{
-						UserID: alert.GetString("user"), SystemID: systemID,
-						Title: title, Message: message,
+						SystemID: systemID,
+						Channels: alert.GetStringSlice("channels"),
+						Title:    title, Message: message,
 						Link: am.hub.MakeLink("system", systemID), LinkText: "View " + system.GetString("name"),
 					})
 				}
@@ -277,7 +275,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 		return err
 	}
 	// Match other alert types: persist transitions before delivery, and respect
-	// the user's existing notification destinations and quiet hours.
+	// the alert's notification channels and their quiet hours.
 	for _, message := range messages {
 		if err := am.SendAlert(message); err != nil {
 			app.Logger().Error("Failed to send network monitor alert", "err", err)

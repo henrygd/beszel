@@ -119,8 +119,8 @@ func (am *AlertManager) sendSystemdAlert(triggered bool, systemName string, aler
 	systemID := alertData.SystemID
 
 	return am.SendAlert(AlertMessageData{
-		UserID:   alertData.UserID,
 		SystemID: systemID,
+		Channels: alertData.Channels,
 		Title:    title,
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),

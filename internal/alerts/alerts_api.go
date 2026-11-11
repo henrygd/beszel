@@ -12,10 +12,12 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// UpsertUserAlerts handles API request to create or update alerts for a user
-// across multiple systems (POST /api/beszel/user-alerts)
-func UpsertUserAlerts(e *core.RequestEvent) error {
-	userID := e.Auth.Id
+// UpsertAlerts handles API request to create or update alerts across multiple systems.
+// Only admins and superusers can manage alerts (POST /api/beszel/alerts).
+func UpsertAlerts(e *core.RequestEvent) error {
+	if !e.Auth.IsSuperuser() && e.Auth.GetString("role") != "admin" {
+		return e.ForbiddenError("Only admins can manage alerts.", nil)
+	}
 
 	reqData := struct {
 		Min       uint8    `json:"min"`
@@ -23,9 +25,11 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 		Name      string   `json:"name"`
 		Systems   []string `json:"systems"`
 		Overwrite bool     `json:"overwrite"`
+		// Channels is left unchanged when omitted.
+		Channels *[]string `json:"channels"`
 	}{}
 	err := e.BindBody(&reqData)
-	if err != nil || userID == "" || reqData.Name == "" || len(reqData.Systems) == 0 {
+	if err != nil || reqData.Name == "" || len(reqData.Systems) == 0 {
 		return e.BadRequestError("Bad data", err)
 	}
 
@@ -43,33 +47,32 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
-			if !userHasSystem(txApp, userID, systemId) {
+			if !canManageSystemAlerts(txApp, e.Auth, systemId) {
 				continue
 			}
-			// find existing matching alert
 			alertRecord, err := txApp.FindFirstRecordByFilter(alertsCollection,
-				"system={:system} && name={:name} && user={:user}",
-				dbx.Params{"system": systemId, "name": reqData.Name, "user": userID})
+				"system={:system} && name={:name}",
+				dbx.Params{"system": systemId, "name": reqData.Name})
 
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
 			}
 
-			// skip if alert already exists and overwrite is not set
 			if !reqData.Overwrite && alertRecord != nil {
 				continue
 			}
 
-			// create new alert if it doesn't exist
 			if alertRecord == nil {
 				alertRecord = core.NewRecord(alertsCollection)
-				alertRecord.Set("user", userID)
 				alertRecord.Set("system", systemId)
 				alertRecord.Set("name", reqData.Name)
 			}
 
 			alertRecord.Set("value", reqData.Value)
 			alertRecord.Set("min", reqData.Min)
+			if reqData.Channels != nil {
+				alertRecord.Set("channels", *reqData.Channels)
+			}
 
 			if err := txApp.SaveNoValidate(alertRecord); err != nil {
 				return err
@@ -85,17 +88,19 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, map[string]any{"success": true})
 }
 
-// DeleteUserAlerts handles API request to delete alerts for a user across multiple systems
-// (DELETE /api/beszel/user-alerts)
-func DeleteUserAlerts(e *core.RequestEvent) error {
-	userID := e.Auth.Id
+// DeleteAlerts handles API request to delete alerts across multiple systems.
+// Only admins and superusers can manage alerts (DELETE /api/beszel/alerts).
+func DeleteAlerts(e *core.RequestEvent) error {
+	if !e.Auth.IsSuperuser() && e.Auth.GetString("role") != "admin" {
+		return e.ForbiddenError("Only admins can manage alerts.", nil)
+	}
 
 	reqData := struct {
 		AlertName string   `json:"name"`
 		Systems   []string `json:"systems"`
 	}{}
 	err := e.BindBody(&reqData)
-	if err != nil || userID == "" || reqData.AlertName == "" || len(reqData.Systems) == 0 {
+	if err != nil || reqData.AlertName == "" || len(reqData.Systems) == 0 {
 		return e.BadRequestError("Bad data", err)
 	}
 
@@ -103,17 +108,15 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
-			if !userHasSystem(txApp, userID, systemId) {
+			if !canManageSystemAlerts(txApp, e.Auth, systemId) {
 				continue
 			}
-			// Find existing alert to delete
 			alertRecord, err := txApp.FindFirstRecordByFilter("alerts",
-				"system={:system} && name={:name} && user={:user}",
-				dbx.Params{"system": systemId, "name": reqData.AlertName, "user": userID})
+				"system={:system} && name={:name}",
+				dbx.Params{"system": systemId, "name": reqData.AlertName})
 
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {
-					// alert doesn't exist, continue to next system
 					continue
 				}
 				return err
@@ -132,6 +135,12 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 	}
 
 	return e.JSON(http.StatusOK, map[string]any{"success": true, "count": numDeleted})
+}
+
+// canManageSystemAlerts reports whether auth may change alerts on a system.
+// Superusers manage all systems; admins only systems they can access.
+func canManageSystemAlerts(app core.App, auth *core.Record, systemID string) bool {
+	return auth.IsSuperuser() || userHasSystem(app, auth.Id, systemID)
 }
 
 func userHasSystem(app core.App, userID, systemID string) bool {

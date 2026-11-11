@@ -13,12 +13,12 @@ import (
 type CachedAlertData struct {
 	Id           string
 	SystemID     string
-	UserID       string
 	Name         string
 	Value        float64
 	Triggered    bool
 	Min          uint8
 	PendingSince time.Time
+	Channels     []string
 	// Immutable after publication; decoded only when the alert record changes.
 	MonitorStates      map[string]string
 	MonitorStatesValid bool
@@ -28,12 +28,12 @@ type CachedAlertData struct {
 func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.Id = record.Id
 	a.SystemID = record.GetString("system")
-	a.UserID = record.GetString("user")
 	a.Name = record.GetString("name")
 	a.Value = record.GetFloat("value")
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))
 	a.PendingSince = record.GetDateTime("pending_since").Time()
+	a.Channels = record.GetStringSlice("channels")
 	if isNetworkMonitorAlert(a.Name) {
 		var state networkMonitorAlertState
 		a.MonitorStatesValid = record.UnmarshalJSONField("state", &state) == nil

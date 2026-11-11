@@ -23,7 +23,6 @@ func TestSystemAlertsCachePopulateAndFilter(t *testing.T) {
 	statusAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Status",
 		"system": system1.Id,
-		"user":   user.Id,
 		"min":    1,
 	})
 	require.NoError(t, err)
@@ -31,7 +30,6 @@ func TestSystemAlertsCachePopulateAndFilter(t *testing.T) {
 	cpuAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "CPU",
 		"system": system1.Id,
-		"user":   user.Id,
 		"value":  80,
 		"min":    1,
 	})
@@ -40,7 +38,6 @@ func TestSystemAlertsCachePopulateAndFilter(t *testing.T) {
 	memoryAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Memory",
 		"system": system2.Id,
-		"user":   user.Id,
 		"value":  90,
 		"min":    1,
 	})
@@ -73,7 +70,6 @@ func TestSystemAlertsCacheLazyLoadUpdateAndDelete(t *testing.T) {
 	statusAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "Status",
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"min":    1,
 	})
 	require.NoError(t, err)
@@ -84,7 +80,6 @@ func TestSystemAlertsCacheLazyLoadUpdateAndDelete(t *testing.T) {
 	cpuAlert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "CPU",
 		"system": systemRecord.Id,
-		"user":   user.Id,
 		"value":  80,
 		"min":    1,
 	})
@@ -111,7 +106,6 @@ func TestSystemAlertsCacheRefreshReturnsLatestCopy(t *testing.T) {
 	alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":      "Status",
 		"system":    system.Id,
-		"user":      user.Id,
 		"min":       1,
 		"triggered": false,
 	})
@@ -146,7 +140,6 @@ func TestAlertManagerCacheLifecycle(t *testing.T) {
 	alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
 		"name":   "CPU",
 		"system": system.Id,
-		"user":   user.Id,
 		"value":  80,
 		"min":    1,
 	})

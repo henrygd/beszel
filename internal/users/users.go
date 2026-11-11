@@ -3,13 +3,11 @@ package users
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/henrygd/beszel/internal/migrations"
 
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -63,24 +61,11 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
 	// intialize settings with defaults (zero values can be ignored)
 	settings := struct {
-		ChartTime string   `json:"chartTime"`
-		Emails    []string `json:"emails"`
+		ChartTime string `json:"chartTime"`
 	}{
 		ChartTime: "1h",
 	}
 	record.UnmarshalJSONField("settings", &settings)
-	// get user email from auth record
-	var user struct {
-		Email string `db:"email"`
-	}
-	err := e.App.DB().NewQuery("SELECT email FROM users WHERE id = {:id}").Bind(dbx.Params{
-		"id": record.GetString("user"),
-	}).One(&user)
-	if err != nil {
-		log.Println("failed to get user email", "err", err)
-		return err
-	}
-	settings.Emails = []string{user.Email}
 	record.Set("settings", settings)
 	return e.Next()
 }
@@ -133,6 +118,19 @@ func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
 		user.Set("role", "admin")
 		user.Set("verified", true)
 		if err := txApp.Save(user); err != nil {
+			return err
+		}
+
+		// Send alerts to the first user by default.
+		collection, err = txApp.FindCollectionByNameOrId("notification_channels")
+		if err != nil {
+			return err
+		}
+		channel := core.NewRecord(collection)
+		channel.Set("name", data.Email)
+		channel.Set("emails", []string{data.Email})
+		channel.Set("default", true)
+		if err := txApp.Save(channel); err != nil {
 			return err
 		}
 

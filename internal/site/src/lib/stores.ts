@@ -67,7 +67,6 @@ export function toggleLogTimestamps() {
 /** User settings */
 export const $userSettings = map<UserSettings>({
 	chartTime: defaultChartTime,
-	emails: [pb.authStore.record?.email || ""],
 	unitNet: Unit.Bytes,
 	unitTemp: Unit.Celsius,
 })
