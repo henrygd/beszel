@@ -1596,6 +1596,114 @@ func TestTrustedHeaderWithoutProxyWarning(t *testing.T) {
 	}
 }
 
+func TestTrustedHeaderUnknownUserWarning(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	t.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	const warning = "No user matches the automatic login email"
+
+	testCases := []struct {
+		name            string
+		method          string
+		url             string
+		headerEmail     string
+		createUser      bool
+		expectedStatus  int
+		expectedContent []string
+		expectWarning   bool
+	}{
+		{
+			name:            "auth refresh with unknown email",
+			method:          http.MethodPost,
+			url:             "/api/collections/users/auth-refresh",
+			headerEmail:     "unknown@test.com",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+			expectWarning:   true,
+		},
+		{
+			name:            "auth refresh with known email",
+			method:          http.MethodPost,
+			url:             "/api/collections/users/auth-refresh",
+			headerEmail:     "user@test.com",
+			createUser:      true,
+			expectedStatus:  200,
+			expectedContent: []string{"\"token\":"},
+		},
+		{
+			name:            "auth refresh without header",
+			method:          http.MethodPost,
+			url:             "/api/collections/users/auth-refresh",
+			expectedStatus:  401,
+			expectedContent: []string{"requires valid"},
+		},
+		{
+			name:            "other request with unknown email",
+			method:          http.MethodGet,
+			url:             "/api/health",
+			headerEmail:     "unknown@test.com",
+			expectedStatus:  200,
+			expectedContent: []string{"API is healthy"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var logs bytes.Buffer
+			previous := slog.Default()
+			slog.SetDefault(slog.New(slog.NewTextHandler(&logs, &slog.HandlerOptions{Level: slog.LevelWarn})))
+			t.Cleanup(func() { slog.SetDefault(previous) })
+
+			headers := map[string]string{}
+			if tc.headerEmail != "" {
+				headers["X-Beszel-Trusted"] = tc.headerEmail
+			}
+
+			scenario := beszelTests.ApiScenario{
+				Name:            tc.method + " " + tc.url,
+				Method:          tc.method,
+				URL:             tc.url,
+				Headers:         headers,
+				ExpectedStatus:  tc.expectedStatus,
+				ExpectedContent: tc.expectedContent,
+				TestAppFactory:  testAppFactory,
+				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+					if tc.createUser {
+						// the users collection only authenticates verified users
+						user, err := beszelTests.CreateUser(app, tc.headerEmail, "password123")
+						require.NoError(t, err)
+						user.SetVerified(true)
+						require.NoError(t, app.Save(user))
+					}
+				},
+				AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+					if tc.expectWarning {
+						require.Contains(t, logs.String(), warning)
+						require.Contains(t, logs.String(), "email="+tc.headerEmail)
+					} else {
+						require.NotContains(t, logs.String(), warning)
+					}
+				},
+			}
+			scenario.Test(t)
+		})
+	}
+}
+
 func TestUpdateEndpoint(t *testing.T) {
 	t.Setenv("CHECK_UPDATES", "true")
 
