@@ -17,7 +17,7 @@ import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
 import { $alerts, $systems } from "@/lib/stores"
-import { cn, debounce } from "@/lib/utils"
+import { cn, debounceByKey } from "@/lib/utils"
 import type { AlertInfo, AlertRecord, AlertUnit, SystemRecord } from "@/types"
 
 const Slider = lazy(() => import("@/components/ui/slider"))
@@ -25,6 +25,9 @@ const Slider = lazy(() => import("@/components/ui/slider"))
 const endpoint = "/api/beszel/user-alerts"
 
 const alertDebounce = 400
+
+/** Class names for the SheetContent that wraps AlertDialogContent */
+export const alertsSheetClassName = "max-h-full overflow-auto w-160 !max-w-full p-4 sm:p-6"
 
 const alertKeys = Object.keys(alertInfo) as (keyof typeof alertInfo)[]
 
@@ -55,14 +58,16 @@ const failedUpdateToast = (error: unknown) => {
 	})
 }
 
-/** Create or update alerts for a given name and systems */
-const upsertAlerts = debounce(
+/** Create or update alerts for a given name and systems (debounced per alert name) */
+const upsertAlerts = debounceByKey(
 	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
 				body: { name, value, min, systems, overwrite: true },
+				// scope auto-cancellation per alert so a request for one alert doesn't abort another's
+				requestKey: `POST:${name}`,
 			})
 		} catch (error) {
 			failedUpdateToast(error)
@@ -71,12 +76,13 @@ const upsertAlerts = debounce(
 	alertDebounce
 )
 
-/** Delete alerts for a given name and systems */
-const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems: string[] }) => {
+/** Delete alerts for a given name and systems (debounced per alert name) */
+const deleteAlerts = debounceByKey(async ({ name, systems }: { name: string; systems: string[] }) => {
 	try {
 		await pb.send<{ success: boolean }>(endpoint, {
 			method: "DELETE",
 			body: { name, systems },
+			requestKey: `DELETE:${name}`,
 		})
 	} catch (error) {
 		failedUpdateToast(error)
@@ -299,7 +305,7 @@ export function AlertContent({
 	function sendUpsert(min: number, value: number, valueFactor = factor) {
 		const systems = getSystemIds()
 		systems.length &&
-			upsertAlerts({
+			upsertAlerts(alertKey, {
 				name: alertKey,
 				value: Number((value * valueFactor).toFixed(6)),
 				min,
@@ -333,7 +339,7 @@ export function AlertContent({
 							sendUpsert(min, value)
 						} else {
 							// if unchecked, delete alert (unless global and overwriteExisting is false)
-							deleteAlerts({ name: alertKey, systems: getSystemIds() })
+							deleteAlerts(alertKey, { name: alertKey, systems: getSystemIds() })
 							// when force deleting all alerts of a type, also remove them from initialAlertsState
 							if (overwriteExisting) {
 								for (const curAlerts of Object.values(initialAlertsState)) {

@@ -224,16 +224,27 @@ func checkApt(ctx context.Context) (packageUpdatesResult, error) {
 
 // newDnfCheck points dnf5's per-user state (log) and cache dirs into dataDir.
 // They default to $HOME/.local/state and $HOME/.cache, and the agent user's home
-// is usually /nonexistent. With -C, dnf5 still reads the system metadata cache.
+// is usually /nonexistent. As non-root, dnf5 reads metadata from its own cache
+// and copies the system cache there only when it has none, and with -C any copy
+// counts as usable however old it is. So the copy is removed before each check
+// to pick up the system metadata that dnf-makecache refreshes.
 func newDnfCheck(dataDir string) packageUpdatesCheck {
 	var env []string
+	var userCacheDir string
 	if dataDir != "" {
+		cacheHome := filepath.Join(dataDir, "cache")
 		env = []string{
 			"XDG_STATE_HOME=" + filepath.Join(dataDir, "state"),
-			"XDG_CACHE_HOME=" + filepath.Join(dataDir, "cache"),
+			"XDG_CACHE_HOME=" + cacheHome,
 		}
+		userCacheDir = filepath.Join(cacheHome, "libdnf5")
 	}
 	return func(ctx context.Context) (packageUpdatesResult, error) {
+		if userCacheDir != "" {
+			if err := os.RemoveAll(userCacheDir); err != nil {
+				slog.Debug("Package updates: remove dnf5 cache", "err", err)
+			}
+		}
 		return checkDnf(ctx, env)
 	}
 }
