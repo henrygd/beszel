@@ -436,6 +436,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 	am.SendAlert(AlertMessageData{
 		SystemID: alert.systemRecord.Id,
+		Channels: alert.alertData.Channels,
 		Title:    subject,
 		Message:  body,
 		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),

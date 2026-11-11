@@ -61,11 +61,6 @@ func systemdTestSetup(t *testing.T, triggered bool) (*beszelTests.TestHub, *core
 
 	hub, user := beszelTests.GetHubWithUser(t)
 
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
-
 	// "paused" avoids spawning a background updater goroutine that would outlive
 	// the test hub; these tests drive HandleSystemdAlerts directly.
 	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
@@ -344,18 +339,11 @@ func TestSystemdAlertNotifiesAllSubscribedUsers(t *testing.T) {
 	hub, user1 := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
+	setStatusAlertEmail(t, hub, "user1@example.com")
 
 	user2, err := beszelTests.CreateUser(hub, "user2@example.com", "password")
 	require.NoError(t, err)
-	_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
-		"user": user2.Id,
-		"settings": map[string]any{
-			"notificationsEnabled": true,
-			"emails":               []string{"user2@example.com"},
-			"webhooks":             []string{},
-		},
-	})
+	_, err = beszelTests.CreateChannel(hub, "second", "user2@example.com", true)
 	require.NoError(t, err)
 
 	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
@@ -376,5 +364,5 @@ func TestSystemdAlertNotifiesAllSubscribedUsers(t *testing.T) {
 	require.NoError(t, am.HandleSystemdAlerts(system))
 
 	messages := hub.TestMailer.Messages()
-	require.Len(t, messages, 2, "each subscribed user should receive the system's alert")
+	require.Len(t, messages, 2, "each default channel should receive the system's alert")
 }

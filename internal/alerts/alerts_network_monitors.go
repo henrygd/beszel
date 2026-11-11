@@ -255,6 +255,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 					title, message := networkMonitorAlertMessage(name, obs, label, system.GetString("name"), threshold)
 					messages = append(messages, AlertMessageData{
 						SystemID: systemID,
+						Channels: alert.GetStringSlice("channels"),
 						Title:    title, Message: message,
 						Link: am.hub.MakeLink("system", systemID), LinkText: "View " + system.GetString("name"),
 					})
@@ -274,7 +275,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 		return err
 	}
 	// Match other alert types: persist transitions before delivery, and respect
-	// the user's existing notification destinations and quiet hours.
+	// the alert's notification channels and their quiet hours.
 	for _, message := range messages {
 		if err := am.SendAlert(message); err != nil {
 			app.Logger().Error("Failed to send network monitor alert", "err", err)

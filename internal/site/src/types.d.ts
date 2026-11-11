@@ -327,7 +327,17 @@ export interface AlertRecord extends RecordModel {
 	triggered: boolean
 	value: number
 	min: number
-	// user: string
+	/** Notification channel ids; empty means the default channels */
+	channels?: string[]
+}
+
+export interface NotificationChannelRecord extends RecordModel {
+	id: string
+	name: string
+	emails: string[] | null
+	webhooks: string[] | null
+	/** Receives alerts that have no channels selected, and automatic alerts */
+	default: boolean
 }
 
 export interface AlertsHistoryRecord extends RecordModel {
@@ -342,13 +352,17 @@ export interface AlertsHistoryRecord extends RecordModel {
 
 export interface QuietHoursRecord extends RecordModel {
 	id: string
-	user: string
+	/** Empty applies to all channels */
+	channel: string
 	system: string
 	type: "one-time" | "daily"
 	start: string
 	end: string
 	expand?: {
 		system?: {
+			name: string
+		}
+		channel?: {
 			name: string
 		}
 	}
@@ -386,10 +400,6 @@ export interface ChartTimeData {
 export interface UserSettings {
 	/** may be missing in settings stored by older versions -- use getUserChartTime() */
 	chartTime?: ChartTimes
-	notificationsEnabled?: boolean
-	systems?: string[]
-	emails?: string[]
-	webhooks?: string[]
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit

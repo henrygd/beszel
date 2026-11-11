@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/mail"
 	"net/url"
-	"slices"
 	"sync"
 	"time"
 
@@ -22,28 +21,21 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub               hubLike
-	stopOnce          sync.Once
-	pendingAlerts     sync.Map
-	alertsCache       *AlertsCache
-	networkMonitors   *networkMonitorCache
-	userSettingsMu    sync.RWMutex
-	userSettingsCache []*core.Record // nil means stale; populated lazily
+	hub             hubLike
+	stopOnce        sync.Once
+	pendingAlerts   sync.Map
+	alertsCache     *AlertsCache
+	networkMonitors *networkMonitorCache
 }
 
 type AlertMessageData struct {
 	SystemID string
+	// Channels to deliver to; empty means the default channels.
+	Channels []string
 	Title    string
 	Message  string
 	Link     string
 	LinkText string
-}
-
-type UserNotificationSettings struct {
-	Enabled  bool     `json:"notificationsEnabled"`
-	Systems  []string `json:"systems"` // empty = all systems; non-empty = only these systems
-	Emails   []string `json:"emails"`
-	Webhooks []string `json:"webhooks"`
 }
 
 type SystemAlertFsStats struct {
@@ -131,17 +123,6 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("zfs_pools").BindFunc(am.handleZfsPoolAlert)
 	am.hub.OnRecordAfterDeleteSuccess("zfs_pools").BindFunc(resolveZfsPoolHistoryOnDelete)
 
-	// Invalidate the user_settings cache whenever settings change
-	invalidateUserSettings := func(e *core.RecordEvent) error {
-		am.userSettingsMu.Lock()
-		am.userSettingsCache = nil
-		am.userSettingsMu.Unlock()
-		return e.Next()
-	}
-	am.hub.OnRecordAfterCreateSuccess("user_settings").BindFunc(invalidateUserSettings)
-	am.hub.OnRecordAfterUpdateSuccess("user_settings").BindFunc(invalidateUserSettings)
-	am.hub.OnRecordAfterDeleteSuccess("user_settings").BindFunc(invalidateUserSettings)
-
 	am.hub.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// Populate all alerts into cache on startup
 		_ = am.alertsCache.PopulateFromDB(true)
@@ -159,27 +140,14 @@ func (am *AlertManager) bindEvents() {
 	})
 }
 
-// IsNotificationSilenced checks if a notification should be silenced based on configured quiet hours
-func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
-	// Query for quiet hours windows that match this user and system
-	// Include both global windows (system is null/empty) and system-specific windows
-	var filter string
-	var params dbx.Params
-
-	if systemID == "" {
-		// If no systemID provided, only check global windows
-		filter = "user={:user} AND system=''"
-		params = dbx.Params{"user": userID}
-	} else {
-		// Check both global and system-specific windows
-		filter = "user={:user} AND (system='' OR system={:system})"
-		params = dbx.Params{
-			"user":   userID,
-			"system": systemID,
-		}
-	}
-
-	quietHourWindows, err := am.hub.FindAllRecords("quiet_hours", dbx.NewExp(filter, params))
+// IsNotificationSilenced checks if a channel's notifications should be silenced
+// by quiet hours. Windows without a channel apply to all channels, and windows
+// without a system apply to all systems.
+func (am *AlertManager) IsNotificationSilenced(channelID, systemID string) bool {
+	quietHourWindows, err := am.hub.FindAllRecords("quiet_hours", dbx.NewExp(
+		"(channel='' OR channel={:channel}) AND (system='' OR system={:system})",
+		dbx.Params{"channel": channelID, "system": systemID},
+	))
 	if err != nil || len(quietHourWindows) == 0 {
 		return false
 	}
@@ -226,106 +194,62 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 	return false
 }
 
-// getUserSettings returns all user_settings records, using a cache that is
-// invalidated whenever a user_settings record is created, updated, or deleted.
-func (am *AlertManager) getUserSettings() ([]*core.Record, error) {
-	am.userSettingsMu.RLock()
-	cached := am.userSettingsCache
-	am.userSettingsMu.RUnlock()
-	if cached != nil {
-		return cached, nil
-	}
-	records, err := am.hub.FindAllRecords("user_settings")
-	if err != nil {
-		return nil, err
-	}
-	am.userSettingsMu.Lock()
-	am.userSettingsCache = records
-	am.userSettingsMu.Unlock()
-	return records, nil
-}
-
-// SendAlert sends an alert to all users via their configured notification channels.
-// Each user's quiet hours are respected individually.
+// SendAlert delivers an alert to its notification channels, or to the default
+// channels if none are selected. Each channel's quiet hours are respected.
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
-	records, err := am.getUserSettings()
+	var channels []*core.Record
+	var err error
+	if len(data.Channels) > 0 {
+		channels, err = am.hub.FindRecordsByIds("notification_channels", data.Channels)
+	} else {
+		channels, err = am.hub.FindAllRecords("notification_channels", dbx.HashExp{"default": true})
+	}
 	if err != nil {
 		return err
 	}
-	for _, record := range records {
-		userAlertSettings := UserNotificationSettings{
-			Emails:   []string{},
-			Webhooks: []string{},
-		}
-		if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
-			am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
+	for _, channel := range channels {
+		if am.IsNotificationSilenced(channel.Id, data.SystemID) {
+			am.hub.Logger().Info("Notification silenced", "channel", channel.GetString("name"), "system", data.SystemID, "title", data.Title)
 			continue
 		}
-		if !userAlertSettings.Enabled {
+		// Channels are managed by admins, so webhooks may reach internal services.
+		for _, webhook := range channel.GetStringSlice("webhooks") {
+			if err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText); err != nil {
+				am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err, "channel", channel.GetString("name"))
+			}
+		}
+		emails := channel.GetStringSlice("emails")
+		if len(emails) == 0 {
 			continue
 		}
-		if len(userAlertSettings.Systems) > 0 && !slices.Contains(userAlertSettings.Systems, data.SystemID) {
-			continue
+		addresses := make([]mail.Address, 0, len(emails))
+		for _, address := range emails {
+			addresses = append(addresses, mail.Address{Address: address})
 		}
-		userID := record.GetString("user")
-		// Stored settings may outlive system access.
-		if data.SystemID != "" && !userHasSystem(am.hub, userID, data.SystemID) {
-			continue
+		message := mailer.Message{
+			To:      addresses,
+			Subject: data.Title,
+			Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
+			From: mail.Address{
+				Address: am.hub.Settings().Meta.SenderAddress,
+				Name:    am.hub.Settings().Meta.SenderName,
+			},
 		}
-		if am.IsNotificationSilenced(userID, data.SystemID) {
-			am.hub.Logger().Info("Notification silenced", "user", userID, "system", data.SystemID, "title", data.Title)
-			continue
+		if html, err := email.RenderAlert(email.Alert{
+			Title:        data.Title,
+			Message:      data.Message,
+			Link:         data.Link,
+			LinkText:     data.LinkText,
+			SettingsLink: am.hub.MakeLink("settings", "notifications"),
+		}); err != nil {
+			am.hub.Logger().Error("Failed to render email alert HTML", "err", err)
+		} else {
+			message.HTML = html
 		}
-		// send alerts via webhooks
-		send := sendPublicNotification
-		if len(userAlertSettings.Webhooks) > 0 {
-			// Read the owner's current role at delivery time, including for URLs
-			// saved before an admin was demoted. Never fall back on lookup failure.
-			owner, err := am.hub.FindRecordById("users", userID)
-			if err != nil {
-				am.hub.Logger().Error("Failed to load notification owner", "err", err, "user", userID)
-				continue
-			}
-			if owner.GetString("role") == "admin" {
-				send = shoutrrr.Send
-			}
-		}
-		for _, webhook := range userAlertSettings.Webhooks {
-			if err := am.sendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText, send); err != nil {
-				am.hub.Logger().Error("Failed to send shoutrrr alert", "err", err)
-			}
-		}
-		// send alerts via email
-		if len(userAlertSettings.Emails) > 0 {
-			addresses := make([]mail.Address, 0, len(userAlertSettings.Emails))
-			for _, address := range userAlertSettings.Emails {
-				addresses = append(addresses, mail.Address{Address: address})
-			}
-			message := mailer.Message{
-				To:      addresses,
-				Subject: data.Title,
-				Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
-				From: mail.Address{
-					Address: am.hub.Settings().Meta.SenderAddress,
-					Name:    am.hub.Settings().Meta.SenderName,
-				},
-			}
-			if html, err := email.RenderAlert(email.Alert{
-				Title:        data.Title,
-				Message:      data.Message,
-				Link:         data.Link,
-				LinkText:     data.LinkText,
-				SettingsLink: am.hub.MakeLink("settings", "notifications"),
-			}); err != nil {
-				am.hub.Logger().Error("Failed to render email alert HTML", "err", err)
-			} else {
-				message.HTML = html
-			}
-			if err := am.hub.NewMailClient().Send(&message); err != nil {
-				am.hub.Logger().Error("Failed to send email alert", "err", err, "to", message.To)
-			} else {
-				am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
-			}
+		if err := am.hub.NewMailClient().Send(&message); err != nil {
+			am.hub.Logger().Error("Failed to send email alert", "err", err, "to", message.To)
+		} else {
+			am.hub.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
 		}
 	}
 	return nil

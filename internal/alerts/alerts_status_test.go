@@ -15,18 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setStatusAlertEmail(t *testing.T, hub core.App, userID, email string) {
+func setStatusAlertEmail(t *testing.T, hub core.App, email string) {
 	t.Helper()
-
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": userID})
+	channel, err := hub.FindFirstRecordByData("notification_channels", "name", "test")
 	require.NoError(t, err)
-
-	userSettings.Set("settings", map[string]any{
-		"notificationsEnabled": true,
-		"emails":               []string{email},
-		"webhooks":             []string{},
-	})
-	require.NoError(t, hub.Save(userSettings))
+	channel.Set("emails", []string{email})
+	require.NoError(t, hub.Save(channel))
 }
 
 func TestStatusAlerts(t *testing.T) {
@@ -119,9 +113,6 @@ func TestStatusAlertRecoveryBeforeDeadline(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Ensure user settings have an email
-	userSettings, _ := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	hub.Save(userSettings)
 
 	// Initial email count
 	initialEmailCount := hub.TestMailer.TotalSend()
@@ -164,9 +155,6 @@ func TestStatusAlertNormalRecovery(t *testing.T) {
 	defer hub.Cleanup()
 
 	// Ensure user settings have an email
-	userSettings, _ := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	hub.Save(userSettings)
 
 	systemCollection, _ := hub.FindCollectionByNameOrId("systems")
 	system := core.NewRecord(systemCollection)
@@ -197,11 +185,6 @@ func TestStatusAlertNormalRecovery(t *testing.T) {
 func TestHandleStatusAlertsDoesNotSendRecoveryWhileDownIsOnlyPending(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
-
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
 
 	systemCollection, err := hub.FindCollectionByNameOrId("systems")
 	require.NoError(t, err)
@@ -246,11 +229,6 @@ func TestStatusAlertTimerCancellationPreventsBoundaryDelivery(t *testing.T) {
 			hub.GetAlertManager().Stop()
 		})
 		hub.GetSystemManager().ResetContextForTesting(t)
-
-		userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-		require.NoError(t, err)
-		userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-		require.NoError(t, hub.Save(userSettings))
 
 		systemCollection, err := hub.FindCollectionByNameOrId("systems")
 		require.NoError(t, err)
@@ -297,11 +275,6 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
-
 	systemCollection, err := hub.FindCollectionByNameOrId("systems")
 	require.NoError(t, err)
 	system := core.NewRecord(systemCollection)
@@ -342,8 +315,8 @@ func TestStatusAlertDownFiresAfterDelayExpires(t *testing.T) {
 	assert.True(t, alertRecord.GetBool("triggered"), "alert should be marked triggered after downtime matures")
 }
 
-// TestStatusAlertNotifiesAllUsers verifies that a single system-level alert notifies
-// all users who have notification settings configured.
+// TestStatusAlertNotifiesAllUsers verifies that an alert without selected
+// channels notifies every default channel.
 func TestStatusAlertNotifiesAllUsers(t *testing.T) {
 	hub, user1 := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
@@ -355,18 +328,11 @@ func TestStatusAlertNotifiesAllUsers(t *testing.T) {
 		})
 		hub.GetSystemManager().ResetContextForTesting(t)
 
-		setStatusAlertEmail(t, hub, user1.Id, "user1@example.com")
+		setStatusAlertEmail(t, hub, "user1@example.com")
 
 		user2, err := beszelTests.CreateUser(hub, "user2@example.com", "password")
 		require.NoError(t, err)
-		_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
-			"user": user2.Id,
-			"settings": map[string]any{
-				"notificationsEnabled": true,
-				"emails":               []string{"user2@example.com"},
-				"webhooks":             []string{},
-			},
-		})
+		_, err = beszelTests.CreateChannel(hub, "second", "user2@example.com", true)
 		require.NoError(t, err)
 
 		system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
@@ -436,11 +402,6 @@ func TestStatusAlertDuplicateDownCallIsIdempotent(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
-
 	systemCollection, err := hub.FindCollectionByNameOrId("systems")
 	require.NoError(t, err)
 	system := core.NewRecord(systemCollection)
@@ -495,11 +456,6 @@ func TestStatusAlertNoAlertRecord(t *testing.T) {
 func TestRestorePendingStatusAlertsRequeuesDownSystemsAfterRestart(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
-
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
 
 	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "down")
 	require.NoError(t, err)
@@ -816,9 +772,6 @@ func TestStatusAlertClearedBeforeSend(t *testing.T) {
 		system := systems[0]
 
 		// Ensure user settings have an email
-		userSettings, _ := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-		userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-		hub.Save(userSettings)
 
 		// Initial email count
 		initialEmailCount := hub.TestMailer.TotalSend()
@@ -868,11 +821,6 @@ func TestStatusAlertClearedBeforeSend(t *testing.T) {
 func TestCancelPendingStatusAlertsClearsAllAlertsForSystem(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
-
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`)
-	require.NoError(t, hub.Save(userSettings))
 
 	systemCollection, err := hub.FindCollectionByNameOrId("systems")
 	require.NoError(t, err)

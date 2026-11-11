@@ -11,12 +11,15 @@ import (
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAlertSilencedOneTime(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	// Create a system
 	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
@@ -38,11 +41,11 @@ func TestAlertSilencedOneTime(t *testing.T) {
 	endTime := now.Add(1 * time.Hour)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system.Id,
-		"type":   "one-time",
-		"start":  startTime,
-		"end":    endTime,
+		"channel": channel.Id,
+		"system":  system.Id,
+		"type":    "one-time",
+		"start":   startTime,
+		"end":     endTime,
 	})
 	assert.NoError(t, err)
 
@@ -51,7 +54,7 @@ func TestAlertSilencedOneTime(t *testing.T) {
 	defer am.Stop()
 
 	// Test that alert is silenced
-	silenced := am.IsNotificationSilenced(user.Id, system.Id)
+	silenced := am.IsNotificationSilenced(channel.Id, system.Id)
 	assert.True(t, silenced, "Alert should be silenced during active one-time window")
 
 	// Create a window that has already ended
@@ -59,16 +62,16 @@ func TestAlertSilencedOneTime(t *testing.T) {
 	pastEnd := now.Add(-2 * time.Hour)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system.Id,
-		"type":   "one-time",
-		"start":  pastStart,
-		"end":    pastEnd,
+		"channel": channel.Id,
+		"system":  system.Id,
+		"type":    "one-time",
+		"start":   pastStart,
+		"end":     pastEnd,
 	})
 	assert.NoError(t, err)
 
 	// Should still be silenced because of the first window
-	silenced = am.IsNotificationSilenced(user.Id, system.Id)
+	silenced = am.IsNotificationSilenced(channel.Id, system.Id)
 	assert.True(t, silenced, "Alert should still be silenced (past window doesn't affect active window)")
 
 	// Clear all windows and create a future window
@@ -79,16 +82,16 @@ func TestAlertSilencedOneTime(t *testing.T) {
 	futureEnd := now.Add(3 * time.Hour)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system.Id,
-		"type":   "one-time",
-		"start":  futureStart,
-		"end":    futureEnd,
+		"channel": channel.Id,
+		"system":  system.Id,
+		"type":    "one-time",
+		"start":   futureStart,
+		"end":     futureEnd,
 	})
 	assert.NoError(t, err)
 
 	// Alert should NOT be silenced (window hasn't started yet)
-	silenced = am.IsNotificationSilenced(user.Id, system.Id)
+	silenced = am.IsNotificationSilenced(channel.Id, system.Id)
 	assert.False(t, silenced, "Alert should not be silenced (window hasn't started)")
 
 	_ = alert
@@ -97,6 +100,7 @@ func TestAlertSilencedOneTime(t *testing.T) {
 func TestAlertSilencedDaily(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	// Create a system
 	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
@@ -121,16 +125,16 @@ func TestAlertSilencedDaily(t *testing.T) {
 	endTime := time.Date(2000, 1, 1, endHour, currentMin, 0, 0, time.UTC)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system.Id,
-		"type":   "daily",
-		"start":  startTime,
-		"end":    endTime,
+		"channel": channel.Id,
+		"system":  system.Id,
+		"type":    "daily",
+		"start":   startTime,
+		"end":     endTime,
 	})
 	assert.NoError(t, err)
 
 	// Alert should be silenced (current time is within the daily window)
-	silenced := am.IsNotificationSilenced(user.Id, system.Id)
+	silenced := am.IsNotificationSilenced(channel.Id, system.Id)
 	assert.True(t, silenced, "Alert should be silenced during active daily window")
 
 	// Clear windows and create one that doesn't include current time
@@ -145,22 +149,23 @@ func TestAlertSilencedDaily(t *testing.T) {
 	endTime = time.Date(2000, 1, 1, futureEndHour, 0, 0, 0, time.UTC)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system.Id,
-		"type":   "daily",
-		"start":  startTime,
-		"end":    endTime,
+		"channel": channel.Id,
+		"system":  system.Id,
+		"type":    "daily",
+		"start":   startTime,
+		"end":     endTime,
 	})
 	assert.NoError(t, err)
 
 	// Alert should NOT be silenced
-	silenced = am.IsNotificationSilenced(user.Id, system.Id)
+	silenced = am.IsNotificationSilenced(channel.Id, system.Id)
 	assert.False(t, silenced, "Alert should not be silenced (outside daily window)")
 }
 
 func TestAlertSilencedDailyMidnightCrossing(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	// Create a system
 	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
@@ -176,11 +181,11 @@ func TestAlertSilencedDailyMidnightCrossing(t *testing.T) {
 	endTime := time.Date(2000, 1, 1, 2, 0, 0, 0, time.UTC)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system.Id,
-		"type":   "daily",
-		"start":  startTime,
-		"end":    endTime,
+		"channel": channel.Id,
+		"system":  system.Id,
+		"type":    "daily",
+		"start":   startTime,
+		"end":     endTime,
 	})
 	assert.NoError(t, err)
 
@@ -188,8 +193,8 @@ func TestAlertSilencedDailyMidnightCrossing(t *testing.T) {
 	// We can't control the actual current time, but we can verify the logic
 	// by checking if the window was created correctly
 	windows, err := hub.FindAllRecords("quiet_hours", dbx.HashExp{
-		"user":   user.Id,
-		"system": system.Id,
+		"channel": channel.Id,
+		"system":  system.Id,
 	})
 	assert.NoError(t, err)
 	assert.Len(t, windows, 1, "Should have created 1 window")
@@ -203,6 +208,7 @@ func TestAlertSilencedDailyMidnightCrossing(t *testing.T) {
 func TestAlertSilencedGlobal(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	// Create multiple systems
 	systems, err := beszelTests.CreateSystems(hub, 3, user.Id, "up")
@@ -218,28 +224,29 @@ func TestAlertSilencedGlobal(t *testing.T) {
 	endTime := now.Add(1 * time.Hour)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":  user.Id,
-		"type":  "one-time",
-		"start": startTime,
-		"end":   endTime,
+		"channel": channel.Id,
+		"type":    "one-time",
+		"start":   startTime,
+		"end":     endTime,
 		// system field is empty/null for global windows
 	})
 	assert.NoError(t, err)
 
 	// All systems should be silenced
 	for _, system := range systems {
-		silenced := am.IsNotificationSilenced(user.Id, system.Id)
+		silenced := am.IsNotificationSilenced(channel.Id, system.Id)
 		assert.True(t, silenced, "Alert should be silenced for system %s (global window)", system.Id)
 	}
 
 	// Even with a systemID that doesn't exist, should be silenced
-	silenced := am.IsNotificationSilenced(user.Id, "nonexistent-system")
+	silenced := am.IsNotificationSilenced(channel.Id, "nonexistent-system")
 	assert.True(t, silenced, "Alert should be silenced for any system (global window)")
 }
 
 func TestAlertSilencedSystemSpecific(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	// Create multiple systems
 	systems, err := beszelTests.CreateSystems(hub, 2, user.Id, "up")
@@ -257,72 +264,66 @@ func TestAlertSilencedSystemSpecific(t *testing.T) {
 	endTime := now.Add(1 * time.Hour)
 
 	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user.Id,
-		"system": system1.Id,
-		"type":   "one-time",
-		"start":  startTime,
-		"end":    endTime,
+		"channel": channel.Id,
+		"system":  system1.Id,
+		"type":    "one-time",
+		"start":   startTime,
+		"end":     endTime,
 	})
 	assert.NoError(t, err)
 
 	// System1 should be silenced
-	silenced := am.IsNotificationSilenced(user.Id, system1.Id)
+	silenced := am.IsNotificationSilenced(channel.Id, system1.Id)
 	assert.True(t, silenced, "Alert should be silenced for system1")
 
 	// System2 should NOT be silenced
-	silenced = am.IsNotificationSilenced(user.Id, system2.Id)
+	silenced = am.IsNotificationSilenced(channel.Id, system2.Id)
 	assert.False(t, silenced, "Alert should not be silenced for system2")
 }
 
-func TestAlertSilencedMultiUser(t *testing.T) {
-	hub, _ := beszelTests.GetHubWithUser(t)
+func TestAlertSilencedPerChannel(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
-
-	// Create two users
-	user1, err := beszelTests.CreateUser(hub, "user1@example.com", "password")
+	channel1 := defaultChannel(t, hub)
+	channel2, err := beszelTests.CreateChannel(hub, "second", "second@example.com", true)
 	assert.NoError(t, err)
 
-	user2, err := beszelTests.CreateUser(hub, "user2@example.com", "password")
+	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
 	assert.NoError(t, err)
+	system := systems[0]
 
-	// Create a system accessible to both users
-	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
-		"name":  "shared-system",
-		"users": []string{user1.Id, user2.Id},
-		"host":  "127.0.0.1",
-	})
-	assert.NoError(t, err)
-
-	// Get alert manager
 	am := alerts.NewAlertManager(hub)
 	defer am.Stop()
 
-	// Create a quiet hours window for user1 only
 	now := time.Now().UTC()
-	startTime := now.Add(-1 * time.Hour)
-	endTime := now.Add(1 * time.Hour)
-
-	_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-		"user":   user1.Id,
+	window := map[string]any{
 		"system": system.Id,
 		"type":   "one-time",
-		"start":  startTime,
-		"end":    endTime,
-	})
+		"start":  now.Add(-1 * time.Hour),
+		"end":    now.Add(1 * time.Hour),
+	}
+
+	// A window on one channel does not silence the other
+	window["channel"] = channel1.Id
+	_, err = beszelTests.CreateRecord(hub, "quiet_hours", window)
 	assert.NoError(t, err)
+	assert.True(t, am.IsNotificationSilenced(channel1.Id, system.Id), "channel1 should be silenced")
+	assert.False(t, am.IsNotificationSilenced(channel2.Id, system.Id), "channel2 should not be silenced")
 
-	// User1 should be silenced
-	silenced := am.IsNotificationSilenced(user1.Id, system.Id)
-	assert.True(t, silenced, "Alert should be silenced for user1")
-
-	// User2 should NOT be silenced
-	silenced = am.IsNotificationSilenced(user2.Id, system.Id)
-	assert.False(t, silenced, "Alert should not be silenced for user2")
+	// A window without a channel silences all channels
+	_, err = hub.DB().NewQuery("DELETE FROM quiet_hours").Execute()
+	assert.NoError(t, err)
+	window["channel"] = ""
+	_, err = beszelTests.CreateRecord(hub, "quiet_hours", window)
+	assert.NoError(t, err)
+	assert.True(t, am.IsNotificationSilenced(channel1.Id, system.Id), "channel1 should be silenced by all-channel window")
+	assert.True(t, am.IsNotificationSilenced(channel2.Id, system.Id), "channel2 should be silenced by all-channel window")
 }
 
 func TestAlertSilencedWithActualAlert(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	synctest.Test(t, func(t *testing.T) {
 		t.Cleanup(func() {
@@ -344,30 +345,17 @@ func TestAlertSilencedWithActualAlert(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		// Create user settings with email
-		userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", dbx.Params{"user": user.Id})
-		if err != nil || userSettings == nil {
-			userSettings, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
-				"user": user.Id,
-				"settings": map[string]any{
-					"notificationsEnabled": true,
-					"emails":               []string{"test@example.com"},
-				},
-			})
-			assert.NoError(t, err)
-		}
-
 		// Create a quiet hours window
 		now := time.Now().UTC()
 		startTime := now.Add(-1 * time.Hour)
 		endTime := now.Add(1 * time.Hour)
 
 		_, err = beszelTests.CreateRecord(hub, "quiet_hours", map[string]any{
-			"user":   user.Id,
-			"system": system.Id,
-			"type":   "one-time",
-			"start":  startTime,
-			"end":    endTime,
+			"channel": channel.Id,
+			"system":  system.Id,
+			"type":    "one-time",
+			"start":   startTime,
+			"end":     endTime,
 		})
 		assert.NoError(t, err)
 
@@ -414,6 +402,7 @@ func TestAlertSilencedWithActualAlert(t *testing.T) {
 func TestAlertSilencedNoWindows(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
+	channel := defaultChannel(t, hub)
 
 	// Create a system
 	systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
@@ -425,6 +414,13 @@ func TestAlertSilencedNoWindows(t *testing.T) {
 	defer am.Stop()
 
 	// Without any quiet hours windows, alert should NOT be silenced
-	silenced := am.IsNotificationSilenced(user.Id, system.Id)
+	silenced := am.IsNotificationSilenced(channel.Id, system.Id)
 	assert.False(t, silenced, "Alert should not be silenced when no windows exist")
+}
+
+func defaultChannel(t *testing.T, hub core.App) *core.Record {
+	t.Helper()
+	channel, err := hub.FindFirstRecordByData("notification_channels", "name", "test")
+	require.NoError(t, err)
+	return channel
 }

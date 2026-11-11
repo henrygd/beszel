@@ -148,7 +148,7 @@ func CreateSystems(app core.App, count int, userId string, status string) ([]*co
 	return systems, nil
 }
 
-// GetHubWithUser creates a test hub with a test user and user settings
+// GetHubWithUser creates a test hub with a test user and a default notification channel
 func GetHubWithUser(t *testing.T) (*TestHub, *core.Record) {
 	hub, err := NewTestHub(t.TempDir())
 	assert.NoError(t, err)
@@ -162,13 +162,18 @@ func GetHubWithUser(t *testing.T) (*TestHub, *core.Record) {
 	user, err := CreateUser(hub, "test@example.com", "password")
 	assert.NoError(t, err)
 
-	// Create user settings for the test user (required for alert notifications)
-	userSettingsData := map[string]any{
-		"user":     user.Id,
-		"settings": `{"notificationsEnabled":true,"emails":["test@example.com"],"webhooks":[]}`,
-	}
-	_, err = CreateRecord(hub, "user_settings", userSettingsData)
+	// Create a default notification channel so alerts are delivered
+	_, err = CreateChannel(hub, "test", "test@example.com", true)
 	assert.NoError(t, err)
 
 	return hub, user
+}
+
+// CreateChannel creates a notification channel that emails the given address
+func CreateChannel(app core.App, name, email string, isDefault bool) (*core.Record, error) {
+	return CreateRecord(app, "notification_channels", map[string]any{
+		"name":    name,
+		"emails":  []string{email},
+		"default": isDefault,
+	})
 }

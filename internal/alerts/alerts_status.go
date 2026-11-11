@@ -161,6 +161,7 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 
 	return am.SendAlert(AlertMessageData{
 		SystemID: systemID,
+		Channels: alertData.Channels,
 		Title:    title,
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),

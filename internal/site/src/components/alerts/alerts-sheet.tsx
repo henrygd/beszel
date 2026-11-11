@@ -4,6 +4,7 @@ import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { ChevronDownIcon, GlobeIcon, ServerIcon } from "lucide-react"
 import { lazy, memo, Suspense, useMemo, useState } from "react"
+import { ChannelMultiSelect } from "@/components/multi-select"
 import { $router, Link } from "@/components/router"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -16,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { isAdmin, pb } from "@/lib/api"
+import { $notificationChannels } from "@/lib/notification-channels"
 import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounceByKey } from "@/lib/utils"
 import type { AlertInfo, AlertRecord, AlertUnit, SystemRecord } from "@/types"
@@ -60,12 +62,24 @@ const failedUpdateToast = (error: unknown) => {
 
 /** Create or update alerts for a given name and systems (debounced per alert name) */
 const upsertAlerts = debounceByKey(
-	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
+	async ({
+		name,
+		value,
+		min,
+		systems,
+		channels,
+	}: {
+		name: string
+		value: number
+		min: number
+		systems: string[]
+		channels: string[]
+	}) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
-				body: { name, value, min, systems, overwrite: true },
+				body: { name, value, min, systems, channels, overwrite: true },
 				// scope auto-cancellation per alert so a request for one alert doesn't abort another's
 				requestKey: `POST:${name}`,
 			})
@@ -115,10 +129,10 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 			// Alert names present on target but absent from source should be deleted
 			const namesToDelete = Array.from(currentTargetAlerts.keys()).filter((name) => !sourceAlerts.has(name))
 			await Promise.all([
-				...Array.from(sourceAlerts.values()).map(({ name, value, min }) =>
+				...Array.from(sourceAlerts.values()).map(({ name, value, min, channels = [] }) =>
 					pb.send<{ success: boolean }>(endpoint, {
 						method: "POST",
-						body: { name, value, min, systems: [system.id], overwrite: true },
+						body: { name, value, min, channels, systems: [system.id], overwrite: true },
 						requestKey: name,
 					})
 				),
@@ -156,15 +170,17 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				<DialogTitle className="text-xl">
 					<Trans>Alerts</Trans>
 				</DialogTitle>
-				<DialogDescription>
-					<Trans>
-						See{" "}
-						<Link href={getPagePath($router, "settings", { name: "notifications" })} className="link">
-							notification settings
-						</Link>{" "}
-						to configure how you receive alerts.
-					</Trans>
-				</DialogDescription>
+				{canEdit && (
+					<DialogDescription>
+						<Trans>
+							Alerts without selected channels go to the default channels. Manage channels in{" "}
+							<Link href={getPagePath($router, "settings", { name: "notifications" })} className="link">
+								notification settings
+							</Link>
+							.
+						</Trans>
+					</DialogDescription>
+				)}
 			</DialogHeader>
 			<Tabs defaultValue="system" onValueChange={setCurrentTab}>
 				<div className="flex items-center justify-between mb-1 -mt-0.5">
@@ -276,6 +292,8 @@ export function AlertContent({
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || (noDuration ? 0 : 10))
+	const [channels, setChannels] = useState<string[]>(global ? [] : (alert?.channels ?? []))
+	const hasChannels = useStore($notificationChannels).length > 0
 	const { units } = alertData
 	const storedValue = alert?.value ?? (noThreshold ? 0 : (alertData.start ?? 80))
 	const [unitIndex, setUnitIndex] = useState(() => (units ? getUnitIndex(units, storedValue) : 0))
@@ -308,7 +326,7 @@ export function AlertContent({
 		return systemIds
 	}
 
-	function sendUpsert(min: number, value: number, valueFactor = factor) {
+	function sendUpsert(min: number, value: number, valueFactor = factor, alertChannels = channels) {
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts(alertKey, {
@@ -316,15 +334,18 @@ export function AlertContent({
 				value: Number((value * valueFactor).toFixed(6)),
 				min,
 				systems,
+				channels: alertChannels,
 			})
 	}
+
+	const showChannels = checked && canEdit && hasChannels
 
 	return (
 		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
 			<label
 				htmlFor={`s${name}`}
 				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
-					"pb-0": checked && hasControls,
+					"pb-0": checked && (hasControls || showChannels),
 				})}
 			>
 				<div className="grid gap-1 select-none">
@@ -496,6 +517,20 @@ export function AlertContent({
 						)}
 					</Suspense>
           {checked && alertData.note && <span className="block col-span-full text-sm text-muted-foreground -mt-3">{alertData.note()}</span>}
+				</div>
+			)}
+			{showChannels && (
+				<div className={cn("px-4 pb-4", !hasControls && "pt-3")}>
+					<ChannelMultiSelect
+						id={`c${name}`}
+						selectedChannelIds={new Set(channels)}
+						onChange={(ids) => {
+							const next = Array.from(ids)
+							setChannels(next)
+							sendUpsert(min, value, factor, next)
+						}}
+						className="h-8 text-sm"
+					/>
 				</div>
 			)}
 		</div>

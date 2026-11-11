@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useRef, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { ChevronDownIcon, type LucideIcon, SearchIcon, ServerIcon } from "lucide-react"
+import { BellIcon, ChevronDownIcon, type LucideIcon, SearchIcon, ServerIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -11,6 +11,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { $notificationChannels } from "@/lib/notification-channels"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
 
@@ -52,6 +53,37 @@ export function SystemMultiSelect({
 			placeholder={placeholder ?? t`Select systems`}
 			searchPlaceholder={t`Search systems`}
 			emptyText={<Trans>No systems found.</Trans>}
+		/>
+	)
+}
+
+export function ChannelMultiSelect({
+	id,
+	selectedChannelIds,
+	onChange,
+	disabled,
+	className,
+}: {
+	id: string
+	selectedChannelIds: Set<string>
+	onChange: (ids: Set<string>) => void
+	disabled?: boolean
+	className?: string
+}) {
+	const channels = useStore($notificationChannels)
+	const { t } = useLingui()
+	return (
+		<MultiSelect
+			id={id}
+			options={channels.map((channel) => ({ id: channel.id, label: channel.name }))}
+			selectedIds={selectedChannelIds}
+			onChange={onChange}
+			disabled={disabled}
+			className={className}
+			icon={BellIcon}
+			placeholder={t`Default channels`}
+			searchPlaceholder={t`Search channels`}
+			emptyText={<Trans>No channels found.</Trans>}
 		/>
 	)
 }
