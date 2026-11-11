@@ -27,6 +27,20 @@ type LongerRecordData struct {
 	minShorterRecords   int
 }
 
+// shorterRecordCutoff returns the time after which shorter records are included in a longer record.
+//
+// 1m records are samples created independently of this job, so the window is the full longer period.
+// Other types are created by this job, a few ms after it starts. The record created one full period
+// ago covers the previous period but lands right on the window boundary, so move the cutoff halfway
+// to the first record that belongs in the window to exclude it regardless of timing variation.
+func (d *LongerRecordData) shorterRecordCutoff(now time.Time) time.Time {
+	cutoff := now.Add(d.longerTimeDuration)
+	if d.shorterType != "1m" {
+		cutoff = cutoff.Add(d.shorterTimeDuration / 2)
+	}
+	return cutoff
+}
+
 type RecordIds []struct {
 	Id string `db:"id"`
 }
@@ -106,13 +120,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 				// log.Println("processing longer record type", recordData.longerType)
 				// add one minute padding for longer records because they are created slightly later than the job start time
 				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
-				// shorter records are created independently of longer records, so we shouldn't need to add padding
-				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
-				// a shorter record created at T covers the interval (T - shorterTimeDuration, T], so
-				// the first record inside this window is created around the time the window's first
-				// interval ends. Subtract one second to absorb the ms-level offset between record
-				// save times and this job's clock reading, which could otherwise drop that record.
-				firstShorterRecordPeriod := shorterRecordPeriod.Add(recordData.shorterTimeDuration - time.Second)
+				shorterRecordPeriod := recordData.shorterRecordCutoff(now)
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
@@ -138,7 +146,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 					params := dbx.Params{
 						"type":    recordData.shorterType,
 						"system":  system.Id,
-						"created": firstShorterRecordPeriod.Format(types.DefaultDateLayout),
+						"created": shorterRecordPeriod.Format(types.DefaultDateLayout),
 					}
 
 					err := db.
@@ -189,7 +197,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 			for i := range longerRecordData {
 				recordData := longerRecordData[i]
 				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
-				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
+				shorterRecordPeriod := recordData.shorterRecordCutoff(now)
 
 				if recordData.longerType != "10m" {
 					count, err := txApp.CountRecords(monitorStatsColl.Id, dbx.NewExp(

@@ -165,3 +165,73 @@ func TestLongerRecordsExcludePreviousInterval(t *testing.T) {
 		}
 	}
 }
+
+// TestLongerRecordsKeepValidInputs verifies that excluding the previous interval does not
+// drop inputs that belong to the window: 1m samples arrive on their own timer and must all
+// count, and a job that starts a couple of seconds late must still find its shorter records.
+func TestLongerRecordsKeepValidInputs(t *testing.T) {
+	for _, collection := range []string{"system_stats", "container_stats"} {
+		for _, tc := range []struct {
+			name, shorter, longer string
+			count                 int
+			period, newestAge     time.Duration
+			missing               int
+			wantCPU               float64
+		}{
+			{"minute_samples", "1m", "10m", 10, time.Minute, 30 * time.Second, -1, 19},
+			{"minute_samples_one_missing", "1m", "10m", 10, time.Minute, 30 * time.Second, 5, 20},
+			{"delayed_20m_job", "10m", "20m", 2, 10 * time.Minute, 2 * time.Second, -1, 55},
+			{"delayed_120m_job", "20m", "120m", 6, 20 * time.Minute, 2 * time.Second, -1, 25},
+			{"delayed_480m_job", "120m", "480m", 4, 120 * time.Minute, 2 * time.Second, -1, 32.5},
+		} {
+			t.Run(collection+"/"+tc.name, func(t *testing.T) {
+				hub, err := tests.NewTestHub(t.TempDir())
+				require.NoError(t, err)
+				defer hub.Cleanup()
+				user, err := tests.CreateUser(hub, "review@example.com", "testtesttest")
+				require.NoError(t, err)
+				sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+					"name": "review", "host": "localhost", "port": "45876", "status": "up", "users": []string{user.Id},
+				})
+				require.NoError(t, err)
+				now := time.Now().UTC()
+				for i := range tc.count {
+					if i == tc.missing {
+						continue
+					}
+					cpu := 10
+					if i == 0 {
+						cpu = 100
+					}
+					stats := fmt.Sprintf(`{"cpu":%d}`, cpu)
+					if collection == "container_stats" {
+						stats = fmt.Sprintf(`[{"n":"test","c":%d}]`, cpu)
+					}
+					rec, err := tests.CreateRecord(hub, collection, map[string]any{"system": sys.Id, "type": tc.shorter, "stats": stats})
+					require.NoError(t, err)
+					created := now.Add(-tc.newestAge - time.Duration(tc.count-1-i)*tc.period)
+					rec.SetRaw("created", created.Format(types.DefaultDateLayout))
+					require.NoError(t, hub.SaveNoValidate(rec))
+				}
+				records.NewRecordManager(hub).CreateLongerRecords()
+				rollups, err := hub.FindAllRecords(collection, dbx.HashExp{"system": sys.Id, "type": tc.longer})
+				require.NoError(t, err)
+				require.Len(t, rollups, 1, "valid shorter inputs must produce a rollup")
+				if collection == "system_stats" {
+					var stats struct {
+						CPU float64 `json:"cpu"`
+					}
+					require.NoError(t, rollups[0].UnmarshalJSONField("stats", &stats))
+					require.Equal(t, tc.wantCPU, stats.CPU)
+				} else {
+					var stats []struct {
+						CPU float64 `json:"c"`
+					}
+					require.NoError(t, rollups[0].UnmarshalJSONField("stats", &stats))
+					require.Len(t, stats, 1)
+					require.Equal(t, tc.wantCPU, stats[0].CPU)
+				}
+			})
+		}
+	}
+}

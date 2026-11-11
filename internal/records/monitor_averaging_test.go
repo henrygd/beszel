@@ -224,3 +224,37 @@ func TestSparseMonitorRollups(t *testing.T) {
 		})
 	}
 }
+
+// TestMonitorRollupExcludesPreviousInterval verifies that a monitor rollup created one full
+// period ago is not merged into the next longer record, which would double count its probes.
+func TestMonitorRollupExcludesPreviousInterval(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+	user, err := tests.CreateUser(hub, "m@example.com", "testtesttest")
+	require.NoError(t, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "m", "host": "localhost", "port": "45876", "status": "up", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	monitor, err := tests.CreateRecord(hub, "network_monitors", map[string]any{
+		"system": sys.Id, "target": "1.1.1.1", "protocol": "icmp", "interval": 60, "enabled": true,
+	})
+	require.NoError(t, err)
+	now := time.Now()
+	seed := func(typ string, created time.Time, total int) {
+		_, err := tests.CreateRecord(hub, "network_monitor_stats", map[string]any{
+			"system": sys.Id, "monitor": monitor.Id, "type": typ, "created": created.UnixMilli(),
+			"res_min": 8, "res_max": 20, "total_count": total, "success_count": total, "res_sum": total,
+		})
+		require.NoError(t, err)
+	}
+	seed("1m", now.Add(-time.Minute), 4)                           // becomes this run's 10m record
+	seed("10m", now.Add(-10*time.Minute+50*time.Millisecond), 4)   // previous run
+	seed("10m", now.Add(-20*time.Minute+50*time.Millisecond), 100) // run before that: previous 20m interval
+	records.NewRecordManager(hub).CreateLongerRecords()
+	rollups, err := hub.FindAllRecords("network_monitor_stats", dbx.HashExp{"monitor": monitor.Id, "type": "20m"})
+	require.NoError(t, err)
+	require.Len(t, rollups, 1)
+	require.Equal(t, 8, rollups[0].GetInt("total_count"))
+}
