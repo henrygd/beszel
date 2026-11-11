@@ -77,9 +77,11 @@ body:
     validations:
       required: true
 
-  - type: markdown
+  - type: checkboxes
+    id: review
     attributes:
-      value: |
-        > [!IMPORTANT]
-        > New feature requests get the `needs-review` label. **Please don't open a pull request while this label is applied.**
-        > Wait until a maintainer has reviewed the request and removed the label, otherwise the PR may be closed.
+      label: Before opening a pull request
+      description: New feature requests get the `needs-review` label. A maintainer removes it once the request has been reviewed and accepted.
+      options:
+        - label: I understand that nobody should open a pull request for this request while the `needs-review` label is applied.
+          required: true
