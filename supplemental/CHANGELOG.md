@@ -1,3 +1,7 @@
+## 0.21.2
+
+- Limit sign-in attempts to 10 per minute per address (#2642)
+
 ## 0.21.1
 
 For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.
@@ -20,8 +24,6 @@ type Stats struct {
 	SwapBytes      [2]uint64   `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
 }
 ```
-
-- Limit sign-in attempts to 10 per minute per address (#2642)
 
 - Add TLS certificate expiry alert for network monitors (#2627)
 
