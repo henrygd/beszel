@@ -182,7 +182,13 @@ function getMonitorIdentityKey({ system, target, protocol, port, server }: Monit
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = parseMonitorFields(line)
+	let fields: string[]
+	try {
+		fields = parseMonitorFields(line)
+	} catch (err) {
+		throw new Error(`Line ${lineNumber}: ${err instanceof Error ? err.message : "invalid monitor entry"}`)
+	}
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = fields
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,

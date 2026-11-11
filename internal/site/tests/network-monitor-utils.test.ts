@@ -156,6 +156,14 @@ describe("bulk monitor rows", () => {
 		])
 	})
 
+	test("allows whitespace before a quoted field", () => {
+		expect(parseMonitorFields('  "https://example.com/status?ids=1,2",http')).toEqual([
+			"https://example.com/status?ids=1,2",
+			"http",
+		])
+		expect(parseMonitorFields('example.com, "a,b", 53')).toEqual(["example.com", "a,b", " 53"])
+	})
+
 	test("rejects malformed quoted rows instead of shifting fields", () => {
 		expect(() => parseMonitorFields('"https://example.com,status,http')).toThrow("Unclosed quoted field")
 		expect(() => parseMonitorFields('"example.com"extra,tcp')).toThrow("Expected comma after quoted field")

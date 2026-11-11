@@ -118,8 +118,11 @@ export function parseMonitorFields(line: string): string[] {
 	let position = 0
 	while (position <= line.length) {
 		let value = ""
-		if (line[position] === '"') {
-			position++
+		// allow whitespace before an opening quote, e.g. an indented line or `a, "b,c"`
+		let start = position
+		while (start < line.length && /\s/.test(line[start])) start++
+		if (line[start] === '"') {
+			position = start + 1
 			let closed = false
 			while (position < line.length) {
 				const character = line[position++]
