@@ -30,56 +30,36 @@ type mdraidHealth struct {
 	capacity       uint64
 }
 
-// scanMdraidDevices discovers Linux md arrays exposed in sysfs.
-func scanMdraidDevices() []*DeviceInfo {
+// scanMdraidDevices returns the /dev paths of Linux md arrays exposed in sysfs.
+func scanMdraidDevices() []string {
 	blockDir := filepath.Join(mdraidSysfsRoot, "block")
 	entries, err := os.ReadDir(blockDir)
 	if err != nil {
 		return nil
 	}
 
-	devices := make([]*DeviceInfo, 0, 2)
+	var devices []string
 	for _, ent := range entries {
 		name := ent.Name()
 		if !isMdraidBlockName(name) {
 			continue
 		}
-		mdDir := filepath.Join(blockDir, name, "md")
-		if !utils.FileExists(filepath.Join(mdDir, "array_state")) {
+		if !utils.FileExists(filepath.Join(blockDir, name, "md", "array_state")) {
 			continue
 		}
-
-		devPath := filepath.Join("/dev", name)
-		devices = append(devices, &DeviceInfo{
-			Name:     devPath,
-			Type:     "mdraid",
-			InfoName: devPath + " [mdraid]",
-			Protocol: "MD",
-		})
+		devices = append(devices, filepath.Join("/dev", name))
 	}
-
 	return devices
 }
 
-// collectMdraidHealth reads mdraid health and stores it in SmartDataMap.
-func (sm *SmartManager) collectMdraidHealth(deviceInfo *DeviceInfo) (bool, error) {
-	if deviceInfo == nil || deviceInfo.Name == "" {
-		return false, nil
-	}
-
-	base := filepath.Base(deviceInfo.Name)
-	if !isMdraidBlockName(base) && !strings.EqualFold(deviceInfo.Type, "mdraid") {
-		return false, nil
-	}
-
+// readMdraidSmartData reads mdraid health from sysfs. It returns the data map
+// key ("mdraid:<name>").
+func readMdraidSmartData(path string) (string, *smart.SmartData, bool) {
+	base := filepath.Base(path)
 	health, ok := readMdraidHealth(base)
 	if !ok {
-		return false, nil
+		return "", nil, false
 	}
-
-	deviceInfo.Type = "mdraid"
-	key := fmt.Sprintf("mdraid:%s", base)
-	status := mdraidSmartStatus(health)
 
 	attrs := make([]*smart.SmartAttribute, 0, 10)
 	if health.arrayState != "" {
@@ -110,25 +90,18 @@ func (sm *SmartManager) collectMdraidHealth(deviceInfo *DeviceInfo) (bool, error
 		attrs = append(attrs, &smart.SmartAttribute{Name: "MismatchCount", RawValue: health.mismatchCnt})
 	}
 
-	sm.Lock()
-	defer sm.Unlock()
-
-	if _, exists := sm.SmartDataMap[key]; !exists {
-		sm.SmartDataMap[key] = &smart.SmartData{}
-	}
-
-	data := sm.SmartDataMap[key]
-	data.ModelName = "Linux MD RAID"
+	model := "Linux MD RAID"
 	if health.level != "" {
-		data.ModelName = "Linux MD RAID (" + health.level + ")"
+		model = "Linux MD RAID (" + health.level + ")"
 	}
-	data.Capacity = health.capacity
-	data.SmartStatus = status
-	data.DiskName = filepath.Join("/dev", base)
-	data.DiskType = "mdraid"
-	data.Attributes = attrs
-
-	return true, nil
+	return fmt.Sprintf("mdraid:%s", base), &smart.SmartData{
+		ModelName:   model,
+		Capacity:    health.capacity,
+		SmartStatus: mdraidSmartStatus(health),
+		DiskName:    filepath.Join("/dev", base),
+		DiskType:    "mdraid",
+		Attributes:  attrs,
+	}, true
 }
 
 // readMdraidHealth reads md array health fields from sysfs.
@@ -191,9 +164,10 @@ func mdraidSmartStatus(health mdraidHealth) string {
 		return "FAILED"
 	}
 	if health.degraded > 0 {
-		if isSparseSlotDegraded(health) {
+		if isSparseSlotDegraded(health) || isRedundantMirrorDegraded(health) {
 			// A sysfs snapshot cannot distinguish reserved slots from a removed
-			// member on sparse arrays, so report the ambiguity as a warning.
+			// member on sparse arrays, and a mirror with two or more active
+			// members is still redundant, so report these as a warning.
 			return "WARNING"
 		}
 		return "FAILED"
@@ -246,6 +220,19 @@ func isSparseSlotDegraded(health mdraidHealth) bool {
 	}
 	sparseSlots := health.raidDisks - health.populatedDisks
 	return sparseSlots > health.populatedDisks
+}
+
+// isRedundantMirrorDegraded reports whether a degraded RAID1 array still has at
+// least two active members, so every block still has a redundant copy. Synology
+// DSM sizes its system arrays (md0/md1) to the bay count, leaving unpopulated
+// bays as missing mirror slots; whether those were never used or a member was
+// lost, the remaining mirrors keep the array redundant.
+func isRedundantMirrorDegraded(health mdraidHealth) bool {
+	if !strings.EqualFold(strings.TrimSpace(health.level), "raid1") || health.degraded >= health.raidDisks {
+		return false
+	}
+	activeDisks := health.raidDisks - health.degraded
+	return activeDisks >= 2
 }
 
 // isMdraidBlockName matches /dev/mdN-style block device names.

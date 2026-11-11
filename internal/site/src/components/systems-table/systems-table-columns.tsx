@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
 import { plural, t } from "@lingui/core/macro"
-import { Trans, useLingui } from "@lingui/react/macro"
+import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
@@ -9,59 +9,25 @@ import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
-	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
 	MemoryStickIcon,
-	MoreHorizontalIcon,
 	PackageIcon,
-	PauseCircleIcon,
-	PenBoxIcon,
-	PlayCircleIcon,
 	ServerIcon,
 	TerminalSquareIcon,
-	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
-import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $longestSystemName, $userSettings } from "@/lib/stores"
-import {
-	cn,
-	copyToClipboard,
-	decimalString,
-	formatBytes,
-	formatTemperature,
-	parseSemVer,
-	secondsToUptimeString,
-} from "@/lib/utils"
+import { $userSettings } from "@/lib/stores"
+import { cn, decimalString, formatBytes, formatTemperature, parseSemVer, secondsToUptimeString } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
-import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "../ui/alert-dialog"
-import { Button, buttonVariants } from "../ui/button"
-import { Dialog } from "../ui/dialog"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
+import { ActionsButton } from "../system-actions-button"
+import { Button } from "../ui/button"
 import {
 	BatteryMediumIcon,
 	EthernetIcon,
@@ -146,7 +112,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			Icon: ServerIcon,
 			cell: (info) => {
 				const { name, id } = info.row.original
-				const longestName = useStore($longestSystemName)
 				const linkUrl = getPagePath($router, "system", { id })
 
 				return (
@@ -156,7 +121,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 							<Link
 								href={linkUrl}
 								tabIndex={-1}
-								className="relative w-fit max-w-48 z-10"
+								className="relative block max-w-48 truncate z-10"
 								onMouseEnter={(e) => {
 									// set title on hover if text is truncated to show full name
 									const a = e.currentTarget
@@ -167,10 +132,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 									}
 								}}
 							>
-								<span className="invisible block" aria-hidden="true">
-									{longestName}
-								</span>
-								<span className="absolute inset-0 truncate">{name}</span>
+								{name}
 							</Link>
 						</span>
 						<Link href={linkUrl} className="inset-0 absolute size-full" aria-label={name}></Link>
@@ -727,105 +689,3 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 		/>
 	)
 }
-
-export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	const editOpened = useRef(false)
-	const { t } = useLingui()
-	const { id, status, host, name } = system
-
-	return useMemo(() => {
-		return (
-			<>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"}>
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="w-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{!isReadOnlyUser() && (
-							<DropdownMenuItem
-								onSelect={() => {
-									editOpened.current = true
-									setEditOpen(true)
-								}}
-							>
-								<PenBoxIcon className="me-2.5 size-4" />
-								<Trans>Edit</Trans>
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuItem
-							className={cn(isReadOnlyUser() && "hidden")}
-							onClick={() => {
-								pb.collection("systems").update(id, {
-									status: status === SystemStatus.Paused ? SystemStatus.Pending : SystemStatus.Paused,
-								})
-							}}
-						>
-							{status === SystemStatus.Paused ? (
-								<>
-									<PlayCircleIcon className="me-2.5 size-4" />
-									<Trans>Resume</Trans>
-								</>
-							) : (
-								<>
-									<PauseCircleIcon className="me-2.5 size-4" />
-									<Trans>Pause</Trans>
-								</>
-							)}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(name)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy name</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy host</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				{/* edit dialog */}
-				<Dialog open={editOpen} onOpenChange={setEditOpen}>
-					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-				</Dialog>
-				{/* deletion dialog */}
-				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>
-								<Trans>Are you sure you want to delete {name}?</Trans>
-							</AlertDialogTitle>
-							<AlertDialogDescription>
-								<Trans>
-									This action cannot be undone. This will permanently delete all current records for {name} from the
-									database.
-								</Trans>
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>
-								<Trans>Cancel</Trans>
-							</AlertDialogCancel>
-							<AlertDialogAction
-								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => pb.collection("systems").delete(id)}
-							>
-								<Trans>Continue</Trans>
-							</AlertDialogAction>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</>
-		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen])
-})

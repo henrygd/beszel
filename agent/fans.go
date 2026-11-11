@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -10,6 +11,8 @@ import (
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
+
+var errFanFetchTimeout = errors.New("fan collection timed out")
 
 type fanSensor struct {
 	key, path, chip string
@@ -26,19 +29,18 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
 // No-op on platforms where hwmon isn't available (see fans_other.go).
 func (a *Agent) updateFans(systemStats *system.Stats) {
-	if hwmonRoot == "" {
+	if hwmonRoot == "" || (a.sensorConfig != nil && a.sensorConfig.skipFans) {
 		return
 	}
-	sensors, err := getFanSensors()
+	fans, err := a.readFansWithTimeout(getFanSensors)
 	if err != nil {
-		slog.Debug("Error reading fans", "err", err)
+		if errors.Is(err, errFanFetchTimeout) {
+			slog.Warn("Error reading fans", "err", err)
+		} else {
+			slog.Debug("Error reading fans", "err", err)
+		}
 		return
 	}
-	// Filter before reading fan*_input: each read can wake an idle GPU.
-	if a.sensorConfig != nil && a.sensorConfig.skipGPU {
-		sensors = filterGpuFans(sensors)
-	}
-	fans := readFanSensors(sensors)
 	if len(fans) == 0 {
 		return
 	}
@@ -54,6 +56,27 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 	// 		a.systemInfo.DashboardFan = rpm
 	// 	}
 	// }
+}
+
+// readFansWithTimeout discovers and reads fan sensors without letting a blocked
+// sysfs read (e.g. an i915 fan1_input stuck resuming the GPU) hang collection,
+// which holds the agent lock and would stall every later hub request.
+func (a *Agent) readFansWithTimeout(getSensors func() ([]fanSensor, error)) (map[string]uint16, error) {
+	timeout := defaultSensorsTimeout
+	if a.sensorConfig != nil && a.sensorConfig.timeout > 0 {
+		timeout = a.sensorConfig.timeout
+	}
+	return readWithTimeout(&a.fansReading, timeout, errFanFetchTimeout, func() (map[string]uint16, error) {
+		sensors, err := getSensors()
+		if err != nil {
+			return nil, err
+		}
+		// Filter before reading fan*_input: each read can wake an idle GPU.
+		if a.sensorConfig != nil {
+			sensors = a.sensorConfig.filterFans(sensors)
+		}
+		return readFanSensors(sensors), nil
+	})
 }
 
 // readHwmonFans walks the given hwmon root (typically /sys/class/hwmon) and
@@ -120,11 +143,15 @@ func readFanSensors(sensors []fanSensor) map[string]uint16 {
 	return fans
 }
 
-// filterGpuFans drops GPU chips without touching the shared cache backing array.
-func filterGpuFans(sensors []fanSensor) []fanSensor {
+// filterFans drops GPU chips (SKIP_GPU) and fans excluded by FAN_SENSORS in a
+// single pass, without touching the shared cache backing array.
+func (config *SensorConfig) filterFans(sensors []fanSensor) []fanSensor {
 	kept := make([]fanSensor, 0, len(sensors))
 	for _, sensor := range sensors {
-		if isGpuChipName(sensor.chip) {
+		if config.skipGPU && isGpuChipName(sensor.chip) {
+			continue
+		}
+		if !config.fanSensors.allows(sensor.key) {
 			continue
 		}
 		kept = append(kept, sensor)

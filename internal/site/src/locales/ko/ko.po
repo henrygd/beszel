@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-01 02:40\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -26,9 +26,14 @@ msgstr "{0} 사용 가능"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0}개 행"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -66,7 +71,7 @@ msgstr "{daysLeft, plural, other {#일}}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr ""
+msgstr "{diskName} I/O"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -87,6 +92,10 @@ msgstr "{total, plural, other {업데이트 #개}}"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, other {서비스 #개}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, other {# 일}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -427,6 +436,10 @@ msgstr "섭씨 (°C)"
 msgid "Certificate"
 msgstr "인증서"
 
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "인증서 만료"
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
 msgstr "인증서 만료됨 {expires}"
@@ -639,6 +652,11 @@ msgstr "아래 에이전트의 설치 명령을 복사하거나 <0>범용 토큰
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "아래 에이전트의 <0>docker-compose.yml</0> 내용을 복사하거나 <1>범용 토큰</1>으로 에이전트를 자동으로 등록하세요."
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "토큰 복사"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "YAML 복사"
@@ -652,7 +670,7 @@ msgstr "코어"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -958,6 +976,7 @@ msgstr "<0>config.yml</0>에 정의되지 않은 기존 시스템은 삭제됩�
 msgid "Exited active"
 msgstr "활성 종료됨"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "만료됨"
@@ -965,6 +984,10 @@ msgstr "만료됨"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "한 시간 후 또는 허브 재시작 시 만료됩니다."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "<0>{value, plural, other {# 일}}</0> 이내 만료"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1102,7 +1125,7 @@ msgstr "전역"
 
 #: src/components/routes/system.tsx
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "GPU Engines"
@@ -1141,6 +1164,11 @@ msgstr "하트비트 전송 성공"
 #: src/components/logs-display.tsx
 msgid "Hide timestamps"
 msgstr "타임스탬프 숨기기"
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "토큰 숨기기"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1183,6 +1211,10 @@ msgstr "대기"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "관리자 계정의 비밀번호를 잃어버린 경우, 다음 명령어를 사용하여 재설정할 수 있습니다."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "TLS 인증서 오류 무시"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1500,6 +1532,11 @@ msgstr "OAuth 2 / OIDC 지원"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "하나 이상의 인증서가 {0, plural, other {# 일}} 이내에 만료됩니다"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "하나 이상의 컨테이너가 비정상 상태입니다"
@@ -1571,11 +1608,8 @@ msgid "Page"
 msgstr "페이지"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "{1}페이지 중 {0}페이지"
 
@@ -1834,6 +1868,11 @@ msgstr "재시작 횟수"
 msgid "Resume"
 msgstr "재개"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "토큰 표시"
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
@@ -1850,8 +1889,7 @@ msgstr "최상위"
 msgid "Rotate token"
 msgstr "토큰 회전"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "페이지당 행 수"
 
@@ -2006,7 +2044,6 @@ msgstr "하트비트 모니터링을 활성화하려면 Beszel 허브에 다음 
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "설정"
 
@@ -2205,6 +2242,15 @@ msgstr "받는사람(들)"
 msgid "Token"
 msgstr "토큰"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "{0}의 토큰"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "토큰 숨김"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2267,6 +2313,10 @@ msgstr "5분 부하 평균이 임계값을 초과하면 트리거됩니다."
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "컨테이너 상태 검사가 비정상 상태를 보고하면 트리거됩니다"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "HTTPS 인증서가 만료에 가까워지면 트리거됩니다"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2387,7 @@ msgid "Unit preferences"
 msgstr "단위 기본 설정"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "범용 토큰"
@@ -2413,6 +2464,10 @@ msgstr "사용량"
 msgid "Usage of storage pool {displayName}"
 msgstr "스토리지 풀 {displayName}의 사용량"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "자체 서명 인증서에 사용하세요."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2491,7 @@ msgid "Value"
 msgstr "값"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "보기"
@@ -2463,6 +2519,7 @@ msgstr "최근 200개의 알림을 봅니다."
 msgid "Visible Fields"
 msgstr "표시할 열"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "표시할 충분한 기록을 기다리는 중"

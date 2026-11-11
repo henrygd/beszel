@@ -23,6 +23,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ActionsButton } from "@/components/system-actions-button"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -61,6 +62,7 @@ export default function InfoBar({
 		const cores = details?.cores ?? system.info.c
 		const threads = details?.threads ?? system.info.t ?? 0
 		const cpuModel = details?.cpu ?? system.info.m
+		const sockets = details?.sockets ?? 0
 		const os = details?.os ?? system.info.os ?? Os.Linux
 		const osName = details?.os_name
 		const arch = details?.arch
@@ -101,7 +103,8 @@ export default function InfoBar({
 			{ value: secondsToUptimeString(system.info.u), Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			osInfo[os],
 			{
-				value: cpuModel,
+				// 0 means the agent did not report a socket count
+				value: sockets > 1 ? `${sockets}x ${cpuModel}` : cpuModel,
 				Icon: CpuIcon,
 				hide: !cpuModel,
 				label: `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}`,
@@ -204,16 +207,11 @@ export default function InfoBar({
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
-							<Button
-								aria-label={t`Settings`}
-								variant="outline"
-								size="icon"
-								className="hidden xl:flex p-0 text-primary"
-							>
-								<Settings2Icon className="size-4 opacity-90" />
+							<Button aria-label={t`View`} variant="outline" size="icon" className="hidden xl:flex">
+								<Settings2Icon className="size-4 opacity-80" />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="min-w-44">
+						<DropdownMenuContent className="min-w-38">
 							<DropdownMenuLabel className="px-3.5">
 								<Trans context="Layout display options">Display</Trans>
 							</DropdownMenuLabel>
@@ -249,6 +247,7 @@ export default function InfoBar({
 							</DropdownMenuRadioGroup>
 						</DropdownMenuContent>
 					</DropdownMenu>
+					<ActionsButton system={system} variant="outline" showAlerts />
 				</div>
 			</div>
 		</Card>

@@ -45,12 +45,12 @@ export const $maxValues = atom(false)
 const logTimestampsKey = "besz-log-ts"
 
 /** Whether to show timestamps in Docker and systemd logs */
-export const $showLogTimestamps = atom<boolean>(JSON.parse(localStorage.getItem(logTimestampsKey) ?? "true"))
+export const $showLogTimestamps = atom<boolean>(JSON.parse(globalThis.localStorage?.getItem(logTimestampsKey) ?? "true"))
 
 export function toggleLogTimestamps() {
 	const next = !$showLogTimestamps.get()
 	$showLogTimestamps.set(next)
-	localStorage.setItem(logTimestampsKey, JSON.stringify(next))
+	globalThis.localStorage?.setItem(logTimestampsKey, JSON.stringify(next))
 }
 
 // export const UserSettingsSchema = v.object({
@@ -103,11 +103,3 @@ export const $copyContent = atom("")
 
 /** Direction for localization */
 export const $direction = atom<"ltr" | "rtl">("ltr")
-
-/** Longest system name string. Used to reserve width in virtualized tables. */
-export const $longestSystemName = atom("")
-
-/** Incremented when measured text widths are invalidated (e.g. web font finished loading).
- *  Anything that caches a comparison from isVisuallyLonger should recompute when this changes.
- */
-export const $textMeasureVersion = atom(0)

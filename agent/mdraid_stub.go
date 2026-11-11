@@ -2,10 +2,12 @@
 
 package agent
 
-func scanMdraidDevices() []*DeviceInfo {
+import "github.com/henrygd/beszel/internal/entities/smart"
+
+func scanMdraidDevices() []string {
 	return nil
 }
 
-func (sm *SmartManager) collectMdraidHealth(deviceInfo *DeviceInfo) (bool, error) {
-	return false, nil
+func readMdraidSmartData(path string) (string, *smart.SmartData, bool) {
+	return "", nil, false
 }

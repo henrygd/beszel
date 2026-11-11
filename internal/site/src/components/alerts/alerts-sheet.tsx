@@ -26,6 +26,9 @@ const endpoint = "/api/beszel/user-alerts"
 
 const alertDebounce = 400
 
+/** Class names for the SheetContent that wraps AlertDialogContent */
+export const alertsSheetClassName = "max-h-full overflow-auto w-160 !max-w-full p-4 sm:p-6"
+
 const alertKeys = Object.keys(alertInfo) as (keyof typeof alertInfo)[]
 
 /** Round to a multiple of step, trimming float noise like 0.30000000000000004 */

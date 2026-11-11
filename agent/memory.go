@@ -1,6 +1,8 @@
 package agent
 
 import (
+	"runtime"
+
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -14,17 +16,34 @@ type memoryMetrics struct {
 }
 
 var memoryVirtualMemory = mem.VirtualMemory
+var memorySwapMemory = mem.SwapMemory
+var memoryGOOS = runtime.GOOS
+
+// hostSwap returns total and free swap bytes. gopsutil's VirtualMemory only
+// fills swap fields on Linux, so on macOS they come from SwapMemory.
+func hostSwap(v *mem.VirtualMemoryStat) (total, free uint64) {
+	if v.SwapTotal == 0 && memoryGOOS == "darwin" {
+		if s, err := memorySwapMemory(); err == nil {
+			return s.Total, s.Free
+		}
+	}
+	return v.SwapTotal, v.SwapFree
+}
 
 func (a *Agent) updateMemoryStats(stats *system.Stats) {
 	v, err := memoryVirtualMemory()
 	var hostTotal uint64
 	if err == nil {
 		hostTotal = v.Total
-		// Swap retains its existing /proc/meminfo source in both memory paths.
-		stats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		stats.SwapUsed = utils.BytesToGigabytes(saturatingSub(v.SwapTotal, v.SwapFree))
+		// Swap retains its existing /proc/meminfo source in both memory paths (SwapMemory on macOS).
+		swapTotal, swapFree := hostSwap(v)
+		stats.SwapBytes = [2]uint64{swapTotal, saturatingSub(swapTotal, swapFree)}
+		// TODO: stop populating deprecated GB fields once hubs < 0.21.1 are no longer supported
+		stats.Swap = utils.BytesToGigabytes(stats.SwapBytes[0])
+		stats.SwapUsed = utils.BytesToGigabytes(stats.SwapBytes[1])
 	}
 
+	var arcSize uint64
 	metrics, fromCgroup := containerMemoryMetrics(hostTotal, a.forceUseCgroup)
 	if !fromCgroup {
 		if err != nil {
@@ -34,16 +53,19 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 		metrics = memoryMetrics{Total: v.Total, Used: used, BuffCache: cacheBuff}
 		// Host ARC must not be subtracted from container-scoped accounting.
 		if a.zfs {
-			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < metrics.Used {
+			if size, _ := zfs.ARCSize(); size > 0 && size < metrics.Used {
+				arcSize = size
 				metrics.Used -= arcSize
-				stats.MemZfsArc = utils.BytesToGigabytes(arcSize)
 			}
 		}
 	}
 
+	stats.MemBytes = [4]uint64{metrics.Total, metrics.Used, metrics.BuffCache, arcSize}
+	// TODO: stop populating deprecated GB fields once hubs < 0.21.1 are no longer supported
 	stats.Mem = utils.BytesToGigabytes(metrics.Total)
 	stats.MemUsed = utils.BytesToGigabytes(metrics.Used)
 	stats.MemBuffCache = utils.BytesToGigabytes(metrics.BuffCache)
+	stats.MemZfsArc = utils.BytesToGigabytes(arcSize)
 	if metrics.Total > 0 {
 		stats.MemPct = utils.TwoDecimals(float64(metrics.Used) / float64(metrics.Total) * 100)
 	}

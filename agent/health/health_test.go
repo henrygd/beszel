@@ -63,3 +63,18 @@ func TestHealth(t *testing.T) {
 		})
 	})
 }
+
+// The health file path is shared by every agent on the host, so a second removal must not be
+// reported as a failure: it reaches the caller as the error returned by Agent.Start.
+func TestCleanUpIsIdempotent(t *testing.T) {
+	dir := t.TempDir()
+	original := healthFile
+	healthFile = filepath.Join(dir, "beszel_health")
+	t.Cleanup(func() { healthFile = original })
+
+	require.NoError(t, Update())
+	require.FileExists(t, healthFile)
+	require.NoError(t, CleanUp())
+	require.NoFileExists(t, healthFile)
+	assert.NoError(t, CleanUp(), "removing a health file that is already gone is not an error")
+}

@@ -21,7 +21,7 @@ type SmartctlOutput struct {
 	FirmwareVersion string       `json:"firmware_version"`
 	UserCapacity    UserCapacity `json:"user_capacity"`
 	SmartStatus     struct {
-		Passed bool `json:"passed"`
+		Passed *bool `json:"passed"` // nil when smartctl could not read the health status
 	} `json:"smart_status"`
 	Temperature struct {
 		Current int64 `json:"current"`

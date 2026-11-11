@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/henrygd/beszel/internal/entities/smart"
 )
 
 func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
@@ -56,26 +54,19 @@ func TestMdraidMockSysfsScanAndCollect(t *testing.T) {
 	if len(devs) != 1 {
 		t.Fatalf("scanMdraidDevices() = %d devices, want 1", len(devs))
 	}
-	if devs[0].Name != "/dev/md0" || devs[0].Type != "mdraid" {
-		t.Fatalf("scanMdraidDevices()[0] = %+v, want Name=/dev/md0 Type=mdraid", devs[0])
+	if devs[0] != "/dev/md0" {
+		t.Fatalf("scanMdraidDevices()[0] = %q, want /dev/md0", devs[0])
 	}
 
-	sm := &SmartManager{SmartDataMap: map[string]*smart.SmartData{}}
-	ok, err := sm.collectMdraidHealth(devs[0])
-	if err != nil || !ok {
-		t.Fatalf("collectMdraidHealth() = (ok=%v, err=%v), want (true,nil)", ok, err)
+	// sysfs targets are read directly instead of through smartctl.
+	result, err := (&SmartManager{}).collectTarget(smartTarget{name: devs[0], dtype: "mdraid"})
+	if err != nil {
+		t.Fatalf("collectTarget() err = %v", err)
 	}
-	if len(sm.SmartDataMap) != 1 {
-		t.Fatalf("SmartDataMap len=%d, want 1", len(sm.SmartDataMap))
+	if result.key != "mdraid:md0" {
+		t.Fatalf("key = %q, want mdraid:md0", result.key)
 	}
-	var got *smart.SmartData
-	for _, v := range sm.SmartDataMap {
-		got = v
-		break
-	}
-	if got == nil {
-		t.Fatalf("SmartDataMap value nil")
-	}
+	got := result.data
 	if got.DiskType != "mdraid" || got.DiskName != "/dev/md0" {
 		t.Fatalf("disk fields = (type=%q name=%q), want (mdraid,/dev/md0)", got.DiskType, got.DiskName)
 	}
@@ -156,6 +147,26 @@ func TestMdraidSmartStatus(t *testing.T) {
 	// of them in_sync, so faultyDisks==0 but degraded==1.
 	if got := mdraidSmartStatus(mdraidHealth{arrayState: "clean", degraded: 1, faultyDisks: 0, raidDisks: 4, populatedDisks: 3}); got != "FAILED" {
 		t.Fatalf("mdraidSmartStatus(missing member) = %q, want FAILED", got)
+	}
+	// Synology-style: RAID1 system array sized to 8 bays with 5 drives installed.
+	if got := mdraidSmartStatus(mdraidHealth{level: "raid1", arrayState: "clean", degraded: 3, faultyDisks: 0, raidDisks: 8, populatedDisks: 5}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(synology raid1 sparse bays) = %q, want WARNING", got)
+	}
+	// A 3-way mirror missing one member still has two copies.
+	if got := mdraidSmartStatus(mdraidHealth{level: "raid1", arrayState: "clean", degraded: 1, faultyDisks: 0, raidDisks: 3, populatedDisks: 2}); got != "WARNING" {
+		t.Fatalf("mdraidSmartStatus(3-way mirror missing member) = %q, want WARNING", got)
+	}
+	// A 2-disk mirror missing one member has no redundancy left.
+	if got := mdraidSmartStatus(mdraidHealth{level: "raid1", arrayState: "clean", degraded: 1, faultyDisks: 0, raidDisks: 2, populatedDisks: 1}); got != "FAILED" {
+		t.Fatalf("mdraidSmartStatus(2-disk mirror missing member) = %q, want FAILED", got)
+	}
+	// A faulty member still fails a mirror even with other members active.
+	if got := mdraidSmartStatus(mdraidHealth{level: "raid1", arrayState: "clean", degraded: 1, faultyDisks: 1, raidDisks: 3, populatedDisks: 3}); got != "FAILED" {
+		t.Fatalf("mdraidSmartStatus(mirror with faulty member) = %q, want FAILED", got)
+	}
+	// Parity arrays missing a member still fail.
+	if got := mdraidSmartStatus(mdraidHealth{level: "raid6", arrayState: "clean", degraded: 1, faultyDisks: 0, raidDisks: 5, populatedDisks: 4}); got != "FAILED" {
+		t.Fatalf("mdraidSmartStatus(raid6 missing member) = %q, want FAILED", got)
 	}
 	// Degraded with no member-state info at all (e.g. sysfs read failed) must
 	// still fail rather than being silently treated as a sparse QNAP array.
