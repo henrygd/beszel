@@ -20,10 +20,11 @@ type RecordManager struct {
 }
 
 type LongerRecordData struct {
-	shorterType        string
-	longerType         string
-	longerTimeDuration time.Duration
-	minShorterRecords  int
+	shorterType         string
+	longerType          string
+	shorterTimeDuration time.Duration
+	longerTimeDuration  time.Duration
+	minShorterRecords   int
 }
 
 type RecordIds []struct {
@@ -43,29 +44,33 @@ func (rm *RecordManager) CreateLongerRecords() {
 	now := time.Now().UTC()
 	longerRecordData := []LongerRecordData{
 		{
-			shorterType: "1m",
+			shorterType:         "1m",
+			shorterTimeDuration: time.Minute,
 			// change to 9 from 10 to allow edge case timing or short pauses
 			minShorterRecords:  9,
 			longerType:         "10m",
 			longerTimeDuration: -10 * time.Minute,
 		},
 		{
-			shorterType:        "10m",
-			minShorterRecords:  2,
-			longerType:         "20m",
-			longerTimeDuration: -20 * time.Minute,
+			shorterType:         "10m",
+			shorterTimeDuration: 10 * time.Minute,
+			minShorterRecords:   2,
+			longerType:          "20m",
+			longerTimeDuration:  -20 * time.Minute,
 		},
 		{
-			shorterType:        "20m",
-			minShorterRecords:  6,
-			longerType:         "120m",
-			longerTimeDuration: -120 * time.Minute,
+			shorterType:         "20m",
+			shorterTimeDuration: 20 * time.Minute,
+			minShorterRecords:   6,
+			longerType:          "120m",
+			longerTimeDuration:  -120 * time.Minute,
 		},
 		{
-			shorterType:        "120m",
-			minShorterRecords:  4,
-			longerType:         "480m",
-			longerTimeDuration: -480 * time.Minute,
+			shorterType:         "120m",
+			shorterTimeDuration: 120 * time.Minute,
+			minShorterRecords:   4,
+			longerType:          "480m",
+			longerTimeDuration:  -480 * time.Minute,
 		},
 	}
 	// wrap the operations in a transaction
@@ -103,6 +108,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
 				// shorter records are created independently of longer records, so we shouldn't need to add padding
 				shorterRecordPeriod := now.Add(recordData.longerTimeDuration)
+				// a shorter record created at T covers the interval (T - shorterTimeDuration, T], so
+				// the first record inside this window is created around the time the window's first
+				// interval ends. Subtract one second to absorb the ms-level offset between record
+				// save times and this job's clock reading, which could otherwise drop that record.
+				firstShorterRecordPeriod := shorterRecordPeriod.Add(recordData.shorterTimeDuration - time.Second)
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
@@ -128,7 +138,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 					params := dbx.Params{
 						"type":    recordData.shorterType,
 						"system":  system.Id,
-						"created": shorterRecordPeriod.Format(types.DefaultDateLayout),
+						"created": firstShorterRecordPeriod.Format(types.DefaultDateLayout),
 					}
 
 					err := db.
