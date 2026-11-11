@@ -40,7 +40,7 @@ func (sm *SmartManager) parseSmartctl(output []byte, dtype string) (*smart.Smart
 		}
 		smartData := newSmartData(data, dtype, data.ModelName, data.FirmwareVersion, log.Temperature)
 		if smartData.Capacity == 0 {
-			smartData.Capacity = data.NVMeTotalCapacity
+			smartData.Capacity = data.NVMeTotalCapacity.Value
 		}
 		if smartData.Capacity == 0 && (runtime.GOOS == "darwin" || sm.darwinNvmeProvider != nil) {
 			smartData.Capacity = sm.lookupDarwinNvmeCapacity(data.SerialNumber)
@@ -271,19 +271,28 @@ func nvmeAttributes(log *smart.NVMeSmartHealthInformationLog, temperature uint8)
 		{Name: "AvailableSpare", RawValue: log.AvailableSpare},
 		{Name: "AvailableSpareThreshold", RawValue: log.AvailableSpareThreshold},
 		{Name: "PercentageUsed", RawValue: log.PercentageUsed},
-		{Name: "DataUnitsRead", RawValue: log.DataUnitsRead},
-		{Name: "DataUnitsWritten", RawValue: log.DataUnitsWritten},
-		{Name: "HostReads", RawValue: log.HostReads},
-		{Name: "HostWrites", RawValue: log.HostWrites},
-		{Name: "ControllerBusyTime", RawValue: log.ControllerBusyTime},
-		{Name: "PowerCycles", RawValue: log.PowerCycles},
-		{Name: "PowerOnHours", RawValue: log.PowerOnHours},
-		{Name: "UnsafeShutdowns", RawValue: log.UnsafeShutdowns},
-		{Name: "MediaErrors", RawValue: log.MediaErrors},
-		{Name: "NumErrLogEntries", RawValue: log.NumErrLogEntries},
+		nvmeCounterAttribute("DataUnitsRead", log.DataUnitsRead),
+		nvmeCounterAttribute("DataUnitsWritten", log.DataUnitsWritten),
+		nvmeCounterAttribute("HostReads", log.HostReads),
+		nvmeCounterAttribute("HostWrites", log.HostWrites),
+		nvmeCounterAttribute("ControllerBusyTime", log.ControllerBusyTime),
+		nvmeCounterAttribute("PowerCycles", log.PowerCycles),
+		nvmeCounterAttribute("PowerOnHours", log.PowerOnHours),
+		nvmeCounterAttribute("UnsafeShutdowns", log.UnsafeShutdowns),
+		nvmeCounterAttribute("MediaErrors", log.MediaErrors),
+		nvmeCounterAttribute("NumErrLogEntries", log.NumErrLogEntries),
 		{Name: "WarningTempTime", RawValue: log.WarningTempTime},
 		{Name: "CriticalCompTime", RawValue: log.CriticalCompTime},
 	}
+}
+
+// nvmeCounterAttribute reports an overflowed 128-bit counter as invalid instead
+// of a made-up number, so neither the table nor the power-on hours show it.
+func nvmeCounterAttribute(name string, c smart.NVMeCounter) *smart.SmartAttribute {
+	if c.Overflow {
+		return &smart.SmartAttribute{Name: name, RawString: smart.NVMeCounterInvalid}
+	}
+	return &smart.SmartAttribute{Name: name, RawValue: c.Value}
 }
 
 // lookupDarwinNvmeCapacity returns the capacity in bytes for a given NVMe serial number on Darwin.
