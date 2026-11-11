@@ -1,3 +1,7 @@
+## 0.21.2
+
+- Limit sign-in attempts to 10 per minute per address (#2642)
+
 ## 0.21.1
 
 For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.

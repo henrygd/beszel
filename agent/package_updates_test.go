@@ -327,6 +327,25 @@ exit 1`,
 		want := filepath.Join(dataDir, "state") + " " + filepath.Join(dataDir, "cache") + "\n"
 		assert.Equal(t, want+want, string(env))
 	})
+
+	t.Run("stale dnf5 metadata copy removed before check", func(t *testing.T) {
+		dataDir := t.TempDir()
+		repomd := filepath.Join(dataDir, "cache", "libdnf5", "fedora", "repomd.xml")
+		staleFile := filepath.Join(t.TempDir(), "stale")
+		// fake dnf5 copies the system cache only when its own copy is missing
+		fakeCommands(t, map[string]string{
+			"dnf": `case "$*" in *--security*) exit 0 ;; esac
+if [ -e "` + repomd + `" ]; then echo stale >> "` + staleFile + `"; fi
+mkdir -p "$(dirname "` + repomd + `")" && touch "` + repomd + `"`,
+		})
+		check := newDnfCheck(dataDir)
+		_, err := check(context.Background())
+		require.NoError(t, err)
+		require.FileExists(t, repomd)
+		_, err = check(context.Background())
+		require.NoError(t, err)
+		assert.NoFileExists(t, staleFile)
+	})
 }
 
 func TestDetectPackageManager(t *testing.T) {
