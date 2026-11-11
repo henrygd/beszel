@@ -68,11 +68,14 @@ func setCollectionAuthSettings(app core.App) error {
 	systemsWriteRule := systemsReadRule + " && @request.auth.role != \"readonly\""
 	systemScopedWriteRule := systemScopedReadRule + " && @request.auth.role != \"readonly\""
 
+	// Only admins can change which users a system is shared with.
+	systemsUpdateRule := systemsWriteRule + ` && (@request.body.users:changed = false || @request.auth.role = "admin")`
+
 	if err := applyCollectionRules(app, []string{"systems"}, collectionRules{
 		list:   &systemsReadRule,
 		view:   &systemsReadRule,
 		create: &systemsWriteRule,
-		update: &systemsWriteRule,
+		update: &systemsUpdateRule,
 		delete: &systemsWriteRule,
 	}); err != nil {
 		return err
