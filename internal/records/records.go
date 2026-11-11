@@ -216,6 +216,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 				longerRecord.Set("created", now.UnixMilli())
 				longerRecord.Set("res_min", stats.ResMin)
 				longerRecord.Set("res_max", stats.ResMax)
+				longerRecord.Set("loss_max", stats.MaxLoss)
 				longerRecord.Set("total_count", stats.TotalCount)
 				longerRecord.Set("success_count", stats.SuccessCount)
 				longerRecord.Set("res_sum", stats.ResponseSum)
@@ -284,9 +285,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
 
+	sum.ChartMax = &system.ChartMax{}
 	// Accumulate totals
 	for i := range records {
 		stats := &records[i]
+		if stats.ChartMax != nil {
+			mergeChartMax(sum.ChartMax, stats.ChartMax)
+		} else {
+			mergeChartMax(sum.ChartMax, chartMaxSample(stats))
+		}
 		for id, signal := range stats.WiFi {
 			wifiSums[id] += int(signal)
 			wifiCounts[id]++
@@ -662,6 +669,20 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			if _, ok := sums[stat.Name]; !ok {
 				sums[stat.Name] = &container.Stats{Name: stat.Name}
 			}
+			peak := sums[stat.Name].Max
+			if peak == nil {
+				peak = &container.Peaks{}
+				sums[stat.Name].Max = peak
+			}
+			peak.Cpu = max(peak.Cpu, stat.Cpu)
+			peak.Mem = max(peak.Mem, stat.Mem)
+			if stat.Max != nil {
+				peak.Cpu = max(peak.Cpu, stat.Max.Cpu)
+				peak.Mem = max(peak.Mem, stat.Max.Mem)
+				for j := range peak.Bandwidth {
+					peak.Bandwidth[j] = max(peak.Bandwidth[j], stat.Max.Bandwidth[j])
+				}
+			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
 			sentBytes := stat.Bandwidth[0]
@@ -670,6 +691,8 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 				sentBytes = uint64(stat.NetworkSent * 1024 * 1024)
 				recvBytes = uint64(stat.NetworkRecv * 1024 * 1024)
 			}
+			peak.Bandwidth[0] = max(peak.Bandwidth[0], sentBytes)
+			peak.Bandwidth[1] = max(peak.Bandwidth[1], recvBytes)
 			sums[stat.Name].Bandwidth[0] += sentBytes
 			sums[stat.Name].Bandwidth[1] += recvBytes
 		}
@@ -678,6 +701,7 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
 		result = append(result, container.Stats{
+			Max:       value.Max,
 			Name:      value.Name,
 			Cpu:       twoDecimals(value.Cpu / count),
 			Mem:       twoDecimals(value.Mem / count),
@@ -696,6 +720,7 @@ func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordTy
 	}
 	err := db.Select(
 		"COUNT(*) AS count",
+		"COALESCE(MAX(MAX(loss_max, CASE WHEN total_count > 0 THEN 100.0*(total_count-success_count)/total_count ELSE 0 END)), 0) AS loss_max",
 		"COALESCE(SUM(total_count), 0) AS total_count",
 		"COALESCE(SUM(success_count), 0) AS success_count",
 		"COALESCE(SUM(res_sum), 0) AS res_sum",

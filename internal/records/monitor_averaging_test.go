@@ -99,7 +99,7 @@ func TestAverageMonitorStats(t *testing.T) {
 	result, count, err = rm.AverageMonitorStats(hub.DB(), monitor.Id, "1m", created-1)
 	require.NoError(t, err)
 	assert.Equal(t, 2, count)
-	assert.Equal(t, monitorEntity.Stats{ResAvg: 10, ResMin: 5, ResMax: 20, Loss: 14.29, TotalCount: 7, SuccessCount: 6, ResponseSum: 60}, result)
+	assert.Equal(t, monitorEntity.Stats{MaxLoss: 100, ResAvg: 10, ResMin: 5, ResMax: 20, Loss: 14.29, TotalCount: 7, SuccessCount: 6, ResponseSum: 60}, result)
 	// Sparse monitor records must propagate through every rollup level.
 	rm.CreateLongerRecords()
 	for _, recordType := range []string{"10m", "20m", "120m", "480m"} {
@@ -108,6 +108,7 @@ func TestAverageMonitorStats(t *testing.T) {
 		require.Len(t, rollups, 1, recordType)
 		assert.Equal(t, 5.0, rollups[0].GetFloat("res_min"))
 		assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
+		assert.Equal(t, 100.0, rollups[0].GetFloat("loss_max"))
 		assert.Equal(t, 7, rollups[0].GetInt("total_count"))
 		assert.Equal(t, 6, rollups[0].GetInt("success_count"))
 		assert.Equal(t, 60, rollups[0].GetInt("res_sum"))
@@ -123,7 +124,7 @@ func TestAverageMonitorStats(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 2, count)
 		assert.Equal(t, monitorEntity.Stats{
-			ResAvg: 22.86, ResMin: 5, ResMax: 100, Loss: 30,
+			MaxLoss: 100, ResAvg: 22.86, ResMin: 5, ResMax: 100, Loss: 30,
 			TotalCount: 10, SuccessCount: 7, ResponseSum: 160,
 		}, merged)
 	}
@@ -134,14 +135,14 @@ func TestAverageMonitorStats(t *testing.T) {
 	require.NoError(t, hub.Save(recordA))
 	result, _, err = rm.AverageMonitorStats(hub.DB(), monitor.Id, "1m", created-1)
 	require.NoError(t, err)
-	assert.Equal(t, monitorEntity.Stats{TotalCount: 7, Loss: 100}, result)
+	assert.Equal(t, monitorEntity.Stats{MaxLoss: 100, TotalCount: 7, Loss: 100}, result)
 	recordA.Set("success_count", 1)
 	recordA.Set("res_min", 0)
 	recordA.Set("res_max", 0)
 	require.NoError(t, hub.Save(recordA))
 	result, _, err = rm.AverageMonitorStats(hub.DB(), monitor.Id, "1m", created-1)
 	require.NoError(t, err)
-	assert.Equal(t, monitorEntity.Stats{TotalCount: 7, SuccessCount: 1, Loss: 85.71}, result)
+	assert.Equal(t, monitorEntity.Stats{MaxLoss: 100, TotalCount: 7, SuccessCount: 1, Loss: 85.71}, result)
 }
 
 func TestSparseMonitorRollups(t *testing.T) {
@@ -211,6 +212,7 @@ func TestSparseMonitorRollups(t *testing.T) {
 					require.Len(t, rollups, 1, recordType)
 					assert.Equal(t, 8.0, rollups[0].GetFloat("res_min"))
 					assert.Equal(t, 20.0, rollups[0].GetFloat("res_max"))
+					assert.Equal(t, 25.0, rollups[0].GetFloat("loss_max"))
 					assert.Equal(t, 4*tc.samples, rollups[0].GetInt("total_count"))
 					assert.Equal(t, 3*tc.samples, rollups[0].GetInt("success_count"))
 					assert.Equal(t, 36*tc.samples, rollups[0].GetInt("res_sum"))

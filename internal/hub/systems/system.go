@@ -560,6 +560,7 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 			"created":       nowMilli,
 			"res_min":       result.MinResponse,
 			"res_max":       result.MaxResponse,
+			"loss_max":      result.PacketLoss,
 			"total_count":   result.TotalCount,
 			"success_count": result.SuccessCount,
 			"res_sum":       result.ResponseSum,

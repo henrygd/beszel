@@ -2,7 +2,7 @@ import { getMonitorTarget, monitorGapRecord } from "@/lib/network-monitor-utils"
 import LineChartDefault from "@/components/charts/line-chart"
 import type { DataPoint } from "@/components/charts/line-chart"
 import { decimalString, formatMicroseconds, matchesFilterGroups, parseFilterGroups, toFixedFloat } from "@/lib/utils"
-import { $monitorFilter } from "@/lib/stores"
+import { $maxValues, $monitorFilter } from "@/lib/stores"
 import { useLingui } from "@lingui/react/macro"
 import { ChartCard, FilterBar } from "../chart-card"
 import type { ChartOptions, MonitorStats, NetworkMonitorRecord, NetworkMonitorStatsRecord } from "@/types"
@@ -52,6 +52,8 @@ function MonitorChart({
 	filterStore = $monitorFilter,
 	showFilter = monitors.length > 1,
 }: MonitorChartBaseProps) {
+	const maxValues = useStore($maxValues)
+	const useMax = maxValues && !["1m", "1h"].includes(chartData.chartTime)
 	const storedFilter = useStore(filterStore)
 	const filter = showFilter ? storedFilter : ""
 
@@ -75,14 +77,21 @@ function MonitorChart({
 			points.push({
 				order: i,
 				label,
-				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[p.id]?.[metric] ?? null,
+				dataKey: (record: NetworkMonitorStatsRecord) =>
+					(useMax
+						? metric === "res_avg"
+							? record.stats?.[p.id]?.res_max
+							: record.stats?.[p.id]?.loss_max
+						: undefined) ??
+					record.stats?.[p.id]?.[metric] ??
+					null,
 				dot,
 				color:
 					color ?? (count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`),
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
-	}, [monitors, filter, metric, chartData.chartTime, color, getLabel])
+	}, [useMax, monitors, filter, metric, chartData.chartTime, color, getLabel])
 
 	// Monitors with different intervals don't share timestamps, so multiple lines need connectNulls.
 	// A single monitor's stats already contain empty records at real gaps, so the line breaks there.
@@ -97,6 +106,7 @@ function MonitorChart({
 
 	return (
 		<ChartCard
+			maxSelectable={true}
 			legend={legend || !showFilter}
 			cornerEl={showFilter ? <FilterBar store={filterStore} /> : undefined}
 			empty={empty}
@@ -177,6 +187,7 @@ export function AvgMinMaxResponseChart({ monitorStats, monitor, chartData, empty
 
 	return (
 		<ChartCard
+			maxSelectable={false}
 			legend={true}
 			empty={empty}
 			title={t`Response`}
