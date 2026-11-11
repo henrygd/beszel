@@ -28,8 +28,7 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
-import { formatMonitorFields, parseMonitorFields } from "@/lib/monitor-bulk-format"
+import { formatMonitorFields, getMonitorTarget, isHttpsTarget, parseMonitorFields } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 

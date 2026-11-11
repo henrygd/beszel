@@ -5,9 +5,14 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (_count: number, forms: { other?: string }) => forms.other ?? "",
 }))
 
-const { getMonitorStats, mergeMonitorStats, mergeSameTimestamps, withMonitorGaps } = await import(
-	"../src/lib/network-monitor-utils"
-)
+const {
+	formatMonitorFields,
+	getMonitorStats,
+	mergeMonitorStats,
+	mergeSameTimestamps,
+	parseMonitorFields,
+	withMonitorGaps,
+} = await import("../src/lib/network-monitor-utils")
 
 describe("monitor stats derived from stored counts", () => {
 	test("retains probe weights and response precision", () => {
@@ -122,5 +127,37 @@ describe("merging stats across monitors", () => {
 		const remaining = mergeSameTimestamps(existing, late)
 		expect(Object.keys(existing[0].stats).sort()).toEqual(["a", "b"])
 		expect(remaining.map((r) => r.created)).toEqual([120_000])
+	})
+})
+
+describe("bulk monitor rows", () => {
+	test.each(
+		[
+			["1.1.1.1", "icmp"],
+			["example.com", "tcp", "8080", "60"],
+			["example.com", "dns", "", "", "1.1.1.1"],
+			["https://example.com/status?ids=1,2", "http", "", "60"],
+			['https://example.com/status?q="a,b"', "http"],
+			["", "http", ""],
+		].map((fields) => ({ fields }))
+	)("round-trips $fields", ({ fields }) => {
+		expect(parseMonitorFields(formatMonitorFields(fields))).toEqual(fields)
+	})
+
+	test("keeps the existing unquoted format for ordinary entries", () => {
+		expect(formatMonitorFields(["example.com", "tcp", "", "60"])).toBe("example.com,tcp,,60")
+		expect(parseMonitorFields("example.com,tcp,,60")).toEqual(["example.com", "tcp", "", "60"])
+	})
+
+	test("does not treat a quoted target's comma as its protocol separator", () => {
+		expect(parseMonitorFields('"https://example.com/status?ids=1,2",http')).toEqual([
+			"https://example.com/status?ids=1,2",
+			"http",
+		])
+	})
+
+	test("rejects malformed quoted rows instead of shifting fields", () => {
+		expect(() => parseMonitorFields('"https://example.com,status,http')).toThrow("Unclosed quoted field")
+		expect(() => parseMonitorFields('"example.com"extra,tcp')).toThrow("Expected comma after quoted field")
 	})
 })
