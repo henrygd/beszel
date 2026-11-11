@@ -271,6 +271,11 @@ export function formatTemperature(celsius: number, unit?: Unit): { value: number
 	}
 }
 
+/** Convert legacy GiB capacities from older agents and stored records to bytes.
+ * TODO: remove when the deprecated memory, swap, and disk capacity fields are removed.
+ */
+export const gbToBytes = (gb?: number) => (gb === undefined ? undefined : gb * 1024 ** 3)
+
 /** Format bytes to user's preferred unit */
 export function formatBytes(
 	size: number,
