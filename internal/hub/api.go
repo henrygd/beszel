@@ -2,6 +2,8 @@ package hub
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -67,6 +69,11 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 		}
 		isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
 		e.Auth, err = e.App.FindAuthRecordByEmail("users", email)
+		// log on the auth refresh only: the login page sends one per attempt,
+		// while this middleware runs on every request
+		if isAuthRefresh && errors.Is(err, sql.ErrNoRows) {
+			slog.Warn("No user matches the automatic login email, showing the login form", "email", email)
+		}
 		if err != nil || !isAuthRefresh {
 			return e.Next()
 		}
