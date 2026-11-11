@@ -47,6 +47,7 @@ import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVe
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
+	ActivityIcon,
 	ArrowDownIcon,
 	ArrowLeftRightIcon,
 	ArrowUpDownIcon,
@@ -74,7 +75,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
 import { getMonitorCompareState } from "@/lib/monitor-compare"
-import { useCompareMonitors, useNetworkMonitorStats } from "@/lib/use-network-monitors"
+import { useCompareMonitors, useMonitorAvailability, useNetworkMonitorStats } from "@/lib/use-network-monitors"
 import { useStore } from "@nanostores/react"
 import { atom } from "nanostores"
 import { Separator } from "../ui/separator"
@@ -623,6 +624,24 @@ function NetworkMonitorSheet({
 	)
 }
 
+function Availability({ monitorId, enabled }: { monitorId: string; enabled: boolean }) {
+	const [day, month] = useMonitorAvailability(monitorId, enabled)
+	if (day == null && month == null) {
+		return null
+	}
+	return (
+		<>
+			<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+			<ActivityIcon className="size-3.5 text-muted-foreground -me-1" />
+			<span>
+				<Trans>Uptime</Trans>
+				{day != null && <> {day}% (24h)</>}
+				{month != null && <> · {month}% (30d)</>}
+			</span>
+		</>
+	)
+}
+
 const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
 
 function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
@@ -750,6 +769,7 @@ function NetworkMonitorSheetContent({
 							</>
 						)}
 						{monitor.certInfo?.expires ? <CertExpiry cert={monitor.certInfo} /> : null}
+						<Availability monitorId={monitor.id} enabled={open} />
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
