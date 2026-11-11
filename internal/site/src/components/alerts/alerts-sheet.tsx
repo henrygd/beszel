@@ -63,6 +63,8 @@ const upsertAlerts = debounceByKey(
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
 				body: { name, value, min, systems, overwrite: true },
+				// scope auto-cancellation per alert so a request for one alert doesn't abort another's
+				requestKey: `POST:${name}`,
 			})
 		} catch (error) {
 			failedUpdateToast(error)
@@ -77,6 +79,7 @@ const deleteAlerts = debounceByKey(async ({ name, systems }: { name: string; sys
 		await pb.send<{ success: boolean }>(endpoint, {
 			method: "DELETE",
 			body: { name, systems },
+			requestKey: `DELETE:${name}`,
 		})
 	} catch (error) {
 		failedUpdateToast(error)
