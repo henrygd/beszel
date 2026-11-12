@@ -72,6 +72,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 				.getList(0, 2000, {
 					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
+					requestKey: `containers-${systemId ?? "all"}`,
 				})
 				.then(({ items }) => {
 					if (items.length === 0) {
