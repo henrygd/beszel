@@ -305,7 +305,9 @@ func TestMcpGetSystemStats(t *testing.T) {
 	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 40, "mp": 60, "dp": 40, "ns": 1, "nr": 2}, 20)
 	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 10, "mp": 10, "dp": 10, "dr": 2, "dw": 1}, 10)
 
-	data := callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1"})
+	// a 1 hour lookback defaults to the 1m resolution
+	data := callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "hours": 1})
+	require.Equal(t, "1m", data["period"])
 	samples := data["samples"].([]any)
 	require.Len(t, samples, 3)
 	require.Equal(t, float64(1000), samples[0].(map[string]any)["net_sent_bps"])
@@ -427,10 +429,54 @@ func TestMcpStatsHoursClamp(t *testing.T) {
 	_, user, _, server, _ := setupHub(t)
 	session := mcpClient(t, server.URL, user.Token)
 	data := callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "hours": 1000})
-	// lookback is clamped to 168 hours
+	// lookback is clamped to 720 hours (480m retention)
+	require.Equal(t, "480m", data["period"])
 	from, err := time.Parse(time.RFC3339, data["from"].(string))
 	require.NoError(t, err)
-	require.WithinDuration(t, from, time.Now().UTC().Add(-168*time.Hour), 5*time.Minute)
+	require.WithinDuration(t, from, time.Now().UTC().Add(-720*time.Hour), 5*time.Minute)
+}
+
+func TestMcpStatsDefaultPeriod(t *testing.T) {
+	_, user, _, server, _ := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	// without a period, the finest resolution covering the lookback is used
+	for _, tc := range []struct {
+		hours  any
+		period string
+	}{
+		{nil, "20m"}, // default 24 hours
+		{0.5, "1m"},
+		{1, "1m"},
+		{2, "10m"},
+		{12, "10m"},
+		{24, "20m"},
+		{48, "120m"},
+		{168, "120m"},
+		{169, "480m"},
+		{720, "480m"},
+	} {
+		args := map[string]any{"system": "user-system-1"}
+		if tc.hours != nil {
+			args["hours"] = tc.hours
+		}
+		data := callTool(t, session, "get_system_stats", args)
+		require.Equal(t, tc.period, data["period"], "hours=%v", tc.hours)
+	}
+}
+
+func TestMcpStatsExplicitPeriodRetention(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 50}, 10)
+	// an explicit period is honored, but the reported range is shortened to
+	// its retention instead of claiming to cover the requested hours
+	data := callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "period": "1m", "hours": 24})
+	require.Equal(t, "1m", data["period"])
+	require.Len(t, data["samples"].([]any), 1)
+	require.Contains(t, data["note"], "only kept for 1 hour,")
+	from, err := time.Parse(time.RFC3339, data["from"].(string))
+	require.NoError(t, err)
+	require.WithinDuration(t, from, time.Now().UTC().Add(-time.Hour), 5*time.Minute)
 }
 
 func TestMcpTruncatedSystems(t *testing.T) {
