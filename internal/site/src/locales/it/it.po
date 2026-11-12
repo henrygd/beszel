@@ -252,13 +252,13 @@ msgstr "Sei sicuro?"
 msgid "Automatic copy requires a secure context."
 msgstr "La copia automatica richiede un contesto sicuro."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Disponibile"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Disponibile"
 
