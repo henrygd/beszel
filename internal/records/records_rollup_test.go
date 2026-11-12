@@ -3,13 +3,16 @@
 package records_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/tools/types"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -80,6 +83,154 @@ func TestLongerRecordsPreventDuplicates(t *testing.T) {
 				require.NoError(t, err)
 				require.Len(t, second, 1)
 				require.Equal(t, first[0].Id, second[0].Id)
+			})
+		}
+	}
+}
+
+// TestLongerRecordsExcludePreviousInterval verifies that a shorter record saved
+// just after the cutoff still belongs to the previous interval and must not be
+// averaged into the rollup. See https://github.com/henrygd/beszel/issues/2805.
+func TestLongerRecordsExcludePreviousInterval(t *testing.T) {
+	for _, collection := range []string{"system_stats", "container_stats"} {
+		for _, tier := range []struct {
+			shorter, longer string
+			window          time.Duration
+			count           int
+		}{
+			{"10m", "20m", 20 * time.Minute, 2},
+			{"20m", "120m", 120 * time.Minute, 6},
+		} {
+			t.Run(collection+"/"+tier.longer, func(t *testing.T) {
+				hub, err := tests.NewTestHub(t.TempDir())
+				require.NoError(t, err)
+				defer hub.Cleanup()
+
+				user, err := tests.CreateUser(hub, "rollup@example.com", "testtesttest")
+				require.NoError(t, err)
+				sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+					"name": "rollup-system", "host": "localhost", "port": "45876",
+					"status": "up", "users": []string{user.Id},
+				})
+				require.NoError(t, err)
+
+				now := time.Now().UTC()
+				shorterPeriod := tier.window / time.Duration(tier.count)
+				stats := func(cpu int) string {
+					if collection == "container_stats" {
+						return fmt.Sprintf(`[{"n":"test","c":%d}]`, cpu)
+					}
+					return fmt.Sprintf(`{"cpu":%d}`, cpu)
+				}
+				seed := func(created time.Time, cpu int) {
+					record, err := tests.CreateRecord(hub, collection, map[string]any{
+						"system": sys.Id, "type": tier.shorter, "stats": stats(cpu),
+					})
+					require.NoError(t, err)
+					// created is an autodate field, so we need to set it manually
+					record.SetRaw("created", created.Format(types.DefaultDateLayout))
+					require.NoError(t, hub.SaveNoValidate(record))
+				}
+				// records covering the intervals inside the rollup window, each saved
+				// slightly after its interval ends like a real rollup write; the last
+				// one lands around the job's `now`, like the record the same run just
+				// wrote in the previous aggregation tier
+				for i := range tier.count {
+					seed(now.Add(-tier.window+time.Duration(i+1)*shorterPeriod+400*time.Millisecond), 10)
+				}
+				// a record saved just after the cutoff still covers the previous
+				// interval and must not be included
+				seed(now.Add(-tier.window+5*time.Second), 100)
+
+				rm := records.NewRecordManager(hub)
+				rm.CreateLongerRecords()
+
+				rollups, err := hub.FindAllRecords(collection, dbx.HashExp{"system": sys.Id, "type": tier.longer})
+				require.NoError(t, err)
+				require.Len(t, rollups, 1)
+
+				var decoded []struct {
+					Cpu float64 `json:"cpu"`
+					C   float64 `json:"c"`
+				}
+				statsJSON := rollups[0].GetString("stats")
+				if collection == "system_stats" {
+					statsJSON = "[" + statsJSON + "]"
+				}
+				require.NoError(t, json.Unmarshal([]byte(statsJSON), &decoded))
+				for _, d := range decoded {
+					assert.Equal(t, 10.0, max(d.Cpu, d.C), "rollup must average only the records covering its interval")
+				}
+			})
+		}
+	}
+}
+
+// TestLongerRecordsKeepValidInputs verifies that excluding the previous interval does not
+// drop inputs that belong to the window: 1m samples arrive on their own timer and must all
+// count, and a job that starts a couple of seconds late must still find its shorter records.
+func TestLongerRecordsKeepValidInputs(t *testing.T) {
+	for _, collection := range []string{"system_stats", "container_stats"} {
+		for _, tc := range []struct {
+			name, shorter, longer string
+			count                 int
+			period, newestAge     time.Duration
+			missing               int
+			wantCPU               float64
+		}{
+			{"minute_samples", "1m", "10m", 10, time.Minute, 30 * time.Second, -1, 19},
+			{"minute_samples_one_missing", "1m", "10m", 10, time.Minute, 30 * time.Second, 5, 20},
+			{"delayed_20m_job", "10m", "20m", 2, 10 * time.Minute, 2 * time.Second, -1, 55},
+			{"delayed_120m_job", "20m", "120m", 6, 20 * time.Minute, 2 * time.Second, -1, 25},
+			{"delayed_480m_job", "120m", "480m", 4, 120 * time.Minute, 2 * time.Second, -1, 32.5},
+		} {
+			t.Run(collection+"/"+tc.name, func(t *testing.T) {
+				hub, err := tests.NewTestHub(t.TempDir())
+				require.NoError(t, err)
+				defer hub.Cleanup()
+				user, err := tests.CreateUser(hub, "review@example.com", "testtesttest")
+				require.NoError(t, err)
+				sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+					"name": "review", "host": "localhost", "port": "45876", "status": "up", "users": []string{user.Id},
+				})
+				require.NoError(t, err)
+				now := time.Now().UTC()
+				for i := range tc.count {
+					if i == tc.missing {
+						continue
+					}
+					cpu := 10
+					if i == 0 {
+						cpu = 100
+					}
+					stats := fmt.Sprintf(`{"cpu":%d}`, cpu)
+					if collection == "container_stats" {
+						stats = fmt.Sprintf(`[{"n":"test","c":%d}]`, cpu)
+					}
+					rec, err := tests.CreateRecord(hub, collection, map[string]any{"system": sys.Id, "type": tc.shorter, "stats": stats})
+					require.NoError(t, err)
+					created := now.Add(-tc.newestAge - time.Duration(tc.count-1-i)*tc.period)
+					rec.SetRaw("created", created.Format(types.DefaultDateLayout))
+					require.NoError(t, hub.SaveNoValidate(rec))
+				}
+				records.NewRecordManager(hub).CreateLongerRecords()
+				rollups, err := hub.FindAllRecords(collection, dbx.HashExp{"system": sys.Id, "type": tc.longer})
+				require.NoError(t, err)
+				require.Len(t, rollups, 1, "valid shorter inputs must produce a rollup")
+				if collection == "system_stats" {
+					var stats struct {
+						CPU float64 `json:"cpu"`
+					}
+					require.NoError(t, rollups[0].UnmarshalJSONField("stats", &stats))
+					require.Equal(t, tc.wantCPU, stats.CPU)
+				} else {
+					var stats []struct {
+						CPU float64 `json:"c"`
+					}
+					require.NoError(t, rollups[0].UnmarshalJSONField("stats", &stats))
+					require.Len(t, stats, 1)
+					require.Equal(t, tc.wantCPU, stats[0].CPU)
+				}
 			})
 		}
 	}

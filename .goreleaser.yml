@@ -103,6 +103,13 @@ archives:
     formats: [tar.gz]
     ids:
       - beszel-agent
+    files:
+      # keep goreleaser's defaults, which setting `files` replaces
+      - LICENSE*
+      - readme*
+      # launcher script installed by Homebrew formulas next to the agent
+      - src: supplemental/scripts/beszel-agent-launcher.sh
+        strip_parent: true
     name_template: >-
       {{ .Binary }}_
       {{- .Os }}_
@@ -216,16 +223,7 @@ brews:
     license: MIT
     skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
     extra_install: |
-      (bin/"beszel-agent-launcher").write <<~EOS
-        #!/bin/bash
-        set -a
-        if [ -f "$HOME/.config/beszel/beszel-agent.env" ]; then
-          source "$HOME/.config/beszel/beszel-agent.env"
-        fi
-        set +a
-        exec #{bin}/beszel-agent "$@"
-      EOS
-      (bin/"beszel-agent-launcher").chmod 0755
+      bin.install "beszel-agent-launcher.sh" => "beszel-agent-launcher"
     service: |
       run ["#{bin}/beszel-agent-launcher"]
       log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"

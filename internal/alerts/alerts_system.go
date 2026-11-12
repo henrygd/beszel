@@ -8,9 +8,9 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 )
 
 var cpuStateAlerts = map[string]struct {
@@ -72,6 +72,9 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "Disk":
 			maxUsedPct := data.Info.DiskPct
 			for _, fs := range data.Stats.ExtraFs {
+				if fs == nil {
+					continue
+				}
 				usedPct := fs.DiskUsed / fs.DiskTotal * 100
 				if usedPct > maxUsedPct {
 					maxUsedPct = usedPct

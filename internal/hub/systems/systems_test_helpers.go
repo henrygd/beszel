@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	entities "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // The hub integration tests create/replace systems and cleanup the test apps quickly.

@@ -95,13 +95,16 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
-		data.users = pb.authStore.record!.id
 		try {
 			setOpen(false)
 			if (system) {
+				// Don't send users on update, or other users of a shared system would be removed
 				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
-				const createdSystem = await pb.collection("systems").create(data)
+				const createdSystem = await pb.collection("systems").create({
+					...data,
+					users: pb.authStore.record!.id,
+				})
 				await pb.collection("fingerprints").create({
 					system: createdSystem.id,
 					token,
