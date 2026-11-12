@@ -218,6 +218,7 @@ msgstr "警報歷史"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "警報"
 
@@ -238,7 +239,7 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
 
@@ -251,13 +252,13 @@ msgstr "您確定嗎？"
 msgid "Automatic copy requires a secure context."
 msgstr "自動複製需要安全的上下文。"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "可用"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "可用"
 
@@ -410,7 +411,7 @@ msgstr "可停止"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "取消"
 
@@ -589,7 +590,7 @@ msgstr "容器"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "繼續"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "複製自"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "複製主機"
 
@@ -632,7 +633,7 @@ msgstr "複製主機"
 msgid "Copy Linux command"
 msgstr "複製 Linux 指令"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "複製名稱"
 
@@ -779,7 +780,7 @@ msgstr "預設時間段"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "刪除"
 
@@ -875,7 +876,7 @@ msgstr "持續時間"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "編輯"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "登出"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "登入"
 
@@ -1565,7 +1567,7 @@ msgstr "一次性密碼"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "開啟選單"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "密碼必須至少包含 8 個字符。"
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "密碼最多只能包含 71 個字符。"
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "密碼必須少於 72 個字節。"
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "修補"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "暫停"
 
@@ -1717,6 +1723,10 @@ msgstr "請參閱<0>文件</0>以取得說明。"
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "請登入您的帳號"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "請稍候片刻後再試。"
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "重啟次數"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "恢復"
 
@@ -2212,7 +2222,7 @@ msgstr "當所有系統都正常運行時，整體狀態為 <0>正常</0>；當�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
 
@@ -2264,6 +2274,10 @@ msgstr "令牌允許代理程式連接和註冊。指紋是每個系統唯一的
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "令牌和指紋用於驗證到中心的WebSocket連接。"
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "登入嘗試次數過多"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2594,4 +2608,3 @@ msgstr "是"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "您的用戶設置已更新。"
-

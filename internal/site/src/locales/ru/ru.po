@@ -218,6 +218,7 @@ msgstr "История оповещений"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Оповещения"
 
@@ -238,7 +239,7 @@ msgstr "Все контейнеры"
 msgid "All Systems"
 msgstr "Все системы"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Вы уверены, что хотите удалить {name}?"
 
@@ -251,13 +252,13 @@ msgstr "Вы уверены?"
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматическое копирование требует безопасного контекста."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Доступно"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Доступно"
 
@@ -410,7 +411,7 @@ msgstr "Может остановить"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -589,7 +590,7 @@ msgstr "Контейнеры"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Продолжить"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Копировать из"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Копировать хост"
 
@@ -632,7 +633,7 @@ msgstr "Копировать хост"
 msgid "Copy Linux command"
 msgstr "Копировать команду Linux"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Копировать имя"
 
@@ -779,7 +780,7 @@ msgstr "Период по умолчанию"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Удалить"
 
@@ -875,7 +876,7 @@ msgstr "Длительность"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Редактировать"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "Выйти"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Вход"
 
@@ -1565,7 +1567,7 @@ msgstr "Одноразовый пароль"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Открыть меню"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Пароль должен содержать не менее 8 символов."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Пароль должен содержать не более 71 символа."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Пароль должен быть короче 72 символов."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "Патч"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Пауза"
 
@@ -1717,6 +1723,10 @@ msgstr "Пожалуйста, смотрите <0>документацию</0> �
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Пожалуйста, войдите в свою учетную запись"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Подождите немного и попробуйте снова."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Перезапуски"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Возобновить"
 
@@ -2212,7 +2222,7 @@ msgstr "Общий статус: <0>ok</0>, когда все системы р�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Затем войдите в бэкенд и сбросьте пароль вашей учетной записи в таблице пользователей."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Это действие не может быть отменено. Оно навсегда удалит все текущие записи для {name} из базы данных."
 
@@ -2264,6 +2274,10 @@ msgstr "Токены позволяют агентам подключаться 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токены и отпечатки используются для аутентификации соединений WebSocket с хабом."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Слишком много попыток входа"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2594,4 +2608,3 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
-

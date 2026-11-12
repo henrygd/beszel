@@ -1,6 +1,74 @@
 ## 0.21.2
 
+- Add an actions menu with alert settings to the system detail page (#2803)
+
+- Add `FAN_SENSORS` to include or exclude fan sensors (#2713)
+
+- Add styled HTML alert emails (#2697)
+
+- Add `no_self_update` build tag to disable hub and agent self-updates (#2724)
+
+- Add warnings for missing automatic login users and trusted proxy configuration (#2824, #2812)
+
 - Limit sign-in attempts to 10 per minute per address (#2642)
+
+- Improve GPU collection retries and back off slow or repeatedly failing reads (#2705, #2687, #2709, #2656)
+
+- Fix hub crashes caused by null entries in agent data (#2834)
+
+- Fix agent health checks incorrectly reporting disconnected agents as healthy (#2825)
+
+- Fix agent connections timing out while waiting for a slow hub (#2772)
+
+- Fix container requests being canceled by requests for other systems (#2838)
+
+- Fix agents being able to overwrite another system's container, service, S.M.A.R.T., or ZFS records (#2835)
+
+- Fix non-admin users being able to change system users
+
+- Fix missing permission checks when moving network monitors between systems (#2714)
+
+- Fix container refreshes overlapping the initial load on the All Containers page
+
+- Fix system users being overwritten when editing a system
+
+- Fix network monitors remaining on the old agent after moving to another system (#2739)
+
+- Fix bulk monitor copy and import for URLs containing commas (#2716)
+
+- Fix alerts not all being saved when enabling multiple alerts quickly (#2781)
+
+- Fix automatic login briefly showing the login form and making redundant requests (#2810)
+
+- Fix password validation on the initial setup form (#2744, #2745)
+
+- Fix hub updates failing due to database access, working directory, or SELinux context issues (#2800, #2801, #2794)
+
+- Fix historical averages including records from the previous interval (#2807)
+
+- Fix failed systemd services being omitted when they have never been active (#2776, #2777)
+
+- Fix NVMe S.M.A.R.T. data being lost when large counters exceed 64 bits (#2732)
+
+- Fix degraded RAID1 arrays with remaining redundancy being reported as failed (#2760)
+
+- Fix LXC memory usage incorrectly subtracting the host's ZFS ARC (#2767)
+
+- Fix swap reporting on macOS (#2778)
+
+- Fix container CPU counts to respect assigned CPU sets (#2728)
+
+- Fix AMD GPU memory usage including GTT on devices without unified memory (#2715)
+
+- Fix stale dnf5 metadata in package update checks (#2790)
+
+- Fix battery data decoding with Go's experimental JSON implementation (#2746, #2748)
+
+- Fix the agent's `-k` flag not accepting a key file path (#2764, #2765)
+
+- Fix unreported S.M.A.R.T. power-on hours and cycles showing as zero (#2719)
+
+- Update Go and Go dependencies
 
 ## 0.21.1
 

@@ -218,6 +218,7 @@ msgstr "Историја упозорења"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Упозорења"
 
@@ -238,7 +239,7 @@ msgstr "Сви контејнери"
 msgid "All Systems"
 msgstr "Сви системи"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Да ли сте сигурни да желите да избришете {name}?"
 
@@ -251,13 +252,13 @@ msgstr "Да ли сте сигурни?"
 msgid "Automatic copy requires a secure context."
 msgstr "Аутоматско копирање захтева безбедан контекст."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Доступно"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Доступно"
 
@@ -410,7 +411,7 @@ msgstr "Може се зауставити"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -589,7 +590,7 @@ msgstr "Контејнери"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Настави"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Копирај из"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Копирај хоста"
 
@@ -632,7 +633,7 @@ msgstr "Копирај хоста"
 msgid "Copy Linux command"
 msgstr "Копирај Linux команду"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Копирај име"
 
@@ -779,7 +780,7 @@ msgstr "Подразумевани временски период"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Избриши"
 
@@ -875,7 +876,7 @@ msgstr "Трајање"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Измени"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "Одјави се"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Пријава"
 
@@ -1565,7 +1567,7 @@ msgstr "Једнократна лозинка"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Отвори мени"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Лозинка мора имати најмање 8 карактера."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Лозинка може да садржи највише 71 знак."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Лозинка мора бити мања од 72 бајта."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "Закрпа"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Паузирај"
 
@@ -1717,6 +1723,10 @@ msgstr "Молимо вас погледајте <0>документацију</
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Молимо вас да се пријавите на ваш налог"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Сачекајте тренутак и покушајте поново."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Поновна покретања"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Настави"
 
@@ -2212,7 +2222,7 @@ msgstr "Ukupan status je <0>ok</0> kada su svi sistemi aktivni, <1>upozorenje</1
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Затим се пријавите на backend и ресетујте лозинку корисничког налога у табели корисника."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ова акција се не може опозвати. Ово ће трајно избрисати све тренутне записе за {name} из базе података."
 
@@ -2264,6 +2274,10 @@ msgstr "Токени омогућавају агентима да се пове�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токени и отисци се користе за аутентификацију WebSocket веза са хабом."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Превише покушаја пријављивања"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2594,4 +2608,3 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Ваша корисничка подешавања су ажурирана."
-

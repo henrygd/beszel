@@ -218,6 +218,7 @@ msgstr "سجل التنبيهات"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "التنبيهات"
 
@@ -238,7 +239,7 @@ msgstr "جميع الحاويات"
 msgid "All Systems"
 msgstr "جميع الأنظمة"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
 
@@ -251,13 +252,13 @@ msgstr "هل أنت متأكد؟"
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "المتاح"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "المتاح"
 
@@ -410,7 +411,7 @@ msgstr "يمكن الإيقاف"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -589,7 +590,7 @@ msgstr "حاويات"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "متابعة"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "نسخ من"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "نسخ المضيف"
 
@@ -632,7 +633,7 @@ msgstr "نسخ المضيف"
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "نسخ الاسم"
 
@@ -779,7 +780,7 @@ msgstr "الفترة الزمنية الافتراضية"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "حذف"
 
@@ -875,7 +876,7 @@ msgstr "المدة"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "تعديل"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "تسجيل الخروج"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "تسجيل الدخول"
 
@@ -1565,7 +1567,7 @@ msgstr "كلمة مرور لمرة واحدة"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "فتح القائمة"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "كلمة المرور يجب أن تتكون من 8 أحرف على الأقل."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "يجب ألا تتجاوز كلمة المرور 71 حرفًا."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "يجب أن تكون كلمة المرور أقل من 72 بايت."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "ترقيع"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "إيقاف مؤقت"
 
@@ -1717,6 +1723,10 @@ msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "يرجى تسجيل الدخول إلى حسابك"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "يرجى الانتظار لحظة والمحاولة مرة أخرى."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "إعادة التشغيل"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "استئناف"
 
@@ -2212,7 +2222,7 @@ msgstr "الحالة العامة هي <0>موافق</0> عندما تكون ج�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية وأعد تعيين كلمة مرور حساب المستخدم الخاص بك في جدول المستخدمين."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "لا يمكن التراجع عن هذا الإجراء. سيؤدي ذلك إلى حذف جميع السجلات الحالية لـ {name} من قاعدة البيانات بشكل دائم."
 
@@ -2264,6 +2274,10 @@ msgstr "تسمح الرموز المميزة للوكلاء بالاتصال و�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "محاولات تسجيل دخول كثيرة جدًا"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2594,4 +2608,3 @@ msgstr "نعم"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
-
