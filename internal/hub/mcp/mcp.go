@@ -14,12 +14,12 @@ import (
 	"slices"
 	"strings"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // RegisterRoutes registers the /mcp route if MCP is enabled with the
