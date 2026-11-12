@@ -186,8 +186,7 @@ func (sys *System) update() error {
 		return err
 	}
 
-	// Drop null entries before sys.data is published: alert hooks read it from
-	// other goroutines, so it must not be mutated afterwards.
+	// Drop null entries
 	sanitizeNilEntries(data)
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
