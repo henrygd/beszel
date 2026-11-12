@@ -62,6 +62,48 @@ export function withMonitorGaps(
 	return result
 }
 
+export interface MonitorIncident {
+	/** Unix ms. Stats are stored when a bucket ends, so this is the start of the first affected bucket. */
+	start: number
+	/** Unix ms of the last affected bucket. */
+	end: number
+	/** Highest loss percentage of any affected bucket. */
+	loss: number
+	/** Whether the incident is still open, i.e. the latest record is affected. */
+	ongoing: boolean
+}
+
+/**
+ * Group consecutive stats records with failed probes into incidents, newest first. Records
+ * without data for the monitor (e.g. while its system was disconnected) end an incident, since
+ * the outage can't be told apart from missing data. Timing is as coarse as the records' bucket size.
+ */
+export function getMonitorIncidents(
+	records: NetworkMonitorStatsRecord[],
+	monitorId: string,
+	bucketMs: number
+): MonitorIncident[] {
+	const incidents: MonitorIncident[] = []
+	let current: MonitorIncident | null = null
+	for (const record of records) {
+		const stats = record.created == null ? undefined : record.stats?.[monitorId]
+		if (!stats || stats.loss <= 0) {
+			current = null
+			continue
+		}
+		if (current) {
+			current.end = record.created
+			current.loss = Math.max(current.loss, stats.loss)
+		} else {
+			current = { start: record.created - bucketMs, end: record.created, loss: stats.loss, ongoing: false }
+			incidents.push(current)
+		}
+	}
+	const last = records.at(-1)
+	if (current && last && current.end === last.created) current.ongoing = true
+	return incidents.reverse()
+}
+
 /**
  * Fold new records into recent cached records with the same timestamp. Bucketed multi-monitor
  * stats arrive per system, so one bucket can be filled by several batches.

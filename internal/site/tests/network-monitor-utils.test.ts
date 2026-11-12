@@ -7,6 +7,7 @@ mock.module("@lingui/core/macro", () => ({
 
 const {
 	formatMonitorFields,
+	getMonitorIncidents,
 	getMonitorStats,
 	mergeMonitorStats,
 	mergeSameTimestamps,
@@ -167,5 +168,45 @@ describe("bulk monitor rows", () => {
 	test("rejects malformed quoted rows instead of shifting fields", () => {
 		expect(() => parseMonitorFields('"https://example.com,status,http')).toThrow("Unclosed quoted field")
 		expect(() => parseMonitorFields('"example.com"extra,tcp')).toThrow("Expected comma after quoted field")
+	})
+})
+
+describe("monitor incidents", () => {
+	const record = (created: number | null, loss: number | null, id = "m1") =>
+		({ created, stats: loss === null ? {} : { [id]: { res_avg: 1, res_min: 1, res_max: 1, loss } } }) as never
+
+	test("groups consecutive buckets with loss and reports the worst loss", () => {
+		const records = [
+			record(60_000, 0),
+			record(120_000, 20),
+			record(180_000, 100),
+			record(240_000, 0),
+			record(300_000, 50),
+			record(360_000, 0),
+		]
+		expect(getMonitorIncidents(records, "m1", 60_000)).toEqual([
+			{ start: 240_000, end: 300_000, loss: 50, ongoing: false },
+			{ start: 60_000, end: 180_000, loss: 100, ongoing: false },
+		])
+	})
+
+	test("marks an incident as ongoing while the latest record is affected", () => {
+		const records = [record(60_000, 0), record(120_000, 100)]
+		expect(getMonitorIncidents(records, "m1", 60_000)).toEqual([
+			{ start: 60_000, end: 120_000, loss: 100, ongoing: true },
+		])
+	})
+
+	test("missing data ends an incident instead of extending it", () => {
+		const records = [record(60_000, 100), record(null, null), record(180_000, 100), record(240_000, null)]
+		const incidents = getMonitorIncidents(records, "m1", 60_000)
+		expect(incidents).toHaveLength(2)
+		expect(incidents.every((incident) => !incident.ongoing)).toBe(true)
+	})
+
+	test("ignores other monitors and returns nothing without failures", () => {
+		expect(getMonitorIncidents([record(60_000, 100, "other")], "m1", 60_000)).toEqual([])
+		expect(getMonitorIncidents([record(60_000, 0), record(120_000, 0)], "m1", 60_000)).toEqual([])
+		expect(getMonitorIncidents([], "m1", 60_000)).toEqual([])
 	})
 })

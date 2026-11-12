@@ -1,8 +1,10 @@
 import {
 	getCertDaysLeft,
 	getCertExpiryLevel,
+	getMonitorIncidents,
 	getMonitorProtocolLabel,
 	getMonitorTarget,
+	type MonitorIncident,
 } from "@/lib/network-monitor-utils"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
@@ -43,7 +45,16 @@ import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
-import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import {
+	chartTimeData,
+	cn,
+	decimalString,
+	formatDuration,
+	formatShortDate,
+	matchesFilterGroups,
+	parseFilterGroups,
+	parseSemVer,
+} from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
@@ -623,6 +634,58 @@ function NetworkMonitorSheet({
 	)
 }
 
+function MonitorIncidents({
+	incidents,
+	chartTimeLabel,
+	empty,
+}: {
+	incidents: MonitorIncident[]
+	chartTimeLabel: string
+	empty: boolean
+}) {
+	if (empty) return null
+	return (
+		<Card className="p-4 sm:p-5">
+			<CardTitle className="text-base mb-3">
+				<Trans>Incidents</Trans>
+				<span className="ms-2 text-sm font-normal text-muted-foreground">{chartTimeLabel}</span>
+			</CardTitle>
+			{incidents.length === 0 ? (
+				<p className="text-sm text-muted-foreground">
+					<Trans>No incidents</Trans>
+				</p>
+			) : (
+				<ul className="grid gap-2 text-sm">
+					{incidents.map((incident) => {
+						const peakLoss = decimalString(incident.loss, incident.loss >= 10 ? 1 : 2)
+						return (
+							<li key={incident.start} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+								<span
+									className={cn("shrink-0 size-2 rounded-full", incident.loss >= 100 ? "bg-red-500" : "bg-yellow-500")}
+								/>
+								<span className="tabular-nums">
+									{formatShortDate(new Date(incident.start).toISOString())}
+									{" – "}
+									{incident.ongoing ? t`ongoing` : formatShortDate(new Date(incident.end).toISOString())}
+								</span>
+								<span className="text-muted-foreground tabular-nums">
+									{formatDuration(new Date(incident.start).toISOString(), new Date(incident.end).toISOString())}
+								</span>
+								<span className="text-muted-foreground tabular-nums">
+									<Trans>Peak loss {peakLoss}%</Trans>
+								</span>
+							</li>
+						)
+					})}
+				</ul>
+			)}
+			<p className="text-xs text-muted-foreground mt-3">
+				<Trans>Timing is approximate and depends on the selected time range.</Trans>
+			</p>
+		</Card>
+	)
+}
+
 const certExpiryTextColors = { ok: "", warning: "text-yellow-600 dark:text-yellow-500", critical: "text-red-500" }
 
 function CertExpiry({ cert }: { cert: MonitorCertInfo }) {
@@ -721,6 +784,10 @@ function NetworkMonitorSheetContent({
 		? monitorStats.some((record) => record.stats != null)
 		: monitorStats.some((record) => record.stats?.[monitor.id] != null)
 	const monitorLabel = getMonitorTarget(monitor)
+	const incidents = useMemo(
+		() => getMonitorIncidents(monitorStats, monitor.id, chartTimeData[chartTime].expectedInterval),
+		[monitorStats, monitor.id, chartTime]
+	)
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -820,6 +887,11 @@ function NetworkMonitorSheetContent({
 							/>
 						</>
 					)}
+					<MonitorIncidents
+						incidents={incidents}
+						chartTimeLabel={chartTimeData[chartTime].label()}
+						empty={!hasMonitorStats}
+					/>
 				</div>
 			</SheetContent>
 		</Sheet>
