@@ -1,5 +1,5 @@
 import { atom, computed, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
+import type { AlertMap, ChartSync, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
 
@@ -85,6 +85,9 @@ export function hydrateUserSettings(settings: UserSettings) {
 	$userSettings.set(settings)
 	$chartTime.set(getUserChartTime(settings))
 }
+
+/** Whether hovering one chart shows the same point in time on all other charts */
+export const $chartSync: ReadableAtom<ChartSync> = computed($userSettings, (settings) => settings.chartSync || "off")
 
 /** Container chart filter */
 export const $containerFilter = atom("")
