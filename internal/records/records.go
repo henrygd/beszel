@@ -414,6 +414,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				sum.ExtraFs = make(map[string]*system.FsStats, len(stats.ExtraFs))
 			}
 			for key, value := range stats.ExtraFs {
+				if value == nil {
+					continue
+				}
 				if _, ok := sum.ExtraFs[key]; !ok {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}
@@ -571,6 +574,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	if sum.ExtraFs != nil {
 		for key := range sum.ExtraFs {
 			fs := sum.ExtraFs[key]
+			if fs == nil {
+				continue
+			}
 			fs.DiskTotal = twoDecimals(fs.DiskTotal / count)
 			fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
 			fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)

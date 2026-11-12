@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"hash/fnv"
 	"math/rand"
+	"maps"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -264,6 +266,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil, err
 	}
 	hub := sys.manager.hub
+	sanitizeNilEntries(data)
 	savedMonitorProbes := make(map[string]int64)
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		// add system_stats record
@@ -370,6 +373,17 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		}
 	}
 	return systemRecord, err
+}
+
+// sanitizeNilEntries removes null elements from agent-supplied slices and maps
+// so later code can dereference them safely. Agent payloads can contain nulls.
+func sanitizeNilEntries(data *system.CombinedData) {
+	if data == nil {
+		return
+	}
+	data.Containers = slices.DeleteFunc(data.Containers, func(c *container.Stats) bool { return c == nil })
+	maps.DeleteFunc(data.Stats.ExtraFs, func(_ string, fs *system.FsStats) bool { return fs == nil })
+	maps.DeleteFunc(data.Stats.ZfsPools, func(_ string, p *system.ZfsPool) bool { return p == nil })
 }
 
 func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {

@@ -72,6 +72,9 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "Disk":
 			maxUsedPct := data.Info.DiskPct
 			for _, fs := range data.Stats.ExtraFs {
+				if fs == nil {
+					continue
+				}
 				usedPct := fs.DiskUsed / fs.DiskTotal * 100
 				if usedPct > maxUsedPct {
 					maxUsedPct = usedPct
