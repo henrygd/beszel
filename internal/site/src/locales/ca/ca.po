@@ -218,6 +218,7 @@ msgstr "Historial d'alertes"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Alertes"
 
@@ -238,7 +239,7 @@ msgstr "Tots els contenidors"
 msgid "All Systems"
 msgstr "Tots els sistemes"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Segur que vols eliminar {name}?"
 
@@ -251,13 +252,13 @@ msgstr "N'estàs segur?"
 msgid "Automatic copy requires a secure context."
 msgstr "La còpia automàtica requereix un context segur."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Disponible"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Disponible"
 
@@ -410,7 +411,7 @@ msgstr "Es pot aturar"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Cancel·la"
 
@@ -589,7 +590,7 @@ msgstr "Contenidors"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Continua"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Copia de"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Copia l'amfitrió"
 
@@ -632,7 +633,7 @@ msgstr "Copia l'amfitrió"
 msgid "Copy Linux command"
 msgstr "Copia l'ordre de Linux"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Copia el nom"
 
@@ -779,7 +780,7 @@ msgstr "Període de temps per defecte"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Elimina"
 
@@ -875,7 +876,7 @@ msgstr "Durada"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Edita"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "Tanca la sessió"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Inici de sessió"
 
@@ -1565,7 +1567,7 @@ msgstr "Contrasenya d'un sol ús"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Obre el menú"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "La contrasenya ha de tenir almenys 8 caràcters."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "La contrasenya ha de tenir com a màxim 71 caràcters."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "La contrasenya ha de tenir menys de 72 bytes."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "Pedaç"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Posa en pausa"
 
@@ -1717,6 +1723,10 @@ msgstr "Consulta <0>la documentació</0> per a les instruccions."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Inicia la sessió al teu compte"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Espereu un moment i torneu-ho a provar."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Reinicis"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Reprèn"
 
@@ -2212,7 +2222,7 @@ msgstr "L'estat general és <0>ok</0> quan tots els sistemes estan actius, <1>wa
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Després inicia la sessió al backend i restableix la contrasenya del teu compte d'usuari a la taula d'usuaris."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Aquesta acció no es pot desfer. S'eliminaran permanentment de la base de dades tots els registres actuals de {name}."
 
@@ -2259,12 +2269,17 @@ msgstr "Testimonis i empremtes"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Els testimonis (tokens) permeten que els agents es connectin i es registrin. Les \n"
+msgstr ""
+"Els testimonis (tokens) permeten que els agents es connectin i es registrin. Les \n"
 "empremtes són identificadors estables i únics de cada sistema, que s'estableixen en la primera connexió."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Els testimonis i les empremtes s'utilitzen per autenticar les connexions WebSocket amb el hub."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Massa intents d’inici de sessió"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2595,4 +2610,3 @@ msgstr "Sí"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "S'ha actualitzat la configuració d'usuari."
-

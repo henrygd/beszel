@@ -218,6 +218,7 @@ msgstr "Advarselshistorik"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Alarmer"
 
@@ -238,7 +239,7 @@ msgstr "Alle containere"
 msgid "All Systems"
 msgstr "Alle systemer"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Er du sikker på, at du vil slette {name}?"
 
@@ -251,13 +252,13 @@ msgstr "Er du sikker?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisk kopiering kræver en sikker kontekst."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Tilgængelig"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Tilgængelig"
 
@@ -329,7 +330,7 @@ msgstr "Båndbredde"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bat."
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -410,7 +411,7 @@ msgstr "Kan stoppe"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Fortryd"
 
@@ -589,7 +590,7 @@ msgstr "Containere"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Fortsæt"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Kopier fra"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Kopier vært"
 
@@ -632,7 +633,7 @@ msgstr "Kopier vært"
 msgid "Copy Linux command"
 msgstr "Kopier Linux kommando"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Kopier navn"
 
@@ -779,7 +780,7 @@ msgstr "Standard tidsperiode"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Slet"
 
@@ -875,7 +876,7 @@ msgstr "Varighed"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Rediger"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "Log ud"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Log ind"
 
@@ -1565,7 +1567,7 @@ msgstr "Engangsadgangskode"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Åbn menu"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Adgangskoden skal være på mindst 8 tegn."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Adgangskoden må højst indeholde 71 tegn."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Adgangskoden skal være mindre end 72 bytes."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Pause"
 
@@ -1717,6 +1723,10 @@ msgstr "Se <0>dokumentationen</0> for instruktioner."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Log venligst ind på din konto"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Vent et øjeblik, og prøv igen."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Genstarter"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Genoptag"
 
@@ -2212,7 +2222,7 @@ msgstr "Den overordnede status er <0>ok</0>, når alle systemer kører, <1>warn<
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Log derefter ind på backend og nulstil adgangskoden til din brugerkonto i tabellen brugere."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktuelle elementer for {name} fra databasen."
 
@@ -2245,7 +2255,7 @@ msgstr "Nøgle"
 #. placeholder {0}: fingerprint.expand.system.name
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token for {0}"
-msgstr ""
+msgstr "Token til {0}"
 
 #: src/components/token-value.tsx
 msgid "Token hidden"
@@ -2264,6 +2274,10 @@ msgstr "Nøgler tillader agenter at oprette forbindelse og registrere. Fingeraft
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Nøgler og fingeraftryk bruges til at godkende WebSocket-forbindelser til hubben."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "For mange loginforsøg"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2594,4 +2608,3 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dine brugerindstillinger er opdateret."
-
