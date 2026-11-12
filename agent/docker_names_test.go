@@ -105,11 +105,11 @@ func TestDecodeContainerListLabels(t *testing.T) {
 	first := `[{"Id":"1","Names":["/a"],"Labels":{"k":"v","only-first":"x"}}]`
 	second := `[{"Id":"2","Names":["/a"],"Labels":{"k":"w"}}]`
 
-	t.Run("labels are not decoded without a template", func(t *testing.T) {
+	t.Run("the label map is not decoded without a template", func(t *testing.T) {
 		dm := &dockerManager{}
 		list := decodeList(t, dm, first)
 		assert.Equal(t, "1", list[0].Id)
-		assert.Nil(t, list[0].Labels)
+		assert.Nil(t, list[0].Labels, "grouping reads its four labels into a struct, see docker_groups.go")
 	})
 
 	t.Run("labels are decoded with a template and do not carry over", func(t *testing.T) {
