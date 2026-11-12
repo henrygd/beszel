@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"math/rand"
 	"maps"
+	"math/rand"
 	"slices"
 	"strings"
 	"sync"
@@ -186,6 +186,9 @@ func (sys *System) update() error {
 		return err
 	}
 
+	// Drop null entries before sys.data is published: alert hooks read it from
+	// other goroutines, so it must not be mutated afterwards.
+	sanitizeNilEntries(data)
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
 	sys.data = data
@@ -266,7 +269,6 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil, err
 	}
 	hub := sys.manager.hub
-	sanitizeNilEntries(data)
 	savedMonitorProbes := make(map[string]int64)
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		// add system_stats record
