@@ -1,10 +1,10 @@
 package migrations
 
 import (
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	m "ganigeorgiev.com/pocketbase/pocketbase/migrations"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/henrygd/beszel/internal/entities/speedtest"
-	"github.com/pocketbase/pocketbase/core"
-	m "github.com/pocketbase/pocketbase/migrations"
-	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 func init() {

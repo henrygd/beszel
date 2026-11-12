@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/speedtest"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 // syncPendingAgentConfigs syncs network monitor and speedtest configs that are

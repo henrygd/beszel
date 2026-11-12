@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
@@ -16,7 +17,6 @@ import (
 	"github.com/henrygd/beszel/internal/entities/speedtest"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 )
 

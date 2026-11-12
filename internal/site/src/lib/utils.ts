@@ -223,15 +223,15 @@ export function formatMicroseconds(microseconds: number, fixedDigits = true): st
 
 	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
 
-	if (microseconds < 1_000_000) {
-		const milliseconds = microseconds / 1000
-		const digits = milliseconds >= 10 ? 1 : 2
-		return `${digitFormatter(milliseconds, digits)}ms`
+	// Thresholds are where the printed value rounds up to the next unit or
+	// digit count (999.95ms -> 1.00s, 9.995ms -> 10.0ms, 9.995s -> 10.0s)
+	if (microseconds < 999_950) {
+		const digits = microseconds >= 9_995 ? 1 : 2
+		return `${digitFormatter(microseconds / 1000, digits)}ms`
 	}
 
-	const seconds = microseconds / 1_000_000
-	const digits = seconds >= 10 ? 1 : 2
-	return `${digitFormatter(seconds, digits)}s`
+	const digits = microseconds >= 9_995_000 ? 1 : 2
+	return `${digitFormatter(microseconds / 1_000_000, digits)}s`
 }
 
 /** Get value from local or session storage */
@@ -447,6 +447,25 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 	return (...args: Parameters<T>) => {
 		clearTimeout(timeout)
 		timeout = setTimeout(() => func(...args), wait)
+	}
+}
+
+/** Debounce separately per key, so a pending call for one key is never replaced by a call for another */
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
+export function debounceByKey<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number
+): (key: string, ...args: Parameters<T>) => void {
+	const timeouts = new Map<string, ReturnType<typeof setTimeout>>()
+	return (key: string, ...args: Parameters<T>) => {
+		clearTimeout(timeouts.get(key))
+		timeouts.set(
+			key,
+			setTimeout(() => {
+				timeouts.delete(key)
+				func(...args)
+			}, wait)
+		)
 	}
 }
 

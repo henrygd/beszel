@@ -361,6 +361,10 @@ func (c *ConnectionManager) startWebSocketConnection() error {
 	if c.wsClient == nil {
 		return errors.New("WebSocket client not initialized")
 	}
+	// A slow dial can outlast the retry interval while authentication is still pending.
+	if c.wsClient.getConn() != nil {
+		return nil
+	}
 	if time.Since(c.wsClient.lastConnectAttempt) < 5*time.Second {
 		return errors.New("already connecting")
 	}

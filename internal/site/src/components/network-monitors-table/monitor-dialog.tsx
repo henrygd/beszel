@@ -28,7 +28,7 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
+import { formatMonitorFields, getMonitorTarget, isHttpsTarget, parseMonitorFields } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
 import * as v from "valibot"
 
@@ -182,7 +182,13 @@ function getMonitorIdentityKey({ system, target, protocol, port, server }: Monit
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = line.split(",")
+	let fields: string[]
+	try {
+		fields = parseMonitorFields(line)
+	} catch (err) {
+		throw new Error(`Line ${lineNumber}: ${err instanceof Error ? err.message : "invalid monitor entry"}`)
+	}
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = fields
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
@@ -211,7 +217,7 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
+	return formatMonitorFields(trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]))
 }
 
 export function SystemMultiSelect({

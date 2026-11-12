@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // speedtestServersURL is Ookla's public server list API. It returns the servers

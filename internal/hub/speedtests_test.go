@@ -9,9 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/speedtest"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

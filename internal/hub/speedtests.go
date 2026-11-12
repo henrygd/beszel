@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/speedtest"
 	"github.com/henrygd/beszel/internal/hub/systems"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // generateSpeedtestID creates a stable hash ID for a speedtest based on its system,

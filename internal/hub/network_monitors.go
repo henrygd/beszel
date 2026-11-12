@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/hub/systems"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 // generateMonitorID creates a stable hash ID for a monitor based on its configuration and the system it belongs to.
@@ -59,6 +59,23 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// record with the new ID and delete the old one. Otherwise, just update the existing monitor on the agent.
 	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
 		systemID := e.Record.GetString("system")
+		if systemID != e.Record.Original().GetString("system") {
+			requestInfo, err := e.RequestInfo()
+			if err != nil {
+				return err
+			}
+			targetSystem, err := e.App.FindRecordById("systems", systemID)
+			if err != nil {
+				return e.ForbiddenError("", nil)
+			}
+			canAccess, err := e.App.CanAccessRecord(targetSystem, requestInfo, targetSystem.Collection().UpdateRule)
+			if err != nil {
+				return err
+			}
+			if !canAccess {
+				return e.ForbiddenError("", nil)
+			}
+		}
 		protocol := e.Record.GetString("protocol")
 		// only tcp uses port - set other protocols port to zero
 		if protocol != "tcp" {
@@ -104,7 +121,7 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	// sync monitor to agent on delete
 	hub.OnRecordAfterDeleteSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
 		if err := hub.deleteNetworkMonitor(e.Record); err != nil {
-			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.GetString("system"), "monitor", e.Record.Id, "err", err)
+			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.Original().GetString("system"), "monitor", e.Record.Id, "err", err)
 		}
 		return e.Next()
 	})
@@ -170,7 +187,9 @@ func (h *Hub) upsertNetworkMonitor(record *core.Record, runNow bool) error {
 
 // deleteNetworkMonitor removes the record's monitor from the target system.
 func (h *Hub) deleteNetworkMonitor(record *core.Record) error {
-	systemID := record.GetString("system")
+	// Use the persisted system: a pending request may have changed the record's system,
+	// but the agent that holds the monitor is the one it was last saved with.
+	systemID := record.Original().GetString("system")
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
 		return err
