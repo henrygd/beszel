@@ -10,6 +10,8 @@
 
 - Add warnings for missing automatic login users and trusted proxy configuration (#2824, #2812)
 
+- Add video encode/decode engine usage to GPU metrics when using nvtop (#2749)
+
 - Limit sign-in attempts to 10 per minute per address (#2642)
 
 - Improve GPU collection retries and back off slow or repeatedly failing reads (#2705, #2687, #2709, #2656)
