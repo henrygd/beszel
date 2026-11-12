@@ -212,6 +212,51 @@ func TestMcpUnauthorized(t *testing.T) {
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
 }
 
+// mcpInitialize sends a raw initialize request to the /mcp endpoint with the
+// given Host header (empty keeps the server address).
+func mcpInitialize(t *testing.T, serverURL string, token string, host string) *http.Response {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodPost, serverURL+"/mcp",
+		strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`))
+	require.NoError(t, err)
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
+	if host != "" {
+		req.Host = host
+	}
+	res, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+	return res
+}
+
+func TestMcpReverseProxyHost(t *testing.T) {
+	_, user, _, server, _ := setupHub(t)
+	// a reverse proxy on the same host connects over loopback but forwards
+	// the public Host header; this must not be rejected as DNS rebinding
+	res := mcpInitialize(t, server.URL, user.Token, "beszel.example.com")
+	require.Equal(t, http.StatusOK, res.StatusCode)
+}
+
+func TestMcpStateless(t *testing.T) {
+	_, user, _, server, _ := setupHub(t)
+	// no session is created, so idle sessions can't accumulate in memory
+	res := mcpInitialize(t, server.URL, user.Token, "")
+	require.Equal(t, http.StatusOK, res.StatusCode)
+	require.Empty(t, res.Header.Get("Mcp-Session-Id"))
+	// GET (standalone SSE stream) is answered by the MCP handler with 405
+	// rather than falling through to the web UI
+	req, err := http.NewRequest(http.MethodGet, server.URL+"/mcp", nil)
+	require.NoError(t, err)
+	req.Header.Set("Authorization", user.Token)
+	req.Header.Set("Accept", "text/event-stream")
+	getRes, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer getRes.Body.Close()
+	require.Equal(t, http.StatusMethodNotAllowed, getRes.StatusCode)
+}
+
 func TestMcpListSystems(t *testing.T) {
 	_, user, _, server, _ := setupHub(t)
 	session := mcpClient(t, server.URL, user.Token)
