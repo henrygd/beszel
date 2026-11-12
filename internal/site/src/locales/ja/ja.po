@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-29 20:26\n"
+"PO-Revision-Date: 2026-11-12 17:40\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -455,7 +455,7 @@ msgstr "変更"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr "メトリックの表示単位を変更します。"
+msgstr "指標の表示単位を変更します。"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
