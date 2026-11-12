@@ -19,7 +19,9 @@ type nvtopSnapshot struct {
 	Temp         *string `json:"temp"`
 	PowerDraw    *string `json:"power_draw"`
 	GpuUtil      *string `json:"gpu_util"`
-	EncodeDecode *string `json:"encode_decode"`
+	EncodeDecode *string `json:"encode_decode"` // devices with a shared media engine
+	Encode       *string `json:"encode"`        // devices with separate encoder and decoder
+	Decode       *string `json:"decode"`
 	MemTotal     *string `json:"mem_total"`
 	MemUsed      *string `json:"mem_used"`
 }
@@ -96,12 +98,9 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 		if sample.GpuUtil != nil {
 			gpu.Usage += parseNvtopNumber(*sample.GpuUtil)
 		}
-		if sample.EncodeDecode != nil {
-			if gpu.Engines == nil {
-				gpu.Engines = make(map[string]float64)
-			}
-			gpu.Engines["ENC/DEC"] += parseNvtopNumber(*sample.EncodeDecode)
-		}
+		addNvtopEngine(gpu, "ENC/DEC", sample.EncodeDecode)
+		addNvtopEngine(gpu, "ENC", sample.Encode)
+		addNvtopEngine(gpu, "DEC", sample.Decode)
 		if sample.PowerDraw != nil {
 			gpu.Power += parseNvtopNumber(*sample.PowerDraw)
 		}
@@ -110,6 +109,17 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 		valid = true
 	}
 	return valid
+}
+
+// addNvtopEngine accumulates a media engine reading if nvtop reported one.
+func addNvtopEngine(gpu *system.GPUData, name string, value *string) {
+	if value == nil {
+		return
+	}
+	if gpu.Engines == nil {
+		gpu.Engines = make(map[string]float64)
+	}
+	gpu.Engines[name] += parseNvtopNumber(*value)
 }
 
 // collectNvtopStats runs nvtop loop mode and continuously decodes JSON snapshots.

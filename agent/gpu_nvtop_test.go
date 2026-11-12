@@ -57,3 +57,17 @@ func TestNvtopWithoutEncodeDecode(t *testing.T) {
 		assert.Zero(t, gpu.Engines["ENC/DEC"])
 	}
 }
+
+func TestNvtopSeparateEncodeDecode(t *testing.T) {
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	// nvtop emits separate encode/decode fields when the device's media engines are not shared.
+	require.True(t, gm.parseNvtopData([]byte(`[{"device_name":"NVIDIA GeForce RTX 3050","gpu_util":"5%","encode":"30%","decode":"70%"}]`)))
+	gpu := gm.GetCurrentData(1)["n0"]
+	assert.Equal(t, 70.0, gpu.Usage)
+	assert.Equal(t, map[string]float64{"ENC": 30, "DEC": 70}, gpu.Engines)
+
+	require.True(t, gm.parseNvtopData([]byte(`[{"device_name":"NVIDIA GeForce RTX 3050","gpu_util":"50%","encode":"10%","decode":null}]`)))
+	gpu = gm.GetCurrentData(1)["n0"]
+	assert.Equal(t, 50.0, gpu.Usage)
+	assert.Equal(t, map[string]float64{"ENC": 10, "DEC": 0}, gpu.Engines)
+}
