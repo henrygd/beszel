@@ -13,10 +13,10 @@ import (
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // agentConnectRequest holds information related to an agent's connection attempt.

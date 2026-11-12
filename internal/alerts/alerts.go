@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/mailer"
 	"github.com/henrygd/beszel/internal/email"
 	"github.com/nicholas-fedor/shoutrrr"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
 type hubLike interface {

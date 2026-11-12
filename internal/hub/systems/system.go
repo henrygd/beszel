@@ -27,13 +27,13 @@ import (
 
 	"github.com/henrygd/beszel"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/security"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/security"
-	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
