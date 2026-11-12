@@ -300,8 +300,9 @@ func TestMcpGetSystem(t *testing.T) {
 func TestMcpGetSystemStats(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
 	session := mcpClient(t, server.URL, user.Token)
-	// modern (bytes/s), legacy network (MB/s) and legacy disk (MB/s) formats
-	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 80, "mp": 40, "dp": 20, "b": [2]uint64{1000, 2000}}, 30)
+	// modern (bytes/s, with per-core usage), legacy network (MB/s) and legacy
+	// disk (MB/s) formats
+	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 80, "mp": 40, "dp": 20, "b": [2]uint64{1000, 2000}, "cpus": []uint16{70, 90}}, 30)
 	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 40, "mp": 60, "dp": 40, "ns": 1, "nr": 2}, 20)
 	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 10, "mp": 10, "dp": 10, "dr": 2, "dw": 1}, 10)
 
@@ -461,6 +462,8 @@ func TestMcpStatsDefaultPeriod(t *testing.T) {
 		}
 		data := callTool(t, session, "get_system_stats", args)
 		require.Equal(t, tc.period, data["period"], "hours=%v", tc.hours)
+		// no records: samples is an empty array, not null
+		require.Equal(t, []any{}, data["samples"], "hours=%v", tc.hours)
 	}
 }
 
@@ -516,6 +519,9 @@ func TestMcpGetSystemUpdatesAndCurrent(t *testing.T) {
 		"f":    map[string]uint16{"fan1": 1200},
 		"efs":  map[string]any{"mnt/data": map[string]any{"d": 100, "du": 20, "rb": 4096, "wb": 2048}},
 		"bat":  [2]uint8{80, 1},
+		// per-core usage sent by current agents (a byte slice that json/v2
+		// rejects unless it unmarshals numeric arrays itself)
+		"cpus": []uint16{50, 60},
 	}, 1)
 	data = callTool(t, session, "get_system", map[string]any{"system": "user-system-1"})
 	current := data["current"].(map[string]any)
@@ -648,4 +654,16 @@ func getSystemIdByName(t *testing.T, hub *beszelTests.TestHub, name string) stri
 	system, err := hub.FindFirstRecordByFilter("systems", "name = {:name}", dbx.Params{"name": name})
 	require.NoError(t, err)
 	return system.Id
+}
+
+func TestMcpStatsUndecodableRecords(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": 20}, 20)
+	// valid JSON that doesn't match the stats struct is skipped with a note
+	// instead of silently shrinking the result
+	createStatsRecord(t, hub, userSystem.Id, map[string]any{"cpu": "not a number"}, 10)
+	data := callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "hours": 1})
+	require.Len(t, data["samples"].([]any), 1)
+	require.Contains(t, data["note"], "1 of 2 records could not be decoded")
 }
