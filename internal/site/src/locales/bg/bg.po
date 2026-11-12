@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:16\n"
+"PO-Revision-Date: 2026-10-22 17:14\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -218,6 +218,7 @@ msgstr "История на нотификациите"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Тревоги"
 
@@ -238,7 +239,7 @@ msgstr "Всички контейнери"
 msgid "All Systems"
 msgstr "Всички системи"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Сигурен ли си, че искаш да изтриеш {name}?"
 
@@ -410,7 +411,7 @@ msgstr "Може да се спре"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -589,7 +590,7 @@ msgstr "Контейнери"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Продължи"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Копиране от"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Копирай хоста"
 
@@ -632,7 +633,7 @@ msgstr "Копирай хоста"
 msgid "Copy Linux command"
 msgstr "Копирай linux командата"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Копирай име"
 
@@ -779,7 +780,7 @@ msgstr "Времеви диапазон по подразбиране"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Изтрий"
 
@@ -875,7 +876,7 @@ msgstr "Продължителност"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Редактирай"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "Изход"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Вход"
 
@@ -1565,7 +1567,7 @@ msgstr "Еднократна парола"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Отвори менюто"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Паролата трябва да е поне 8 символа."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Паролата трябва да е най-много 71 знака."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Паролата трябва да е по-малка от 72 байта."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "Корекция"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Пауза"
 
@@ -1717,6 +1723,10 @@ msgstr "Моля виж <0>документацията</0> за инструк�
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Моля влез в акаунта ти"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Моля, изчакайте малко и опитайте отново."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Рестартирания"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Възобнови"
 
@@ -2212,7 +2222,7 @@ msgstr "Общият статус е <0>ok</0>, когато всички сис
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "След това влез в backend-а и нулирай паролата за потребителския акаунт в таблицата за потребители."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Това действие не може да бъде отменено. Това ще изтрие всички записи за {name} от датабазата."
 
@@ -2264,6 +2274,10 @@ msgstr "Токените позволяват на агентите да се с
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токените и пръстовите отпечатъци се използват за удостоверяване на WebSocket връзките към концентратора."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Твърде много опити за вход"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx

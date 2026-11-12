@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:16\n"
+"PO-Revision-Date: 2026-10-23 09:11\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -218,6 +218,7 @@ msgstr "Historie upozornění"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Výstrahy"
 
@@ -238,7 +239,7 @@ msgstr "Všechny kontejnery"
 msgid "All Systems"
 msgstr "Všechny systémy"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Opravdu chcete odstranit {name}?"
 
@@ -329,7 +330,7 @@ msgstr "Přenos"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bat"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -410,7 +411,7 @@ msgstr "Může zastavit"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Zrušit"
 
@@ -589,7 +590,7 @@ msgstr "Kontejnery"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Pokračovat"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Kopírovat z"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Kopírovat hostitele"
 
@@ -632,7 +633,7 @@ msgstr "Kopírovat hostitele"
 msgid "Copy Linux command"
 msgstr "Kopírovat příkaz Linux"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Kopírovat název"
 
@@ -779,7 +780,7 @@ msgstr "Výchozí doba"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Odstranit"
 
@@ -875,7 +876,7 @@ msgstr "Doba trvání"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Upravit"
 
@@ -1151,7 +1152,7 @@ msgstr "Zdraví"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Signál"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1235,7 +1236,7 @@ msgstr "Neaktivní"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
-msgstr ""
+msgstr "Interval"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Interval (seconds)"
@@ -1301,6 +1302,7 @@ msgstr "Načítání..."
 msgid "Log Out"
 msgstr "Odhlásit"
 
+#: src/components/login/login.tsx
 #: src/components/login/login.tsx
 msgid "Login"
 msgstr "Přihlásit"
@@ -1565,7 +1567,7 @@ msgstr "Jednorázové heslo"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Otevřít menu"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Heslo musí obsahovat alespoň 8 znaků."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Heslo smí mít nejvýše 71 znaků."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Heslo musí být menší než 72 bytů."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "Záplata"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Pozastavit"
 
@@ -1717,6 +1723,10 @@ msgstr "Instrukce naleznete v <0>dokumentaci</0>."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Přihlaste se prosím k vašemu účtu"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Chvíli počkejte a zkuste to znovu."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Restarty"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Pokračovat"
 
@@ -2167,7 +2177,7 @@ msgstr "Cíl"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
-msgstr ""
+msgstr "cíl[protokol[port[interval[server]]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2212,7 +2222,7 @@ msgstr "Celkový stav je <0>ok</0>, když jsou všechny systémy v provozu, <1>w
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Poté se přihlaste do backendu a obnovte heslo k uživatelskému účtu v tabulce uživatelů."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tuto akci nelze vzít zpět. Tím se z databáze trvale odstraní všechny aktuální záznamy pro {name}."
 
@@ -2264,6 +2274,10 @@ msgstr "Tokeny umožňují agentům připojení a registraci. Otisky jsou stabil
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeny a otisky slouží k ověření připojení WebSocket k uzlu."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Příliš mnoho pokusů o přihlášení"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx

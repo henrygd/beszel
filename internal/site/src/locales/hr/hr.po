@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:17\n"
+"PO-Revision-Date: 2026-10-22 17:15\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -218,6 +218,7 @@ msgstr "Povijest Upozorenja"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Upozorenja"
 
@@ -238,7 +239,7 @@ msgstr "Svi spremnici"
 msgid "All Systems"
 msgstr "Svi Sustavi"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Jeste li sigurni da želite izbrisati {name}?"
 
@@ -410,7 +411,7 @@ msgstr "Može se zaustaviti"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Otkaži"
 
@@ -589,7 +590,7 @@ msgstr "Kontejneri"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Nastavi"
 
@@ -623,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Kopiraj iz"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Kopiraj hosta"
 
@@ -632,7 +633,7 @@ msgstr "Kopiraj hosta"
 msgid "Copy Linux command"
 msgstr "Kopiraj Linux komandu"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Kopiraj naziv"
 
@@ -779,7 +780,7 @@ msgstr "Zadano vremensko razdoblje"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Izbriši"
 
@@ -875,7 +876,7 @@ msgstr "Trajanje"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Uredi"
 
@@ -1302,6 +1303,7 @@ msgid "Log Out"
 msgstr "Odjava"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Prijava"
 
@@ -1565,7 +1567,7 @@ msgstr "Jednokratna lozinka"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Otvori meni"
 
@@ -1627,6 +1629,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Lozinka mora imati najmanje 8 znakova."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Lozinka smije sadržavati najviše 71 znak."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Lozinka mora biti kraća od 72 bajta."
 
@@ -1644,7 +1650,7 @@ msgid "Patch"
 msgstr "Zakrpa"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Pauza"
 
@@ -1717,6 +1723,10 @@ msgstr "Molimo provjerite <0>dokumentaciju</0> za upute."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Molimo prijavite se u svoj račun"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Pričekajte trenutak i pokušajte ponovno."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1864,7 +1874,7 @@ msgid "Restarts"
 msgstr "Ponovna pokretanja"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Nastavi"
 
@@ -2212,7 +2222,7 @@ msgstr "Ukupni status je <0>ok</0> kada su svi sustavi u radu, <1>warn</1> kada 
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Zatim se prijavite u backend i resetirajte lozinku korisničkog računa u tablici korisnika."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ova radnja ne može se poništiti. Svi trenutni zapisi za {name} bit će trajno izbrisani iz baze podataka."
 
@@ -2264,6 +2274,10 @@ msgstr "Tokeni dopuštaju agentima prijavu i registraciju. Otisci su stabilni id
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeni se uz otiske koriste za autentifikaciju WebSocket veza prema središnjoj kontroli."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Previše pokušaja prijave"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx

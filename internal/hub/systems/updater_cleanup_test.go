@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 )
 

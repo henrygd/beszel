@@ -7,10 +7,10 @@ import (
 	"strings"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/auth"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/auth"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
 )
