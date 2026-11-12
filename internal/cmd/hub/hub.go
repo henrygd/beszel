@@ -12,8 +12,8 @@ import (
 	"github.com/henrygd/beszel/internal/hub"
 	_ "github.com/henrygd/beszel/internal/migrations"
 
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/plugins/migratecmd"
+	"ganigeorgiev.com/pocketbase/pocketbase"
+	"ganigeorgiev.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/spf13/cobra"
 )
 
@@ -29,6 +29,17 @@ func main() {
 	}
 
 	baseApp := getBaseApp()
+
+	// The update command doesn't use the database, so run it without bootstrapping
+	// PocketBase. Bootstrapping would create the data dir relative to the working
+	// directory and open the database as the updater's user (usually root).
+	if isUpdateCmd(baseApp.RootCmd, os.Args[1:]) {
+		if err := baseApp.RootCmd.Execute(); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	hub := hub.NewHub(baseApp)
 	if err := hub.StartHub(); err != nil {
 		log.Fatal(err)
@@ -65,6 +76,12 @@ func getBaseApp() *pocketbase.PocketBase {
 	})
 
 	return baseApp
+}
+
+// isUpdateCmd reports whether args resolve to the update command.
+func isUpdateCmd(rootCmd *cobra.Command, args []string) bool {
+	cmd, _, err := rootCmd.Find(args)
+	return err == nil && cmd.Name() == "update"
 }
 
 func newHealthCmd() *cobra.Command {

@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/email"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -19,8 +20,8 @@ import (
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -111,6 +112,7 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
 	bindNetworkMonitorsEvents(h)
+	email.BindAuthEmails(h.App)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
