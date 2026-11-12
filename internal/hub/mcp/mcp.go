@@ -29,14 +29,25 @@ func RegisterRoutes(app core.App, se *core.ServeEvent) error {
 		return nil
 	}
 	server := newServer(app)
-	handler := mcpsdk.NewStreamableHTTPHandler(func(_ *http.Request) *mcpsdk.Server { return server }, nil)
+	handler := mcpsdk.NewStreamableHTTPHandler(func(_ *http.Request) *mcpsdk.Server { return server }, &mcpsdk.StreamableHTTPOptions{
+		// all tools are read-only and authorize every request, so no session
+		// state is needed (stateful sessions are never freed if clients don't
+		// send DELETE)
+		Stateless: true,
+		// requests are authenticated with a token header rather than cookies,
+		// so DNS rebinding is not a concern, and the protection rejects hubs
+		// behind a reverse proxy on the same host (loopback address with a
+		// public Host header)
+		DisableLocalhostProtection: true,
+	})
 	// authorization is handled by PocketBase (401 for missing/invalid tokens)
 	// so MCP clients only need to pass a valid auth token in the Authorization
 	// header, e.g. Authorization: Bearer <token>
-	// (the streamable HTTP transport uses POST for messages, GET for the
-	// optional standalone SSE stream, and DELETE to end a session; each method
-	// is registered separately as a method wildcard route would conflict with
-	// the static file catch-all route)
+	// (the stateless transport uses POST for messages and answers GET and
+	// DELETE with 405 so clients know there is no SSE stream or session; each
+	// method is registered separately as a method wildcard route would
+	// conflict with the static file catch-all route, which would otherwise
+	// serve the web UI for GET /mcp)
 	mcpHandler := func(e *core.RequestEvent) error {
 		handler.ServeHTTP(e.Response, e.Request)
 		return nil
