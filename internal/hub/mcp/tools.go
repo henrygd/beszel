@@ -36,8 +36,8 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "get_system_stats",
 		Description: "Get historical metrics for one system over a time range. " +
-			"Records are stored at 1m, 10m, 20m, 120m and 480m resolutions; " +
-			"data older than the retention of a resolution is only available in longer periods.",
+			"Records are stored at 1m, 10m, 20m, 120m and 480m resolutions, kept for 1h, 12h, 24h, 7d and 30d respectively; " +
+			"by default the finest resolution covering the requested hours is used.",
 	}, h.getSystemStats)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name:        "list_containers",
@@ -373,9 +373,26 @@ func systemCurrentFromStats(record *core.Record) *systemCurrent {
 
 type getSystemStatsParams struct {
 	System string  `json:"system" jsonschema:"system name or id"`
-	Period string  `json:"period,omitzero" jsonschema:"record resolution: one of 1m (default), 10m, 20m, 120m or 480m"`
-	Hours  float64 `json:"hours,omitzero" jsonschema:"how many hours to look back (1-168, default 24)"`
+	Period string  `json:"period,omitzero" jsonschema:"record resolution: one of 1m, 10m, 20m, 120m or 480m (default: the finest resolution that covers the requested hours)"`
+	Hours  float64 `json:"hours,omitzero" jsonschema:"how many hours to look back (1-720, default 24)"`
 }
+
+// statsPeriods lists the stored system_stats resolutions with their retention
+// (see records.deleteOldSystemStats), from finest to coarsest.
+var statsPeriods = []struct {
+	period    string
+	retention time.Duration
+	label     string // human readable retention
+}{
+	{"1m", time.Hour, "1 hour"},
+	{"10m", 12 * time.Hour, "12 hours"},
+	{"20m", 24 * time.Hour, "24 hours"},
+	{"120m", 7 * 24 * time.Hour, "7 days"},
+	{"480m", 30 * 24 * time.Hour, "30 days"},
+}
+
+// maxStatsHours is the longest lookback, matching the 480m retention.
+const maxStatsHours = 720
 
 type systemStats struct {
 	System  string        `json:"system"`
@@ -387,15 +404,22 @@ type systemStats struct {
 	Samples []statsSample `json:"samples"`
 }
 
-// resolvePeriod validates the period param against the stored resolutions.
-func resolvePeriod(period string) (string, error) {
-	switch period {
-	case "":
-		return "1m", nil
-	case "1m", "10m", "20m", "120m", "480m":
-		return period, nil
+// resolvePeriod validates the period param against the stored resolutions and
+// returns it with its retention and retention label. Without a period, the
+// finest resolution whose retention covers the lookback is used (like the web
+// UI chart ranges).
+func resolvePeriod(period string, hours float64) (string, time.Duration, string, error) {
+	lookback := time.Duration(hours * float64(time.Hour))
+	for _, p := range statsPeriods {
+		if period == p.period || (period == "" && lookback <= p.retention) {
+			return p.period, p.retention, p.label, nil
+		}
 	}
-	return "", fmt.Errorf("invalid period %q: must be one of 1m, 10m, 20m, 120m, 480m", period)
+	if period == "" {
+		last := statsPeriods[len(statsPeriods)-1]
+		return last.period, last.retention, last.label, nil
+	}
+	return "", 0, "", fmt.Errorf("invalid period %q: must be one of 1m, 10m, 20m, 120m, 480m", period)
 }
 
 // getSystemStats returns historical samples and a summary for one system.
@@ -404,32 +428,41 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 	if err != nil {
 		return nil, systemStats{}, err
 	}
-	period, err := resolvePeriod(params.Period)
-	if err != nil {
-		return nil, systemStats{}, err
-	}
 	hours := params.Hours
 	if hours <= 0 {
 		hours = 24
 	}
-	if hours > 168 {
-		hours = 168
+	hours = min(hours, maxStatsHours)
+	period, retention, retentionLabel, err := resolvePeriod(params.Period, hours)
+	if err != nil {
+		return nil, systemStats{}, err
 	}
 	record, err := h.resolveSystem(auth, params.System)
 	if err != nil {
 		return nil, systemStats{}, err
 	}
+	// an explicit period can't reach further back than its retention, so
+	// report the range actually covered instead of the requested one
+	lookback := time.Duration(hours * float64(time.Hour))
+	var note string
+	if lookback > retention {
+		lookback = retention
+		note = fmt.Sprintf("%s records are only kept for %s, so the range was shortened; omit period to pick a resolution covering %g hours",
+			period, retentionLabel, hours)
+	}
 	now := time.Now().UTC()
+	from := now.Add(-lookback)
 	result := systemStats{
 		System: record.GetString("name"),
 		Period: period,
-		From:   now.Add(-time.Duration(hours * float64(time.Hour))).Format(time.RFC3339),
+		From:   from.Format(time.RFC3339),
 		To:     now.Format(time.RFC3339),
+		Note:   note,
 	}
 	systemStatsParams := dbx.Params{
 		"system": record.Id,
 		"period": period,
-		"from":   now.Add(-time.Duration(hours * float64(time.Hour))).Format(types.DefaultDateLayout),
+		"from":   from.Format(types.DefaultDateLayout),
 	}
 	records, err := h.app.FindRecordsByFilter("system_stats", "system = {:system} && type = {:period} && created >= {:from}",
 		"created", 0, 0, systemStatsParams)
@@ -437,7 +470,11 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 		return nil, systemStats{}, err
 	}
 	if len(records) == 0 {
-		result.Note = fmt.Sprintf("no %s records in the last %g hours; try a longer period (10m, 20m, 120m or 480m)", period, hours)
+		empty := fmt.Sprintf("no %s records in this range (the system may be new, down or paused)", period)
+		if note != "" {
+			empty = note + "; " + empty
+		}
+		result.Note = empty
 		return nil, result, nil
 	}
 	// decode stats records once; records that fail to decode are skipped
