@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { PushUrl } from "@/components/network-monitors-table/push-url"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,7 +33,7 @@ import { formatMonitorFields, getMonitorTarget, isHttpsTarget, parseMonitorField
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
-type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
+type MonitorProtocol = "icmp" | "tcp" | "http" | "dns" | "push"
 
 type MonitorValues = {
 	system: string
@@ -55,12 +56,16 @@ type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | 
 
 const defaultInterval = 30
 
-const MonitorProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
+// Probe monitors run at most hourly, but push monitors may expect a heartbeat as rarely as daily.
+const maxProbeInterval = 3600
+const maxPushInterval = 86400
+
+const MonitorProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns", "push"])
 
 // Comma-separated status codes and ranges, e.g. "200-299,301". Empty is allowed.
 const expectedStatusPattern = /^(\d{3}(-\d{3})?(\s*,\s*\d{3}(-\d{3})?)*)?$/
 
-const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
+const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(maxPushInterval))
 
 // Both the single-monitor form and the bulk importer flow through this schema so
 // defaults and HTTP target normalization stay in one place.
@@ -79,7 +84,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
 		let httpTarget = input.target
-		if (protocol === "icmp" || protocol === "http" || protocol === "dns") {
+		if (protocol === "icmp" || protocol === "http" || protocol === "dns" || protocol === "push") {
 			if (protocol === "http") {
 				httpTarget = normalizeHttpTarget(input.target, port)
 			}
@@ -106,13 +111,25 @@ const NormalizedMonitorValuesSchema = v.pipe(
 	}),
 	v.forward(
 		v.check((input) => {
-			if (input.protocol === "icmp" || input.protocol === "http" || input.protocol === "dns") {
+			if (
+				input.protocol === "icmp" ||
+				input.protocol === "http" ||
+				input.protocol === "dns" ||
+				input.protocol === "push"
+			) {
 				return input.port === 0
 			}
 
 			return Number.isInteger(input.port) && input.port >= 1 && input.port <= 65535
 		}, "Port must be between 1 and 65535"),
 		["port"]
+	),
+	v.forward(
+		v.check(
+			(input) => input.protocol === "push" || input.interval <= maxProbeInterval,
+			`Interval must be ${maxProbeInterval} seconds or less`
+		),
+		["interval"]
 	),
 	// Resolving an IP literal returns it without querying anything, so the check would measure nothing.
 	v.forward(
@@ -886,13 +903,19 @@ function MonitorDialogContent({
 					</div>
 				)}
 				<div className="grid gap-2">
-					<Label>
-						<Trans>Target</Trans>
-					</Label>
+					<Label>{protocol === "push" ? <Trans>Name</Trans> : <Trans>Target</Trans>}</Label>
 					<Input
 						value={target}
 						onChange={(e) => setTarget(e.target.value)}
-						placeholder={protocol === "http" ? "http://localhost:8090" : protocol === "dns" ? "example.com" : "1.1.1.1"}
+						placeholder={
+							protocol === "http"
+								? "http://localhost:8090"
+								: protocol === "dns"
+									? "example.com"
+									: protocol === "push"
+										? "nightly-backup"
+										: "1.1.1.1"
+						}
 						aria-invalid={dnsTargetIsIp}
 						required
 					/>
@@ -916,6 +939,7 @@ function MonitorDialogContent({
 							<SelectItem value="tcp">TCP</SelectItem>
 							<SelectItem value="http">HTTP</SelectItem>
 							<SelectItem value="dns">DNS</SelectItem>
+							<SelectItem value="push">Push</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -951,17 +975,31 @@ function MonitorDialogContent({
 				)}
 				<div className="grid gap-2">
 					<Label>
-						<Trans>Interval (seconds)</Trans>
+						{protocol === "push" ? <Trans>Heartbeat interval (seconds)</Trans> : <Trans>Interval (seconds)</Trans>}
 					</Label>
 					<Input
 						type="number"
 						value={monitorInterval}
 						onChange={(e) => setMonitorInterval(e.target.value)}
 						min={1}
-						max={3600}
+						max={protocol === "push" ? maxPushInterval : maxProbeInterval}
 						required
 					/>
 				</div>
+				{protocol === "push" && (
+					<>
+						<p className="text-xs text-muted-foreground -mt-2">
+							<Trans>The monitor is down if no heartbeat arrives within this interval plus one minute.</Trans>
+						</p>
+						{monitor?.protocol === "push" && monitor.pushToken ? (
+							<PushUrl token={monitor.pushToken} />
+						) : (
+							<p className="text-xs text-muted-foreground">
+								<Trans>The heartbeat URL is available after the monitor is saved.</Trans>
+							</p>
+						)}
+					</>
+				)}
 				{usesTls && (
 					<label
 						htmlFor="monitor-skip-tls-verify"

@@ -686,7 +686,7 @@ export interface NetworkMonitorRecord {
 	id: string
 	system: string
 	target: string
-	protocol: "icmp" | "tcp" | "http" | "dns"
+	protocol: "icmp" | "tcp" | "http" | "dns" | "push"
 	port: number
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
@@ -696,6 +696,8 @@ export interface NetworkMonitorRecord {
 	/** Text that must appear in the HTTP response body (or must not appear when invertKeyword is set). */
 	keyword: string
 	invertKeyword: boolean
+	/** Secret in the heartbeat URL of a push monitor. */
+	pushToken: string
 	res: number
 	resMin1h: number
 	resMax1h: number

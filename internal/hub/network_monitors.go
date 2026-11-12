@@ -28,8 +28,21 @@ func generateMonitorID(systemId string, config monitor.Config) string {
 
 // bindNetworkMonitorsEvents keeps monitor records and agent monitor state in sync.
 func bindNetworkMonitorsEvents(hub *Hub) {
+	// only push monitors may use heartbeat intervals above the probe limit
+	hub.OnRecordCreateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
+		if monitorIntervalTooLong(e.Record) {
+			return e.BadRequestError(intervalTooLongMessage, nil)
+		}
+		return e.Next()
+	})
+
 	// on create, make sure the id is set to a stable hash
 	hub.OnRecordCreate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
+		if e.Record.GetString("protocol") == protocolPush {
+			e.Record.Set("pushToken", newPushToken())
+		} else {
+			e.Record.Set("pushToken", "")
+		}
 		systemID := e.Record.GetString("system")
 		config := monitorConfigFromRecord(e.Record)
 		id := generateMonitorID(systemID, *config)
@@ -76,6 +89,9 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 				return e.ForbiddenError("", nil)
 			}
 		}
+		if monitorIntervalTooLong(e.Record) {
+			return e.BadRequestError(intervalTooLongMessage, nil)
+		}
 		protocol := e.Record.GetString("protocol")
 		// only tcp uses port - set other protocols port to zero
 		if protocol != "tcp" {
@@ -86,6 +102,15 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 			e.Record.Set("server", "")
 		}
 		// only http uses TLS verification and response checks - clear them for other protocols
+		if protocol == protocolPush {
+			// push monitors have no probe settings, only a token the sender uses
+			if e.Record.GetString("pushToken") == "" {
+				e.Record.Set("pushToken", newPushToken())
+			}
+		} else {
+			e.Record.Set("pushToken", "")
+			e.Record.Set("lastPush", 0)
+		}
 		if protocol != "http" {
 			e.Record.Set("skipTlsVerify", false)
 			e.Record.Set("expectedStatus", "")
@@ -168,7 +193,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "expectedStatus", "keyword", "invertKeyword"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "expectedStatus", "keyword", "invertKeyword", "pushToken", "lastPush"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}
@@ -178,6 +203,10 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 // upsertNetworkMonitor creates or updates the record's monitor on the target system. If runNow
 // is true, it will also trigger an immediate monitor run and update the record with the result.
 func (h *Hub) upsertNetworkMonitor(record *core.Record, runNow bool) error {
+	// push monitors are evaluated by the hub and never run on an agent
+	if record.GetString("protocol") == protocolPush {
+		return nil
+	}
 	systemID := record.GetString("system")
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
@@ -193,6 +222,9 @@ func (h *Hub) upsertNetworkMonitor(record *core.Record, runNow bool) error {
 
 // deleteNetworkMonitor removes the record's monitor from the target system.
 func (h *Hub) deleteNetworkMonitor(record *core.Record) error {
+	if record.GetString("protocol") == protocolPush {
+		return nil
+	}
 	// Use the persisted system: a pending request may have changed the record's system,
 	// but the agent that holds the monitor is the one it was last saved with.
 	systemID := record.Original().GetString("system")

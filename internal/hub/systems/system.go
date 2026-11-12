@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"maps"
 	"math/rand"
 	"strings"
 	"sync"
@@ -265,6 +266,11 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	}
 	hub := sys.manager.hub
 	savedMonitorProbes := make(map[string]int64)
+	// Push monitors have no agent probe, so the hub evaluates their heartbeats here.
+	pushResults, pushErr := sys.pushMonitorResults(hub, time.Now())
+	if pushErr != nil {
+		hub.Logger().Error("Error evaluating push monitors", "system", sys.Id, "err", pushErr)
+	}
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		// add system_stats record
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
@@ -325,6 +331,12 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		if len(pushResults) > 0 {
+			if err := sys.updateNetworkMonitorsRecords(txApp, pushResults, savedMonitorProbes); err != nil {
+				return err
+			}
+		}
+
 		if err := sys.syncZfsPoolHealth(txApp, data.Stats.ZfsPools); err != nil {
 			return err
 		}
@@ -359,13 +371,21 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	// A non-nil report includes cached results for all remaining monitors.
 	if err == nil && data.Monitors != nil {
 		for id := range sys.lastSavedMonitorProbe {
-			if _, exists := data.Monitors[id]; !exists {
+			_, reported := data.Monitors[id]
+			_, evaluated := pushResults[id]
+			if !reported && !evaluated {
 				delete(sys.lastSavedMonitorProbe, id)
 			}
 		}
 	}
 	if err == nil {
-		if alertErr := hub.HandleNetworkMonitorAlerts(systemRecord, data.Monitors); alertErr != nil {
+		alertResults := data.Monitors
+		if len(pushResults) > 0 {
+			alertResults = make(map[string]monitor.Result, len(data.Monitors)+len(pushResults))
+			maps.Copy(alertResults, data.Monitors)
+			maps.Copy(alertResults, pushResults)
+		}
+		if alertErr := hub.HandleNetworkMonitorAlerts(systemRecord, alertResults); alertErr != nil {
 			hub.Logger().Error("Error handling network monitor alerts", "err", alertErr)
 		}
 	}

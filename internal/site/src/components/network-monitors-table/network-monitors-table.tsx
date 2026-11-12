@@ -33,6 +33,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { subscribeKeys } from "nanostores"
+import { PushUrl } from "@/components/network-monitors-table/push-url"
 import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
@@ -753,6 +754,7 @@ function NetworkMonitorSheetContent({
 					</SheetDescription>
 				</SheetHeader>
 				<div className="grid gap-4">
+					{monitor.protocol === "push" && monitor.pushToken && <PushUrl token={monitor.pushToken} />}
 					<div className="flex flex-wrap items-center gap-2">
 						<ChartTimeSelect
 							className="bg-card flex-1 min-w-0 basis-full sm:basis-0"

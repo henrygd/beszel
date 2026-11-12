@@ -380,7 +380,7 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
 	var configs []monitor.Config
 	err := sm.hub.DB().
-		NewQuery("SELECT id, target, protocol, port, interval, server, skipTlsVerify, expectedStatus, keyword, invertKeyword FROM network_monitors WHERE system = {:system} AND enabled = true").
+		NewQuery("SELECT id, target, protocol, port, interval, server, skipTlsVerify, expectedStatus, keyword, invertKeyword FROM network_monitors WHERE system = {:system} AND enabled = true AND protocol != 'push'").
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
 	return configs, err
