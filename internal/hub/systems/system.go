@@ -445,7 +445,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		params["memPeak"+suffix] = service.MemPeak
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated",
+		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated WHERE systemd_services.system = excluded.system",
 		strings.Join(valueStrings, ","),
 	)
 	if _, err := app.DB().NewQuery(queryString).Bind(params).Execute(); err != nil {
@@ -599,7 +599,8 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	return nil
 }
 
-// createContainerRecords creates container records
+// createContainerRecords creates container records. Record IDs are agent-supplied,
+// so an ID owned by another system is left untouched rather than taken over.
 func createContainerRecords(app core.App, data []*container.Stats, systemId string) error {
 	if len(data) == 0 {
 		return nil
@@ -629,7 +630,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 		params["updateAvailable"+suffix] = container.UpdateAvailable
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updatable, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updatable = excluded.updatable, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updatable, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updatable = excluded.updatable, updated = excluded.updated WHERE containers.system = excluded.system",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
