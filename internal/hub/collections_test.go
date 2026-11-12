@@ -414,7 +414,7 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			Name:               "Unauthorized user cannot list systems",
 			Method:             http.MethodGet,
 			URL:                "/api/collections/systems/records",
-			ExpectedStatus:     200, // https://ganigeorgiev.com/pocketbase/pocketbase/discussions/1570
+			ExpectedStatus:     200, // https://github.com/pocketbase/pocketbase/discussions/1570
 			TestAppFactory:     testAppFactory,
 			ExpectedContent:    []string{`"items":[]`, `"totalItems":0`},
 			NotExpectedContent: []string{userOneSystem.Id, sharedSystem.Id, userTwoSystem.Id},
