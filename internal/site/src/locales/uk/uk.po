@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-25 15:27\n"
+"PO-Revision-Date: 2026-11-12 17:24\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -71,7 +71,7 @@ msgstr "{daysLeft, plural, one {# день} few {# дні} many {# днів} oth
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr "Ввід/вивід {diskName}"
+msgstr "Читання/запис: {diskName}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -846,7 +846,7 @@ msgstr "Використання пам’яті Docker"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Docker Network I/O"
-msgstr "Мережевий ввід/вивід Docker"
+msgstr "Мережева активність Docker"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
