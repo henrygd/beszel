@@ -300,7 +300,11 @@ func (h *mcphub) getSystem(ctx context.Context, req *mcpsdk.CallToolRequest, par
 	// detailed current metrics from the latest 1m system_stats record
 	if latest, err := h.app.FindRecordsByFilter("system_stats", "system = {:system} && type = {:type}", "-created", 1, 0,
 		dbx.Params{"system": record.Id, "type": "1m"}); err == nil && len(latest) > 0 {
-		detail.Current = systemCurrentFromStats(latest[0])
+		current, err := systemCurrentFromStats(latest[0])
+		if err != nil {
+			h.app.Logger().Warn("MCP: failed to decode system stats", "system", record.Id, "err", err)
+		}
+		detail.Current = current
 	}
 	// hardware details reported by the agent
 	if detailsRecord, err := h.app.FindRecordById("system_details", record.Id); err == nil {
@@ -325,11 +329,11 @@ func (h *mcphub) getSystem(ctx context.Context, req *mcpsdk.CallToolRequest, par
 }
 
 // systemCurrentFromStats extracts detailed current metrics from a system_stats
-// record, returning nil when it holds nothing useful.
-func systemCurrentFromStats(record *core.Record) *systemCurrent {
+// record, returning nil when it holds nothing useful or can't be decoded.
+func systemCurrentFromStats(record *core.Record) (*systemCurrent, error) {
 	var s system.Stats
 	if err := record.UnmarshalJSONField("stats", &s); err != nil {
-		return nil
+		return nil, err
 	}
 	current := &systemCurrent{}
 	if len(s.Temperatures) > 0 {
@@ -366,9 +370,9 @@ func systemCurrentFromStats(record *core.Record) *systemCurrent {
 	}
 	if current.Temperatures == nil && current.Gpus == nil && current.Filesystems == nil &&
 		current.Fans == nil && current.Battery == nil && current.Swap == nil {
-		return nil
+		return nil, nil
 	}
-	return current
+	return current, nil
 }
 
 type getSystemStatsParams struct {
@@ -458,6 +462,8 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 		From:   from.Format(time.RFC3339),
 		To:     now.Format(time.RFC3339),
 		Note:   note,
+		// empty array rather than null when there are no records
+		Samples: []statsSample{},
 	}
 	systemStatsParams := dbx.Params{
 		"system": record.Id,
@@ -479,15 +485,27 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 	}
 	// decode stats records once; records that fail to decode are skipped
 	decoded := make([]decodedStat, 0, len(records))
+	var decodeErr error
 	for _, statsRecord := range records {
 		var s system.Stats
 		if err := statsRecord.UnmarshalJSONField("stats", &s); err != nil {
+			decodeErr = err
 			continue
 		}
 		decoded = append(decoded, decodedStat{
 			time:  statsRecord.GetDateTime("created").Time().UTC().Format(time.RFC3339),
 			stats: s,
 		})
+	}
+	// report skipped records so an empty or partial result is not mistaken
+	// for missing data
+	if skipped := len(records) - len(decoded); skipped > 0 {
+		h.app.Logger().Warn("MCP: failed to decode system stats", "system", record.Id, "skipped", skipped, "err", decodeErr)
+		skippedNote := fmt.Sprintf("%d of %d records could not be decoded and were skipped", skipped, len(records))
+		if result.Note != "" {
+			skippedNote = result.Note + "; " + skippedNote
+		}
+		result.Note = skippedNote
 	}
 	// build samples (capped by even stride if needed)
 	stride := 1
