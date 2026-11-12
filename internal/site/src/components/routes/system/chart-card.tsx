@@ -1,17 +1,19 @@
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { XIcon } from "lucide-react"
-import React, { type JSX, memo, useCallback, useEffect, useState } from "react"
-import { $containerFilter, $maxValues } from "@/lib/stores"
+import { BoxesIcon, XIcon } from "lucide-react"
+import React, { type JSX, memo, useCallback, useEffect, useMemo, useState } from "react"
+import { $containerFilter, $containerStackFilter, $containerStacks, $maxValues } from "@/lib/stores"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
 import Spinner from "../../spinner"
 import { Button } from "../../ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../../ui/card"
 import { ChartAverage, ChartMax } from "../../ui/icons"
+import type { ChartConfig } from "../../ui/chart"
 import { Input } from "../../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { MultiSelect } from "../../network-monitors-table/monitor-dialog"
 
 export function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const storeValue = useStore(store)
@@ -61,6 +63,52 @@ export function FilterBar({ store = $containerFilter }: { store?: typeof $contai
 				</Button>
 			)}
 		</>
+	)
+}
+
+/**
+ * Text filter for container charts, with a stack select when the chart has containers in stacks.
+ * Only stacks with a series in the chart are offered, so removed containers don't add empty stacks.
+ */
+export function ContainerFilterBar({ chartConfig }: { chartConfig: ChartConfig }) {
+	const stackFilter = useStore($containerStackFilter)
+	const containerStacks = useStore($containerStacks)
+	const options = useMemo(() => {
+		const stacks = new Set(stackFilter)
+		for (const name in chartConfig) {
+			const stack = containerStacks[name]
+			if (stack) {
+				stacks.add(stack)
+			}
+		}
+		return [...stacks].sort((a, b) => a.localeCompare(b)).map((stack) => ({ id: stack, label: stack }))
+	}, [chartConfig, containerStacks, stackFilter])
+
+	if (!options.length) {
+		return (
+			<div className="relative">
+				<FilterBar />
+			</div>
+		)
+	}
+
+	return (
+		<div className="flex flex-col sm:flex-row gap-2">
+			<MultiSelect
+				id="container-chart-stacks"
+				className="sm:w-44"
+				options={options}
+				selectedIds={stackFilter}
+				onChange={(ids) => $containerStackFilter.set(ids)}
+				icon={BoxesIcon}
+				placeholder={t({ message: "All stacks", context: "Docker stack" })}
+				searchPlaceholder={t({ message: "Search stacks", context: "Docker stack" })}
+				emptyText={<Trans context="Docker stack">No stacks found.</Trans>}
+			/>
+			<div className="relative">
+				<FilterBar />
+			</div>
+		</div>
 	)
 }
 

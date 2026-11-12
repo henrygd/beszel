@@ -42,6 +42,7 @@ export default function AreaChartDefault({
 	reverseStackOrder = false,
 	hideYAxis = false,
 	filter,
+	hiddenKeys,
 	truncate = false,
 	chartProps,
 }: {
@@ -63,6 +64,8 @@ export default function AreaChartDefault({
 	reverseStackOrder?: boolean
 	hideYAxis?: boolean
 	filter?: string
+	/** Series names to leave out of the tooltip, used instead of `filter` when given */
+	hiddenKeys?: Set<string>
 	truncate?: boolean
 	chartProps?: Omit<React.ComponentProps<typeof AreaChart>, "data" | "margin">
 }) {
@@ -166,6 +169,7 @@ export default function AreaChartDefault({
 								contentFormatter={contentFormatter}
 								showTotal={showTotal}
 								filter={filter}
+								hiddenKeys={hiddenKeys}
 								truncate={truncate}
 							/>
 						}
@@ -175,5 +179,5 @@ export default function AreaChartDefault({
 				</AreaChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Areas, XAxis])
+	}, [displayData, yAxisWidth, filter, hiddenKeys, Areas, XAxis])
 }

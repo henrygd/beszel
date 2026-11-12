@@ -101,6 +101,8 @@ const ChartTooltipContent = React.forwardRef<
 			labelKey?: string
 			unit?: string
 			filter?: string
+			/** Series names to leave out, used instead of `filter` when given */
+			hiddenKeys?: Set<string>
 			contentFormatter?: (item: unknown, key: string) => React.ReactNode | string
 			truncate?: boolean
 			showTotal?: boolean
@@ -123,6 +125,7 @@ const ChartTooltipContent = React.forwardRef<
 			labelKey,
 			unit,
 			filter,
+			hiddenKeys,
 			itemSorter,
 			contentFormatter: content = undefined,
 			truncate = false,
@@ -138,7 +141,9 @@ const ChartTooltipContent = React.forwardRef<
 		const totalName = typeof totalLabelNode === "string" ? totalLabelNode : t`Total`
 
 		React.useMemo(() => {
-			if (filter) {
+			if (hiddenKeys) {
+				payload = payload?.filter((item) => !hiddenKeys.has(item.name as string))
+			} else if (filter) {
 				const filterTerms = filter
 					.toLowerCase()
 					.split(" ")

@@ -89,6 +89,12 @@ export function hydrateUserSettings(settings: UserSettings) {
 /** Container chart filter */
 export const $containerFilter = atom("")
 
+/** Container chart stack filter; empty means all stacks */
+export const $containerStackFilter = atom<Set<string>>(new Set())
+
+/** Stack of each container on the current system, keyed by container name */
+export const $containerStacks = atom<Record<string, string>>({})
+
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 

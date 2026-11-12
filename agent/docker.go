@@ -559,6 +559,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Health = health
 
 	stats.Image = ctr.Image
+	stats.Stack = ctr.StackLabels.Stack()
 	stats.UpdateAvailable = updateAvailable
 
 	if len(ctr.Ports) > 0 {
@@ -843,6 +844,12 @@ func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
 		return err
 	}
 	if dm.nameTemplate == nil {
+		// Reused entries keep fields missing from the response, so drop last poll's stack labels
+		for _, ctr := range dm.apiContainerList[:cap(dm.apiContainerList)] {
+			if ctr != nil {
+				ctr.StackLabels = container.StackLabels{}
+			}
+		}
 		dm.apiContainerList = dm.apiContainerList[:0]
 		return json.Unmarshal(dm.buf.Bytes(), &dm.apiContainerList)
 	}
@@ -859,6 +866,11 @@ func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
 	dm.apiContainerList = dm.apiContainerList[:0]
 	for _, ctr := range dm.labeledList {
 		ctr.ApiInfo.Labels = ctr.Labels
+		// The label map shadows StackLabels in this decode, so fill it from the map
+		ctr.ApiInfo.StackLabels = container.StackLabels{
+			SwarmStack:     ctr.Labels[container.SwarmStackLabel],
+			ComposeProject: ctr.Labels[container.ComposeProjectLabel],
+		}
 		dm.apiContainerList = append(dm.apiContainerList, &ctr.ApiInfo)
 	}
 	return nil

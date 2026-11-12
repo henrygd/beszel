@@ -5,7 +5,7 @@ import { decimalString, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData } from "@/types"
 import CpuCoresSheet from "../cpu-sheet"
-import { ChartCard, FilterBar, SelectAvgMax } from "../chart-card"
+import { ChartCard, ContainerFilterBar, SelectAvgMax } from "../chart-card"
 import { dockerOrPodman } from "../chart-data"
 
 export function CpuChart({
@@ -69,7 +69,7 @@ export function ContainerCpuChart({
 	isPodman: boolean
 	cpuConfig: ChartConfig
 }) {
-	const { filter, dataPoints } = useContainerDataPoints(cpuConfig, (key, data) => data[key]?.c ?? null)
+	const { dataPoints, filteredKeys } = useContainerDataPoints(cpuConfig, (key, data) => data[key]?.c ?? null)
 
 	return (
 		<ChartCard
@@ -77,7 +77,7 @@ export function ContainerCpuChart({
 			grid={grid}
 			title={dockerOrPodman(t`Docker CPU Usage`, isPodman)}
 			description={t`Average CPU utilization of containers`}
-			cornerEl={<FilterBar />}
+			cornerEl={<ContainerFilterBar chartConfig={cpuConfig} />}
 		>
 			<AreaChartDefault
 				chartData={chartData}
@@ -87,7 +87,7 @@ export function ContainerCpuChart({
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
 				showTotal={true}
 				reverseStackOrder={true}
-				filter={filter}
+				hiddenKeys={filteredKeys}
 				truncate={true}
 				itemSorter={(a, b) => b.value - a.value}
 			/>
