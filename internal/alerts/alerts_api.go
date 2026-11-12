@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"slices"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/hub/utils"
 	"github.com/nicholas-fedor/shoutrrr"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // UpsertUserAlerts handles API request to create or update alerts for a user

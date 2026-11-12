@@ -10,7 +10,7 @@ import (
 	"github.com/henrygd/beszel/internal/alerts"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
-	"github.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/dbx"
 	"github.com/stretchr/testify/assert"
 )
 
