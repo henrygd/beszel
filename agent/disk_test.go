@@ -1395,3 +1395,56 @@ func TestApfsPhysicalDisk(t *testing.T) {
 		})
 	}
 }
+
+func TestAddPartitionRootFsAPFS(t *testing.T) {
+	// Apple Silicon: root is a sealed snapshot of a volume in container disk3,
+	// whose physical store is disk0s2. Only physical disks have counters.
+	newDiscovery := func(isDarwin bool) (*Agent, diskDiscovery) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		return agent, diskDiscovery{
+			agent:          agent,
+			rootMountPoint: "/",
+			ctx: fsRegistrationContext{
+				isDarwin: isDarwin,
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"disk0":  {Name: "disk0", ReadBytes: 10, WriteBytes: 10},
+					"disk33": {Name: "disk33", ReadBytes: 9000, WriteBytes: 9000},
+				},
+			},
+		}
+	}
+
+	t.Run("maps apfs root snapshot to physical disk", func(t *testing.T) {
+		setDiskutilInfo(t, func(dev string) ([]byte, error) {
+			assert.Equal(t, "/dev/disk3s1s1", dev)
+			return apfsPlist("disk3", "disk0s2"), nil
+		})
+		agent, d := newDiscovery(true)
+
+		assert.True(t, d.addPartitionRootFs("/dev/disk3s1s1", "/"))
+		stats, ok := agent.fsStats["disk0"]
+		require.True(t, ok, "root should map to disk0, got %v", agent.fsStats)
+		assert.True(t, stats.Root)
+		assert.Equal(t, "/", stats.Mountpoint)
+	})
+
+	t.Run("diskutil failure keeps existing behaviour", func(t *testing.T) {
+		setDiskutilInfo(t, func(string) ([]byte, error) { return nil, errors.New("boom") })
+		agent, d := newDiscovery(true)
+
+		// Unchanged: no prefix match, so the caller falls back to
+		// addLastResortRootFs.
+		assert.False(t, d.addPartitionRootFs("/dev/disk3s1s1", "/"))
+		assert.Empty(t, agent.fsStats)
+	})
+
+	t.Run("non-darwin never calls diskutil", func(t *testing.T) {
+		setDiskutilInfo(t, func(string) ([]byte, error) {
+			t.Fatal("diskutil should not be called")
+			return nil, nil
+		})
+		_, d := newDiscovery(false)
+
+		d.addPartitionRootFs("/dev/disk3s1s1", "/")
+	})
+}
