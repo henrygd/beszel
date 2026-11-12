@@ -124,6 +124,20 @@ const diskutilTimeout = 15 * time.Second
 
 var wholeDiskPattern = regexp.MustCompile(`^disk[0-9]+`)
 
+// apfsIoDevice returns the physical disk I/O key for an APFS volume on
+// darwin, if it has I/O counters.
+func (ctx fsRegistrationContext) apfsIoDevice(device string) (string, bool) {
+	if !ctx.isDarwin || !filepath.IsAbs(device) {
+		return "", false
+	}
+	physical := apfsPhysicalDisk(device)
+	if physical == "" {
+		return "", false
+	}
+	_, ok := ctx.diskIoCounters[physical]
+	return physical, ok
+}
+
 // apfsPhysicalDisk returns the whole physical disk backing an APFS volume
 // (e.g. disk13s1 in container disk13 on store disk12s2 -> disk12), or "" if
 // the device is not APFS or diskutil fails. For multi-store containers
@@ -173,13 +187,9 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 		// number is unrelated to the physical disk (disk12). Resolve the
 		// physical store up front so the prefix fallback below can't pick an
 		// unrelated disk (disk1 is a prefix of disk13s1).
-		if ctx.isDarwin && filepath.IsAbs(device) {
-			if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
-				if physical := apfsPhysicalDisk(device); physical != "" {
-					if _, ioMatch := ctx.diskIoCounters[physical]; ioMatch {
-						key = physical
-					}
-				}
+		if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
+			if physical, ok := ctx.apfsIoDevice(device); ok {
+				key = physical
 			}
 		}
 	}
@@ -292,7 +302,15 @@ func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
 	// device is passed through as-is: findIoDevice normalizes it, and
 	// filepath.Base would turn a Windows volume name such as "C:" into "\"
 	// on the way in (#2417).
-	fs, match := findIoDevice(device, d.ctx.diskIoCounters)
+	// An APFS root (e.g. disk3s1s1 on Apple Silicon) never prefix-matches its
+	// physical disk (disk0), so resolve it before the generic lookup.
+	fs, match := "", false
+	if _, exact := d.ctx.diskIoCounters[normalizeDeviceName(device)]; !exact {
+		fs, match = d.ctx.apfsIoDevice(device)
+	}
+	if !match {
+		fs, match = findIoDevice(device, d.ctx.diskIoCounters)
+	}
 	if !match {
 		return false
 	}
