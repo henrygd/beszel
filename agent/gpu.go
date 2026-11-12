@@ -458,8 +458,8 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
-		// nvtop reports media engines separately from its overall GPU utilization.
-		gpuAvg.Usage = max(utils.TwoDecimals(deltaUsage/float64(deltaCount)), gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount))
+		// Usage is the busiest of overall utilization and any engine (e.g. nvtop media engines).
+		gpuAvg.Usage = max(utils.TwoDecimals(deltaUsage/float64(deltaCount)), gm.calculateEngineUsage(&gpuAvg, gpu, lastSnapshot, deltaCount))
 	} else {
 		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
@@ -486,8 +486,8 @@ func (gm *GPUManager) calculateDeltas(gpu *system.GPUData, lastSnapshot *gpuSnap
 	return gpu.Usage, gpu.Power, gpu.PowerPkg
 }
 
-// calculateIntelGPUUsage computes Intel GPU usage from engine metrics and returns max engine usage
-func (gm *GPUManager) calculateIntelGPUUsage(gpuAvg, gpu *system.GPUData, lastSnapshot *gpuSnapshot, deltaCount uint32) float64 {
+// calculateEngineUsage averages per-engine metrics into gpuAvg and returns the max engine usage
+func (gm *GPUManager) calculateEngineUsage(gpuAvg, gpu *system.GPUData, lastSnapshot *gpuSnapshot, deltaCount uint32) float64 {
 	maxEngineUsage := 0.0
 	for name, engine := range gpu.Engines {
 		var deltaEngine float64
