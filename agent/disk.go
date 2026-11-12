@@ -2,10 +2,13 @@ package agent
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -14,6 +17,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/disk"
+	"howett.net/plist"
 )
 
 // fsRegistrationContext holds the shared lookup state needed to resolve a
@@ -22,6 +26,7 @@ type fsRegistrationContext struct {
 	filesystem     string // device part of optional FILESYSTEM env var
 	filesystemName string // optional custom name from FILESYSTEM=device__name
 	isWindows      bool
+	isDarwin       bool
 	efPath         string // path to extra filesystems (default "/extra-filesystems")
 	diskIoCounters map[string]disk.IOCountersStat
 }
@@ -101,6 +106,49 @@ func isDockerSpecialMountpoint(mountpoint string) bool {
 // /dev topology (e.g. /dev/vg/lv -> /dev/dm-N created by udev for LVM).
 var evalSymlinks = filepath.EvalSymlinks
 
+// diskutilInfo returns `diskutil info -plist` output for a macOS device; it is
+// a seam so tests can fake the APFS volume -> physical store topology.
+var diskutilInfo = func(device string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), diskutilTimeout)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, "diskutil", "info", "-plist", device).Output()
+	if ctx.Err() == context.DeadlineExceeded {
+		return nil, fmt.Errorf("diskutil timed out after %s", diskutilTimeout)
+	}
+	return out, err
+}
+
+// diskutilTimeout bounds each lookup. diskutil blocks until the drive answers,
+// which took ~7s for a sleeping external HDD, so leave room for slow spin-up.
+const diskutilTimeout = 15 * time.Second
+
+var wholeDiskPattern = regexp.MustCompile(`^disk[0-9]+`)
+
+// apfsPhysicalDisk returns the whole physical disk backing an APFS volume
+// (e.g. disk13s1 in container disk13 on store disk12s2 -> disk12), or "" if
+// the device is not APFS or diskutil fails. For multi-store containers
+// (Fusion Drive) the first store is used.
+func apfsPhysicalDisk(device string) string {
+	out, err := diskutilInfo(device)
+	if err != nil {
+		slog.Warn("APFS disk I/O lookup failed", "device", device, "err", err)
+		return ""
+	}
+	var info struct {
+		APFSPhysicalStores []struct {
+			APFSPhysicalStore string `plist:"APFSPhysicalStore"`
+		} `plist:"APFSPhysicalStores"`
+	}
+	if _, err := plist.Unmarshal(out, &info); err != nil {
+		slog.Debug("diskutil info parse failed", "device", device, "err", err)
+		return ""
+	}
+	if len(info.APFSPhysicalStores) == 0 {
+		return ""
+	}
+	return wholeDiskPattern.FindString(info.APFSPhysicalStores[0].APFSPhysicalStore)
+}
+
 // registerFilesystemStats resolves the tracked key and stats payload for a
 // filesystem before it is inserted into fsStats.
 func registerFilesystemStats(existing map[string]*system.FsStats, device, mountpoint string, root bool, customName string, ctx fsRegistrationContext) (string, *system.FsStats, bool) {
@@ -117,6 +165,20 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 			if resolved, err := evalSymlinks(device); err == nil {
 				if base := filepath.Base(resolved); base != key {
 					resolvedKey = base
+				}
+			}
+		}
+		// APFS volumes sit on a synthesized container disk (disk13s1 in
+		// container disk13) that IOKit reports no counters for, and whose
+		// number is unrelated to the physical disk (disk12). Resolve the
+		// physical store up front so the prefix fallback below can't pick an
+		// unrelated disk (disk1 is a prefix of disk13s1).
+		if ctx.isDarwin && filepath.IsAbs(device) {
+			if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
+				if physical := apfsPhysicalDisk(device); physical != "" {
+					if _, ioMatch := ctx.diskIoCounters[physical]; ioMatch {
+						key = physical
+					}
 				}
 			}
 		}
@@ -362,6 +424,7 @@ func (a *Agent) initializeDiskInfo() {
 		filesystem:     filesystem,
 		filesystemName: filesystemName,
 		isWindows:      isWindows,
+		isDarwin:       runtime.GOOS == "darwin",
 		diskIoCounters: diskIoCounters,
 		efPath:         "/extra-filesystems",
 	}
