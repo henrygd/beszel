@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/router"
 	"github.com/henrygd/beszel/internal/migrations"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 	"github.com/henrygd/beszel/internal/users"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/router"
 	"github.com/stretchr/testify/require"
 )
 
