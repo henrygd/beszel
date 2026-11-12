@@ -11,12 +11,12 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )

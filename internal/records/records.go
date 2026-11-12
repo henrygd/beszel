@@ -10,9 +10,9 @@ import (
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
@@ -414,6 +414,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				sum.ExtraFs = make(map[string]*system.FsStats, len(stats.ExtraFs))
 			}
 			for key, value := range stats.ExtraFs {
+				if value == nil {
+					continue
+				}
 				if _, ok := sum.ExtraFs[key]; !ok {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}

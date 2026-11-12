@@ -3,7 +3,7 @@ package hub
 import (
 	"strings"
 
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 )
 
 // bindTagsEvents normalizes tag records. Removing a deleted tag's id from records

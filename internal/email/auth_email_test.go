@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/mails"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/pocketbase/mails"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
