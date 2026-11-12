@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:16\n"
+"PO-Revision-Date: 2026-10-23 09:11\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -329,7 +329,7 @@ msgstr "Přenos"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bat"
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -1151,7 +1151,7 @@ msgstr "Zdraví"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr ""
+msgstr "Signál"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
@@ -1235,7 +1235,7 @@ msgstr "Neaktivní"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
-msgstr ""
+msgstr "Interval"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Interval (seconds)"
@@ -2167,7 +2167,7 @@ msgstr "Cíl"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "target[,protocol[,port[,interval[,server]]]]"
-msgstr ""
+msgstr "cíl[protokol[port[interval[server]]]]"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2594,3 +2594,4 @@ msgstr "Ano"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
+
