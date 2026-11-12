@@ -253,7 +253,7 @@ type noParams struct{}
 
 // listSystems returns all visible systems with current usage.
 func (h *mcphub) listSystems(ctx context.Context, req *mcpsdk.CallToolRequest, _ noParams) (*mcpsdk.CallToolResult, systemList, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, systemList{}, err
 	}
@@ -280,7 +280,7 @@ type getSystemParams struct {
 
 // getSystem returns details for one system.
 func (h *mcphub) getSystem(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, systemDetail, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, systemDetail{}, err
 	}
@@ -424,7 +424,7 @@ func resolvePeriod(period string, hours float64) (string, time.Duration, string,
 
 // getSystemStats returns historical samples and a summary for one system.
 func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemStatsParams) (*mcpsdk.CallToolResult, systemStats, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, systemStats{}, err
 	}
@@ -592,7 +592,7 @@ type containerList struct {
 
 // listContainers returns the latest recorded docker stats for one system.
 func (h *mcphub) listContainers(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, containerList, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, containerList{}, err
 	}
@@ -634,7 +634,7 @@ func (h *mcphub) listContainers(ctx context.Context, req *mcpsdk.CallToolRequest
 
 // listAlerts returns the authenticated user's alerts (all alerts for superusers).
 func (h *mcphub) listAlerts(ctx context.Context, req *mcpsdk.CallToolRequest, _ noParams) (*mcpsdk.CallToolResult, alertList, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, alertList{}, err
 	}
@@ -728,7 +728,7 @@ type alertEventParams struct {
 // scoped to the authenticated user's alerts like the alerts collection rules;
 // superusers see all events.
 func (h *mcphub) listAlertEvents(ctx context.Context, req *mcpsdk.CallToolRequest, params alertEventParams) (*mcpsdk.CallToolResult, alertEventList, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, alertEventList{}, err
 	}
@@ -823,7 +823,7 @@ var serviceSubStateNames = map[uint]string{
 
 // listServices returns the systemd services reported by one system's agent.
 func (h *mcphub) listServices(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, serviceList, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, serviceList{}, err
 	}
@@ -897,7 +897,7 @@ type serviceList struct {
 
 // getDiskHealth returns SMART device and ZFS pool health for one system.
 func (h *mcphub) getDiskHealth(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, diskHealth, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, diskHealth{}, err
 	}
@@ -998,7 +998,7 @@ type diskHealth struct {
 // listNetworkMonitors returns the endpoint monitors configured for one system,
 // with the latest and 1h aggregated latency/loss stored by the hub.
 func (h *mcphub) listNetworkMonitors(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, networkMonitorList, error) {
-	auth, err := h.authRecord(req)
+	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, networkMonitorList{}, err
 	}

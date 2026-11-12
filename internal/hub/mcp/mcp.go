@@ -8,11 +8,11 @@
 package mcp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"slices"
-	"strings"
 
 	"ganigeorgiev.com/pocketbase/dbx"
 	"ganigeorgiev.com/pocketbase/pocketbase/apis"
@@ -49,7 +49,10 @@ func RegisterRoutes(app core.App, se *core.ServeEvent) error {
 	// conflict with the static file catch-all route, which would otherwise
 	// serve the web UI for GET /mcp)
 	mcpHandler := func(e *core.RequestEvent) error {
-		handler.ServeHTTP(e.Response, e.Request)
+		// pass the auth record resolved by PocketBase to the tool handlers
+		// (stateless sessions run tool calls with the request context)
+		ctx := context.WithValue(e.Request.Context(), authContextKey{}, e.Auth)
+		handler.ServeHTTP(e.Response, e.Request.WithContext(ctx))
 		return nil
 	}
 	for _, method := range []string{http.MethodPost, http.MethodGet, http.MethodDelete} {
@@ -86,26 +89,17 @@ type mcphub struct {
 // cannot distinguish between the two.
 const notVisibleMsg = "not found or not visible to this user"
 
+// authContextKey is the request context key of the auth record.
+type authContextKey struct{}
+
 // authRecord returns the authenticated record (regular user or superuser)
-// matching the Authorization header of the HTTP request that carried the tool
-// call. Access is enforced by the PocketBase auth middleware on the /mcp
-// route, but tools resolve the record to scope queries to visible systems.
-func (h *mcphub) authRecord(req *mcpsdk.CallToolRequest) (*core.Record, error) {
-	var authHeader string
-	if extra := req.GetExtra(); extra != nil && extra.Header != nil {
-		authHeader = extra.Header.Get("Authorization")
-	}
-	// the Bearer prefix is not required by PocketBase, but strip it for
-	// compatibility with most HTTP/MCP clients
-	if len(authHeader) > 7 && strings.EqualFold(authHeader[:7], "Bearer ") {
-		authHeader = authHeader[7:]
-	}
-	if authHeader == "" {
-		return nil, errors.New("missing authorization header; add a valid PocketBase user token to the Authorization header of your MCP client")
-	}
-	record, err := h.app.FindAuthRecordByToken(authHeader, core.TokenTypeAuth)
-	if err != nil {
-		return nil, fmt.Errorf("invalid or expired authorization token: %w", err)
+// that PocketBase resolved from the Authorization header of the HTTP request
+// carrying the tool call. Access is enforced by the auth middleware on the
+// /mcp route, but tools use the record to scope queries to visible systems.
+func (h *mcphub) authRecord(ctx context.Context) (*core.Record, error) {
+	record, _ := ctx.Value(authContextKey{}).(*core.Record)
+	if record == nil {
+		return nil, errors.New("missing authenticated user; add a valid PocketBase user token to the Authorization header of your MCP client")
 	}
 	return record, nil
 }
