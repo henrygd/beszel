@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"maps"
 	"math/rand"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -184,6 +186,8 @@ func (sys *System) update() error {
 		return err
 	}
 
+	// Drop null entries
+	sanitizeNilEntries(data)
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
 	sys.data = data
@@ -370,6 +374,17 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		}
 	}
 	return systemRecord, err
+}
+
+// sanitizeNilEntries removes null elements from agent-supplied slices and maps
+// so later code can dereference them safely. Agent payloads can contain nulls.
+func sanitizeNilEntries(data *system.CombinedData) {
+	if data == nil {
+		return
+	}
+	data.Containers = slices.DeleteFunc(data.Containers, func(c *container.Stats) bool { return c == nil })
+	maps.DeleteFunc(data.Stats.ExtraFs, func(_ string, fs *system.FsStats) bool { return fs == nil })
+	maps.DeleteFunc(data.Stats.ZfsPools, func(_ string, p *system.ZfsPool) bool { return p == nil })
 }
 
 func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {

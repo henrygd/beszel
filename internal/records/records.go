@@ -414,6 +414,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				sum.ExtraFs = make(map[string]*system.FsStats, len(stats.ExtraFs))
 			}
 			for key, value := range stats.ExtraFs {
+				if value == nil {
+					continue
+				}
 				if _, ok := sum.ExtraFs[key]; !ok {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}
