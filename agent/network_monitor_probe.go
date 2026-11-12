@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/henrygd/beszel"
@@ -29,9 +32,9 @@ func networkMonitorProbe(client, insecureClient *http.Client) monitorProbe {
 			return monitorTCP(ctx, config.Target, config.Port)
 		case "http":
 			if config.SkipTLSVerify {
-				return monitorHTTP(ctx, insecureClient, config.Target)
+				return monitorHTTP(ctx, insecureClient, config)
 			}
-			return monitorHTTP(ctx, client, config.Target)
+			return monitorHTTP(ctx, client, config)
 		case "dns":
 			return monitorDNS(ctx, config.Target, config.Server)
 		default:
@@ -115,13 +118,19 @@ func dnsResolverForServer(server string) *net.Resolver {
 	}
 }
 
+// maxKeywordBodyBytes limits how much of the response body is searched for a keyword.
+const maxKeywordBodyBytes = 1 << 20
+
 // monitorHTTP measures HTTP GET request response in microseconds. Returns -1 and an error on failure.
-func monitorHTTP(ctx context.Context, client *http.Client, url string) (int64, error) {
+// The response time covers the time until the response headers are received. Without an expected
+// status, any status below 400 is accepted. If a keyword is set, the body must contain it (or must
+// not contain it when InvertKeyword is set).
+func monitorHTTP(ctx context.Context, client *http.Client, config monitor.Config) (int64, error) {
 	if client == nil {
 		client = http.DefaultClient
 	}
 	start := time.Now()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, config.Target, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -130,9 +139,58 @@ func monitorHTTP(ctx context.Context, client *http.Client, url string) (int64, e
 	if err != nil {
 		return -1, err
 	}
-	resp.Body.Close()
-	if resp.StatusCode >= 400 {
+	defer resp.Body.Close()
+	responseUs := time.Since(start).Microseconds()
+	if config.ExpectedStatus != "" {
+		ok, err := statusMatches(config.ExpectedStatus, resp.StatusCode)
+		if err != nil {
+			return -1, err
+		}
+		if !ok {
+			return -1, fmt.Errorf("unexpected HTTP status: %s", resp.Status)
+		}
+	} else if resp.StatusCode >= 400 {
 		return -1, fmt.Errorf("HTTP error: %s", resp.Status)
 	}
-	return time.Since(start).Microseconds(), nil
+	if config.Keyword != "" {
+		body, err := io.ReadAll(io.LimitReader(resp.Body, maxKeywordBodyBytes))
+		if err != nil {
+			return -1, err
+		}
+		found := strings.Contains(string(body), config.Keyword)
+		if found == config.InvertKeyword {
+			if config.InvertKeyword {
+				return -1, fmt.Errorf("keyword %q found in response", config.Keyword)
+			}
+			return -1, fmt.Errorf("keyword %q not found in response", config.Keyword)
+		}
+	}
+	return responseUs, nil
+}
+
+// statusMatches reports whether code is covered by a comma-separated list of
+// status codes and inclusive ranges, e.g. "200-299,301".
+func statusMatches(expected string, code int) (bool, error) {
+	matched := false
+	for part := range strings.SplitSeq(expected, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		lo, hi, isRange := strings.Cut(part, "-")
+		low, err := strconv.Atoi(strings.TrimSpace(lo))
+		if err != nil {
+			return false, fmt.Errorf("invalid expected status: %q", part)
+		}
+		high := low
+		if isRange {
+			if high, err = strconv.Atoi(strings.TrimSpace(hi)); err != nil || high < low {
+				return false, fmt.Errorf("invalid expected status: %q", part)
+			}
+		}
+		if code >= low && code <= high {
+			matched = true
+		}
+	}
+	return matched, nil
 }

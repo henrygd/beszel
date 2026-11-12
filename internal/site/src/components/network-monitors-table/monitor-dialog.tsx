@@ -42,6 +42,9 @@ type MonitorValues = {
 	server: string
 	interval: string
 	skipTlsVerify: boolean
+	expectedStatus: string
+	keyword: string
+	invertKeyword: boolean
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -53,6 +56,9 @@ type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | 
 const defaultInterval = 30
 
 const MonitorProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
+
+// Comma-separated status codes and ranges, e.g. "200-299,301". Empty is allowed.
+const expectedStatusPattern = /^(\d{3}(-\d{3})?(\s*,\s*\d{3}(-\d{3})?)*)?$/
 
 const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
 
@@ -66,6 +72,9 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
 		skipTlsVerify: v.boolean(),
+		expectedStatus: v.pipe(v.string(), v.trim(), v.regex(expectedStatusPattern, "Invalid expected status codes")),
+		keyword: v.pipe(v.string(), v.trim()),
+		invertKeyword: v.boolean(),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -89,6 +98,10 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			interval: input.interval,
 			// Only HTTPS targets use TLS; clear it for everything else.
 			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
+			// Response checks only apply to HTTP monitors.
+			expectedStatus: protocol === "http" ? input.expectedStatus : "",
+			keyword: protocol === "http" ? input.keyword : "",
+			invertKeyword: protocol === "http" && input.keyword !== "" && input.invertKeyword,
 		}
 	}),
 	v.forward(
@@ -210,6 +223,9 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
 		skipTlsVerify: false,
+		expectedStatus: "",
+		keyword: "",
+		invertKeyword: false,
 	})
 }
 
@@ -743,6 +759,9 @@ function MonitorDialogContent({
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
 	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
+	const [expectedStatus, setExpectedStatus] = useState(monitor?.expectedStatus ?? "")
+	const [keyword, setKeyword] = useState(monitor?.keyword ?? "")
+	const [invertKeyword, setInvertKeyword] = useState(monitor?.invertKeyword ?? false)
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -766,6 +785,9 @@ function MonitorDialogContent({
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
 		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
+		setExpectedStatus(monitor?.expectedStatus ?? "")
+		setKeyword(monitor?.keyword ?? "")
+		setInvertKeyword(monitor?.invertKeyword ?? false)
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -788,6 +810,9 @@ function MonitorDialogContent({
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
 					skipTlsVerify,
+					expectedStatus,
+					keyword,
+					invertKeyword,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -952,6 +977,49 @@ function MonitorDialogContent({
 						</div>
 						<Switch id="monitor-skip-tls-verify" checked={skipTlsVerify} onCheckedChange={setSkipTlsVerify} />
 					</label>
+				)}
+				{protocol === "http" && (
+					<>
+						<div className="grid gap-2">
+							<Label htmlFor="monitor-expected-status">
+								<Trans>Expected status codes</Trans>
+							</Label>
+							<Input
+								id="monitor-expected-status"
+								value={expectedStatus}
+								onChange={(e) => setExpectedStatus(e.target.value)}
+								placeholder="200-299,301"
+							/>
+							<span className="text-xs text-muted-foreground">
+								<Trans>Leave empty to accept any status below 400.</Trans>
+							</span>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="monitor-keyword">
+								<Trans>Keyword</Trans>
+							</Label>
+							<Input
+								id="monitor-keyword"
+								value={keyword}
+								onChange={(e) => setKeyword(e.target.value)}
+								maxLength={200}
+							/>
+							<span className="text-xs text-muted-foreground">
+								<Trans>Optional. The response body must contain this text.</Trans>
+							</span>
+						</div>
+						{keyword.trim() && (
+							<label
+								htmlFor="monitor-invert-keyword"
+								className="flex items-center justify-between gap-4 cursor-pointer rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 px-3.5 py-3"
+							>
+								<span className="text-sm font-medium select-none">
+									<Trans>Fail if keyword is found</Trans>
+								</span>
+								<Switch id="monitor-invert-keyword" checked={invertKeyword} onCheckedChange={setInvertKeyword} />
+							</label>
+						)}
+					</>
 				)}
 				<DialogFooter>
 					{!isEditing && onOpenBulkAdd && (

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -246,7 +247,7 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL})
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
@@ -257,7 +258,7 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL})
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -279,6 +280,52 @@ func TestMonitorHTTP(t *testing.T) {
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
+}
+
+func TestMonitorHTTPChecks(t *testing.T) {
+	newServer := func(status int, body string) *httptest.Server {
+		return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(status)
+			_, _ = w.Write([]byte(body))
+		}))
+	}
+
+	tests := []struct {
+		name    string
+		status  int
+		body    string
+		config  monitor.Config
+		wantErr bool
+	}{
+		{"expected status match", 204, "", monitor.Config{ExpectedStatus: "200-299"}, false},
+		{"expected status list match", 301, "", monitor.Config{ExpectedStatus: "200,301"}, false},
+		{"expected status mismatch", 200, "", monitor.Config{ExpectedStatus: "204"}, true},
+		{"expected status allows error code", 404, "", monitor.Config{ExpectedStatus: "404"}, false},
+		{"invalid expected status", 200, "", monitor.Config{ExpectedStatus: "abc"}, true},
+		{"reversed range is invalid", 200, "", monitor.Config{ExpectedStatus: "299-200"}, true},
+		{"keyword found", 200, "all systems operational", monitor.Config{Keyword: "operational"}, false},
+		{"keyword missing", 200, "maintenance", monitor.Config{Keyword: "operational"}, true},
+		{"inverted keyword absent", 200, "ok", monitor.Config{Keyword: "error", InvertKeyword: true}, false},
+		{"inverted keyword present", 200, "error: db down", monitor.Config{Keyword: "error", InvertKeyword: true}, true},
+		{"keyword with failing status", 500, "operational", monitor.Config{Keyword: "operational"}, true},
+		{"keyword beyond body limit is not found", 200, strings.Repeat("a", maxKeywordBodyBytes) + "needle", monitor.Config{Keyword: "needle"}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := newServer(tt.status, tt.body)
+			defer server.Close()
+			tt.config.Target = server.URL
+
+			responseUs, err := monitorHTTP(context.Background(), server.Client(), tt.config)
+			if tt.wantErr {
+				require.Error(t, err)
+				assert.Equal(t, int64(-1), responseUs)
+				return
+			}
+			require.NoError(t, err)
+			assert.GreaterOrEqual(t, responseUs, int64(0))
+		})
+	}
 }
 
 func TestMonitorTCP(t *testing.T) {

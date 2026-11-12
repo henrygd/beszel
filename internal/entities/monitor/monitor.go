@@ -31,6 +31,14 @@ type Config struct {
 	// SkipTLSVerify disables certificate verification for HTTPS targets, such as
 	// those with self-signed certificates. Only used when Protocol is "http".
 	SkipTLSVerify bool `cbor:"6,keyasint,omitempty" db:"skipTlsVerify"`
+	// ExpectedStatus is a comma-separated list of accepted HTTP status codes and
+	// ranges, e.g. "200-299,301". Empty accepts any status below 400.
+	// Only used when Protocol is "http".
+	ExpectedStatus string `cbor:"7,keyasint,omitempty" db:"expectedStatus"`
+	// Keyword must appear in the HTTP response body (or must not appear when
+	// InvertKeyword is set). Only used when Protocol is "http".
+	Keyword       string `cbor:"8,keyasint,omitempty" db:"keyword"`
+	InvertKeyword bool   `cbor:"9,keyasint,omitempty" db:"invertKeyword"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.

@@ -194,6 +194,26 @@ func TestGetMonitorConfigsForSystemIncludesSkipTLSVerify(t *testing.T) {
 	require.True(t, configs[0].SkipTLSVerify, "full sync must keep the skip TLS verify option")
 }
 
+func TestGetMonitorConfigsForSystemIncludesHTTPChecks(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+	record := core.NewRecord(collection)
+	record.Load(map[string]any{
+		"system": sys.Id, "target": "https://status.example", "protocol": "http",
+		"interval": 60, "enabled": true,
+		"expectedStatus": "200-299", "keyword": "operational", "invertKeyword": true,
+	})
+	require.NoError(t, app.SaveNoValidate(record))
+
+	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
+	require.NoError(t, err)
+	require.Len(t, configs, 1)
+	require.Equal(t, "200-299", configs[0].ExpectedStatus)
+	require.Equal(t, "operational", configs[0].Keyword)
+	require.True(t, configs[0].InvertKeyword, "full sync must keep the HTTP check options")
+}
+
 func TestGetMonitorConfigsForSystemQueryError(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	_, err := app.DB().NewQuery("DROP TABLE network_monitors").Execute()

@@ -691,6 +691,11 @@ export interface NetworkMonitorRecord {
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Accepted HTTP status codes and ranges, e.g. "200-299,301". Empty accepts any status below 400. */
+	expectedStatus: string
+	/** Text that must appear in the HTTP response body (or must not appear when invertKeyword is set). */
+	keyword: string
+	invertKeyword: boolean
 	res: number
 	resMin1h: number
 	resMax1h: number
