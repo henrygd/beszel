@@ -7,6 +7,7 @@
 		"dev": "vite --host",
 		"build": "lingui extract --overwrite && lingui compile && tsc -b && vite build",
 		"preview": "vite preview",
+		"test": "bun test",
 		"sync": "lingui extract --overwrite && lingui compile",
 		"sync_no_compile": "lingui extract --overwrite --clean",
 		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile"
