@@ -297,6 +297,10 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
+	// uint32 could overflow when summing many records
+	var tcpSums [6]uint64
+	var tcpIfaceSums map[string][5]uint64
+	tcpCount := uint64(0)
 
 	// Accumulate totals
 	for i := range records {
@@ -337,6 +341,23 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.DiskIO[1] += stats.DiskIO[1]
 		for i := range stats.DiskIoStats {
 			sum.DiskIoStats[i] += stats.DiskIoStats[i]
+		}
+		// older agents omit tcp connections, so don't average them in as zero
+		if stats.TcpConnections != [6]uint32{} {
+			for i, v := range stats.TcpConnections {
+				tcpSums[i] += uint64(v)
+			}
+			tcpCount++
+		}
+		for name, v := range stats.TcpInterfaces {
+			if tcpIfaceSums == nil {
+				tcpIfaceSums = make(map[string][5]uint64, len(stats.TcpInterfaces))
+			}
+			acc := tcpIfaceSums[name]
+			for i := range v {
+				acc[i] += uint64(v[i])
+			}
+			tcpIfaceSums[name] = acc
 		}
 		if hasBattery(stats.Battery, stats.Batteries) {
 			batterySum += int(stats.Battery[0])
@@ -533,6 +554,22 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
 	sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
 	sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
+	if tcpCount > 0 {
+		for i := range tcpSums {
+			sum.TcpConnections[i] = uint32(math.Round(float64(tcpSums[i]) / float64(tcpCount)))
+		}
+		// an interface missing from a record had no connections, so divide by all tcp records
+		if len(tcpIfaceSums) > 0 {
+			sum.TcpInterfaces = make(map[string][5]uint32, len(tcpIfaceSums))
+			for name, sums := range tcpIfaceSums {
+				var avg [5]uint32
+				for i := range sums {
+					avg[i] = uint32(math.Round(float64(sums[i]) / float64(tcpCount)))
+				}
+				sum.TcpInterfaces[name] = avg
+			}
+		}
+	}
 	if batteryCount > 0 {
 		sum.Battery[0] = uint8(batterySum / batteryCount)
 	}

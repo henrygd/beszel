@@ -310,6 +310,48 @@ func TestAverageSystemStatsSlice_Fans(t *testing.T) {
 	assert.Equal(t, uint16(1_500), result.Fans["case"])
 }
 
+func TestAverageSystemStatsSlice_TcpConnections(t *testing.T) {
+	input := []system.Stats{
+		{TcpConnections: [6]uint32{10, 4, 20, 2, 1, 0}},
+		{TcpConnections: [6]uint32{15, 7, 31, 5, 3, 2}},
+		{
+			// No tcp data (older agent) - should not affect averaging
+			Cpu: 30.0,
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	assert.Equal(t, [6]uint32{13, 6, 26, 4, 2, 1}, result.TcpConnections)
+	assert.Equal(t, [6]uint32{}, records.AverageSystemStatsSlice([]system.Stats{{}, {}}).TcpConnections)
+}
+
+func TestAverageSystemStatsSlice_TcpInterfaces(t *testing.T) {
+	input := []system.Stats{
+		{
+			TcpConnections: [6]uint32{10, 4, 20, 2, 1, 0},
+			TcpInterfaces:  map[string][5]uint32{"eth0": {8, 4, 2, 1, 0}, "wlan0": {2, 0, 0, 0, 0}},
+		},
+		{
+			// wlan0 had no connections in this record
+			TcpConnections: [6]uint32{15, 7, 31, 5, 3, 2},
+			TcpInterfaces:  map[string][5]uint32{"eth0": {15, 7, 5, 3, 2}},
+		},
+		{
+			// No tcp data (older agent) - should not affect averaging
+			Cpu: 30.0,
+		},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	assert.Equal(t, map[string][5]uint32{
+		"eth0":  {12, 6, 4, 2, 1},
+		"wlan0": {1, 0, 0, 0, 0},
+	}, result.TcpInterfaces)
+	assert.Nil(t, records.AverageSystemStatsSlice([]system.Stats{{}, {}}).TcpInterfaces)
+}
+
 func TestAverageSystemStatsSlice_NetworkInterfaces(t *testing.T) {
 	input := []system.Stats{
 		{

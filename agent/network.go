@@ -3,6 +3,8 @@ package agent
 import (
 	"fmt"
 	"log/slog"
+	"net"
+	"net/netip"
 	"path"
 	"strings"
 	"time"
@@ -257,4 +259,109 @@ func skipNetworkInterface(v psutilNet.IOCountersStat, nicCfg *NicConfig) bool {
 	default:
 		return false
 	}
+}
+
+// updateTcpConnections populates systemStats.TcpConnections with TCP socket
+// counts by state, and systemStats.TcpInterfaces with the state counts (no total) split by
+// the network interface owning each socket's local address. Listing connections
+// walks every socket (and on Linux every process fd table), so only refresh on
+// the default interval. Real-time requests reuse the last snapshot.
+func (a *Agent) updateTcpConnections(cacheTimeMs uint16, systemStats *system.Stats) {
+	if cacheTimeMs == defaultDataCacheTimeMs {
+		if conns, err := psutilNet.Connections("tcp"); err == nil {
+			a.tcpConnections = countTcpConnections(conns)
+			a.tcpInterfaces = countTcpConnectionsByInterface(conns, a.interfaceAddrs())
+		} else {
+			slog.Debug("Error getting tcp connections", "err", err)
+		}
+	}
+	systemStats.TcpConnections = a.tcpConnections
+	systemStats.TcpInterfaces = a.tcpInterfaces
+}
+
+// countTcpConnections returns [established, time_wait, total, close_wait, syn_recv, syn_sent] socket counts.
+func countTcpConnections(conns []psutilNet.ConnectionStat) [6]uint32 {
+	var counts [6]uint32
+	for _, conn := range conns {
+		// state slots map to the system tuple, skipping the total at index 2
+		if slot := tcpStateSlot(conn.Status); slot >= 0 {
+			counts[[5]int{0, 1, 3, 4, 5}[slot]]++
+		}
+	}
+	counts[2] = uint32(len(conns))
+	return counts
+}
+
+// tcpStateSlot returns the [established, time_wait, close_wait, syn_recv, syn_sent] slot for status, or -1 for other states.
+// SYN_RECEIVED is the Windows spelling of SYN_RECV.
+func tcpStateSlot(status string) int {
+	switch status {
+	case "ESTABLISHED":
+		return 0
+	case "TIME_WAIT":
+		return 1
+	case "CLOSE_WAIT":
+		return 2
+	case "SYN_RECV", "SYN_RECEIVED":
+		return 3
+	case "SYN_SENT":
+		return 4
+	}
+	return -1
+}
+
+// countTcpConnectionsByInterface attributes each socket to the interface owning its
+// local address, as [established, time_wait, close_wait, syn_recv, syn_sent]. Sockets in other states, or on
+// wildcard or untracked addresses (e.g. 0.0.0.0 listeners, loopback, docker bridges), are skipped.
+func countTcpConnectionsByInterface(conns []psutilNet.ConnectionStat, addrs map[netip.Addr]string) map[string][5]uint32 {
+	if len(addrs) == 0 {
+		return nil
+	}
+	counts := make(map[string][5]uint32)
+	for _, conn := range conns {
+		slot := tcpStateSlot(conn.Status)
+		if slot < 0 {
+			continue
+		}
+		ip, err := netip.ParseAddr(conn.Laddr.IP)
+		if err != nil {
+			continue
+		}
+		name, ok := addrs[ip.Unmap().WithZone("")]
+		if !ok {
+			continue
+		}
+		c := counts[name]
+		c[slot]++
+		counts[name] = c
+	}
+	if len(counts) == 0 {
+		return nil
+	}
+	return counts
+}
+
+// interfaceAddrs maps the addresses of tracked network interfaces to their names.
+func (a *Agent) interfaceAddrs() map[netip.Addr]string {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		slog.Debug("Error getting network interfaces", "err", err)
+		return nil
+	}
+	addrs := make(map[netip.Addr]string)
+	for _, iface := range ifaces {
+		if _, ok := a.netInterfaces[iface.Name]; !ok {
+			continue
+		}
+		ifaceAddrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, addr := range ifaceAddrs {
+			if prefix, err := netip.ParsePrefix(addr.String()); err == nil {
+				addrs[prefix.Addr().Unmap()] = iface.Name
+			}
+		}
+	}
+	return addrs
 }
