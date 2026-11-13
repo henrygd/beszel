@@ -700,7 +700,8 @@ func TestMcpNetworkMonitors(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
 	_, err := beszelTests.CreateRecord(hub, "network_monitors", map[string]any{
 		"system": userSystem.Id, "target": "1.1.1.1", "protocol": "icmp", "interval": 60,
-		"enabled": true, "res": 12.5, "resAvg1h": 11, "resMin1h": 9, "resMax1h": 40, "loss1h": 0.5,
+		// response times are stored in microseconds
+		"enabled": true, "res": 12500, "resAvg1h": 11000, "resMin1h": 9000, "resMax1h": 40250, "loss1h": 0.5,
 	})
 	require.NoError(t, err)
 	session := mcpClient(t, server.URL, user.Token)
@@ -713,6 +714,7 @@ func TestMcpNetworkMonitors(t *testing.T) {
 	require.Equal(t, true, monitor["enabled"])
 	require.Equal(t, float64(12.5), monitor["latency_ms"])
 	require.Equal(t, float64(11), monitor["latency_avg_1h_ms"])
+	require.Equal(t, float64(40.25), monitor["latency_max_1h_ms"])
 	require.Equal(t, float64(0.5), monitor["loss_pct_1h"])
 }
 

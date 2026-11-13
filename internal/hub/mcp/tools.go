@@ -1069,15 +1069,9 @@ func (h *mcphub) listNetworkMonitors(ctx context.Context, req *mcpsdk.CallToolRe
 			Port:     uint16(monitorRecord.GetInt("port")),
 			Enabled:  monitorRecord.GetBool("enabled"),
 		}
-		if latency := monitorRecord.GetFloat("res"); latency > 0 {
-			monitor.Latency = &latency
-		}
-		if latency := monitorRecord.GetFloat("resAvg1h"); latency > 0 {
-			monitor.LatencyAvg1h = &latency
-		}
-		if latency := monitorRecord.GetFloat("resMax1h"); latency > 0 {
-			monitor.LatencyMax1h = &latency
-		}
+		monitor.Latency = microsecondsToMs(monitorRecord.GetFloat("res"))
+		monitor.LatencyAvg1h = microsecondsToMs(monitorRecord.GetFloat("resAvg1h"))
+		monitor.LatencyMax1h = microsecondsToMs(monitorRecord.GetFloat("resMax1h"))
 		if loss := monitorRecord.GetFloat("loss1h"); loss > 0 {
 			monitor.Loss1h = &loss
 		}
@@ -1087,6 +1081,17 @@ func (h *mcphub) listNetworkMonitors(ctx context.Context, req *mcpsdk.CallToolRe
 		result.Monitors = append(result.Monitors, monitor)
 	}
 	return nil, result, nil
+}
+
+// microsecondsToMs converts a stored network monitor response time (agents
+// report microseconds, see monitor.Result) to milliseconds, returning nil for
+// missing values.
+func microsecondsToMs(us float64) *float64 {
+	if us <= 0 {
+		return nil
+	}
+	ms := us / 1000
+	return &ms
 }
 
 type networkMonitor struct {
