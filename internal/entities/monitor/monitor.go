@@ -31,6 +31,10 @@ type Config struct {
 	// SkipTLSVerify disables certificate verification for HTTPS targets, such as
 	// those with self-signed certificates. Only used when Protocol is "http".
 	SkipTLSVerify bool `cbor:"6,keyasint,omitempty" db:"skipTlsVerify"`
+	// StatusCodes lists the HTTP status codes that count as a successful probe, as
+	// comma-separated codes and inclusive ranges such as "200-299,401". Empty means
+	// any status below 400. Only used when Protocol is "http".
+	StatusCodes string `cbor:"8,keyasint,omitempty" db:"statusCodes"`
 }
 
 // CertInfo holds details of the leaf TLS certificate presented by a target.

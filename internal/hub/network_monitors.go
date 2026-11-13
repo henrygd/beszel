@@ -85,9 +85,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if protocol != "dns" {
 			e.Record.Set("server", "")
 		}
-		// only http uses TLS verification - clear it for other protocols
+		// only http uses TLS verification and status codes - clear them for other protocols
 		if protocol != "http" {
 			e.Record.Set("skipTlsVerify", false)
+			e.Record.Set("statusCodes", "")
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
@@ -138,6 +139,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		Server:   record.GetString("server"),
 		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
 		SkipTLSVerify: record.GetBool("skipTlsVerify"),
+		StatusCodes:   record.GetString("statusCodes"),
 	}
 }
 
@@ -162,7 +164,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "statusCodes"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

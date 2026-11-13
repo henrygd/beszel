@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/henrygd/beszel"
@@ -29,9 +31,9 @@ func networkMonitorProbe(client, insecureClient *http.Client) monitorProbe {
 			return monitorTCP(ctx, config.Target, config.Port)
 		case "http":
 			if config.SkipTLSVerify {
-				return monitorHTTP(ctx, insecureClient, config.Target)
+				return monitorHTTP(ctx, insecureClient, config)
 			}
-			return monitorHTTP(ctx, client, config.Target)
+			return monitorHTTP(ctx, client, config)
 		case "dns":
 			return monitorDNS(ctx, config.Target, config.Server)
 		default:
@@ -115,13 +117,15 @@ func dnsResolverForServer(server string) *net.Resolver {
 	}
 }
 
-// monitorHTTP measures HTTP GET request response in microseconds. Returns -1 and an error on failure.
-func monitorHTTP(ctx context.Context, client *http.Client, url string) (int64, error) {
+// monitorHTTP measures HTTP GET request response in microseconds.
+// config.StatusCodes lists the accepted status codes; see httpStatusAccepted.
+// Returns -1 and an error on failure.
+func monitorHTTP(ctx context.Context, client *http.Client, config monitor.Config) (int64, error) {
 	if client == nil {
 		client = http.DefaultClient
 	}
 	start := time.Now()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, config.Target, nil)
 	if err != nil {
 		return -1, err
 	}
@@ -131,8 +135,35 @@ func monitorHTTP(ctx context.Context, client *http.Client, url string) (int64, e
 		return -1, err
 	}
 	resp.Body.Close()
-	if resp.StatusCode >= 400 {
+	if !httpStatusAccepted(config.StatusCodes, resp.StatusCode) {
 		return -1, fmt.Errorf("HTTP error: %s", resp.Status)
 	}
 	return time.Since(start).Microseconds(), nil
+}
+
+// httpStatusAccepted reports whether code counts as a successful probe. spec is
+// a comma-separated list of codes and inclusive ranges such as "200-299,401".
+// An empty spec accepts any status below 400. Entries that cannot be parsed
+// match nothing, so a malformed spec fails the probe instead of hiding an outage.
+func httpStatusAccepted(spec string, code int) bool {
+	if spec == "" {
+		return code < 400
+	}
+	for entry := range strings.SplitSeq(spec, ",") {
+		low, high, isRange := strings.Cut(strings.TrimSpace(entry), "-")
+		first, err := strconv.Atoi(strings.TrimSpace(low))
+		if err != nil {
+			continue
+		}
+		last := first
+		if isRange {
+			if last, err = strconv.Atoi(strings.TrimSpace(high)); err != nil {
+				continue
+			}
+		}
+		if code >= first && code <= last {
+			return true
+		}
+	}
+	return false
 }

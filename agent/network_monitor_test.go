@@ -246,7 +246,7 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL})
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
@@ -257,7 +257,30 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL})
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err)
+	})
+
+	t.Run("accepted status codes", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusUnauthorized)
+		}))
+		defer server.Close()
+		probe := networkMonitorProbe(server.Client(), nil)
+		config := monitor.Config{Protocol: "http", Target: server.URL}
+
+		responseUs, err := probe(context.Background(), config)
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err, "401 fails by default")
+
+		config.StatusCodes = "200-299,401"
+		responseUs, err = probe(context.Background(), config)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
+
+		config.StatusCodes = "200-299"
+		responseUs, err = probe(context.Background(), config)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -279,6 +302,37 @@ func TestMonitorHTTP(t *testing.T) {
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
+}
+
+func TestHTTPStatusAccepted(t *testing.T) {
+	tests := []struct {
+		spec     string
+		code     int
+		expected bool
+	}{
+		{"", 200, true},
+		{"", 302, true},
+		{"", 399, true},
+		{"", 400, false},
+		{"", 503, false},
+		{"200", 200, true},
+		{"200", 204, false},
+		{"200-299", 204, true},
+		{"200-299", 301, false},
+		{"200-299,401", 401, true},
+		{"200-299,401", 403, false},
+		{" 200 - 299 , 401 ", 401, true},
+		{"500-599", 200, false},
+		{"500-599", 503, true},
+		// malformed entries match nothing, valid ones still apply
+		{"abc", 200, false},
+		{"200-", 200, false},
+		{"abc,200", 200, true},
+		{"299-200", 250, false},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.expected, httpStatusAccepted(tt.spec, tt.code), "spec %q code %d", tt.spec, tt.code)
+	}
 }
 
 func TestMonitorTCP(t *testing.T) {

@@ -42,6 +42,7 @@ type MonitorValues = {
 	server: string
 	interval: string
 	skipTlsVerify: boolean
+	statusCodes: string
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -56,6 +57,16 @@ const MonitorProtocolSchema = v.picklist(["icmp", "tcp", "http", "dns"])
 
 const MonitorIntervalSchema = v.pipe(v.string(), v.toNumber(), v.minValue(1), v.maxValue(3600))
 
+// Comma-separated status codes and ranges, such as "200-299,401". Empty uses the default.
+const MonitorStatusCodesSchema = v.pipe(
+	v.string(),
+	v.transform((input) => input.replace(/\s+/g, "")),
+	v.regex(
+		/^([1-5]\d{2}(-[1-5]\d{2})?(,[1-5]\d{2}(-[1-5]\d{2})?)*)?$/,
+		"Status codes must be codes or ranges like 200-299,401"
+	)
+)
+
 // Both the single-monitor form and the bulk importer flow through this schema so
 // defaults and HTTP target normalization stay in one place.
 const NormalizedMonitorValuesSchema = v.pipe(
@@ -66,6 +77,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
 		skipTlsVerify: v.boolean(),
+		statusCodes: MonitorStatusCodesSchema,
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -89,6 +101,8 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			interval: input.interval,
 			// Only HTTPS targets use TLS; clear it for everything else.
 			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
+			// Only HTTP monitors check status codes; clear them for other protocols.
+			statusCodes: protocol === "http" ? input.statusCodes : "",
 		}
 	}),
 	v.forward(
@@ -210,6 +224,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
 		skipTlsVerify: false,
+		statusCodes: "",
 	})
 }
 
@@ -743,6 +758,7 @@ function MonitorDialogContent({
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
 	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
+	const [statusCodes, setStatusCodes] = useState(monitor?.statusCodes ?? "")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -766,6 +782,7 @@ function MonitorDialogContent({
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
 		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
+		setStatusCodes(monitor?.statusCodes ?? "")
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -788,6 +805,7 @@ function MonitorDialogContent({
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
 					skipTlsVerify,
+					statusCodes,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -812,7 +830,7 @@ function MonitorDialogContent({
 	}
 
 	return (
-		<DialogContent className="max-w-md">
+		<DialogContent className="max-w-md max-h-[calc(100dvh-20px)] overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>
 					{isEditing ? (
@@ -937,6 +955,22 @@ function MonitorDialogContent({
 						required
 					/>
 				</div>
+				{protocol === "http" && (
+					<div className="grid gap-2">
+						<Label htmlFor="monitor-status-codes">
+							<Trans>Accepted status codes</Trans>
+						</Label>
+						<Input
+							id="monitor-status-codes"
+							value={statusCodes}
+							onChange={(e) => setStatusCodes(e.target.value)}
+							placeholder="200-299,401"
+						/>
+						<p className="text-xs text-muted-foreground">
+							<Trans>Optional. Defaults to any status code below 400.</Trans>
+						</p>
+					</div>
+				)}
 				{usesTls && (
 					<label
 						htmlFor="monitor-skip-tls-verify"

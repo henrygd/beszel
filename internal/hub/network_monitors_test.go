@@ -303,6 +303,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"interval":      60,
 		"enabled":       true,
 		"skipTlsVerify": true,
+		"statusCodes":   "200-299,401",
 		"res":           1200,
 		"resAvg1h":      1300,
 		"resMin1h":      900,
@@ -321,6 +322,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
 	assert.True(t, newRecord.GetBool("skipTlsVerify"))
+	assert.Equal(t, "200-299,401", newRecord.GetString("statusCodes"))
 	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
@@ -416,4 +418,50 @@ func TestUpdateNetworkMonitorSystemAuthorization(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, records, 1)
 	assert.Equal(t, aliceSystemC.Id, records[0].GetString("system"))
+}
+
+func TestNetworkMonitorStatusCodesValidation(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+
+	user, err := createTestUser(hub)
+	require.NoError(t, err)
+	system, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "Status codes", "host": "localhost", "port": "45876",
+		"status": "paused", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	collection, err := hub.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+
+	tests := map[string]bool{
+		"":             true,
+		"200":          true,
+		"200-299":      true,
+		"200-299,401":  true,
+		"100-599":      true,
+		"200, 401":     false,
+		"200-":         false,
+		"600":          false,
+		"20":           false,
+		"ok":           false,
+		"200-299,":     false,
+		"200-299;401":  false,
+		"200-299-401":  false,
+		"200,401,abcd": false,
+	}
+	for statusCodes, valid := range tests {
+		record := core.NewRecord(collection)
+		record.Load(map[string]any{
+			"system": system.Id, "target": "https://example.com/" + statusCodes, "protocol": "http",
+			"interval": 60, "statusCodes": statusCodes,
+		})
+		err := hub.Save(record)
+		if valid {
+			assert.NoError(t, err, "status codes %q", statusCodes)
+		} else {
+			assert.Error(t, err, "status codes %q", statusCodes)
+		}
+	}
 }
