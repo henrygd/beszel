@@ -12,7 +12,7 @@ import Slider from "@/components/ui/slider"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
-import { $chartTime, $userSettings, defaultLayoutWidth, getUserChartTime } from "@/lib/stores"
+import { $chartTime, $userSettings, defaultLayoutWidth, getFaviconBadge, getUserChartTime } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
@@ -25,6 +25,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	// without a value the hidden select submits an empty string, which would persist
 	// a chart time that no longer loads any data (#2104)
 	const chartTime = getUserChartTime(userSettings)
+	const faviconBadge = getFaviconBadge(userSettings)
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -111,6 +112,40 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						step={10}
 						className="w-full mb-1"
 					/>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Favicon</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Change how the browser tab icon looks.</Trans>
+						</p>
+					</div>
+					<div className="grid sm:grid-cols-3 gap-4">
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="faviconBadge">
+								<Trans>Badge count</Trans>
+							</Label>
+							<Select name="faviconBadge" key={faviconBadge} defaultValue={faviconBadge}>
+								<SelectTrigger id="faviconBadge">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="down">
+										<Trans>Down systems</Trans>
+									</SelectItem>
+									<SelectItem value="alerts">
+										<Trans>Active alerts</Trans>
+									</SelectItem>
+									<SelectItem value="off">
+										<Trans>Off</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
 				</div>
 				<Separator />
 				<div className="grid gap-2">

@@ -407,6 +407,8 @@ export interface UserSettings {
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
+	/** what the favicon badge counts. may be missing in settings stored by older versions -- use getFaviconBadge() */
+	faviconBadge?: "down" | "alerts" | "off"
 }
 
 type ChartDataContainer = {
