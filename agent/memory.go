@@ -39,8 +39,7 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 		swapTotal, swapFree := hostSwap(v)
 		stats.SwapBytes = [2]uint64{swapTotal, saturatingSub(swapTotal, swapFree)}
 		// TODO: stop populating deprecated GB fields once hubs < 0.21.1 are no longer supported
-		stats.Swap = utils.BytesToGigabytes(stats.SwapBytes[0])
-		stats.SwapUsed = utils.BytesToGigabytes(stats.SwapBytes[1])
+		stats.Swap, stats.SwapUsed, stats.SwapPct = calculateSwapUsage(stats.SwapBytes[0], stats.SwapBytes[1])
 	}
 
 	var arcSize uint64
