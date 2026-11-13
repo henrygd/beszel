@@ -94,6 +94,10 @@ func (h *Hub) StartHub() error {
 		if err := h.startServer(e); err != nil {
 			return err
 		}
+		// start agent-only server if configured
+		if err := h.startAgentServer(e); err != nil {
+			return err
+		}
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
 			return err
