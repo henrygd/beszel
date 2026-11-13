@@ -24,6 +24,11 @@ export interface FingerprintRecord extends RecordModel {
 	}
 }
 
+export interface TagRecord extends RecordModel {
+	name: string
+	color?: string
+}
+
 export interface SystemRecord extends RecordModel {
 	name: string
 	host: string
@@ -32,6 +37,7 @@ export interface SystemRecord extends RecordModel {
 	info: SystemInfo
 	v: string
 	updated: string
+	tags?: string[]
 }
 
 export interface WiFi {
