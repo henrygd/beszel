@@ -27,6 +27,7 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
+import { selectChartMax } from "./chart-max"
 import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
@@ -201,13 +202,30 @@ export function useSystemData(id: string) {
 
 	const chartData: ChartData = useMemo(() => {
 		return {
-			systemStats,
-			containerData,
+			systemStats:
+				maxValues && !["1m", "1h"].includes(chartTime)
+					? systemStats.map((record) => ({
+							...record,
+							stats: record.stats ? selectChartMax(record.stats) : record.stats,
+						}))
+					: systemStats,
+			containerData:
+				maxValues && !["1m", "1h"].includes(chartTime)
+					? containerData.map(
+							(point) =>
+								Object.fromEntries(
+									Object.entries(point).map(([key, value]) => [
+										key,
+										typeof value !== "object" || !value ? value : { ...value, ...value.mx },
+									])
+								) as typeof point
+						)
+					: containerData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			agentVersion,
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, direction, maxValues, chartTime])
 
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)

@@ -14,6 +14,7 @@ export function getMonitorStats(record: RawMonitorStatsRecord): MonitorStats {
 		res_avg: success ? toFixedFloat(record.res_sum / record.success_count, 2) : null,
 		res_min: success ? record.res_min : null,
 		res_max: success ? record.res_max : null,
+		loss_max: record.loss_max,
 		loss:
 			record.total_count > 0
 				? toFixedFloat(((record.total_count - record.success_count) / record.total_count) * 100, 2)

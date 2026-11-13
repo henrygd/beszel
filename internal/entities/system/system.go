@@ -20,6 +20,7 @@ type WiFi struct {
 }
 
 type Stats struct {
+	ChartMax       *ChartMax           `json:"mx,omitempty" cbor:"-"`
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
 	MaxCpu         float64             `json:"cpum,omitzero" cbor:"-"`
 	Mem            float64             `json:"m" cbor:"2,keyasint"`  // Deprecated: GB, use MemBytes. Memory GB fields are kept for older hubs and integrations.
