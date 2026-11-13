@@ -292,9 +292,33 @@ func monitorICMPExec(ctx context.Context, target string, isIPv6 bool) (int64, er
 		return -1, ctx.Err()
 	}
 	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			if msg, _, _ := strings.Cut(strings.TrimSpace(string(exitErr.Stderr)), "\n"); msg != "" {
+				if isPingPermissionError(msg) {
+					icmpPermissionHint.Do(logICMPPermissionHint)
+				}
+				return -1, fmt.Errorf("%s failed: %w: %s", name, err, msg)
+			}
+		}
 		return -1, fmt.Errorf("%s failed: %w", name, err)
 	}
 	return parsePingResponse(output)
+}
+
+// icmpPermissionHint ensures the setup hint is logged once instead of on every probe.
+var icmpPermissionHint sync.Once
+
+// isPingPermissionError reports whether ping's stderr indicates missing privileges
+// rather than an unreachable target. Output is in the C locale.
+func isPingPermissionError(msg string) bool {
+	msg = strings.ToLower(msg)
+	return strings.Contains(msg, "permission denied") || strings.Contains(msg, "operation not permitted")
+}
+
+func logICMPPermissionHint() {
+	slog.Warn("ICMP monitors lack permission to send pings. Grant the agent CAP_NET_RAW or include its group in net.ipv4.ping_group_range, then restart the agent. See https://beszel.dev/guide/network-monitors",
+		"gid", os.Getgid())
 }
 
 // parsePingResponse returns the reported RTT, never subprocess execution time.
