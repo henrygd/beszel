@@ -100,7 +100,10 @@ func newServer(app core.App) *mcpsdk.Server {
 			"list_services for systemd services, get_disk_health for SMART and ZFS " +
 			"health, list_network_monitors for endpoint monitoring, and list_alerts / " +
 			"list_alert_events for alert configurations and triggered events. Data " +
-			"access matches the permissions of the authenticated hub user.",
+			"access matches the permissions of the authenticated hub user. " +
+			"list_containers, list_services, get_disk_health and list_network_monitors " +
+			"search all visible systems when the system argument is omitted, so " +
+			"questions spanning systems need only one call.",
 	})
 	registerTools(app, server)
 	return server

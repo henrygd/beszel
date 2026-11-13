@@ -410,24 +410,94 @@ func TestMcpGetSystemStats(t *testing.T) {
 	require.Contains(t, errText, "invalid period")
 }
 
-func TestMcpListContainers(t *testing.T) {
-	hub, user, _, server, userSystem := setupHub(t)
-	session := mcpClient(t, server.URL, user.Token)
-	_, err := beszelTests.CreateRecord(hub, "container_stats", map[string]any{
-		"system": userSystem.Id,
-		"type":   "1m",
-		"stats":  []map[string]any{{"n": "web", "c": 12.5, "m": 256, "b": [2]uint64{500, 1500}}},
-	})
+// createContainer adds a containers record (the current state of one
+// container, as written by the hub on each agent update).
+func createContainer(t *testing.T, hub *beszelTests.TestHub, id string, systemId string, fields map[string]any) {
+	t.Helper()
+	data := map[string]any{"id": id, "system": systemId, "updated": time.Now().UTC().UnixMilli()}
+	for key, value := range fields {
+		data[key] = value
+	}
+	_, err := beszelTests.CreateRecord(hub, "containers", data)
 	require.NoError(t, err)
+}
 
-	data := callTool(t, session, "list_containers", map[string]any{"system": "user-system-1"})
+func TestMcpListContainers(t *testing.T) {
+	hub, user, other, server, userSystem := setupHub(t)
+	userSystem2 := findSystemByName(t, hub, "user-system-2")
+	otherSystem := findSystemByName(t, hub, "other-system")
+	createContainer(t, hub, "aaaaaa000001", userSystem.Id, map[string]any{
+		"name": "web", "image": "nginx:1.27", "status": "Up 3 hours", "health": 2,
+		"cpu": 12.5, "memory": 256, "net": 2000, "updatable": true,
+	})
+	createContainer(t, hub, "aaaaaa000002", userSystem2.Id, map[string]any{
+		"name": "postgres", "image": "postgres:17", "status": "Up 2 days", "health": 3, "cpu": 3, "memory": 1024,
+	})
+	createContainer(t, hub, "aaaaaa000003", userSystem2.Id, map[string]any{"name": "cache", "cpu": 40, "memory": 64})
+	// not visible to user
+	createContainer(t, hub, "aaaaaa000004", otherSystem.Id, map[string]any{"name": "secret", "memory": 4096})
+	session := mcpClient(t, server.URL, user.Token)
+
+	// across all visible systems, sorted by memory by default
+	data := callTool(t, session, "list_containers", nil)
+	require.NotContains(t, data, "system")
+	require.Equal(t, float64(3), data["count"])
 	containers := data["containers"].([]any)
+	require.Len(t, containers, 3)
+	top := containers[0].(map[string]any)
+	require.Equal(t, "postgres", top["name"])
+	require.Equal(t, "user-system-2", top["system"])
+	require.Equal(t, "unhealthy", top["health"])
+	require.Equal(t, float64(1024), top["mem_mb"])
+	require.Equal(t, "web", containers[1].(map[string]any)["name"])
+	require.Equal(t, "cache", containers[2].(map[string]any)["name"])
+
+	// limit reports truncation
+	data = callTool(t, session, "list_containers", map[string]any{"sort": "cpu", "limit": 1})
+	require.Equal(t, true, data["truncated"])
+	containers = data["containers"].([]any)
 	require.Len(t, containers, 1)
-	container := containers[0].(map[string]any)
-	require.Equal(t, "web", container["name"])
-	require.Equal(t, float64(12.5), container["cpu_pct"])
-	require.Equal(t, float64(256), container["mem_mb"])
-	require.Equal(t, []any{float64(500), float64(1500)}, container["bandwidth_bps"])
+	require.Equal(t, "cache", containers[0].(map[string]any)["name"])
+
+	// filters
+	data = callTool(t, session, "list_containers", map[string]any{"health": "unhealthy"})
+	require.Equal(t, float64(1), data["count"])
+	data = callTool(t, session, "list_containers", map[string]any{"name": "post"})
+	require.Equal(t, float64(1), data["count"])
+
+	// one system: reported once at the top level
+	data = callTool(t, session, "list_containers", map[string]any{"system": "user-system-1"})
+	require.Equal(t, "user-system-1", data["system"])
+	containers = data["containers"].([]any)
+	require.Len(t, containers, 1)
+	web := containers[0].(map[string]any)
+	require.NotContains(t, web, "system")
+	require.Equal(t, "nginx:1.27", web["image"])
+	require.Equal(t, "Up 3 hours", web["status"])
+	require.Equal(t, "healthy", web["health"])
+	require.Equal(t, float64(12.5), web["cpu_pct"])
+	require.Equal(t, float64(2000), web["net_bps"])
+	require.Equal(t, true, web["update_available"])
+
+	// invalid params
+	require.Contains(t, callToolError(t, session, "list_containers", map[string]any{"sort": "size"}), "invalid sort")
+	require.Contains(t, callToolError(t, session, "list_containers", map[string]any{"health": "sick"}), "invalid health")
+	require.Contains(t, callToolError(t, session, "list_containers", map[string]any{"system": "other-system"}), "not found or not visible")
+
+	// the other user only sees their own container
+	otherSession := mcpClient(t, server.URL, other.Token)
+	data = callTool(t, otherSession, "list_containers", nil)
+	require.Equal(t, float64(1), data["count"])
+	require.Equal(t, "secret", data["containers"].([]any)[0].(map[string]any)["name"])
+}
+
+func TestMcpListContainersShareAll(t *testing.T) {
+	hub, user, _, server, _ := setupHubWithShareAll(t, "true")
+	createContainer(t, hub, "bbbbbb000001", findSystemByName(t, hub, "other-system").Id, map[string]any{"name": "shared", "memory": 10})
+	session := mcpClient(t, server.URL, user.Token)
+	data := callTool(t, session, "list_containers", nil)
+	require.Equal(t, float64(1), data["count"])
+	require.Equal(t, "other-system", data["containers"].([]any)[0].(map[string]any)["system"])
 }
 
 func TestMcpListAlerts(t *testing.T) {
@@ -656,6 +726,14 @@ func TestMcpGetSystemUpdatesAndCurrent(t *testing.T) {
 }
 
 // hubFindSystem reloads a system record for updates (create hooks reset fields).
+// findSystemByName returns the system record with the given (unique) name.
+func findSystemByName(t *testing.T, hub *beszelTests.TestHub, name string) *core.Record {
+	t.Helper()
+	system, err := hub.FindFirstRecordByData("systems", "name", name)
+	require.NoError(t, err)
+	return system
+}
+
 func hubFindSystem(t *testing.T, hub *beszelTests.TestHub, systemId string) *core.Record {
 	t.Helper()
 	system, err := hub.FindRecordById("systems", systemId)
@@ -671,23 +749,60 @@ func TestMcpListServices(t *testing.T) {
 		"updated": time.Now().UTC().UnixMilli(),
 	})
 	require.NoError(t, err)
+	_, err = beszelTests.CreateRecord(hub, "systemd_services", map[string]any{
+		"system": findSystemByName(t, hub, "user-system-2").Id, "name": "sshd.service", "state": 0, "sub": 1,
+		"cpu": 0.5, "memory": 900000,
+	})
+	require.NoError(t, err)
+	_, err = beszelTests.CreateRecord(hub, "systemd_services", map[string]any{
+		"system": findSystemByName(t, hub, "other-system").Id, "name": "cron.service", "state": 2,
+	})
+	require.NoError(t, err)
 	session := mcpClient(t, server.URL, user.Token)
+
+	// one system
 	data := callTool(t, session, "list_services", map[string]any{"system": "user-system-1"})
+	require.Equal(t, "user-system-1", data["system"])
 	services := data["services"].([]any)
 	require.Len(t, services, 1)
 	service := services[0].(map[string]any)
 	require.Equal(t, "nginx.service", service["name"])
+	require.NotContains(t, service, "system")
 	require.Equal(t, "failed", service["state"])
 	require.Equal(t, float64(30), service["cpu_peak_pct"])
 	require.Equal(t, float64(456789), service["mem_bytes"])
+
+	// failed services across all visible systems (not the other user's)
+	data = callTool(t, session, "list_services", map[string]any{"state": "failed"})
+	services = data["services"].([]any)
+	require.Len(t, services, 1)
+	require.Equal(t, "user-system-1", services[0].(map[string]any)["system"])
+
+	// sorted by memory across systems
+	data = callTool(t, session, "list_services", map[string]any{"sort": "memory"})
+	services = data["services"].([]any)
+	require.Len(t, services, 2)
+	require.Equal(t, "sshd.service", services[0].(map[string]any)["name"])
+	require.Equal(t, "user-system-2", services[0].(map[string]any)["system"])
+
+	require.Contains(t, callToolError(t, session, "list_services", map[string]any{"state": "broken"}), "invalid state")
 }
 
 func TestMcpDiskHealth(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
+	userSystem2 := findSystemByName(t, hub, "user-system-2")
 	_, err := beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
 		"system": userSystem.Id, "name": "nvme0n1", "model": "Samsung 990 Pro", "state": "PASSED",
 		"type": "ssd", "serial": "S6ZNF0", "firmware": "2B2QGXA7", "capacity": 1024110208,
 		"temp": 45, "hours": 12345, "cycles": 100,
+	})
+	require.NoError(t, err)
+	_, err = beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
+		"system": userSystem2.Id, "name": "sda", "state": "FAILED",
+	})
+	require.NoError(t, err)
+	_, err = beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
+		"system": findSystemByName(t, hub, "other-system").Id, "name": "sdb", "state": "FAILED",
 	})
 	require.NoError(t, err)
 	_, err = beszelTests.CreateRecord(hub, "zfs_pools", map[string]any{
@@ -695,8 +810,15 @@ func TestMcpDiskHealth(t *testing.T) {
 		"size": 4096, "alloc": 1024, "free": 3072, "updated": time.Now().UTC(),
 	})
 	require.NoError(t, err)
+	_, err = beszelTests.CreateRecord(hub, "zfs_pools", map[string]any{
+		"system": userSystem2.Id, "name": "backup", "health": "DEGRADED", "updated": time.Now().UTC(),
+	})
+	require.NoError(t, err)
 	session := mcpClient(t, server.URL, user.Token)
+
+	// one system
 	data := callTool(t, session, "get_disk_health", map[string]any{"system": "user-system-1"})
+	require.Equal(t, "user-system-1", data["system"])
 	smart := data["smart_devices"].([]any)
 	require.Len(t, smart, 1)
 	device := smart[0].(map[string]any)
@@ -710,6 +832,22 @@ func TestMcpDiskHealth(t *testing.T) {
 	require.Equal(t, "tank", pool["name"])
 	require.Equal(t, "ONLINE", pool["health"])
 	require.Equal(t, float64(1024), pool["alloc_bytes"])
+
+	// all visible systems
+	data = callTool(t, session, "get_disk_health", nil)
+	require.Len(t, data["smart_devices"].([]any), 2)
+	require.Len(t, data["zfs_pools"].([]any), 2)
+
+	// only problems, across all visible systems
+	data = callTool(t, session, "get_disk_health", map[string]any{"problems_only": true})
+	smart = data["smart_devices"].([]any)
+	require.Len(t, smart, 1)
+	require.Equal(t, "sda", smart[0].(map[string]any)["name"])
+	require.Equal(t, "user-system-2", smart[0].(map[string]any)["system"])
+	pools = data["zfs_pools"].([]any)
+	require.Len(t, pools, 1)
+	require.Equal(t, "backup", pools[0].(map[string]any)["name"])
+	require.Equal(t, "user-system-2", pools[0].(map[string]any)["system"])
 }
 
 func TestMcpNetworkMonitors(t *testing.T) {
@@ -720,12 +858,21 @@ func TestMcpNetworkMonitors(t *testing.T) {
 		"enabled": true, "res": 12500, "resAvg1h": 11000, "resMin1h": 9000, "resMax1h": 40250, "loss1h": 0.5,
 	})
 	require.NoError(t, err)
+	_, err = beszelTests.CreateRecord(hub, "network_monitors", map[string]any{
+		"system": findSystemByName(t, hub, "user-system-2").Id, "target": "example.com", "protocol": "icmp",
+		"interval": 60, "enabled": true, "res": 80000, "loss1h": 12,
+	})
+	require.NoError(t, err)
 	session := mcpClient(t, server.URL, user.Token)
+
+	// one system
 	data := callTool(t, session, "list_network_monitors", map[string]any{"system": "user-system-1"})
+	require.Equal(t, "user-system-1", data["system"])
 	monitors := data["monitors"].([]any)
 	require.Len(t, monitors, 1)
 	monitor := monitors[0].(map[string]any)
 	require.Equal(t, "1.1.1.1", monitor["target"])
+	require.NotContains(t, monitor, "system")
 	require.Equal(t, "icmp", monitor["protocol"])
 	require.Equal(t, true, monitor["enabled"])
 	require.Equal(t, float64(12.5), monitor["latency_ms"])
@@ -733,6 +880,14 @@ func TestMcpNetworkMonitors(t *testing.T) {
 	require.Equal(t, float64(40.25), monitor["latency_max_1h_ms"])
 	require.Equal(t, float64(0.5), monitor["loss_pct_1h"])
 	require.NotContains(t, data, "truncated")
+
+	// worst packet loss across all visible systems
+	data = callTool(t, session, "list_network_monitors", map[string]any{"sort": "loss"})
+	monitors = data["monitors"].([]any)
+	require.Len(t, monitors, 2)
+	require.Equal(t, "example.com", monitors[0].(map[string]any)["target"])
+	require.Equal(t, "user-system-2", monitors[0].(map[string]any)["system"])
+	require.Equal(t, float64(80), monitors[0].(map[string]any)["latency_ms"])
 }
 
 func TestMcpTruncatedNetworkMonitors(t *testing.T) {
