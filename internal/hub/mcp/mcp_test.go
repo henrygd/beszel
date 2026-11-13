@@ -461,6 +461,22 @@ func TestMcpListAlerts(t *testing.T) {
 	require.Len(t, alerts, 1)
 }
 
+func TestMcpListAlertsStructuredState(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	_, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+		"name": "NetworkMonitorLoss", "user": user.Record.Id, "system": userSystem.Id, "value": 10,
+		"state": map[string]any{"monitors": map[string]string{"monitor-1": "down"}},
+	})
+	require.NoError(t, err)
+	session := mcpClient(t, server.URL, user.Token)
+	data := callTool(t, session, "list_alerts", nil)
+	alerts := data["alerts"].([]any)
+	require.Len(t, alerts, 1)
+	// state is passed through as a JSON object rather than an encoded string
+	require.Equal(t, map[string]any{"monitors": map[string]any{"monitor-1": "down"}},
+		alerts[0].(map[string]any)["state"])
+}
+
 func TestMcpToolsList(t *testing.T) {
 	_, user, _, server, _ := setupHub(t)
 	session := mcpClient(t, server.URL, user.Token)
@@ -716,6 +732,23 @@ func TestMcpNetworkMonitors(t *testing.T) {
 	require.Equal(t, float64(11), monitor["latency_avg_1h_ms"])
 	require.Equal(t, float64(40.25), monitor["latency_max_1h_ms"])
 	require.Equal(t, float64(0.5), monitor["loss_pct_1h"])
+	require.NotContains(t, data, "truncated")
+}
+
+func TestMcpTruncatedNetworkMonitors(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	// fill beyond the 200 record cap
+	for i := range 201 {
+		_, err := beszelTests.CreateRecord(hub, "network_monitors", map[string]any{
+			"system": userSystem.Id, "target": fmt.Sprintf("10.0.%d.%d", i/256, i%256),
+			"protocol": "icmp", "interval": 60, "enabled": true,
+		})
+		require.NoError(t, err)
+	}
+	session := mcpClient(t, server.URL, user.Token)
+	data := callTool(t, session, "list_network_monitors", map[string]any{"system": "user-system-1"})
+	require.Equal(t, float64(200), data["count"])
+	require.Equal(t, true, data["truncated"])
 }
 
 func TestMcpListAlertEvents(t *testing.T) {
