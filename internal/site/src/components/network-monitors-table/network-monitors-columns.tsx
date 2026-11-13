@@ -39,7 +39,9 @@ import {
 	getCertDaysLeft,
 	getCertExpiryLevel,
 	getMonitorProtocolLabel,
+	getMonitorStatus,
 	getMonitorTarget,
+	type MonitorStatus,
 } from "@/lib/network-monitor-utils"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
@@ -66,6 +68,13 @@ const SYSTEM_STATUS_COLORS = {
 	[SystemStatus.Paused]: "bg-primary/40",
 	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
+
+const MONITOR_STATUS_COLORS: Record<MonitorStatus, string> = {
+	up: "bg-green-500",
+	down: "bg-red-500",
+	pending: "bg-yellow-500",
+	paused: "bg-primary/40",
+}
 
 /**
  * A monitor is considered muted if it's disabled or if its associated system is not up.
@@ -148,14 +157,7 @@ export function getMonitorColumns({
 				const monitor = row.original
 				const { status } = useStore($allSystemsById)[monitor.system] || {}
 
-				let color = "bg-green-500"
-				if (!monitor.enabled || status === SystemStatus.Paused) {
-					color = "bg-primary/40"
-				} else if (status === SystemStatus.Down || status === SystemStatus.Pending) {
-					color = "bg-yellow-500"
-				} else if (monitor.updated && !monitor.res) {
-					color = "bg-red-500"
-				}
+				const color = MONITOR_STATUS_COLORS[getMonitorStatus(monitor, status)]
 				return (
 					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />

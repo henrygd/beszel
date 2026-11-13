@@ -58,17 +58,21 @@ function getBucketMs(monitorIds: string[], chartTime: ChartTimes) {
 	return monitorIds.length > 1 && type === "1m" ? expectedInterval : 0
 }
 
-/** Fetch stats for one or more monitors and a time range, returning merged chart records. */
+/**
+ * Fetch stats matching a monitor filter expression and a time range, returning merged chart records.
+ * `bucketMs` aligns records from different systems (see getBucketMs).
+ */
 async function fetchMonitorStats(
-	monitorIds: string[],
+	{ expr, params }: { expr: string; params: Record<string, string> },
+	bucketMs: number,
 	chartTime: ChartTimes,
-	cached?: NetworkMonitorStatsRecord[]
+	cached?: NetworkMonitorStatsRecord[],
+	/** The SDK cancels a pending request with the same key; by default that's any request to this collection. */
+	requestKey?: string
 ): Promise<NetworkMonitorStatsRecord[]> {
 	const lastCached = cached?.at(-1)?.created as number | undefined
-	const bucketMs = getBucketMs(monitorIds, chartTime)
 	// Bucketed timestamps are floored, so refetch the whole last bucket; mergeSameTimestamps folds in the overlap.
 	const from = lastCached ? new Date(bucketMs ? lastCached - 1 : lastCached + 1000) : undefined
-	const { expr, params } = monitorIdsFilter(monitorIds)
 	const rawRecords = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").getFullList({
 		filter: pb.filter(`${expr} && created>{:created} && type={:type}`, {
 			...params,
@@ -77,6 +81,9 @@ async function fetchMonitorStats(
 		}),
 		fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created",
 		sort: "created",
+		// PocketBase's page limit; each page re-scans the range up to its offset, so fewer pages is faster.
+		batch: 1000,
+		requestKey,
 	})
 	return mergeMonitorStats(rawRecords, bucketMs)
 }
@@ -207,7 +214,8 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 			}
 		}
 
-		fetchMonitorStats(cacheKey.split(","), chartTime, cachedMonitorStats)
+		const monitorIds = cacheKey.split(",")
+		fetchMonitorStats(monitorIdsFilter(monitorIds), getBucketMs(monitorIds, chartTime), chartTime, cachedMonitorStats)
 			.then((newMonitorStats) => {
 				if (cancelled) return
 				setMonitorStats(appendCacheValue(cacheKey, chartTime, newMonitorStats))
@@ -321,6 +329,93 @@ export function useNetworkMonitorStats(props: UseNetworkMonitorStatsProps) {
 		if (cacheKey.includes(",")) return monitorStats
 		return withMonitorGaps(monitorStats, { id: cacheKey, interval }, chartTimeData[chartTime].expectedInterval)
 	}, [monitorStats, cacheKey, interval, chartTime])
+}
+
+/**
+ * Returns stats for every monitor of one protocol on all systems, for the monitors charts dashboard.
+ * Filters on the monitor relation so the request stays short however many monitors there are, and
+ * has no realtime (1m) range, since realtime metrics would need a subscription per system.
+ */
+export function useProtocolMonitorStats(
+	protocol: NetworkMonitorRecord["protocol"],
+	chartTime: ChartTimes,
+	enabled = true
+) {
+	const cacheKey = `protocol:${protocol}`
+	const [monitorStats, setMonitorStats] = useState<NetworkMonitorStatsRecord[]>([])
+	const pendingRaw = useRef(new Map<string, RawMonitorStatsRecord>())
+	const mergeBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+	useEffect(() => {
+		setMonitorStats(getCacheValue(cacheKey, chartTime))
+	}, [cacheKey, chartTime])
+
+	useEffect(() => {
+		if (!enabled) return
+		let cancelled = false
+		const { expectedInterval, type } = chartTimeData[chartTime]
+		// Raw 1m records come from many systems, so always align them.
+		const bucketMs = type === "1m" ? expectedInterval : 0
+		const filter = { expr: "monitor.protocol={:protocol}", params: { protocol } }
+		const cachedMonitorStats = getCacheValue(cacheKey, chartTime)
+		const lastCreated = cachedMonitorStats.at(-1)?.created
+		if (!lastCreated || Date.now() - lastCreated >= expectedInterval * 0.9) {
+			// Sections fetch at the same time, so each protocol needs its own request key. A newer request
+			// for the same protocol (e.g. after changing the time range) still cancels a stale one.
+			fetchMonitorStats(filter, bucketMs, chartTime, cachedMonitorStats, cacheKey)
+				.then((newMonitorStats) => {
+					if (!cancelled) setMonitorStats(appendCacheValue(cacheKey, chartTime, newMonitorStats))
+				})
+				.catch((error) => {
+					if (!cancelled && !error?.isAbort) console.error("Failed to fetch monitor stats:", error)
+				})
+		}
+
+		let unsubscribe: (() => void) | undefined
+		function flushPending() {
+			mergeBatchTimeout.current = null
+			const pending = pendingRaw.current
+			pendingRaw.current = new Map()
+			const merged = mergeMonitorStats(Array.from(pending.values()), bucketMs)
+			if (merged.length > 0) {
+				setMonitorStats(appendCacheValue(cacheKey, chartTime, merged))
+			}
+		}
+		;(async () => {
+			try {
+				unsubscribe = await pb.collection<RawMonitorStatsRecord>("network_monitor_stats").subscribe(
+					"*",
+					(event) => {
+						if (cancelled || event.action !== "create") return
+						const rec = event.record
+						pendingRaw.current.set(`${rec.monitor}:${rec.created}`, rec)
+						if (!mergeBatchTimeout.current) {
+							mergeBatchTimeout.current = setTimeout(flushPending, 200)
+						}
+					},
+					{
+						fields: "monitor,res_min,res_max,total_count,success_count,res_sum,created,type",
+						filter: pb.filter(`${filter.expr} && type={:type}`, { ...filter.params, type }),
+					}
+				)
+				if (cancelled) unsubscribe()
+			} catch (error) {
+				console.error("Failed to subscribe to monitor stats:", error)
+			}
+		})()
+
+		return () => {
+			cancelled = true
+			if (mergeBatchTimeout.current) {
+				clearTimeout(mergeBatchTimeout.current)
+				mergeBatchTimeout.current = null
+			}
+			pendingRaw.current.clear()
+			unsubscribe?.()
+		}
+	}, [cacheKey, protocol, chartTime, enabled])
+
+	return monitorStats
 }
 
 /** Only what comparison charts and labels need. */

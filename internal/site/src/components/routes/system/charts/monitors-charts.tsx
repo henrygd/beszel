@@ -77,8 +77,7 @@ function MonitorChart({
 				label,
 				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[p.id]?.[metric] ?? null,
 				dot,
-				color:
-					color ?? (count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`),
+				color: color ?? monitorColor(i, count),
 			})
 		}
 		return { dataPoints: points, visibleKeys: visibleIDs }
@@ -115,6 +114,104 @@ function MonitorChart({
 				contentFormatter={contentFormatter}
 				legend={legend}
 				filter={filter}
+			/>
+		</ChartCard>
+	)
+}
+
+/** Line color for the i-th of `count` monitors, matching MonitorChart. */
+function monitorColor(i: number, count: number) {
+	return count <= 5 ? i + 1 : `hsl(${(i * 360) / count}, var(--chart-saturation), var(--chart-lightness))`
+}
+
+/** Loss line color for the i-th of `count` monitors: the destructive red, or shades of red from dark to light. */
+function lossColor(i: number, count: number) {
+	if (count === 1) return "var(--destructive)"
+	return `hsl(0, 75%, ${40 + (30 * i) / (count - 1)}%)`
+}
+
+interface ResponseLossChartProps {
+	monitorStats: NetworkMonitorStatsRecord[]
+	/** Monitors of one target, e.g. probed from different systems. */
+	monitors: NetworkMonitorRecord[]
+	chartData: ChartOptions
+	empty: boolean
+	title: string
+	/** Line label for each monitor, e.g. its system name. */
+	getLabel: (monitor: NetworkMonitorRecord) => string
+}
+
+/**
+ * Average response time (solid, left axis) and packet loss (dashed, right axis) in one chart.
+ * Loss lines are shades of red, and only the response lines are listed in the legend.
+ */
+export function ResponseLossChart({
+	monitorStats,
+	monitors,
+	chartData,
+	empty,
+	title,
+	getLabel,
+}: ResponseLossChartProps) {
+	const { t } = useLingui()
+	const lossLabel = t({ message: "Loss", context: "Packet loss" })
+	const responseLabel = t`Response`
+	const count = monitors.length
+
+	const { dataPoints, lossNames } = useMemo(() => {
+		const points: DataPoint<NetworkMonitorStatsRecord>[] = []
+		const lossNames = new Set<string>()
+		monitors.forEach((m, i) => {
+			const label = count > 1 ? getLabel(m) : responseLabel
+			const lossName = count > 1 ? `${label} · ${lossLabel}` : lossLabel
+			lossNames.add(lossName)
+			points.push({
+				label,
+				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[m.id]?.res_avg ?? null,
+				color: monitorColor(i, count),
+				order: i,
+			})
+			points.push({
+				label: lossName,
+				dataKey: (record: NetworkMonitorStatsRecord) => record.stats?.[m.id]?.loss ?? null,
+				color: lossColor(i, count),
+				order: count + i,
+				yAxisId: "right",
+				strokeDasharray: "4 3",
+				legendType: "none",
+			})
+		})
+		return { dataPoints: points, lossNames }
+	}, [monitors, count, getLabel, lossLabel, responseLabel])
+
+	const legend = count > 1 && count < 10
+
+	return (
+		<ChartCard
+			legend={legend}
+			empty={empty}
+			title={title}
+			description={t`Average response time (solid) and packet loss (dashed)`}
+			grid
+		>
+			<LineChartDefault
+				truncate
+				chartData={chartData}
+				customData={monitorStats}
+				dataPoints={dataPoints}
+				domain={["auto", "auto"]}
+				domain2={[0, 100]}
+				// Callers prepare the records (see withMonitorsGaps), so missing values are real gaps.
+				connectNulls={false}
+				tickFormatter={(value) => formatMicroseconds(value, false)}
+				tickFormatter2={(value) => `${toFixedFloat(value, value >= 10 ? 0 : 1)}%`}
+				contentFormatter={({ value, name }) => {
+					if (typeof value !== "number") {
+						return value
+					}
+					return lossNames.has(name) ? `${decimalString(value, 2)}%` : formatMicroseconds(value)
+				}}
+				legend={legend}
 			/>
 		</ChartCard>
 	)

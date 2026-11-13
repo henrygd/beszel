@@ -3,7 +3,9 @@ import type { NetworkMonitorRecord } from "@/types"
 import {
 	getMonitorCompareState,
 	getMonitorIdentityKey,
+	getMonitorLabels,
 	getMonitorProtocolLabel,
+	getMonitorStatus,
 	getMonitorTarget,
 	MAX_COMPARE_MONITORS,
 } from "./monitor-compare"
@@ -192,4 +194,33 @@ test("more can be added only while the next pick fits the line limit", () => {
 	expect(full.compareMonitors.length).toBe(MAX_COMPARE_MONITORS)
 	expect(full.canAddTarget).toBe(false)
 	expect(full.canAddSystem).toBe(false)
+})
+
+test("getMonitorLabels tells apart monitors that would share a label", () => {
+	const dnsA = mon("d1", "a", "example.com", { protocol: "dns", server: "1.1.1.1" })
+	const dnsB = mon("d2", "a", "example.com", { protocol: "dns", server: "8.8.8.8" })
+	const http = mon("h1", "a", "http://example.org", { protocol: "http" })
+	const https = mon("h2", "a", "https://example.org", { protocol: "http" })
+	const other = mon("o1", "b", "example.com", { protocol: "dns", server: "9.9.9.9" })
+	const labels = getMonitorLabels([dnsA, dnsB, http, https, other], (m, target) =>
+		m.system === "b" ? `${systemNames[m.system]} · ${target}` : target
+	)
+	expect(labels.get("d1")).toBe("example.com (1.1.1.1)")
+	expect(labels.get("d2")).toBe("example.com (8.8.8.8)")
+	expect(labels.get("h1")).toBe("http://example.org")
+	expect(labels.get("h2")).toBe("https://example.org")
+	// unique labels are left as they are
+	expect(labels.get("o1")).toBe("Bravo · example.com")
+})
+
+test("getMonitorStatus matches the table's status dot", () => {
+	const up = { enabled: true, updated: "2026-01-01", res: 1200 }
+	expect(getMonitorStatus(up, "up")).toBe("up")
+	expect(getMonitorStatus({ ...up, res: 0 }, "up")).toBe("down")
+	// not probed yet
+	expect(getMonitorStatus({ ...up, updated: "", res: 0 }, "up")).toBe("up")
+	expect(getMonitorStatus(up, "down")).toBe("pending")
+	expect(getMonitorStatus({ ...up, res: 0 }, "pending")).toBe("pending")
+	expect(getMonitorStatus(up, "paused")).toBe("paused")
+	expect(getMonitorStatus({ ...up, enabled: false }, "down")).toBe("paused")
 })
