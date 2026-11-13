@@ -15,8 +15,13 @@ import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// maxSamples limits historical samples returned by get_system_stats and the
-// list sizes of the other tools, keeping responses small for LLM contexts.
+// maxSamples limits historical samples returned by get_system_stats and
+// maxListRecords the list sizes of the other tools, keeping responses small for
+// LLM contexts.
+//
+// Lookbacks are limited to the retention of each stats period, so normal
+// queries return at most ~90 samples (e.g. 480m over 30 days, 120m over 7
+// days); maxSamples is a backstop in case retention or record intervals change.
 const (
 	maxSamples     = 400
 	maxListRecords = 200
@@ -533,7 +538,7 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 		}
 		result.Note = skippedNote
 	}
-	// build samples (capped by even stride if needed)
+	// build samples (down-sampled by even stride past the maxSamples backstop)
 	stride := 1
 	if len(decoded) > maxSamples {
 		stride = (len(decoded) + maxSamples - 1) / maxSamples
