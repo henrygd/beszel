@@ -46,6 +46,7 @@ export function BatteryChart({
 		}))
 		return (
 			<ChartCard
+				alertSection="battery"
 				empty={dataEmpty}
 				grid={grid}
 				title={t`Battery`}
@@ -70,6 +71,7 @@ export function BatteryChart({
 
 	return (
 		<ChartCard
+			alertSection="battery"
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Battery`}
@@ -224,6 +226,7 @@ export function TemperatureChart({
 	return (
 		<div ref={chartRef} className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
 			<ChartCard
+				alertSection="temperature"
 				empty={dataEmpty}
 				grid={grid}
 				title={t`Temperature`}

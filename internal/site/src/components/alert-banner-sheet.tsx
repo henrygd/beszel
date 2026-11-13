@@ -21,6 +21,7 @@ export function AlertBannerSheet({
 	sheetDescription,
 	icon: Icon = TriangleAlertIcon,
 	onDismiss,
+	onCloseAutoFocus,
 	className,
 	children,
 }: {
@@ -34,6 +35,7 @@ export function AlertBannerSheet({
 	icon?: LucideIcon
 	/** Shows a dismiss button when provided */
 	onDismiss?: () => void
+	onCloseAutoFocus?: (event: Event) => void
 	className?: string
 	children: ReactNode
 }) {
@@ -73,7 +75,7 @@ export function AlertBannerSheet({
 					</Button>
 				)}
 			</Alert>
-			<SheetContent className="w-140 !max-w-full gap-0">
+			<SheetContent className="w-140 !max-w-full gap-0" onCloseAutoFocus={onCloseAutoFocus}>
 				<SheetHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b">
 					<SheetTitle>{sheetTitle}</SheetTitle>
 					{sheetDescription && <SheetDescription>{sheetDescription}</SheetDescription>}
