@@ -62,19 +62,23 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 			}
 		}
 
-		// Generate chart configurations for each metric type
+		// Assign colors once, ordered by name, so each container keeps the same color across charts
+		const sortedByName = Array.from(totalUsage.cpu.keys()).sort((a, b) => a.localeCompare(b))
+		const colors = new Map<string, string>()
+		for (let i = 0; i < sortedByName.length; i++) {
+			const hue = ((i * 360) / sortedByName.length) % 360
+			colors.set(sortedByName[i], `hsl(${hue}, var(--chart-saturation), var(--chart-lightness))`)
+		}
+
+		// Generate chart configurations for each metric type, ordered by that metric's usage
 		Object.entries(totalUsage).forEach(([chartType, usageMap]) => {
 			const sortedContainers = Array.from(usageMap.entries()).sort(([, a], [, b]) => b - a)
 			const chartConfig = {} as Record<string, { label: string; color: string }>
-			const count = sortedContainers.length
 
-			// Generate colors for each container
-			for (let i = 0; i < count; i++) {
-				const [containerName] = sortedContainers[i]
-				const hue = ((i * 360) / count) % 360
+			for (const [containerName] of sortedContainers) {
 				chartConfig[containerName] = {
 					label: containerName,
-					color: `hsl(${hue}, var(--chart-saturation), var(--chart-lightness))`,
+					color: colors.get(containerName) ?? "",
 				}
 			}
 
