@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -46,8 +47,10 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 			"by default the finest resolution covering the requested hours is used.",
 	}, h.getSystemStats)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
-		Name:        "list_containers",
-		Description: "List docker/podman containers of one system with the latest recorded CPU, memory and network usage.",
+		Name: "list_containers",
+		Description: "List docker/podman containers with current status, health, CPU, memory and network usage. " +
+			"Omit system to search all visible systems at once; results are sorted by memory (highest first) by default, " +
+			"so e.g. sort=memory with limit=5 answers 'which containers use the most memory'.",
 	}, h.listContainers)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name:        "list_alerts",
@@ -60,16 +63,18 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 	}, h.listAlertEvents)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "list_services",
-		Description: "List systemd services of one system with state, CPU and memory usage, looked up by name or id. " +
-			"Use state=failed to spot broken services.",
+		Description: "List systemd services with state, CPU and memory usage. " +
+			"Omit system to search all visible systems at once; use state=failed to spot broken services anywhere.",
 	}, h.listServices)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
-		Name:        "get_disk_health",
-		Description: "Get SMART health of physical disks (state, temperature, power-on hours) and ZFS pool status for one system.",
+		Name: "get_disk_health",
+		Description: "Get SMART health of physical disks (state, temperature, power-on hours) and ZFS pool status. " +
+			"Omit system to check all visible systems at once; use problems_only to list only failing disks and degraded pools.",
 	}, h.getDiskHealth)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
-		Name:        "list_network_monitors",
-		Description: "List network endpoint monitors (ping/tcp/http/dns) of one system with latest latency and loss.",
+		Name: "list_network_monitors",
+		Description: "List network endpoint monitors (ping/tcp/http/dns) with latest latency and loss. " +
+			"Omit system to list monitors of all visible systems; sort by latency or loss to find the worst endpoints.",
 	}, h.listNetworkMonitors)
 }
 
@@ -211,22 +216,7 @@ func (h *mcphub) listVisibleSystems(auth *core.Record) ([]*core.Record, bool, er
 		filter = "users.id ?= {:uid}"
 		params["uid"] = auth.Id
 	}
-	records, err := h.app.FindRecordsByFilter("systems", filter, "name", maxListRecords, 0, params)
-	if err != nil {
-		return nil, false, err
-	}
-	hasMore := false
-	if len(records) == maxListRecords {
-		hasMore = h.hasMoreRecords("systems", filter, "name", params)
-	}
-	return records, hasMore, nil
-}
-
-// hasMoreRecords reports whether at least one record exists beyond the
-// maxListRecords cap for the given filter, fetch costing a single record.
-func (h *mcphub) hasMoreRecords(collection string, filter string, sort string, params dbx.Params) bool {
-	extra, err := h.app.FindRecordsByFilter(collection, filter, sort, 1, maxListRecords, params)
-	return err == nil && len(extra) > 0
+	return h.findLimited("systems", filter, "name", maxListRecords, params)
 }
 
 // newSystemSummary builds the common fields from a system record.
@@ -627,56 +617,95 @@ func summarizeStats(decoded []decodedStat) statsSummary {
 }
 
 type containerSummary struct {
-	Name            string     `json:"name"`
-	Cpu             float64    `json:"cpu_pct,omitzero"`
-	Mem             float64    `json:"mem_mb,omitzero"`
-	Bandwidth       *[2]uint64 `json:"bandwidth_bps,omitzero"` // [sent, recv]
-	UpdateAvailable bool       `json:"update_available,omitzero"`
+	Name            string  `json:"name"`
+	System          string  `json:"system,omitempty"` // system name (only when listing across systems)
+	Image           string  `json:"image,omitempty"`
+	Status          string  `json:"status,omitempty"` // docker status text, e.g. "Up 3 hours"
+	Health          string  `json:"health,omitempty"` // starting, healthy or unhealthy (omitted without a health check)
+	Cpu             float64 `json:"cpu_pct,omitzero"`
+	Mem             float64 `json:"mem_mb,omitzero"`
+	Net             uint64  `json:"net_bps,omitzero"` // sent + received bytes/sec
+	Ports           string  `json:"ports,omitempty"`
+	UpdateAvailable bool    `json:"update_available,omitzero"`
 }
 
 type containerList struct {
-	System     string             `json:"system"`
+	System     string             `json:"system,omitempty"` // set when filtered to one system
+	Count      int                `json:"count"`
+	Truncated  bool               `json:"truncated,omitzero"` // more containers match beyond the limit
 	Containers []containerSummary `json:"containers"`
 }
 
-// listContainers returns the latest recorded docker stats for one system.
-func (h *mcphub) listContainers(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, containerList, error) {
+type listContainersParams struct {
+	scopeParams
+	Sort   string `json:"sort,omitzero" jsonschema:"one of memory, cpu, net or name (default memory, highest first)"`
+	Name   string `json:"name,omitzero" jsonschema:"only containers whose name contains this text"`
+	Health string `json:"health,omitzero" jsonschema:"only containers with this health check state: none, starting, healthy or unhealthy"`
+}
+
+var containerSorts = sortOptions{
+	{"memory", "-memory,name"},
+	{"cpu", "-cpu,name"},
+	{"net", "-net,name"},
+	{"name", "name"},
+}
+
+// containerHealthNames maps the stored container.DockerHealth values to names
+// (none is omitted from the output).
+var containerHealthNames = map[uint8]string{
+	container.DockerHealthStarting:  "starting",
+	container.DockerHealthHealthy:   "healthy",
+	container.DockerHealthUnhealthy: "unhealthy",
+}
+
+// listContainers returns current container usage from the containers
+// collection, for one system or across all visible systems.
+func (h *mcphub) listContainers(ctx context.Context, req *mcpsdk.CallToolRequest, params listContainersParams) (*mcpsdk.CallToolResult, containerList, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, containerList{}, err
 	}
-	record, err := h.resolveSystem(auth, params.System)
+	sort, err := containerSorts.resolve(params.Sort, "memory")
 	if err != nil {
 		return nil, containerList{}, err
 	}
-	result := containerList{System: record.GetString("name")}
-	statsRecords, err := h.app.FindRecordsByFilter("container_stats", "system = {:system}", "-created", 1, 0,
-		dbx.Params{"system": record.Id})
+	scope, err := h.systemScope(auth, params.System)
 	if err != nil {
 		return nil, containerList{}, err
 	}
-	if len(statsRecords) == 0 {
-		return nil, result, nil
+	var conditions []string
+	if params.Name != "" {
+		conditions = append(conditions, "name ~ {:name}")
+		scope.params["name"] = params.Name
 	}
-	var containers []*container.Stats
-	if err := statsRecords[0].UnmarshalJSONField("stats", &containers); err != nil {
+	if params.Health != "" {
+		health, ok := container.DockerHealthStrings[params.Health]
+		if !ok {
+			return nil, containerList{}, fmt.Errorf("invalid health %q: must be one of none, starting, healthy, unhealthy", params.Health)
+		}
+		conditions = append(conditions, "health = {:health}")
+		scope.params["health"] = health
+	}
+	records, hasMore, err := h.findLimited("containers", scope.and(conditions...), sort, params.limit(), scope.params)
+	if err != nil {
 		return nil, containerList{}, err
 	}
-	result.Containers = make([]containerSummary, 0, len(containers))
-	for _, c := range containers {
-		if c == nil {
-			continue
-		}
-		summary := containerSummary{Name: c.Name, Cpu: c.Cpu, Mem: c.Mem, UpdateAvailable: c.UpdateAvailable}
-		sent, recv := c.Bandwidth[0], c.Bandwidth[1]
-		if sent == 0 && recv == 0 && (c.NetworkSent > 0 || c.NetworkRecv > 0) {
-			sent = uint64(c.NetworkSent * 1024 * 1024)
-			recv = uint64(c.NetworkRecv * 1024 * 1024)
-		}
-		if sent > 0 || recv > 0 {
-			summary.Bandwidth = &[2]uint64{sent, recv}
-		}
-		result.Containers = append(result.Containers, summary)
+	names := scope.systemNames(h, records)
+	result := containerList{System: scope.system, Count: len(records), Truncated: hasMore,
+		Containers: make([]containerSummary, 0, len(records))}
+	for _, record := range records {
+		result.Containers = append(result.Containers, containerSummary{
+			Name:            record.GetString("name"),
+			System:          names[record.GetString("system")],
+			Image:           record.GetString("image"),
+			Status:          record.GetString("status"),
+			Health:          containerHealthNames[uint8(record.GetInt("health"))],
+			Cpu:             record.GetFloat("cpu"),
+			Mem:             record.GetFloat("memory"),
+			Net:             uint64(record.GetFloat("net")),
+			Ports:           record.GetString("ports"),
+			UpdateAvailable: record.GetBool("updatable"),
+		})
 	}
 	return nil, result, nil
 }
@@ -693,13 +722,9 @@ func (h *mcphub) listAlerts(ctx context.Context, req *mcpsdk.CallToolRequest, _ 
 		filter = "user = {:uid}"
 		params["uid"] = auth.Id
 	}
-	records, err := h.app.FindRecordsByFilter("alerts", filter, "-updated", maxListRecords, 0, params)
+	records, hasMore, err := h.findLimited("alerts", filter, "-updated", maxListRecords, params)
 	if err != nil {
 		return nil, alertList{}, err
-	}
-	hasMore := false
-	if len(records) == maxListRecords {
-		hasMore = h.hasMoreRecords("alerts", filter, "-updated", params)
 	}
 	result := alertList{Count: len(records), Truncated: hasMore, Alerts: make([]alertSummary, 0, len(records))}
 	if len(records) == 0 {
@@ -747,24 +772,122 @@ type alertList struct {
 // resolveSystemNames maps the system ids referenced by records to their names
 // (returns nil when nothing could be resolved).
 func (h *mcphub) resolveSystemNames(records []*core.Record) map[string]string {
-	if len(records) == 0 {
+	ids := make([]string, 0, len(records))
+	for _, record := range records {
+		if id := record.GetString("system"); id != "" && !slices.Contains(ids, id) {
+			ids = append(ids, id)
+		}
+	}
+	if len(ids) == 0 {
 		return nil
 	}
-	params := dbx.Params{}
-	conditions := make([]string, 0, len(records))
-	for i, record := range records {
-		key := fmt.Sprintf("s%d", i)
-		conditions = append(conditions, "id = {:"+key+"}")
-		params[key] = record.GetString("system")
+	systemRecords, err := h.app.FindRecordsByIds("systems", ids)
+	if err != nil {
+		return nil
 	}
-	names := map[string]string{}
-	if systemRecords, err := h.app.FindRecordsByFilter("systems", strings.Join(conditions, " || "), "", len(records), 0, params); err == nil {
-		for _, systemRecord := range systemRecords {
-			names[systemRecord.Id] = systemRecord.GetString("name")
+	names := make(map[string]string, len(systemRecords))
+	for _, systemRecord := range systemRecords {
+		names[systemRecord.Id] = systemRecord.GetString("name")
+	}
+	return names
+}
+
+// scopeParams are the common params of tools listing system-scoped records,
+// for one system or across all systems visible to the user.
+type scopeParams struct {
+	System string `json:"system,omitzero" jsonschema:"system name or id (default: all systems visible to the user)"`
+	Limit  int    `json:"limit,omitzero" jsonschema:"maximum number of results (1-200, default 200)"`
+}
+
+// limit returns the requested result limit, clamped to maxListRecords.
+func (p scopeParams) limit() int {
+	if p.Limit <= 0 || p.Limit > maxListRecords {
+		return maxListRecords
+	}
+	return p.Limit
+}
+
+// recordScope filters system-scoped records (with a system relation field) to
+// one resolved system or to every system visible to the auth record.
+type recordScope struct {
+	filter string
+	params dbx.Params
+	system string // name of the selected system; empty for all visible systems
+}
+
+// systemScope resolves the scope of a system-scoped query. An empty system
+// selects all systems visible to the auth record, matching the collection
+// rules (system.users or SHARE_ALL_SYSTEMS; superusers see everything).
+func (h *mcphub) systemScope(auth *core.Record, system string) (recordScope, error) {
+	if system != "" {
+		record, err := h.resolveSystem(auth, system)
+		if err != nil {
+			return recordScope{}, err
 		}
-		return names
+		return recordScope{
+			filter: "system = {:system}",
+			params: dbx.Params{"system": record.Id},
+			system: record.GetString("name"),
+		}, nil
 	}
-	return nil
+	scope := recordScope{params: dbx.Params{}}
+	if !auth.IsSuperuser() && !shareAllSystems() {
+		scope.filter = "system.users.id ?= {:uid}"
+		scope.params["uid"] = auth.Id
+	}
+	return scope, nil
+}
+
+// and returns the scope filter combined with additional conditions.
+func (s recordScope) and(conditions ...string) string {
+	if s.filter != "" {
+		conditions = append([]string{s.filter}, conditions...)
+	}
+	return strings.Join(conditions, " && ")
+}
+
+// systemNames resolves the system names of records listed across systems; it
+// returns nil for a single-system scope, whose name is reported once.
+func (s recordScope) systemNames(h *mcphub, records []*core.Record) map[string]string {
+	if s.system != "" {
+		return nil
+	}
+	return h.resolveSystemNames(records)
+}
+
+// findLimited returns up to limit records matching the filter, plus whether
+// more records match beyond the limit.
+func (h *mcphub) findLimited(collection string, filter string, sort string, limit int, params dbx.Params) ([]*core.Record, bool, error) {
+	records, err := h.app.FindRecordsByFilter(collection, filter, sort, limit+1, 0, params)
+	if err != nil {
+		return nil, false, err
+	}
+	if len(records) > limit {
+		return records[:limit], true, nil
+	}
+	return records, false, nil
+}
+
+// sortOptions maps the sort param values of a tool to record sort expressions.
+type sortOptions []struct {
+	name string
+	expr string
+}
+
+// resolve returns the sort expression of the named option (or of fallback
+// when name is empty).
+func (o sortOptions) resolve(name string, fallback string) (string, error) {
+	if name == "" {
+		name = fallback
+	}
+	names := make([]string, 0, len(o))
+	for _, option := range o {
+		if option.name == name {
+			return option.expr, nil
+		}
+		names = append(names, option.name)
+	}
+	return "", fmt.Errorf("invalid sort %q: must be one of %s", name, strings.Join(names, ", "))
 }
 
 // ---------------------------------------------------------------------------
@@ -798,13 +921,9 @@ func (h *mcphub) listAlertEvents(ctx context.Context, req *mcpsdk.CallToolReques
 		filter = "user = {:uid} && created >= {:from}"
 		queryParams["uid"] = auth.Id
 	}
-	records, err := h.app.FindRecordsByFilter("alerts_history", filter, "-created", maxListRecords, 0, queryParams)
+	records, hasMore, err := h.findLimited("alerts_history", filter, "-created", maxListRecords, queryParams)
 	if err != nil {
 		return nil, alertEventList{}, err
-	}
-	hasMore := false
-	if len(records) == maxListRecords {
-		hasMore = h.hasMoreRecords("alerts_history", filter, "-created", queryParams)
 	}
 	result := alertEventList{Count: len(records), Truncated: hasMore, Events: make([]alertEvent, 0, len(records))}
 	if len(records) == 0 {
@@ -871,38 +990,61 @@ var serviceSubStateNames = map[uint]string{
 	uint(systemd.SubStateUnknown): "unknown",
 }
 
-// listServices returns the systemd services reported by one system's agent.
-func (h *mcphub) listServices(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, serviceList, error) {
+type listServicesParams struct {
+	scopeParams
+	Sort  string `json:"sort,omitzero" jsonschema:"one of name, cpu or memory (default name; cpu and memory sort highest first)"`
+	Name  string `json:"name,omitzero" jsonschema:"only services whose name contains this text"`
+	State string `json:"state,omitzero" jsonschema:"only services in this state: active, inactive, failed, activating, deactivating or reloading"`
+}
+
+var serviceSorts = sortOptions{
+	{"name", "name"},
+	{"cpu", "-cpu,name"},
+	{"memory", "-memory,name"},
+}
+
+// listServices returns the systemd services reported by the agents, for one
+// system or across all visible systems.
+func (h *mcphub) listServices(ctx context.Context, req *mcpsdk.CallToolRequest, params listServicesParams) (*mcpsdk.CallToolResult, serviceList, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, serviceList{}, err
 	}
-	record, err := h.resolveSystem(auth, params.System)
+	sort, err := serviceSorts.resolve(params.Sort, "name")
 	if err != nil {
 		return nil, serviceList{}, err
 	}
-	filter := "system = {:system}"
-	queryParams := dbx.Params{"system": record.Id}
-	records, err := h.app.FindRecordsByFilter("systemd_services", filter, "name", maxListRecords, 0, queryParams)
+	scope, err := h.systemScope(auth, params.System)
 	if err != nil {
 		return nil, serviceList{}, err
 	}
-	hasMore := false
-	if len(records) == maxListRecords {
-		hasMore = h.hasMoreRecords("systemd_services", filter, "name", queryParams)
+	var conditions []string
+	if params.Name != "" {
+		conditions = append(conditions, "name ~ {:name}")
+		scope.params["name"] = params.Name
 	}
-	result := serviceList{System: record.GetString("name"), Count: len(records), Truncated: hasMore,
+	if params.State != "" {
+		state, ok := serviceStateValue(params.State)
+		if !ok {
+			return nil, serviceList{}, fmt.Errorf("invalid state %q: must be one of active, inactive, failed, activating, deactivating, reloading", params.State)
+		}
+		conditions = append(conditions, "state = {:state}")
+		scope.params["state"] = state
+	}
+	records, hasMore, err := h.findLimited("systemd_services", scope.and(conditions...), sort, params.limit(), scope.params)
+	if err != nil {
+		return nil, serviceList{}, err
+	}
+	names := scope.systemNames(h, records)
+	result := serviceList{System: scope.system, Count: len(records), Truncated: hasMore,
 		Services: make([]serviceSummary, 0, len(records))}
 	for _, serviceRecord := range records {
 		service := serviceSummary{
-			Name: serviceRecord.GetString("name"),
-			Cpu:  serviceRecord.GetFloat("cpu"),
-		}
-		if state, ok := serviceStateNames[uint(serviceRecord.GetInt("state"))]; ok {
-			service.State = state
-		}
-		if sub, ok := serviceSubStateNames[uint(serviceRecord.GetInt("sub"))]; ok {
-			service.Sub = sub
+			Name:   serviceRecord.GetString("name"),
+			System: names[serviceRecord.GetString("system")],
+			State:  serviceStateNames[uint(serviceRecord.GetInt("state"))],
+			Sub:    serviceSubStateNames[uint(serviceRecord.GetInt("sub"))],
+			Cpu:    serviceRecord.GetFloat("cpu"),
 		}
 		if peak := serviceRecord.GetFloat("cpuPeak"); peak > 0 {
 			service.CpuPeak = peak
@@ -924,9 +1066,20 @@ func (h *mcphub) listServices(ctx context.Context, req *mcpsdk.CallToolRequest, 
 	return nil, result, nil
 }
 
+// serviceStateValue returns the stored value of a systemd state name.
+func serviceStateValue(name string) (uint, bool) {
+	for value, stateName := range serviceStateNames {
+		if stateName == name {
+			return value, true
+		}
+	}
+	return 0, false
+}
+
 type serviceSummary struct {
 	Name    string  `json:"name"`
-	State   string  `json:"state"` // active, inactive, failed, activating, deactivating, reloading
+	System  string  `json:"system,omitempty"` // system name (only when listing across systems)
+	State   string  `json:"state"`            // active, inactive, failed, activating, deactivating, reloading
 	Sub     string  `json:"sub,omitempty"`
 	Cpu     float64 `json:"cpu_pct,omitzero"`
 	CpuPeak float64 `json:"cpu_peak_pct,omitzero"`
@@ -936,36 +1089,57 @@ type serviceSummary struct {
 }
 
 type serviceList struct {
-	System    string           `json:"system"`
+	System    string           `json:"system,omitempty"` // set when filtered to one system
 	Count     int              `json:"count"`
-	Truncated bool             `json:"truncated,omitzero"`
+	Truncated bool             `json:"truncated,omitzero"` // more services match beyond the limit
 	Services  []serviceSummary `json:"services"`
 }
 
 // ---------------------------------------------------------------------------
 // get_disk_health
 
-// getDiskHealth returns SMART device and ZFS pool health for one system.
-func (h *mcphub) getDiskHealth(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, diskHealth, error) {
+type diskHealthParams struct {
+	scopeParams
+	ProblemsOnly bool `json:"problems_only,omitzero" jsonschema:"only SMART devices in WARNING or FAILED state and ZFS pools that are not ONLINE"`
+}
+
+// getDiskHealth returns SMART device and ZFS pool health, for one system or
+// across all visible systems.
+func (h *mcphub) getDiskHealth(ctx context.Context, req *mcpsdk.CallToolRequest, params diskHealthParams) (*mcpsdk.CallToolResult, diskHealth, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, diskHealth{}, err
 	}
-	record, err := h.resolveSystem(auth, params.System)
+	scope, err := h.systemScope(auth, params.System)
 	if err != nil {
 		return nil, diskHealth{}, err
 	}
-	result := diskHealth{System: record.GetString("name")}
+	result := diskHealth{System: scope.system}
 	// SMART devices refreshed periodically from the agent
-	smartRecords, err := h.app.FindRecordsByFilter("smart_devices", "system = {:system}", "name", maxListRecords, 0,
-		dbx.Params{"system": record.Id})
+	var smartConditions []string
+	if params.ProblemsOnly {
+		smartConditions = append(smartConditions, `(state = "WARNING" || state = "FAILED")`)
+	}
+	smartRecords, smartMore, err := h.findLimited("smart_devices", scope.and(smartConditions...), "name", params.limit(), scope.params)
 	if err != nil {
 		return nil, diskHealth{}, err
 	}
+	// ZFS pool details
+	var poolConditions []string
+	if params.ProblemsOnly {
+		poolConditions = append(poolConditions, `health != "ONLINE" && health != ""`)
+	}
+	poolRecords, poolsMore, err := h.findLimited("zfs_pools", scope.and(poolConditions...), "name", params.limit(), scope.params)
+	if err != nil {
+		return nil, diskHealth{}, err
+	}
+	result.Truncated = smartMore || poolsMore
+	names := scope.systemNames(h, append(slices.Clone(smartRecords), poolRecords...))
 	result.Smart = make([]smartDevice, 0, len(smartRecords))
 	for _, smartRecord := range smartRecords {
 		device := smartDevice{
 			Name:     smartRecord.GetString("name"),
+			System:   names[smartRecord.GetString("system")],
 			Model:    smartRecord.GetString("model"),
 			State:    smartRecord.GetString("state"), // SMART status, e.g. PASSED
 			Type:     smartRecord.GetString("type"),
@@ -990,16 +1164,11 @@ func (h *mcphub) getDiskHealth(ctx context.Context, req *mcpsdk.CallToolRequest,
 		}
 		result.Smart = append(result.Smart, device)
 	}
-	// ZFS pool details
-	poolRecords, err := h.app.FindRecordsByFilter("zfs_pools", "system = {:system}", "name", maxListRecords, 0,
-		dbx.Params{"system": record.Id})
-	if err != nil {
-		return nil, diskHealth{}, err
-	}
 	result.ZfsPools = make([]zfsPool, 0, len(poolRecords))
 	for _, poolRecord := range poolRecords {
 		pool := zfsPool{
 			Name:        poolRecord.GetString("name"),
+			System:      names[poolRecord.GetString("system")],
 			DisplayName: poolRecord.GetString("display_name"),
 			Health:      poolRecord.GetString("health"), // ONLINE, DEGRADED, FAULTED, ...
 			Updated:     poolRecord.GetDateTime("updated").Time().UTC().Format(time.RFC3339),
@@ -1018,9 +1187,10 @@ func (h *mcphub) getDiskHealth(ctx context.Context, req *mcpsdk.CallToolRequest,
 }
 
 type smartDevice struct {
-	Name         string   `json:"name"` // device name, e.g. nvme0n1
+	Name         string   `json:"name"`             // device name, e.g. nvme0n1
+	System       string   `json:"system,omitempty"` // system name (only when listing across systems)
 	Model        string   `json:"model,omitempty"`
-	State        string   `json:"state,omitempty"` // SMART status, e.g. PASSED
+	State        string   `json:"state,omitempty"` // SMART status: PASSED, WARNING, FAILED or UNKNOWN
 	Type         string   `json:"type,omitempty"`  // disk type, e.g. ssd
 	Serial       string   `json:"serial,omitempty"`
 	Firmware     string   `json:"firmware,omitempty"`
@@ -1032,6 +1202,7 @@ type smartDevice struct {
 
 type zfsPool struct {
 	Name        string  `json:"name"`
+	System      string  `json:"system,omitempty"` // system name (only when listing across systems)
 	DisplayName string  `json:"display_name,omitempty"`
 	Health      string  `json:"health,omitempty"` // ONLINE, DEGRADED, FAULTED, ...
 	Size        *uint64 `json:"size_bytes,omitzero"`
@@ -1041,40 +1212,53 @@ type zfsPool struct {
 }
 
 type diskHealth struct {
-	System   string        `json:"system"`
-	Smart    []smartDevice `json:"smart_devices"`
-	ZfsPools []zfsPool     `json:"zfs_pools"`
+	System    string        `json:"system,omitempty"`   // set when filtered to one system
+	Truncated bool          `json:"truncated,omitzero"` // more devices or pools match beyond the limit
+	Smart     []smartDevice `json:"smart_devices"`
+	ZfsPools  []zfsPool     `json:"zfs_pools"`
 }
 
 // ---------------------------------------------------------------------------
 // list_network_monitors
 
-// listNetworkMonitors returns the endpoint monitors configured for one system,
-// with the latest and 1h aggregated latency/loss stored by the hub.
-func (h *mcphub) listNetworkMonitors(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemParams) (*mcpsdk.CallToolResult, networkMonitorList, error) {
+type listNetworkMonitorsParams struct {
+	scopeParams
+	Sort string `json:"sort,omitzero" jsonschema:"one of target, latency or loss (default target; latency and loss sort highest first)"`
+}
+
+var networkMonitorSorts = sortOptions{
+	{"target", "target"},
+	{"latency", "-res,target"},
+	{"loss", "-loss1h,target"},
+}
+
+// listNetworkMonitors returns the endpoint monitors, for one system or across
+// all visible systems, with the latest and 1h aggregated latency/loss stored
+// by the hub.
+func (h *mcphub) listNetworkMonitors(ctx context.Context, req *mcpsdk.CallToolRequest, params listNetworkMonitorsParams) (*mcpsdk.CallToolResult, networkMonitorList, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, networkMonitorList{}, err
 	}
-	record, err := h.resolveSystem(auth, params.System)
+	sort, err := networkMonitorSorts.resolve(params.Sort, "target")
 	if err != nil {
 		return nil, networkMonitorList{}, err
 	}
-	filter := "system = {:system}"
-	queryParams := dbx.Params{"system": record.Id}
-	records, err := h.app.FindRecordsByFilter("network_monitors", filter, "target", maxListRecords, 0, queryParams)
+	scope, err := h.systemScope(auth, params.System)
 	if err != nil {
 		return nil, networkMonitorList{}, err
 	}
-	hasMore := false
-	if len(records) == maxListRecords {
-		hasMore = h.hasMoreRecords("network_monitors", filter, "target", queryParams)
+	records, hasMore, err := h.findLimited("network_monitors", scope.and(), sort, params.limit(), scope.params)
+	if err != nil {
+		return nil, networkMonitorList{}, err
 	}
-	result := networkMonitorList{System: record.GetString("name"), Count: len(records), Truncated: hasMore,
+	names := scope.systemNames(h, records)
+	result := networkMonitorList{System: scope.system, Count: len(records), Truncated: hasMore,
 		Monitors: make([]networkMonitor, 0, len(records))}
 	for _, monitorRecord := range records {
 		monitor := networkMonitor{
 			Target:   monitorRecord.GetString("target"),
+			System:   names[monitorRecord.GetString("system")],
 			Protocol: monitorRecord.GetString("protocol"), // icmp, tcp, http or dns
 			Port:     uint16(monitorRecord.GetInt("port")),
 			Enabled:  monitorRecord.GetBool("enabled"),
@@ -1106,6 +1290,7 @@ func microsecondsToMs(us float64) *float64 {
 
 type networkMonitor struct {
 	Target       string   `json:"target"`
+	System       string   `json:"system,omitempty"`   // system name (only when listing across systems)
 	Protocol     string   `json:"protocol,omitempty"` // icmp, tcp, http or dns
 	Port         uint16   `json:"port,omitzero"`
 	Enabled      bool     `json:"enabled"`
@@ -1117,8 +1302,8 @@ type networkMonitor struct {
 }
 
 type networkMonitorList struct {
-	System    string           `json:"system"`
+	System    string           `json:"system,omitempty"` // set when filtered to one system
 	Count     int              `json:"count"`
-	Truncated bool             `json:"truncated,omitzero"` // more monitors exist beyond the returned cap
+	Truncated bool             `json:"truncated,omitzero"` // more monitors exist beyond the limit
 	Monitors  []networkMonitor `json:"monitors"`
 }
