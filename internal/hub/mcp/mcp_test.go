@@ -502,13 +502,38 @@ func TestMcpTruncatedSystems(t *testing.T) {
 
 func TestMcpGetSystemUpdatesAndCurrent(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
-	// pending package updates are reported in the system info ("pu": [total, security])
+	// pending package updates ("pu": [total, security]), battery ("bat":
+	// [percent, charge state]) and connected Wi-Fi ("wf") come from system info
 	reloadSystem := hubFindSystem(t, hub, userSystem.Id)
-	reloadSystem.Set("info", map[string]any{"cpu": 42, "pu": [2]uint16{12, 2}})
+	reloadSystem.Set("info", map[string]any{
+		"cpu": 42,
+		"dt":  61.5,
+		"pu":  [2]uint16{12, 2},
+		"bat": [2]int{80, 3}, // plain ints: json/v2 encodes [2]uint8 as base64
+		"wf": map[string]any{
+			"wlan0": map[string]any{"s": "home", "r": -52},
+			"wlan1": map[string]any{"s": "guest"}, // associated, no RSSI
+		},
+	})
 	require.NoError(t, hub.Save(reloadSystem))
 	session := mcpClient(t, server.URL, user.Token)
 	data := callTool(t, session, "get_system", map[string]any{"system": "user-system-1"})
 	require.Equal(t, map[string]any{"total": float64(12), "security": float64(2)}, data["updates"])
+	require.Equal(t, map[string]any{"percent": float64(80), "state": "charging"}, data["battery"])
+	wifi := map[string]any{
+		"wlan0": map[string]any{"ssid": "home", "signal_dbm": float64(-52)},
+		"wlan1": map[string]any{"ssid": "guest"},
+	}
+	require.Equal(t, wifi, data["wifi"])
+	// list_systems carries the same summary fields
+	list := callTool(t, session, "list_systems", nil)
+	for _, entry := range list["systems"].([]any) {
+		if entry.(map[string]any)["name"] == "user-system-1" {
+			require.Equal(t, wifi, entry.(map[string]any)["wifi"])
+			require.Equal(t, 61.5, entry.(map[string]any)["temp_c"])
+			require.Equal(t, map[string]any{"percent": float64(80), "state": "charging"}, entry.(map[string]any)["battery"])
+		}
+	}
 
 	// detailed current metrics come from the latest 1m system_stats record
 	createStatsRecord(t, hub, userSystem.Id, map[string]any{
@@ -533,7 +558,8 @@ func TestMcpGetSystemUpdatesAndCurrent(t *testing.T) {
 	filesystems := current["filesystems"].(map[string]any)["mnt/data"].(map[string]any)
 	require.Equal(t, float64(4096), filesystems["read_bps"])
 	require.Equal(t, float64(2048), filesystems["write_bps"])
-	require.Equal(t, map[string]any{"percent": float64(80)}, current["battery"])
+	// battery is reported once, in the summary
+	require.NotContains(t, current, "battery")
 }
 
 // hubFindSystem reloads a system record for updates (create hooks reset fields).
