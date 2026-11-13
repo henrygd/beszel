@@ -8,8 +8,17 @@ is_openwrt() {
   [ -f /etc/os-release ] && grep -qi "OpenWrt" /etc/os-release
 }
 
+# DragonFly BSD shares the FreeBSD paths and rc.d layout, is_dragonfly marks the
+# few places where it differs.
 is_freebsd() {
-  [ "$(uname -s)" = "FreeBSD" ]
+  case "$(uname -s)" in
+    FreeBSD | DragonFly) return 0 ;;
+  esac
+  return 1
+}
+
+is_dragonfly() {
+  [ "$(uname -s)" = "DragonFly" ]
 }
 
 is_opnsense() {
@@ -218,6 +227,107 @@ run_rc_command "$1"
 EOF
 }
 
+# Generate DragonFly BSD rc service content. Its rc.subr has no env_file support
+# and no built-in status command, and it has no sudo in the base system.
+generate_dragonfly_rc_service() {
+  cat <<'EOF'
+#!/bin/sh
+
+# PROVIDE: beszel_agent
+# REQUIRE: DAEMON NETWORKING
+# BEFORE: LOGIN
+# KEYWORD: shutdown
+
+. /etc/rc.subr
+
+name="beszel_agent"
+rcvar=`set_rcvar`
+
+load_rc_config $name
+: ${beszel_agent_user:="beszel"}
+: ${beszel_agent_env_file:="/usr/local/etc/beszel-agent/env"}
+: ${beszel_agent_bin:="/usr/local/sbin/beszel-agent"}
+
+logfile="/var/log/${name}.log"
+pidfile="/var/run/${name}.pid"
+
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+status_cmd="${name}_status"
+upgrade_cmd="${name}_upgrade"
+extra_commands="status upgrade"
+
+beszel_agent_running()
+{
+    [ -f "${pidfile}" ] && kill -0 "$(cat "${pidfile}")" 2>/dev/null
+}
+
+beszel_agent_start()
+{
+    if [ ! -f "${beszel_agent_env_file}" ]; then
+        echo WARNING: missing "${beszel_agent_env_file}" env file. Start aborted.
+        exit 1
+    fi
+    if beszel_agent_running; then
+        echo "${name} is already running"
+        return 0
+    fi
+    echo "Starting ${name}"
+    touch "${logfile}"
+    chown "${beszel_agent_user}" "${logfile}"
+    set -a
+    . "${beszel_agent_env_file}"
+    set +a
+    /usr/sbin/daemon -fc -r -R 10 \
+            -P "${pidfile}" \
+            -o "${logfile}" \
+            -u "${beszel_agent_user}" \
+            "${beszel_agent_bin}"
+}
+
+beszel_agent_stop()
+{
+    if beszel_agent_running; then
+        pid="$(cat "${pidfile}")"
+        echo "Stopping ${name} (pid=${pid})"
+        kill "${pid}"
+        wait_for_pids "${pid}"
+    else
+        echo "${name} isn't running"
+    fi
+}
+
+beszel_agent_status()
+{
+    if beszel_agent_running; then
+        echo "${name} is running as pid $(cat "${pidfile}")."
+    else
+        echo "${name} is not running."
+        return 1
+    fi
+}
+
+beszel_agent_upgrade()
+{
+    echo "Upgrading ${name}"
+    su -m "${beszel_agent_user}" -c "${beszel_agent_bin} update"
+}
+
+run_rc_command "$1"
+EOF
+}
+
+# Set a value in /etc/rc.conf. DragonFly BSD has no sysrc.
+set_rc_conf() {
+  if command -v sysrc >/dev/null; then
+    sysrc "$1=$2"
+  elif grep -q "^$1=" /etc/rc.conf; then
+    sed -i '' -e "s|^$1=.*|$1=\"$2\"|" /etc/rc.conf
+  else
+    echo "$1=\"$2\"" >>/etc/rc.conf
+  fi
+}
+
 # Generate the boot hook used by the firewall appliances, neither of which
 # starts an enabled rc.d service at boot. The script body is identical for
 # both; only the install path differs (see the boot hook installation below).
@@ -403,6 +513,9 @@ validate_platform() {
       ;;
     FreeBSD)
       command -v service >/dev/null && command -v sysrc >/dev/null || fail "FreeBSD service and sysrc commands are required."
+      ;;
+    DragonFly)
+      command -v service >/dev/null || fail "The DragonFly service command is required."
       ;;
     Darwin) fail "For macOS, use the Homebrew installer: https://github.com/henrygd/beszel/blob/main/supplemental/scripts/install-agent-brew.sh" ;;
     *) fail "Unsupported operating system: $(uname -s)" ;;
@@ -712,7 +825,7 @@ if [ "$UNINSTALL" = true ]; then
   elif is_freebsd; then
     echo "Stopping and disabling the agent service..."
     service beszel-agent stop || warn "Cleanup command failed: service beszel-agent stop"
-    sysrc beszel_agent_enable="NO"
+    set_rc_conf beszel_agent_enable NO
 
     echo "Removing the FreeBSD service files..."
     rm -f /usr/local/etc/rc.d/beszel-agent
@@ -724,6 +837,9 @@ if [ "$UNINSTALL" = true ]; then
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
     rm -f /etc/cron.d/beszel-agent
+    if is_dragonfly && crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
+    fi
 
     # Remove log files. The rc script derives its logfile from $name
     # (beszel_agent), not from the script filename (beszel-agent).
@@ -795,6 +911,9 @@ elif package_installed opkg; then
     opkg update
     opkg install tar curl coreutils
   fi
+elif package_installed pkg && is_dragonfly; then
+  # tar and sha256 are part of the base system
+  package_installed curl || pkg install -y curl
 elif package_installed pkg && is_freebsd; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     pkg update
@@ -1252,7 +1371,11 @@ EOF
   # Create the rc service file if it doesn't exist
   if [ ! -f /usr/local/etc/rc.d/beszel-agent ]; then
     echo "Creating FreeBSD rc service..."
-    generate_freebsd_rc_service > /usr/local/etc/rc.d/beszel-agent
+    if is_dragonfly; then
+      generate_dragonfly_rc_service > /usr/local/etc/rc.d/beszel-agent
+    else
+      generate_freebsd_rc_service > /usr/local/etc/rc.d/beszel-agent
+    fi
     # Set proper permissions for the rc script
     chmod 755 /usr/local/etc/rc.d/beszel-agent
   else
@@ -1274,8 +1397,8 @@ EOF
 
   # Enable and start the service
   echo "Enabling and starting the agent service..."
-  sysrc beszel_agent_enable="YES"
-  sysrc beszel_agent_user="${AGENT_USER}"
+  set_rc_conf beszel_agent_enable YES
+  set_rc_conf beszel_agent_user "${AGENT_USER}"
 
   # sysrc writes to /etc/rc.conf, but rc.subr sources /etc/rc.conf.d/beszel_agent
   # afterwards, so a stale or third-party file there silently overrides the value
@@ -1318,13 +1441,22 @@ EOF
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    # Create cron job in /etc/cron.d 
-    cat >/etc/cron.d/beszel-agent <<EOF
+    if is_dragonfly; then
+      # DragonFly BSD has no /etc/cron.d
+      {
+        crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" || true
+        echo "12 0 * * * $BIN_PATH update >/dev/null 2>&1"
+      } | crontab -u root -
+      printf "\nDaily updates have been enabled via the root crontab.\n"
+    else
+      # Create cron job in /etc/cron.d 
+      cat >/etc/cron.d/beszel-agent <<EOF
 # Beszel Agent daily update job
 12 0 * * * root $BIN_PATH update >/dev/null 2>&1
 EOF
-    chmod 644 /etc/cron.d/beszel-agent
-    printf "\nDaily updates have been enabled via /etc/cron.d.\n"
+      chmod 644 /etc/cron.d/beszel-agent
+      printf "\nDaily updates have been enabled via /etc/cron.d.\n"
+    fi
     ;;
   esac
 
