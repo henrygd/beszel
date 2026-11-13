@@ -205,6 +205,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get, create, or delete universal tokens (POST keeps tokens out of URLs; GET is kept for legacy clients)
 	apiAuth.GET("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
 	apiAuth.POST("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
+	// create static API keys for the current user, or revoke all of them
+	apiAuth.POST("/api-keys", createApiKey).BindFunc(requireSessionToken)
+	apiAuth.POST("/api-keys/revoke", revokeApiKeys).BindFunc(requireSessionToken)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
