@@ -94,7 +94,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			<>
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
-					<CpuChart {...coreProps} />
+					<CpuChart {...coreProps} cpuMhz={details?.cpu_mhz} />
 
 					{hasContainers && (
 						<ContainerCpuChart
@@ -219,7 +219,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				<TabsContent value="core" forceMount className={activeTab === "core" ? "contents" : "hidden"}>
 					<div className="grid xl:grid-cols-2 gap-4">
-						<CpuChart {...coreProps} />
+						<CpuChart {...coreProps} cpuMhz={details?.cpu_mhz} />
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 						<MemoryChart {...coreProps} />
 						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
