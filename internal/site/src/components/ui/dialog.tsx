@@ -1,7 +1,9 @@
+import { t } from "@lingui/core/macro"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import * as React from "react"
 
+import { IconButton } from "@/components/ui/icon-button"
 import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root
@@ -12,10 +14,8 @@ const DialogPortal = DialogPrimitive.Portal
 
 const DialogClose = DialogPrimitive.Close
 
-const dialogIconButtonClassName = "inline-flex size-6 items-center justify-center"
-
 const DialogOverlay = React.forwardRef<
-	React.ElementRef<typeof DialogPrimitive.Overlay>,
+	React.ComponentRef<typeof DialogPrimitive.Overlay>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
 	<DialogPrimitive.Overlay
@@ -30,9 +30,9 @@ const DialogOverlay = React.forwardRef<
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
 const DialogContent = React.forwardRef<
-	React.ElementRef<typeof DialogPrimitive.Content>,
-	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+	React.ComponentRef<typeof DialogPrimitive.Content>,
+	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { showCloseButton?: boolean }
+>(({ className, children, showCloseButton = true, ...props }, ref) => (
 	<DialogPortal>
 		<DialogOverlay />
 		<DialogPrimitive.Content
@@ -44,15 +44,13 @@ const DialogContent = React.forwardRef<
 			{...props}
 		>
 			{children}
-			<DialogPrimitive.Close
-				className={cn(
-					"absolute end-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
-					dialogIconButtonClassName
-				)}
-			>
-				<X className="h-4 w-4" />
-				<span className="sr-only">Close</span>
-			</DialogPrimitive.Close>
+			{showCloseButton && (
+				<IconButton label={t`Dismiss`} className="absolute end-2 top-2" asChild>
+					<DialogClose>
+						<X className="size-4" />
+					</DialogClose>
+				</IconButton>
+			)}
 		</DialogPrimitive.Content>
 	</DialogPortal>
 ))
@@ -69,7 +67,7 @@ const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 DialogFooter.displayName = "DialogFooter"
 
 const DialogTitle = React.forwardRef<
-	React.ElementRef<typeof DialogPrimitive.Title>,
+	React.ComponentRef<typeof DialogPrimitive.Title>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
 	<DialogPrimitive.Title
@@ -81,7 +79,7 @@ const DialogTitle = React.forwardRef<
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
 const DialogDescription = React.forwardRef<
-	React.ElementRef<typeof DialogPrimitive.Description>,
+	React.ComponentRef<typeof DialogPrimitive.Description>,
 	React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
 	<DialogPrimitive.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
@@ -89,7 +87,6 @@ const DialogDescription = React.forwardRef<
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
 export {
-	dialogIconButtonClassName,
 	Dialog,
 	DialogPortal,
 	DialogOverlay,
