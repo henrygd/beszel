@@ -139,6 +139,56 @@ Remv oldpkg [1.0]`
 	t.Run("no updates", func(t *testing.T) {
 		assert.Empty(t, parseAptSimulate("Reading package lists...\n0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.\n"))
 	})
+
+	t.Run("deferred due to phasing", func(t *testing.T) {
+		out := `Reading package lists...
+Building dependency tree...
+Reading state information...
+Calculating upgrade... Done
+The following upgrades have been deferred due to phasing:
+  snapd
+The following packages will be upgraded:
+  apparmor
+Inst apparmor [4.0.1really4.0.1-0ubuntu0.24.04.8] (4.0.1really4.0.1-0ubuntu0.24.04.9 Ubuntu:24.04/noble-updates [amd64])
+3 upgraded, 0 newly installed, 0 to remove and 1 not upgraded.
+`
+		assert.Equal(t, []system.PackageUpdate{
+			{Name: "apparmor", Current: "4.0.1really4.0.1-0ubuntu0.24.04.8", Available: "4.0.1really4.0.1-0ubuntu0.24.04.9"},
+			{Name: "snapd", Phased: true},
+		}, parseAptSimulate(out))
+	})
+
+	t.Run("deferred package also on an Inst line", func(t *testing.T) {
+		out := `The following upgrades have been deferred due to phasing:
+  snapd
+Inst snapd [71.0] (72.0 Ubuntu:22.04/jammy-updates [amd64])
+1 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+`
+		assert.Equal(t, []system.PackageUpdate{
+			{Name: "snapd", Current: "71.0", Available: "72.0", Phased: true},
+		}, parseAptSimulate(out))
+	})
+
+	t.Run("deferred section ended by an Inst line", func(t *testing.T) {
+		out := `The following upgrades have been deferred due to phasing:
+Inst apparmor [4.0] (4.1 Ubuntu:24.04/noble-updates [amd64])
+1 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+`
+		assert.Equal(t, []system.PackageUpdate{
+			{Name: "apparmor", Current: "4.0", Available: "4.1"},
+		}, parseAptSimulate(out))
+	})
+}
+
+func TestPackageCounts(t *testing.T) {
+	packages := []system.PackageUpdate{
+		{Name: "a", Security: true},
+		{Name: "b"},
+		{Name: "c", Security: true, Phased: true},
+		{Name: "d", Phased: true},
+	}
+	assert.EqualValues(t, 2, countInstallable(packages))
+	assert.EqualValues(t, 1, countSecurity(packages))
 }
 
 func TestParseDnfCheckUpdate(t *testing.T) {
