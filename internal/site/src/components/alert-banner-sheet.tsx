@@ -91,12 +91,15 @@ export function AlertBannerSheetItem({
 	icon: Icon,
 	title,
 	description,
+	resolved,
 }: {
 	href: string
 	onClick?: () => void
 	icon: LucideIcon | React.FC<{ className?: string }>
 	title: ReactNode
 	description?: ReactNode
+	/** Shows the item as no longer active */
+	resolved?: boolean
 }) {
 	return (
 		<Link
@@ -104,7 +107,12 @@ export function AlertBannerSheetItem({
 			onClick={onClick}
 			className="group flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/60"
 		>
-			<div className="rounded-md bg-destructive/10 p-2 text-destructive dark:text-red-400 shrink-0">
+			<div
+				className={cn(
+					"rounded-md p-2 shrink-0",
+					resolved ? "bg-muted text-muted-foreground" : "bg-destructive/10 text-destructive dark:text-red-400"
+				)}
+			>
 				<Icon className="size-4" />
 			</div>
 			<div className="min-w-0 flex-1">
