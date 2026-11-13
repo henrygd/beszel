@@ -184,6 +184,10 @@ msgstr "Προσθήκη Σύστημα"
 msgid "Add URL"
 msgstr "Προσθήκη URL"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Address"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Προσαρμόστε τις επιλογές εμφάνισης για τα γραφήματα."
@@ -252,13 +256,13 @@ msgstr "Είστε βέβαιοι;"
 msgid "Automatic copy requires a secure context."
 msgstr "Η αυτόματη αντιγραφή απαιτεί ασφαλές περιβάλλον."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Διαθέσιμο"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Διαθέσιμο"
 
@@ -369,10 +373,18 @@ msgstr "Το Beszel χρησιμοποιεί το <0>Shoutrrr</0> για ενσ�
 msgid "Binary"
 msgstr "Δυαδικό"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "BIOS"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bit (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Board"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -386,6 +398,10 @@ msgstr "Μαζική προσθήκη"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "Μαζική προσθήκη {foo}"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Bus"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -479,6 +495,10 @@ msgstr "Επιλογές γραφήματος"
 msgid "Chart width"
 msgstr "Πλάτος γραφήματος"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Chassis"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Ελέγξτε το {email} για έναν σύνδεσμο επαναφοράς."
@@ -503,6 +523,10 @@ msgstr "Έλεγχος {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Σφάλματα αθροίσματος ελέγχου"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Class"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -542,6 +566,11 @@ msgstr "Κάντε κλικ σε ένα σύστημα για να δείτε π
 msgid "Click to copy"
 msgstr "Κάντε κλικ για αντιγραφή"
 
+#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Collected {0}"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -554,6 +583,10 @@ msgstr "Σύγκριση με άλλα συστήματα"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Σύγκριση με άλλους στόχους"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Component"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -575,6 +608,10 @@ msgstr "Διενέξεις"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Η σύνδεση είναι εκτός λειτουργίας"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Connector"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Container"
@@ -668,6 +705,7 @@ msgid "Core"
 msgstr "Βασικά"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -796,6 +834,9 @@ msgstr "Περιγραφή"
 msgid "Detail"
 msgstr "Λεπτομέρεια"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Συσκευή"
@@ -823,6 +864,10 @@ msgstr "Χρήση δίσκου"
 msgid "Disk usage of {extraFsName}"
 msgstr "Χρήση δίσκου του {extraFsName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Disks"
+msgstr ""
+
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -832,6 +877,10 @@ msgstr "Απόρριψη"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Εμφάνιση"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Displays"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -856,6 +905,7 @@ msgstr "Τεκμηρίωση"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -869,6 +919,11 @@ msgstr "Εκτός λειτουργίας ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "Λήψη"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -900,6 +955,7 @@ msgid "Email notifications"
 msgstr "Ειδοποιήσεις μέσω email"
 
 #. Context: Battery state
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Άδειο"
@@ -1022,6 +1078,10 @@ msgstr "Η ταυτοποίηση απέτυχε"
 msgid "Failed to delete monitors."
 msgstr "Η διαγραφή των monitors απέτυχε."
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Failed to load hardware inventory"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1079,6 +1139,7 @@ msgstr "Φίλτρο..."
 msgid "Fingerprint"
 msgstr "Αποτύπωμα"
 
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Υλικολογισμικό"
@@ -1145,6 +1206,11 @@ msgstr "Χρήση GPU"
 msgid "Grid"
 msgstr "Πλέγμα"
 
+#: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Hardware"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1204,6 +1270,11 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "Χρήση I/O"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "ID"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1231,6 +1302,10 @@ msgstr "Διατίθεται ενημέρωση εικόνας"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Ανενεργό"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Interface"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1266,6 +1341,10 @@ msgstr "Κύκλος ζωής"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "όριο"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Link"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1333,6 +1412,10 @@ msgstr "Απώλεια"
 msgid "Loss 1h"
 msgstr "Απώλεια 1ώρου"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "MAC"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Κύριο PID"
@@ -1351,6 +1434,10 @@ msgstr "Διαχειριστείτε τις προτιμήσεις εμφάνι�
 msgid "Manual setup instructions"
 msgstr "Οδηγίες χειροκίνητης εγκατάστασης"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Manufacturer"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1362,6 +1449,7 @@ msgid "Max 1h"
 msgstr "Μέγιστο 1ώρου"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1398,6 +1486,8 @@ msgid "Minor"
 msgstr "Δευτερεύουσα"
 
 #. Device model
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Μοντέλο"
@@ -1405,6 +1495,7 @@ msgstr "Μοντέλο"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -1430,6 +1521,7 @@ msgid "Net"
 msgstr "Δίκτυο"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Δίκτυο"
 
@@ -1619,6 +1711,10 @@ msgstr "Σελίδα {0} από {1}"
 msgid "Pages / Settings"
 msgstr "Σελίδες / Ρυθμίσεις"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Part number"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1665,6 +1761,14 @@ msgstr "Σε παύση ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Μορφή payload"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI devices"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -2027,6 +2131,14 @@ msgstr "Αποστολή δοκιμαστικού heartbeat"
 msgid "Sent"
 msgstr "Απεστάλησαν"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Serial"
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Σειριακός αριθμός"
@@ -2074,6 +2186,16 @@ msgstr "Σύνδεση"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Ισχύς σήματος των συνδεδεμένων διεπαφών Wi-Fi"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Size"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Slot"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "Ρυθμίσεις SMTP"
@@ -2082,6 +2204,11 @@ msgstr "Ρυθμίσεις SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Ταξινόμηση κατά"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Speed"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2131,6 +2258,8 @@ msgstr "Αλλαγή θέματος"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2382,6 +2511,8 @@ msgstr "Ενεργοποιείται όταν η χρήση οποιουδήπο
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2478,6 +2609,10 @@ msgstr "Χρήση"
 msgid "Usage of storage pool {displayName}"
 msgstr "Χρήση του pool αποθήκευσης {displayName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "USB devices"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Χρησιμοποιήστε το για αυτο-υπογεγραμμένα πιστοποιητικά."
@@ -2503,6 +2638,14 @@ msgstr "Χρήση"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Τιμή"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Vendor"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Version"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2598,6 +2741,10 @@ msgstr "Διαμ. YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "Διαμόρφωση YAML"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Year"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

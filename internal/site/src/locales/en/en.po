@@ -179,6 +179,10 @@ msgstr "Add System"
 msgid "Add URL"
 msgstr "Add URL"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Address"
+msgstr "Address"
+
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Adjust display options for charts."
@@ -247,13 +251,13 @@ msgstr "Are you sure?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatic copy requires a secure context."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Available"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Available"
 
@@ -364,10 +368,18 @@ msgstr "Beszel uses <0>Shoutrrr</0> to integrate with popular notification servi
 msgid "Binary"
 msgstr "Binary"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "BIOS"
+msgstr "BIOS"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bits (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Board"
+msgstr "Board"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -381,6 +393,10 @@ msgstr "Bulk Add"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "Bulk Add {foo}"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Bus"
+msgstr "Bus"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -474,6 +490,10 @@ msgstr "Chart options"
 msgid "Chart width"
 msgstr "Chart width"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Chassis"
+msgstr "Chassis"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Check {email} for a reset link."
@@ -498,6 +518,10 @@ msgstr "Checked {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Checksum errors"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Class"
+msgstr "Class"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -537,6 +561,11 @@ msgstr "Click on a system to view more information."
 msgid "Click to copy"
 msgstr "Click to copy"
 
+#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Collected {0}"
+msgstr "Collected {0}"
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -549,6 +578,10 @@ msgstr "Compare with other systems"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Compare with other targets"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Component"
+msgstr "Component"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -570,6 +603,10 @@ msgstr "Conflicts"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Connection is down"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Connector"
+msgstr "Connector"
 
 #: src/lib/alerts.ts
 msgid "Container"
@@ -663,6 +700,7 @@ msgid "Core"
 msgstr "Core"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -791,6 +829,9 @@ msgstr "Description"
 msgid "Detail"
 msgstr "Detail"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Device"
@@ -818,6 +859,10 @@ msgstr "Disk Usage"
 msgid "Disk usage of {extraFsName}"
 msgstr "Disk usage of {extraFsName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Disks"
+msgstr "Disks"
+
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -827,6 +872,10 @@ msgstr "Dismiss"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Display"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Displays"
+msgstr "Displays"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -851,6 +900,7 @@ msgstr "Documentation"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -864,6 +914,11 @@ msgstr "Down ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "Download"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Driver"
+msgstr "Driver"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -895,6 +950,7 @@ msgid "Email notifications"
 msgstr "Email notifications"
 
 #. Context: Battery state
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Empty"
@@ -1017,6 +1073,10 @@ msgstr "Failed to authenticate"
 msgid "Failed to delete monitors."
 msgstr "Failed to delete monitors."
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Failed to load hardware inventory"
+msgstr "Failed to load hardware inventory"
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1074,6 +1134,7 @@ msgstr "Filter..."
 msgid "Fingerprint"
 msgstr "Fingerprint"
 
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Firmware"
@@ -1140,6 +1201,11 @@ msgstr "GPU Usage"
 msgid "Grid"
 msgstr "Grid"
 
+#: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Hardware"
+msgstr "Hardware"
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1199,6 +1265,11 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O Utilization"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "ID"
+msgstr "ID"
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1226,6 +1297,10 @@ msgstr "Image update available"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inactive"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Interface"
+msgstr "Interface"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1261,6 +1336,10 @@ msgstr "Lifecycle"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "limit"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Link"
+msgstr "Link"
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1328,6 +1407,10 @@ msgstr "Loss"
 msgid "Loss 1h"
 msgstr "Loss 1h"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "MAC"
+msgstr "MAC"
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Main PID"
@@ -1346,6 +1429,10 @@ msgstr "Manage display and notification preferences."
 msgid "Manual setup instructions"
 msgstr "Manual setup instructions"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Manufacturer"
+msgstr "Manufacturer"
+
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1357,6 +1444,7 @@ msgid "Max 1h"
 msgstr "Max 1h"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1393,6 +1481,8 @@ msgid "Minor"
 msgstr "Minor"
 
 #. Device model
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1400,6 +1490,7 @@ msgstr "Model"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -1425,6 +1516,7 @@ msgid "Net"
 msgstr "Net"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Network"
 
@@ -1614,6 +1706,10 @@ msgstr "Page {0} of {1}"
 msgid "Pages / Settings"
 msgstr "Pages / Settings"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Part number"
+msgstr "Part number"
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1660,6 +1756,14 @@ msgstr "Paused ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Payload format"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI"
+msgstr "PCI"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI devices"
+msgstr "PCI devices"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -2022,6 +2126,14 @@ msgstr "Send test heartbeat"
 msgid "Sent"
 msgstr "Sent"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Serial"
+msgstr "Serial"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Serial Number"
@@ -2069,6 +2181,16 @@ msgstr "Sign in"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Signal strength of connected Wi-Fi interfaces"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Size"
+msgstr "Size"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Slot"
+msgstr "Slot"
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP settings"
@@ -2077,6 +2199,11 @@ msgstr "SMTP settings"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sort By"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Speed"
+msgstr "Speed"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2126,6 +2253,8 @@ msgstr "Switch theme"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2377,6 +2506,8 @@ msgstr "Triggers when usage of any disk exceeds a threshold"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2473,6 +2604,10 @@ msgstr "Usage"
 msgid "Usage of storage pool {displayName}"
 msgstr "Usage of storage pool {displayName}"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "USB devices"
+msgstr "USB devices"
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Use for self-signed certificates."
@@ -2498,6 +2633,14 @@ msgstr "Utilization"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Value"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Vendor"
+msgstr "Vendor"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Version"
+msgstr "Version"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2593,6 +2736,10 @@ msgstr "YAML Config"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML Configuration"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Year"
+msgstr "Year"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

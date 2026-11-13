@@ -184,6 +184,10 @@ msgstr "Sistem ekle"
 msgid "Add URL"
 msgstr "URL Ekle"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Address"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
@@ -252,13 +256,13 @@ msgstr "Emin misiniz?"
 msgid "Automatic copy requires a secure context."
 msgstr "Otomatik kopyalama güvenli bir bağlam gerektirir."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Kullanılabilir"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Kullanılabilir"
 
@@ -369,10 +373,18 @@ msgstr "Beszel, popüler bildirim hizmetleriyle entegre olmak için <0>Shoutrrr<
 msgid "Binary"
 msgstr "İkili"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "BIOS"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bit (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Board"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -386,6 +398,10 @@ msgstr "Toplu ekle"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "{foo} toplu ekle"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Bus"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -479,6 +495,10 @@ msgstr "Grafik seçenekleri"
 msgid "Chart width"
 msgstr "Grafik genişliği"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Chassis"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Sıfırlama bağlantısı için {email} kontrol edin."
@@ -503,6 +523,10 @@ msgstr "Kontrol edildi: {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Sağlama toplamı hataları"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Class"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -542,6 +566,11 @@ msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
 
+#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Collected {0}"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -554,6 +583,10 @@ msgstr "Diğer sistemlerle karşılaştır"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Diğer hedeflerle karşılaştır"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Component"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -575,6 +608,10 @@ msgstr "Çakışmalar"
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Bağlantı kesildi"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Connector"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Container"
@@ -668,6 +705,7 @@ msgid "Core"
 msgstr "Çekirdek"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -796,6 +834,9 @@ msgstr "Açıklama"
 msgid "Detail"
 msgstr "Ayrıntı"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Cihaz"
@@ -823,6 +864,10 @@ msgstr "Disk Kullanımı"
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName} disk kullanımı"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Disks"
+msgstr ""
+
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -832,6 +877,10 @@ msgstr "Kapat"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Görünüm"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Displays"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -856,6 +905,7 @@ msgstr "Dokümantasyon"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -869,6 +919,11 @@ msgstr "Kapalı ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "İndir"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Driver"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -900,6 +955,7 @@ msgid "Email notifications"
 msgstr "E-posta bildirimleri"
 
 #. Context: Battery state
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Boş"
@@ -1022,6 +1078,10 @@ msgstr "Kimlik doğrulama başarısız"
 msgid "Failed to delete monitors."
 msgstr "Monitörler silinemedi."
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Failed to load hardware inventory"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1079,6 +1139,7 @@ msgstr "Filtrele..."
 msgid "Fingerprint"
 msgstr "Parmak izi"
 
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Donanım Yazılımı"
@@ -1145,6 +1206,11 @@ msgstr "GPU Kullanımı"
 msgid "Grid"
 msgstr "Izgara"
 
+#: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Hardware"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1204,6 +1270,11 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "G/Ç Kullanımı"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "ID"
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1231,6 +1302,10 @@ msgstr "Görüntü güncellemesi mevcut"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Pasif"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Interface"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1266,6 +1341,10 @@ msgstr "Yaşam döngüsü"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "Sınır"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Link"
+msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1333,6 +1412,10 @@ msgstr "Kayıp"
 msgid "Loss 1h"
 msgstr "1 saat kaybı"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "MAC"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Ana PID"
@@ -1351,6 +1434,10 @@ msgstr "Görüntüleme ve bildirim tercihlerini yönetin."
 msgid "Manual setup instructions"
 msgstr "Manuel kurulum talimatları"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Manufacturer"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1362,6 +1449,7 @@ msgid "Max 1h"
 msgstr "Maks. 1 saat"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1398,6 +1486,8 @@ msgid "Minor"
 msgstr "Ara"
 
 #. Device model
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1405,6 +1495,7 @@ msgstr "Model"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitör"
 
@@ -1430,6 +1521,7 @@ msgid "Net"
 msgstr "Ağ"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Ağ"
 
@@ -1619,6 +1711,10 @@ msgstr "Sayfa {0} / {1}"
 msgid "Pages / Settings"
 msgstr "Sayfalar / Ayarlar"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Part number"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1665,6 +1761,14 @@ msgstr "Duraklatıldı ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Yük (Payload) formatı"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "PCI devices"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -2027,6 +2131,14 @@ msgstr "Test heartbeat gönder"
 msgid "Sent"
 msgstr "Gönderildi"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Serial"
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Seri Numarası"
@@ -2074,6 +2186,16 @@ msgstr "Giriş yap"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Bağlı Wi-Fi arayüzlerinin sinyal gücü"
 
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Size"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Slot"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP ayarları"
@@ -2082,6 +2204,11 @@ msgstr "SMTP ayarları"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
+
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Speed"
+msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2131,6 +2258,8 @@ msgstr "Temayı değiştir"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2382,6 +2511,8 @@ msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/hardware-inventory.tsx
+#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2478,6 +2609,10 @@ msgstr "Kullanım"
 msgid "Usage of storage pool {displayName}"
 msgstr "Depolama pool'u {displayName} kullanımı"
 
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "USB devices"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Kendinden imzalı sertifikalar için kullanın."
@@ -2503,6 +2638,14 @@ msgstr "Kullanım"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Değer"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Vendor"
+msgstr ""
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Version"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2598,6 +2741,10 @@ msgstr "YAML Yapılandırması"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML Yapılandırması"
+
+#: src/components/routes/system/hardware-inventory.tsx
+msgid "Year"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

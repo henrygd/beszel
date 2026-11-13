@@ -92,6 +92,8 @@ export interface SystemInfo {
 	rdn?: string
 	/** pending package updates [total, security] (security omitted if unknown) */
 	pu?: [number, number?]
+	/** agent reports a hardware inventory */
+	hw?: boolean
 }
 
 export interface SystemStats {
@@ -741,4 +743,34 @@ export interface NetworkMonitorStatsRecord {
 	type?: string
 	stats: Record<string, MonitorStats>
 	created: number // unix timestamp (ms) for Recharts xAxis
+}
+
+/** Hardware inventory reported by the agent (GET /api/beszel/hardware). Identifier fields are only set when the agent enables them. */
+export interface HardwareInventory {
+	collected: number
+	system: { vendor?: string; product?: string; version?: string; family?: string; sku?: string; serial?: string; uuid?: string }
+	board: { vendor?: string; product?: string; version?: string; serial?: string }
+	bios: { vendor?: string; version?: string; date?: string }
+	chassis: { vendor?: string; type?: string; serial?: string }
+	cpus?: { socket?: string; vendor?: string; model?: string; cores?: number; threads?: number; microcode?: string }[]
+	memory?: {
+		locator?: string
+		bank?: string
+		size_mb: number
+		type?: string
+		form_factor?: string
+		speed_mts?: number
+		configured_mts?: number
+		manufacturer?: string
+		part_number?: string
+		serial?: string
+	}[]
+	pci?: { address: string; class: string; vendor: string; device: string; driver?: string; vendor_name?: string; device_name?: string; class_name?: string }[]
+	usb?: { bus: number; port: string; vendor: string; product: string; manufacturer?: string; name?: string; speed_mbps?: string; kinds?: string[]; serial?: string; vendor_name?: string; product_name?: string }[]
+	disks?: { name: string; model?: string; vendor?: string; size_bytes: number; rotational?: boolean; transport?: string; firmware?: string; serial?: string }[]
+	nics?: { name: string; driver?: string; pci?: string; speed_mbps?: number; mac?: string }[]
+	displays?: { connector: string; manufacturer?: string; product_code?: string; name?: string; year?: number; width_cm?: number; height_cm?: number; serial?: string }[]
+	security?: { secure_boot?: string; tpm?: string }
+	batteries?: { name: string; manufacturer?: string; model?: string; technology?: string; health_pct?: number; cycle_count?: number; serial?: string }[]
+	unavailable?: { section: string; reason: string }[]
 }

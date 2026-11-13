@@ -16,6 +16,7 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/hardware"
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -60,6 +61,7 @@ type Agent struct {
 	monitorManager            *MonitorManager                                       // Manages network monitors
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
+	hardwareInventory         *hardware.Options                                     // Hardware inventory collection, nil when disabled
 	lastHubRequest            atomic.Int64                                          // Wall clock Unix nanoseconds of the last hub stats request
 }
 
@@ -177,6 +179,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)
+
+	agent.hardwareInventory = hardwareInventoryOptions()
+	agent.systemInfo.HardwareInventory = agent.hardwareInventory != nil
 
 	// initialize GPU manager
 	agent.gpuManager, err = NewGPUManager()
