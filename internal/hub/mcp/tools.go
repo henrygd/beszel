@@ -26,12 +26,13 @@ const (
 func registerTools(app core.App, server *mcpsdk.Server) {
 	h := &mcphub{app: app}
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
-		Name:        "list_systems",
-		Description: "List monitored systems visible to the authenticated user with current CPU, memory, disk, bandwidth and status.",
+		Name: "list_systems",
+		Description: "List monitored systems visible to the authenticated user with current CPU, memory, disk, bandwidth, temperature, battery, Wi-Fi signal and status. " +
+			"temp_c is the highest sensor (or the agent's configured primary sensor); use get_system for all sensors.",
 	}, h.listSystems)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name:        "get_system",
-		Description: "Get hardware details and current usage for one system, looked up by name or id.",
+		Description: "Get hardware details and current usage (including temperatures, GPUs, fans, battery and Wi-Fi signal) for one system, looked up by name or id.",
 	}, h.getSystem)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "get_system_stats",
@@ -71,19 +72,22 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 // output types
 
 type systemSummary struct {
-	Id           string       `json:"id"`
-	Name         string       `json:"name"`
-	Host         string       `json:"host,omitempty"`
-	Status       string       `json:"status"`
-	Cpu          float64      `json:"cpu_pct,omitzero"`
-	Mem          float64      `json:"memory_pct,omitzero"`
-	Disk         float64      `json:"disk_pct,omitzero"`
-	Bandwidth    *uint64      `json:"bandwidth_bps,omitzero"` // aggregate bytes/sec
-	LoadAvg      *[3]float64  `json:"load_avg,omitzero"`
-	Updates      *updatesInfo `json:"updates,omitempty"` // pending package updates
-	AgentVersion string       `json:"agent_version,omitzero"`
-	Uptime       uint64       `json:"uptime_seconds,omitzero"`
-	LastSeen     string       `json:"last_seen,omitzero"` // RFC3339
+	Id           string              `json:"id"`
+	Name         string              `json:"name"`
+	Host         string              `json:"host,omitempty"`
+	Status       string              `json:"status"`
+	Cpu          float64             `json:"cpu_pct,omitzero"`
+	Mem          float64             `json:"memory_pct,omitzero"`
+	Disk         float64             `json:"disk_pct,omitzero"`
+	Bandwidth    *uint64             `json:"bandwidth_bps,omitzero"` // aggregate bytes/sec
+	Temp         float64             `json:"temp_c,omitzero"`        // highest sensor temperature, or the agent's PRIMARY_SENSOR if set
+	LoadAvg      *[3]float64         `json:"load_avg,omitzero"`
+	Updates      *updatesInfo        `json:"updates,omitempty"` // pending package updates
+	Battery      *batteryInfo        `json:"battery,omitempty"`
+	WiFi         map[string]wifiInfo `json:"wifi,omitempty"` // connected Wi-Fi interfaces by OS interface name
+	AgentVersion string              `json:"agent_version,omitzero"`
+	Uptime       uint64              `json:"uptime_seconds,omitzero"`
+	LastSeen     string              `json:"last_seen,omitzero"` // RFC3339
 }
 
 // updatesInfo describes pending package updates reported by the agent
@@ -110,8 +114,7 @@ type systemCurrent struct {
 	Gpus         map[string]system.GPUData `json:"gpus,omitempty"`         // GPU id -> usage data
 	Filesystems  map[string]fsSummary      `json:"filesystems,omitempty"`  // mount point -> usage
 	Fans         map[string]uint16         `json:"fans,omitempty"`         // fan -> RPM
-	Battery      *batteryInfo              `json:"battery,omitempty"`
-	Swap         *[2]uint64                `json:"swap_bytes,omitempty"` // [total, used] bytes
+	Swap         *[2]uint64                `json:"swap_bytes,omitempty"`   // [total, used] bytes
 }
 
 type fsSummary struct {
@@ -122,7 +125,23 @@ type fsSummary struct {
 }
 
 type batteryInfo struct {
-	Percent uint8 `json:"percent"`
+	Percent uint8  `json:"percent"`
+	State   string `json:"state,omitempty"` // empty, full, charging, discharging or idle
+}
+
+// batteryStateNames maps the battery charge state reported by the agent
+// (agent/battery state constants) to names; unknown states are omitted.
+var batteryStateNames = map[uint8]string{
+	1: "empty",
+	2: "full",
+	3: "charging",
+	4: "discharging",
+	5: "idle",
+}
+
+type wifiInfo struct {
+	SSID   string   `json:"ssid,omitempty"`
+	Signal *float64 `json:"signal_dbm,omitempty"` // omitted when the OS can't supply RSSI
 }
 
 type serverInfo struct {
@@ -219,6 +238,7 @@ func newSystemSummary(record *core.Record) systemSummary {
 		s.Mem = info.MemPct
 		s.Disk = info.DiskPct
 		s.AgentVersion = info.AgentVersion
+		s.Temp = info.DashboardTemp
 		s.Uptime = info.Uptime
 		if info.BandwidthBytes > 0 {
 			bandwidth := info.BandwidthBytes
@@ -238,6 +258,15 @@ func newSystemSummary(record *core.Record) systemSummary {
 				updates.Security = &security
 			}
 			s.Updates = updates
+		}
+		if info.Battery != (system.Battery{}) {
+			s.Battery = &batteryInfo{Percent: info.Battery[0], State: batteryStateNames[info.Battery[1]]}
+		}
+		if len(info.WiFi) > 0 {
+			s.WiFi = make(map[string]wifiInfo, len(info.WiFi))
+			for iface, wifi := range info.WiFi {
+				s.WiFi[iface] = wifiInfo{SSID: wifi.SSID, Signal: wifi.Signal}
+			}
 		}
 	}
 	if updated := record.GetDateTime("updated"); !updated.IsZero() {
@@ -348,9 +377,6 @@ func systemCurrentFromStats(record *core.Record) (*systemCurrent, error) {
 	if s.SwapBytes != [2]uint64{} {
 		current.Swap = &s.SwapBytes
 	}
-	if s.Battery != [2]uint8{} {
-		current.Battery = &batteryInfo{Percent: s.Battery[0]}
-	}
 	if len(s.ExtraFs) > 0 {
 		filesystems := make(map[string]fsSummary, len(s.ExtraFs))
 		for name, fs := range s.ExtraFs {
@@ -369,7 +395,7 @@ func systemCurrentFromStats(record *core.Record) (*systemCurrent, error) {
 		current.Filesystems = filesystems
 	}
 	if current.Temperatures == nil && current.Gpus == nil && current.Filesystems == nil &&
-		current.Fans == nil && current.Battery == nil && current.Swap == nil {
+		current.Fans == nil && current.Swap == nil {
 		return nil, nil
 	}
 	return current, nil

@@ -68,7 +68,7 @@ func newServer(app core.App) *mcpsdk.Server {
 		Version: beszel.Version,
 	}, &mcpsdk.ServerOptions{
 		Instructions: "Beszel is a lightweight server monitoring hub. " +
-			"Use list_systems to see monitored systems and their current usage, " +
+			"Use list_systems to see monitored systems and their current usage (including battery and Wi-Fi signal), " +
 			"get_system for hardware details and current sensors, get_system_stats " +
 			"for historical metrics, list_containers for docker container usage, " +
 			"list_services for systemd services, get_disk_health for SMART and ZFS " +
