@@ -9,11 +9,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import Slider from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
-import { $chartTime, $userSettings, defaultLayoutWidth, getShowFaviconBadge, getUserChartTime } from "@/lib/stores"
+import { $chartTime, $userSettings, defaultLayoutWidth, getFaviconBadge, getUserChartTime } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
@@ -26,15 +25,13 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	// without a value the hidden select submits an empty string, which would persist
 	// a chart time that no longer loads any data (#2104)
 	const chartTime = getUserChartTime(userSettings)
-	const showFaviconBadge = getShowFaviconBadge(userSettings)
+	const faviconBadge = getFaviconBadge(userSettings)
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
-		// an unchecked switch is left out of the form data entirely
-		data.showFaviconBadge = formData.has("showFaviconBadge")
 		await saveSettings(data)
 		// apply the saved default time period to the active charts
 		$chartTime.set(getUserChartTime())
@@ -126,16 +123,28 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Trans>Change how the browser tab icon looks.</Trans>
 						</p>
 					</div>
-					<div className="flex items-center gap-3">
-						<Switch
-							id="showFaviconBadge"
-							name="showFaviconBadge"
-							key={String(showFaviconBadge)}
-							defaultChecked={showFaviconBadge}
-						/>
-						<Label htmlFor="showFaviconBadge">
-							<Trans>Show the number of down systems on the favicon</Trans>
-						</Label>
+					<div className="grid sm:grid-cols-3 gap-4">
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="faviconBadge">
+								<Trans>Badge count</Trans>
+							</Label>
+							<Select name="faviconBadge" key={faviconBadge} defaultValue={faviconBadge}>
+								<SelectTrigger id="faviconBadge">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="down">
+										<Trans>Down systems</Trans>
+									</SelectItem>
+									<SelectItem value="alerts">
+										<Trans>Active alerts</Trans>
+									</SelectItem>
+									<SelectItem value="off">
+										<Trans>Off</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
 				</div>
 				<Separator />

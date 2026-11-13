@@ -1,7 +1,9 @@
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
 import { pb } from "@/lib/api"
+import { alertInfo } from "@/lib/alerts"
 import {
+	$alerts,
 	$allSystemsById,
 	$allSystemsByName,
 	$downSystems,
@@ -9,7 +11,7 @@ import {
 	$systemsLoaded,
 	$upSystems,
 	$userSettings,
-	getShowFaviconBadge,
+	getFaviconBadge,
 } from "@/lib/stores"
 import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
@@ -29,8 +31,9 @@ export function init() {
 	}
 	initialized = true
 
-	// favicon badge can be turned off in user settings
-	$userSettings.listen(onSystemsChanged)
+	// favicon badge can count alerts or be turned off in user settings
+	$userSettings.listen(updateFaviconBadge)
+	$alerts.listen(updateFaviconBadge)
 
 	// sync system stores on change
 	$allSystemsById.listen((newSystems, oldSystems, changedKey) => {
@@ -74,9 +77,28 @@ export function init() {
 	})
 }
 
-/** Update the favicon based on system status */
+/** Run things that need to be done when systems change */
 function onSystemsChanged() {
-	updateFavicon(getShowFaviconBadge() ? Object.keys($downSystems.get()).length : 0)
+	updateFaviconBadge()
+}
+
+/** Update the favicon badge with the count chosen in user settings */
+function updateFaviconBadge() {
+	const mode = getFaviconBadge()
+	let count = 0
+	if (mode === "down") {
+		count = Object.keys($downSystems.get()).length
+	} else if (mode === "alerts") {
+		// same rule as the active alerts banner
+		for (const systemAlerts of Object.values($alerts.get())) {
+			for (const alert of systemAlerts.values()) {
+				if (alert.triggered && alert.name in alertInfo) {
+					count++
+				}
+			}
+		}
+	}
+	updateFavicon(count)
 }
 
 /** Fetch systems from collection */

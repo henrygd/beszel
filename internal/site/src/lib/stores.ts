@@ -77,9 +77,9 @@ export function getUserChartTime(settings: UserSettings = $userSettings.get()): 
 	return settings.chartTime || defaultChartTime
 }
 
-/** Favicon badge setting stored in user settings, or enabled if it's missing */
-export function getShowFaviconBadge(settings: UserSettings = $userSettings.get()): boolean {
-	return settings.showFaviconBadge !== false
+/** What the favicon badge counts, from user settings, or down systems if it's missing */
+export function getFaviconBadge(settings: UserSettings = $userSettings.get()) {
+	return settings.faviconBadge || "down"
 }
 
 /**
