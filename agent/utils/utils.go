@@ -4,9 +4,9 @@ package utils
 import (
 	"fmt"
 	"io"
+	"io/fs"
 	"math"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -95,9 +95,47 @@ func ReadUintFile(path string) (uint64, bool) {
 	return parsed, true
 }
 
+// safeLookPathHomebrewExec is a seccomp-safe replacement for exec.LookPath:
+// Android seccomp filters (Android < 12) kill processes that issue the
+// faccessat2 syscall which Go >= 1.24 uses inside exec.LookPath. Scanning
+// PATH with os.Stat (newfstatat) is safe on every Android version.
+func safeLookPathHomebrewExec(file string) (string, error) {
+	if strings.Contains(file, "/") {
+		if err := statExecutable(file); err != nil {
+			return "", err
+		}
+		return file, nil
+	}
+	for _, dir := range filepath.SplitList(os.Getenv("PATH")) {
+		if dir == "" {
+			dir = "."
+		}
+		path := filepath.Join(dir, file)
+		if err := statExecutable(path); err == nil {
+			return path, nil
+		}
+	}
+	return "", fs.ErrNotExist
+}
+
+// statExecutable reports whether path is a regular executable file.
+func statExecutable(path string) error {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		return fs.ErrInvalid
+	}
+	if fi.Mode()&0o111 == 0 {
+		return fs.ErrPermission
+	}
+	return nil
+}
+
 // LookPathHomebrew is like exec.LookPath but also checks Homebrew paths.
 func LookPathHomebrew(file string) (string, error) {
-	foundPath, lookPathErr := exec.LookPath(file)
+	foundPath, lookPathErr := safeLookPathHomebrewExec(file)
 	if lookPathErr == nil {
 		return foundPath, nil
 	}

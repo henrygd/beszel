@@ -16,9 +16,14 @@ var lastPerCoreCpuTimes = make(map[uint16][]cpu.TimesStat)
 func init() {
 	if times, err := cpu.Times(false); err == nil && len(times) > 0 {
 		lastCpuTimes[60000] = times[0]
+	} else if androidNoProcStat() {
+		// Unrooted Android: /proc/stat is SELinux-denied; seed the fallback.
+		androidCpuTimes(false) //nolint:errcheck
 	}
 	if perCoreTimes, err := cpu.Times(true); err == nil && len(perCoreTimes) > 0 {
 		lastPerCoreCpuTimes[60000] = perCoreTimes
+	} else if androidNoProcStat() {
+		androidCpuTimes(true) //nolint:errcheck
 	}
 }
 
@@ -48,6 +53,15 @@ func getCpuMetrics(cacheTimeMs uint16, forceUseCgroup bool) (CpuMetrics, error) 
 		return metrics, nil
 	}
 	times, err := cpu.Times(false)
+	if (err != nil || len(times) == 0) && androidNoProcStat() {
+		// Unrooted Android fallback (henrygd/beszel#2346): synthesize
+		// cumulative counters from process ticks or cpufreq residency.
+		if fallback, ferr := androidCpuTimes(false); ferr == nil && len(fallback) > 0 {
+			return cpuMetricsFromTimes(cacheTimeMs, fallback[0]), nil
+		} else if ferr != nil {
+			return CpuMetrics{}, ferr
+		}
+	}
 	if err != nil || len(times) == 0 {
 		return CpuMetrics{}, err
 	}
@@ -99,6 +113,15 @@ func clampPercent(value float64) float64 {
 // It uses cached previous measurements for the provided cache interval.
 func getPerCoreCpuUsage(cacheTimeMs uint16) (system.Uint8Slice, error) {
 	perCoreTimes, err := cpu.Times(true)
+	if (err != nil || len(perCoreTimes) == 0) && androidNoProcStat() {
+		// Unrooted Android fallback (henrygd/beszel#2346).
+		if fallback, ferr := androidCpuTimes(true); ferr == nil && len(fallback) > 0 {
+			perCoreTimes = fallback
+			err = nil
+		} else if ferr != nil {
+			return nil, ferr
+		}
+	}
 	if err != nil || len(perCoreTimes) == 0 {
 		return nil, err
 	}

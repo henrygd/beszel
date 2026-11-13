@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 	"maps"
-	"os/exec"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -189,7 +188,7 @@ const maxLoggedLineLen = 200
 // more output after it. If the command printed output but none of it was valid, collect
 // returns errNoValidData with the first rejected line.
 func (c *gpuCollector) collect() (hasValidData bool, err error) {
-	cmd := exec.Command(c.name, c.cmdArgs...)
+	cmd := safeCommand(c.name, c.cmdArgs...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return false, err
@@ -532,26 +531,26 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 		hasXe:         gm.hasXe(),
 		hasIntelSysfs: gm.hasIntelSysfs(),
 	}
-	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
+	if _, err := safeLookPath(nvidiaSmiCmd); err == nil {
 		caps.hasNvidiaSmi = true
 	}
-	if _, err := exec.LookPath(rocmSmiCmd); err == nil {
+	if _, err := safeLookPath(rocmSmiCmd); err == nil {
 		caps.hasRocmSmi = true
 	}
-	if _, err := exec.LookPath(tegraStatsCmd); err == nil {
+	if _, err := safeLookPath(tegraStatsCmd); err == nil {
 		caps.hasTegrastats = true
 	}
-	if _, err := exec.LookPath(intelGpuStatsCmd); err == nil {
+	if _, err := safeLookPath(intelGpuStatsCmd); err == nil {
 		caps.hasIntelGpuTop = true
 	}
-	if _, err := exec.LookPath(nvtopCmd); err == nil {
+	if _, err := safeLookPath(nvtopCmd); err == nil {
 		caps.hasNvtop = true
 	}
 	if runtime.GOOS == "darwin" {
 		if _, err := utils.LookPathHomebrew(macmonCmd); err == nil {
 			caps.hasMacmon = true
 		}
-		if _, err := exec.LookPath(powermetricsCmd); err == nil {
+		if _, err := safeLookPath(powermetricsCmd); err == nil {
 			caps.hasPowermetrics = true
 		}
 	}

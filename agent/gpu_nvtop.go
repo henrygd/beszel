@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
-	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -124,7 +123,7 @@ func addNvtopEngine(gpu *system.GPUData, name string, value *string) {
 
 // collectNvtopStats runs nvtop loop mode and continuously decodes JSON snapshots.
 func (gm *GPUManager) collectNvtopStats(interval string) error {
-	cmd := exec.Command(nvtopCmd, "-lP", "-d", interval)
+	cmd := safeCommand(nvtopCmd, "-lP", "-d", interval)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

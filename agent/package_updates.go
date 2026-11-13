@@ -65,6 +65,14 @@ func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
 	if !enabled {
 		return nil
 	}
+	if androidNoProcStat() {
+		// Unrooted Android (Termux): exec.Command resolves its binary with
+		// exec.LookPath, which uses the faccessat2 syscall that Android < 12
+		// seccomp filters reject with SIGSYS. Package databases inside
+		// Termux are also not meaningful system-wide, so skip detection.
+		slog.Debug("Package updates disabled: Android without /proc/stat access")
+		return nil
+	}
 	name, check := detectPackageManager(dataDir)
 	if check == nil {
 		return nil
@@ -166,7 +174,7 @@ func detectPackageManager(dataDir string) (string, packageUpdatesCheck) {
 }
 
 func commandExists(name string) bool {
-	_, err := exec.LookPath(name)
+	_, err := safeLookPath(name)
 	return err == nil
 }
 
