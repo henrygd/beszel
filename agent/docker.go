@@ -633,6 +633,16 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	return nil
 }
 
+// containerName returns the name of a container by short id, or "" if unknown.
+func (dm *dockerManager) containerName(shortId string) string {
+	dm.containerStatsMutex.RLock()
+	defer dm.containerStatsMutex.RUnlock()
+	if stats, ok := dm.containerStatsMap[shortId]; ok {
+		return stats.Name
+	}
+	return ""
+}
+
 // Delete container stats from map using mutex
 func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	dm.containerStatsMutex.Lock()
