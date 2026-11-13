@@ -10,7 +10,7 @@ import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/storage-pool-charts"
-import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
+import { BandwidthChart, ContainerNetworkChart, NetworkErrorsChart, PacketsChart } from "./system/charts/network-charts"
 import { TemperatureChart, FanChart, BatteryChart } from "./system/charts/sensor-charts"
 import { WiFiChart } from "./system/charts/wifi-chart"
 import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
@@ -120,7 +120,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					<RootDiskCharts systemData={systemData} />
 
-					<BandwidthChart {...coreProps} systemStats={systemStats} />
+					<BandwidthChart {...coreProps} systemStats={systemStats} fullWidth={!hasContainers} />
+					{/* full-width bandwidth takes two grid cells; keep odd/even pairing for later charts */}
+					{!hasContainers && <div className="hidden" />}
 
 					{hasContainers && (
 						<ContainerNetworkChart
@@ -131,6 +133,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							networkConfig={containerChartConfigs.network}
 						/>
 					)}
+
+					<PacketsChart {...coreProps} systemStats={systemStats} />
+					<NetworkErrorsChart {...coreProps} systemStats={systemStats} />
 
 					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 
@@ -233,8 +238,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				<TabsContent value="network" forceMount className={activeTab === "network" ? "contents" : "hidden"}>
 					{mountedTabs.has("network") && (
 						<>
+							<BandwidthChart {...coreProps} systemStats={systemStats} />
 							<div className="grid xl:grid-cols-2 gap-4">
-								<BandwidthChart {...coreProps} systemStats={systemStats} />
+								<PacketsChart {...coreProps} systemStats={systemStats} />
+								<NetworkErrorsChart {...coreProps} systemStats={systemStats} />
 								<WiFiChart system={system} {...coreProps} />
 							</div>
 							{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}

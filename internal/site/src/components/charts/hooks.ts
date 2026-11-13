@@ -172,5 +172,14 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 				opacity: 0.3,
 			}))
 		},
+		/** Packet rate from `nip` at the given index */
+		packets: (index: number) => {
+			return sortedKeys.map((key) => ({
+				label: key,
+				dataKey: ({ stats }: SystemStatsRecord) => stats?.nip?.[key]?.[index],
+				color: `hsl(${220 + (((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
+				opacity: 0.3,
+			}))
+		},
 	}
 }
