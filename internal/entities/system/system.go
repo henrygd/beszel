@@ -11,12 +11,15 @@ import (
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
-// WiFi describes a currently connected station interface. Keys in WiFi maps are
-// OS interface identities, not SSIDs. Signal is native dBm only; nil means the
-// OS confirmed association but could not supply RSSI (never convert quality %).
+// WiFi describes a currently connected station interface, or an access point
+// when AP is set. Keys in WiFi maps are OS interface identities, not SSIDs.
+// Signal is native dBm only; nil means the OS confirmed association but could
+// not supply RSSI (never convert quality %). For an AP, Signal is the average
+// RSSI of associated clients, and nil means no client reported one.
 type WiFi struct {
 	SSID   string   `json:"s,omitempty" cbor:"0,keyasint,omitempty"`
 	Signal *float64 `json:"r,omitempty" cbor:"1,keyasint,omitempty"`
+	AP     bool     `json:"a,omitzero" cbor:"2,keyasint,omitempty"`
 }
 
 type Stats struct {
