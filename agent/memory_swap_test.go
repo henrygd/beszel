@@ -19,16 +19,18 @@ func TestUpdateMemoryStatsDarwinSwap(t *testing.T) {
 		return &mem.SwapMemoryStat{Total: 4 * gib, Free: gib}, nil
 	}
 
-	memoryGOOS = "darwin"
-	var stats system.Stats
-	(&Agent{}).updateMemoryStats(&stats)
-	assert.Equal(t, [2]uint64{4 * gib, 3 * gib}, stats.SwapBytes)
-	assert.Equal(t, float64(4), stats.Swap)
-	assert.Equal(t, float64(3), stats.SwapUsed)
+	for _, goos := range []string{"darwin", "freebsd", "openbsd", "windows"} {
+		memoryGOOS = goos
+		var stats system.Stats
+		(&Agent{}).updateMemoryStats(&stats)
+		assert.Equal(t, [2]uint64{4 * gib, 3 * gib}, stats.SwapBytes, goos)
+		assert.Equal(t, float64(4), stats.Swap, goos)
+		assert.Equal(t, float64(3), stats.SwapUsed, goos)
+	}
 
-	// Other platforms keep the VirtualMemory values.
-	memoryGOOS = "freebsd"
-	stats = system.Stats{}
+	// Linux keeps the VirtualMemory values.
+	memoryGOOS = "linux"
+	stats := system.Stats{}
 	(&Agent{}).updateMemoryStats(&stats)
 	assert.Zero(t, stats.SwapBytes)
 }

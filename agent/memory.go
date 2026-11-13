@@ -20,9 +20,9 @@ var memorySwapMemory = mem.SwapMemory
 var memoryGOOS = runtime.GOOS
 
 // hostSwap returns total and free swap bytes. gopsutil's VirtualMemory only
-// fills swap fields on Linux, so on macOS they come from SwapMemory.
+// fills swap fields on Linux, so on every other OS they come from SwapMemory.
 func hostSwap(v *mem.VirtualMemoryStat) (total, free uint64) {
-	if v.SwapTotal == 0 && memoryGOOS == "darwin" {
+	if v.SwapTotal == 0 && memoryGOOS != "linux" {
 		if s, err := memorySwapMemory(); err == nil {
 			return s.Total, s.Free
 		}
@@ -35,7 +35,7 @@ func (a *Agent) updateMemoryStats(stats *system.Stats) {
 	var hostTotal uint64
 	if err == nil {
 		hostTotal = v.Total
-		// Swap retains its existing /proc/meminfo source in both memory paths (SwapMemory on macOS).
+		// Swap retains its existing /proc/meminfo source in both memory paths (SwapMemory on non-Linux).
 		swapTotal, swapFree := hostSwap(v)
 		stats.SwapBytes = [2]uint64{swapTotal, saturatingSub(swapTotal, swapFree)}
 		// TODO: stop populating deprecated GB fields once hubs < 0.21.1 are no longer supported
