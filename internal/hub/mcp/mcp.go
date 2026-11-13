@@ -2,9 +2,9 @@
 // Context Protocol (MCP).
 //
 // The server is mounted on the /mcp route (streamable HTTP transport) when the
-// BESZEL_HUB_MCP env var is set to "true". It is protected by the standard
-// PocketBase auth middleware, so MCP clients must send a valid auth token in
-// the Authorization header. Only read-only tools are exposed.
+// BESZEL_HUB_MCP env var is set to "true". MCP clients must send a user API
+// key (created in Settings > API Keys) in the Authorization header. Only
+// read-only tools are exposed.
 package mcp
 
 import (
@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 
 	"ganigeorgiev.com/pocketbase/dbx"
-	"ganigeorgiev.com/pocketbase/pocketbase/apis"
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/hub/utils"
@@ -40,9 +40,9 @@ func RegisterRoutes(app core.App, se *core.ServeEvent) error {
 		// public Host header)
 		DisableLocalhostProtection: true,
 	})
-	// authorization is handled by PocketBase (401 for missing/invalid tokens)
-	// so MCP clients only need to pass a valid auth token in the Authorization
-	// header, e.g. Authorization: Bearer <token>
+	// the auth token is resolved by PocketBase and requireAuth answers 401 for
+	// missing/invalid tokens, so MCP clients only need to pass an API key in
+	// the Authorization header, e.g. Authorization: Bearer <key>
 	// (the stateless transport uses POST for messages and answers GET and
 	// DELETE with 405 so clients know there is no SSE stream or session; each
 	// method is registered separately as a method wildcard route would
@@ -56,9 +56,35 @@ func RegisterRoutes(app core.App, se *core.ServeEvent) error {
 		return nil
 	}
 	for _, method := range []string{http.MethodPost, http.MethodGet, http.MethodDelete} {
-		se.Router.Route(method, "/mcp", mcpHandler).Bind(apis.RequireAuth())
+		se.Router.Route(method, "/mcp", mcpHandler).BindFunc(requireAuth)
 	}
 	return nil
+}
+
+// requireAuth rejects requests without a valid auth record, like
+// apis.RequireAuth, but explains where to get an API key since MCP clients
+// are usually configured by hand.
+func requireAuth(e *core.RequestEvent) error {
+	if e.Auth != nil {
+		return e.Next()
+	}
+	settingsPage := "Settings > API Keys"
+	if appURL := strings.TrimSuffix(e.App.Settings().Meta.AppURL, "/"); appURL != "" {
+		settingsPage += " (" + appURL + "/settings/api-keys)"
+	}
+	// PocketBase ignores invalid tokens, so a present header means the key
+	// is invalid, expired or revoked. Per RFC 6750, the error code is only
+	// included when credentials were sent. There is no resource_metadata
+	// parameter, as OAuth is not supported.
+	const usage = " and send it in the Authorization header as \"Bearer <key>\"."
+	msg := "Missing API key. Create one in " + settingsPage + usage
+	challenge := `Bearer realm="beszel"`
+	if e.Request.Header.Get("Authorization") != "" {
+		msg = "Invalid, expired or revoked API key. Create a new one in " + settingsPage + usage
+		challenge += `, error="invalid_token", error_description="` + strings.ReplaceAll(msg, `"`, `'`) + `"`
+	}
+	e.Response.Header().Set("WWW-Authenticate", challenge)
+	return e.UnauthorizedError(msg, nil)
 }
 
 // newServer creates an MCP server with the hub's read-only tools.
@@ -99,7 +125,7 @@ type authContextKey struct{}
 func (h *mcphub) authRecord(ctx context.Context) (*core.Record, error) {
 	record, _ := ctx.Value(authContextKey{}).(*core.Record)
 	if record == nil {
-		return nil, errors.New("missing authenticated user; add a valid PocketBase user token to the Authorization header of your MCP client")
+		return nil, errors.New("missing authenticated user; create an API key in Settings > API Keys and send it in the Authorization header of your MCP client")
 	}
 	return record, nil
 }

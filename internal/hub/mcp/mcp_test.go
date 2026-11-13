@@ -204,12 +204,89 @@ func TestMcpNotRegistered(t *testing.T) {
 }
 
 func TestMcpUnauthorized(t *testing.T) {
-	_, _, _, server, _ := setupHub(t)
-	res, err := http.Post(server.URL+"/mcp", "application/json",
-		strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`))
+	hub, user, _, server, _ := setupHub(t)
+	hub.Settings().Meta.AppURL = "https://beszel.example.com/"
+	expiredToken, err := user.Record.NewStaticAuthToken(time.Millisecond)
+	require.NoError(t, err)
+	time.Sleep(1100 * time.Millisecond) // token exp has second precision
+
+	const settingsPage = "Settings > API Keys (https://beszel.example.com/settings/api-keys)"
+	tests := []struct {
+		name          string
+		authorization string
+		message       string
+		challenge     string
+	}{
+		{
+			name:      "missing",
+			message:   `Missing API key. Create one in ` + settingsPage + ` and send it in the Authorization header as "Bearer <key>".`,
+			challenge: `Bearer realm="beszel"`,
+		},
+		{
+			name:          "invalid",
+			authorization: "Bearer not-a-token",
+			message:       `Invalid, expired or revoked API key. Create a new one in ` + settingsPage + ` and send it in the Authorization header as "Bearer <key>".`,
+			challenge:     `Bearer realm="beszel", error="invalid_token", error_description="Invalid, expired or revoked API key. Create a new one in ` + settingsPage + ` and send it in the Authorization header as 'Bearer <key>'."`,
+		},
+		{
+			name:          "expired",
+			authorization: "Bearer " + expiredToken,
+			message:       `Invalid, expired or revoked API key. Create a new one in ` + settingsPage + ` and send it in the Authorization header as "Bearer <key>".`,
+			challenge:     `Bearer realm="beszel", error="invalid_token", error_description="Invalid, expired or revoked API key. Create a new one in ` + settingsPage + ` and send it in the Authorization header as 'Bearer <key>'."`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// every registered method is guarded, not only POST
+			for _, method := range []string{http.MethodPost, http.MethodGet, http.MethodDelete} {
+				req, err := http.NewRequest(method, server.URL+"/mcp",
+					strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}`))
+				require.NoError(t, err)
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Accept", "application/json, text/event-stream")
+				if tt.authorization != "" {
+					req.Header.Set("Authorization", tt.authorization)
+				}
+				res, err := http.DefaultClient.Do(req)
+				require.NoError(t, err)
+				defer res.Body.Close()
+				require.Equal(t, http.StatusUnauthorized, res.StatusCode, method)
+				require.Equal(t, tt.challenge, res.Header.Get("WWW-Authenticate"), method)
+				var body struct {
+					Status  int    `json:"status"`
+					Message string `json:"message"`
+				}
+				require.NoError(t, json.NewDecoder(res.Body).Decode(&body), method)
+				require.Equal(t, http.StatusUnauthorized, body.Status, method)
+				require.Equal(t, tt.message, body.Message, method)
+			}
+		})
+	}
+}
+
+func TestMcpUnauthorizedWithoutAppURL(t *testing.T) {
+	hub, _, _, server, _ := setupHub(t)
+	hub.Settings().Meta.AppURL = ""
+	res, err := http.Post(server.URL+"/mcp", "application/json", strings.NewReader("{}"))
 	require.NoError(t, err)
 	defer res.Body.Close()
 	require.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	var body struct {
+		Message string `json:"message"`
+	}
+	require.NoError(t, json.NewDecoder(res.Body).Decode(&body))
+	require.Equal(t, `Missing API key. Create one in Settings > API Keys and send it in the Authorization header as "Bearer <key>".`, body.Message)
+}
+
+// TestMcpStaticApiKey verifies that API keys created on the settings page
+// (static, non-refreshable user tokens) authenticate MCP requests.
+func TestMcpStaticApiKey(t *testing.T) {
+	_, user, _, server, _ := setupHub(t)
+	apiKey, err := user.Record.NewStaticAuthToken(time.Hour)
+	require.NoError(t, err)
+	session := mcpClient(t, server.URL, "Bearer "+apiKey)
+	result := callTool(t, session, "list_systems", nil)
+	require.Len(t, result["systems"], 2)
 }
 
 // mcpInitialize sends a raw initialize request to the /mcp endpoint with the
