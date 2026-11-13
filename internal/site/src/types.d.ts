@@ -686,11 +686,13 @@ export interface NetworkMonitorRecord {
 	id: string
 	system: string
 	target: string
-	protocol: "icmp" | "tcp" | "http" | "dns"
+	protocol: "icmp" | "tcp" | "http" | "dns" | "push"
 	port: number
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Secret in the heartbeat URL of a push monitor. */
+	pushToken: string
 	res: number
 	resMin1h: number
 	resMax1h: number
