@@ -194,7 +194,7 @@ type alertSummary struct {
 	Value     *float64 `json:"value,omitempty"`
 	Min       *float64 `json:"min,omitempty"`
 	Triggered bool     `json:"triggered,omitzero"`
-	State     string   `json:"state,omitempty"`
+	State     any      `json:"state,omitempty"` // per-monitor state object of network monitor alerts
 	Created   string   `json:"created,omitempty"`
 	Updated   string   `json:"updated,omitempty"`
 }
@@ -717,10 +717,11 @@ func (h *mcphub) listAlerts(ctx context.Context, req *mcpsdk.CallToolRequest, _ 
 			Updated:   record.GetDateTime("updated").Time().UTC().Format(time.RFC3339),
 		}
 		// alerts.state is a JSON field (a state object for network monitor
-		// alerts); GetString renders stored JSON null as the literal string
-		// "null", so only pass through meaningful values
-		if state, ok := record.Get("state").(types.JSONRaw); ok && string(state) != "null" {
-			alert.State = string(state)
+		// alerts), passed through as structured JSON; stored null stays nil
+		// and is omitted
+		var state any
+		if err := record.UnmarshalJSONField("state", &state); err == nil {
+			alert.State = state
 		}
 		if value := record.GetFloat("value"); value != 0 {
 			alert.Value = &value
@@ -956,58 +957,62 @@ func (h *mcphub) getDiskHealth(ctx context.Context, req *mcpsdk.CallToolRequest,
 	}
 	result := diskHealth{System: record.GetString("name")}
 	// SMART devices refreshed periodically from the agent
-	if records, err := h.app.FindRecordsByFilter("smart_devices", "system = {:system}", "name", maxListRecords, 0,
-		dbx.Params{"system": record.Id}); err == nil {
-		result.Smart = make([]smartDevice, 0, len(records))
-		for _, smartRecord := range records {
-			device := smartDevice{
-				Name:     smartRecord.GetString("name"),
-				Model:    smartRecord.GetString("model"),
-				State:    smartRecord.GetString("state"), // SMART status, e.g. PASSED
-				Type:     smartRecord.GetString("type"),
-				Serial:   smartRecord.GetString("serial"),
-				Firmware: smartRecord.GetString("firmware"),
-			}
-			if capacity := smartRecord.GetFloat("capacity"); capacity > 0 {
-				device.Capacity = new(uint64)
-				*device.Capacity = uint64(capacity)
-			}
-			if temp := smartRecord.GetFloat("temp"); temp > 0 {
-				device.TempC = new(float64)
-				*device.TempC = temp
-			}
-			if hours := smartRecord.GetFloat("hours"); hours > 0 {
-				device.PowerOnHours = new(uint64)
-				*device.PowerOnHours = uint64(hours)
-			}
-			if cycles := smartRecord.GetFloat("cycles"); cycles > 0 {
-				device.PowerCycles = new(uint64)
-				*device.PowerCycles = uint64(cycles)
-			}
-			result.Smart = append(result.Smart, device)
+	smartRecords, err := h.app.FindRecordsByFilter("smart_devices", "system = {:system}", "name", maxListRecords, 0,
+		dbx.Params{"system": record.Id})
+	if err != nil {
+		return nil, diskHealth{}, err
+	}
+	result.Smart = make([]smartDevice, 0, len(smartRecords))
+	for _, smartRecord := range smartRecords {
+		device := smartDevice{
+			Name:     smartRecord.GetString("name"),
+			Model:    smartRecord.GetString("model"),
+			State:    smartRecord.GetString("state"), // SMART status, e.g. PASSED
+			Type:     smartRecord.GetString("type"),
+			Serial:   smartRecord.GetString("serial"),
+			Firmware: smartRecord.GetString("firmware"),
 		}
+		if capacity := smartRecord.GetFloat("capacity"); capacity > 0 {
+			device.Capacity = new(uint64)
+			*device.Capacity = uint64(capacity)
+		}
+		if temp := smartRecord.GetFloat("temp"); temp > 0 {
+			device.TempC = new(float64)
+			*device.TempC = temp
+		}
+		if hours := smartRecord.GetFloat("hours"); hours > 0 {
+			device.PowerOnHours = new(uint64)
+			*device.PowerOnHours = uint64(hours)
+		}
+		if cycles := smartRecord.GetFloat("cycles"); cycles > 0 {
+			device.PowerCycles = new(uint64)
+			*device.PowerCycles = uint64(cycles)
+		}
+		result.Smart = append(result.Smart, device)
 	}
 	// ZFS pool details
-	if records, err := h.app.FindRecordsByFilter("zfs_pools", "system = {:system}", "name", maxListRecords, 0,
-		dbx.Params{"system": record.Id}); err == nil {
-		result.ZfsPools = make([]zfsPool, 0, len(records))
-		for _, poolRecord := range records {
-			pool := zfsPool{
-				Name:        poolRecord.GetString("name"),
-				DisplayName: poolRecord.GetString("display_name"),
-				Health:      poolRecord.GetString("health"), // ONLINE, DEGRADED, FAULTED, ...
-				Updated:     poolRecord.GetDateTime("updated").Time().UTC().Format(time.RFC3339),
-			}
-			for field, target := range map[string]**uint64{
-				"size": &pool.Size, "alloc": &pool.Alloc, "free": &pool.Free,
-			} {
-				if value := poolRecord.GetFloat(field); value > 0 {
-					*target = new(uint64)
-					**target = uint64(value)
-				}
-			}
-			result.ZfsPools = append(result.ZfsPools, pool)
+	poolRecords, err := h.app.FindRecordsByFilter("zfs_pools", "system = {:system}", "name", maxListRecords, 0,
+		dbx.Params{"system": record.Id})
+	if err != nil {
+		return nil, diskHealth{}, err
+	}
+	result.ZfsPools = make([]zfsPool, 0, len(poolRecords))
+	for _, poolRecord := range poolRecords {
+		pool := zfsPool{
+			Name:        poolRecord.GetString("name"),
+			DisplayName: poolRecord.GetString("display_name"),
+			Health:      poolRecord.GetString("health"), // ONLINE, DEGRADED, FAULTED, ...
+			Updated:     poolRecord.GetDateTime("updated").Time().UTC().Format(time.RFC3339),
 		}
+		for field, target := range map[string]**uint64{
+			"size": &pool.Size, "alloc": &pool.Alloc, "free": &pool.Free,
+		} {
+			if value := poolRecord.GetFloat(field); value > 0 {
+				*target = new(uint64)
+				**target = uint64(value)
+			}
+		}
+		result.ZfsPools = append(result.ZfsPools, pool)
 	}
 	return nil, result, nil
 }
@@ -1055,12 +1060,17 @@ func (h *mcphub) listNetworkMonitors(ctx context.Context, req *mcpsdk.CallToolRe
 	if err != nil {
 		return nil, networkMonitorList{}, err
 	}
-	records, err := h.app.FindRecordsByFilter("network_monitors", "system = {:system}", "target", maxListRecords, 0,
-		dbx.Params{"system": record.Id})
+	filter := "system = {:system}"
+	queryParams := dbx.Params{"system": record.Id}
+	records, err := h.app.FindRecordsByFilter("network_monitors", filter, "target", maxListRecords, 0, queryParams)
 	if err != nil {
 		return nil, networkMonitorList{}, err
 	}
-	result := networkMonitorList{System: record.GetString("name"), Count: len(records),
+	hasMore := false
+	if len(records) == maxListRecords {
+		hasMore = h.hasMoreRecords("network_monitors", filter, "target", queryParams)
+	}
+	result := networkMonitorList{System: record.GetString("name"), Count: len(records), Truncated: hasMore,
 		Monitors: make([]networkMonitor, 0, len(records))}
 	for _, monitorRecord := range records {
 		monitor := networkMonitor{
@@ -1107,7 +1117,8 @@ type networkMonitor struct {
 }
 
 type networkMonitorList struct {
-	System   string           `json:"system"`
-	Count    int              `json:"count"`
-	Monitors []networkMonitor `json:"monitors"`
+	System    string           `json:"system"`
+	Count     int              `json:"count"`
+	Truncated bool             `json:"truncated,omitzero"` // more monitors exist beyond the returned cap
+	Monitors  []networkMonitor `json:"monitors"`
 }
