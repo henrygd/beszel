@@ -194,6 +194,35 @@ func TestGetMonitorConfigsForSystemIncludesSkipTLSVerify(t *testing.T) {
 	require.True(t, configs[0].SkipTLSVerify, "full sync must keep the skip TLS verify option")
 }
 
+func TestGetMonitorConfigsForSystemIncludesContentChecks(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+	for _, fields := range []map[string]any{
+		{"target": "https://status.example", "protocol": "http", "keyword": "UP", "jsonPath": "status"},
+		{"target": "example.com", "protocol": "dns", "keyword": "mail.example.com", "recordType": "MX"},
+	} {
+		record := core.NewRecord(collection)
+		record.Load(fields)
+		record.Set("system", sys.Id)
+		record.Set("interval", 60)
+		record.Set("enabled", true)
+		require.NoError(t, app.SaveNoValidate(record))
+	}
+
+	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
+	require.NoError(t, err)
+	require.Len(t, configs, 2)
+	byProtocol := map[string]monitor.Config{}
+	for _, config := range configs {
+		byProtocol[config.Protocol] = config
+	}
+	require.Equal(t, "UP", byProtocol["http"].Keyword, "full sync must keep the keyword")
+	require.Equal(t, "status", byProtocol["http"].JSONPath, "full sync must keep the JSON path")
+	require.Equal(t, "mail.example.com", byProtocol["dns"].Keyword, "full sync must keep the keyword")
+	require.Equal(t, "MX", byProtocol["dns"].RecordType, "full sync must keep the record type")
+}
+
 func TestGetMonitorConfigsForSystemQueryError(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	_, err := app.DB().NewQuery("DROP TABLE network_monitors").Execute()

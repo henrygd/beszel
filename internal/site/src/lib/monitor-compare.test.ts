@@ -50,11 +50,13 @@ test("formats tcp targets with their port", () => {
 	expect(getMonitorTarget({ target: "http://example.com", protocol: "http", port: 0 })).toBe("example.com")
 })
 
-test("identity ignores the system but not protocol, port or server", () => {
+test("identity ignores the system but not protocol, port, server or record type", () => {
 	expect(getMonitorIdentityKey(a1)).toBe(getMonitorIdentityKey(b1))
 	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, protocol: "http" }))
 	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, port: 80 }))
 	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, server: "1.1.1.1" }))
+	expect(getMonitorIdentityKey(a1)).not.toBe(getMonitorIdentityKey({ ...a1, recordType: "MX" }))
+	expect(getMonitorIdentityKey(a1)).toBe(getMonitorIdentityKey({ ...a1, recordType: "" }))
 })
 
 test("with nothing selected only the opened monitor is charted", () => {

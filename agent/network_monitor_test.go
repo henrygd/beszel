@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"io"
@@ -246,7 +247,7 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL})
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
@@ -257,9 +258,57 @@ func TestMonitorHTTP(t *testing.T) {
 		}))
 		defer server.Close()
 
-		responseUs, err := monitorHTTP(context.Background(), server.Client(), server.URL)
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL})
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
+	})
+
+	t.Run("keyword", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte("<html><body>All systems operational</body></html>"))
+		}))
+		defer server.Close()
+		config := monitor.Config{Target: server.URL, Keyword: "systems operational"}
+
+		responseUs, err := monitorHTTP(context.Background(), server.Client(), config)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, responseUs, int64(0))
+
+		config.Keyword = "Systems Operational"
+		responseUs, err = monitorHTTP(context.Background(), server.Client(), config)
+		assert.Equal(t, int64(-1), responseUs)
+		require.Error(t, err, "keyword match is case-sensitive")
+	})
+
+	t.Run("JSON path", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			_, _ = w.Write([]byte(`{"status":"UP","services":[{"name":"db","state":"degraded"}]}`))
+		}))
+		defer server.Close()
+		tests := []struct {
+			jsonPath string
+			keyword  string
+			ok       bool
+		}{
+			{"status", "UP", true},
+			{"status", "DOWN", false},
+			{"services.0.state", "degraded", true},
+			{"services.0.state", "ok", false},
+			{"status", "", true},
+			{"missing", "", false},
+			{"missing", "UP", false},
+		}
+		for _, tt := range tests {
+			config := monitor.Config{Target: server.URL, JSONPath: tt.jsonPath, Keyword: tt.keyword}
+			responseUs, err := monitorHTTP(context.Background(), server.Client(), config)
+			if tt.ok {
+				require.NoError(t, err, "path %q keyword %q", tt.jsonPath, tt.keyword)
+				assert.GreaterOrEqual(t, responseUs, int64(0))
+			} else {
+				require.Error(t, err, "path %q keyword %q", tt.jsonPath, tt.keyword)
+				assert.Equal(t, int64(-1), responseUs)
+			}
+		}
 	})
 
 	t.Run("self-signed certificate", func(t *testing.T) {
@@ -279,6 +328,59 @@ func TestMonitorHTTP(t *testing.T) {
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
+}
+
+func TestCheckHTTPBody(t *testing.T) {
+	body := []byte(`{"ok":true,"count":3,"ratio":0.5,"none":null,"name":"beszel","list":[1,"two"],"nested":{"a":{"b":"c"}}}`)
+	tests := []struct {
+		name     string
+		body     []byte
+		jsonPath string
+		keyword  string
+		ok       bool
+	}{
+		{"keyword in body", body, "", `"name":"beszel"`, true},
+		{"keyword missing", body, "", "missing", false},
+		{"string value", body, "name", "beszel", true},
+		{"string value must match exactly", body, "name", "besz", false},
+		{"boolean value", body, "ok", "true", true},
+		{"integer value", body, "count", "3", true},
+		{"float value", body, "ratio", "0.5", true},
+		{"null value", body, "none", "null", true},
+		{"array index", body, "list.1", "two", true},
+		{"array index out of range", body, "list.2", "", false},
+		{"array index must be a number", body, "list.first", "", false},
+		{"nested object", body, "nested.a.b", "c", true},
+		{"path through a scalar", body, "name.first", "", false},
+		{"object is not a single value", body, "nested", "", false},
+		{"array is not a single value", body, "list", "", false},
+		{"path exists without keyword", body, "nested.a.b", "", true},
+		{"invalid JSON", []byte("<html>"), "name", "", false},
+		{"empty body", nil, "name", "", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkHTTPBody(tt.body, tt.jsonPath, tt.keyword)
+			if tt.ok {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+			}
+		})
+	}
+}
+
+func TestMonitorHTTPBodyLimit(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(bytes.Repeat([]byte("a"), maxMonitorBodyBytes))
+		_, _ = w.Write([]byte("needle"))
+	}))
+	defer server.Close()
+
+	_, err := monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL, Keyword: "needle"})
+	require.Error(t, err, "content past the body limit is not checked")
+	_, err = monitorHTTP(context.Background(), server.Client(), monitor.Config{Target: server.URL, Keyword: "aaa"})
+	require.NoError(t, err)
 }
 
 func TestMonitorTCP(t *testing.T) {
@@ -398,6 +500,17 @@ func tcpMonitorTestResolver(ips []string) *net.Resolver {
 // given IPs, and returns its listen address (host:port).
 func udpDNSTestServer(t *testing.T, ips []string) string {
 	t.Helper()
+	bodies := make([]dnsmessage.ResourceBody, 0, len(ips))
+	for _, ip := range ips {
+		bodies = append(bodies, &dnsmessage.AResource{A: [4]byte(net.ParseIP(ip).To4())})
+	}
+	return udpDNSRecordTestServer(t, map[dnsmessage.Type][]dnsmessage.ResourceBody{dnsmessage.TypeA: bodies})
+}
+
+// udpDNSRecordTestServer starts a UDP server on loopback that answers each query
+// type with the given records, and returns its listen address (host:port).
+func udpDNSRecordTestServer(t *testing.T, records map[dnsmessage.Type][]dnsmessage.ResourceBody) string {
+	t.Helper()
 	conn, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.ParseIP("127.0.0.1")})
 	require.NoError(t, err)
 	t.Cleanup(func() { conn.Close() })
@@ -416,13 +529,10 @@ func udpDNSTestServer(t *testing.T, ips []string) string {
 			msg.Header.Response = true
 			msg.Header.RecursionAvailable = true
 			for _, question := range msg.Questions {
-				if question.Type != dnsmessage.TypeA {
-					continue
-				}
-				for _, ip := range ips {
+				for _, body := range records[question.Type] {
 					msg.Answers = append(msg.Answers, dnsmessage.Resource{
-						Header: dnsmessage.ResourceHeader{Name: question.Name, Type: dnsmessage.TypeA, Class: dnsmessage.ClassINET},
-						Body:   &dnsmessage.AResource{A: [4]byte(net.ParseIP(ip).To4())},
+						Header: dnsmessage.ResourceHeader{Name: question.Name, Type: question.Type, Class: dnsmessage.ClassINET},
+						Body:   body,
 					})
 				}
 			}
@@ -439,20 +549,20 @@ func udpDNSTestServer(t *testing.T, ips []string) string {
 
 func TestMonitorDNS(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "localhost", "")
+		responseUs, err := monitorDNS(context.Background(), monitor.Config{Target: "localhost"})
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 
 	t.Run("lookup failure", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "", "")
+		responseUs, err := monitorDNS(context.Background(), monitor.Config{})
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
 
 	t.Run("custom server", func(t *testing.T) {
 		serverAddr := udpDNSTestServer(t, []string{"192.0.2.10"})
-		responseUs, err := monitorDNS(context.Background(), "example.test.", serverAddr)
+		responseUs, err := monitorDNS(context.Background(), monitor.Config{Target: "example.test.", Server: serverAddr})
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
@@ -465,8 +575,76 @@ func TestMonitorDNS(t *testing.T) {
 		assert.Equal(t, "127.0.0.1:53", conn.RemoteAddr().String())
 	})
 
+	t.Run("record types", func(t *testing.T) {
+		name := dnsmessage.MustNewName
+		serverAddr := udpDNSRecordTestServer(t, map[dnsmessage.Type][]dnsmessage.ResourceBody{
+			dnsmessage.TypeA:    {&dnsmessage.AResource{A: [4]byte{192, 0, 2, 10}}},
+			dnsmessage.TypeAAAA: {&dnsmessage.AAAAResource{AAAA: [16]byte(net.ParseIP("2001:db8::10"))}},
+			dnsmessage.TypeMX:   {&dnsmessage.MXResource{Pref: 10, MX: name("Mail.example.test.")}},
+			dnsmessage.TypeNS:   {&dnsmessage.NSResource{NS: name("ns1.example.test.")}},
+			dnsmessage.TypeTXT:  {&dnsmessage.TXTResource{TXT: []string{"v=spf1 include:_spf.example.test ~all"}}},
+		})
+		// The resolver also sends A and AAAA queries for a CNAME lookup and takes the
+		// canonical name from whichever answer arrives first, so an alias gets its own
+		// server that has no address records for the queried name.
+		aliasServerAddr := udpDNSRecordTestServer(t, map[dnsmessage.Type][]dnsmessage.ResourceBody{
+			dnsmessage.TypeCNAME: {&dnsmessage.CNAMEResource{CNAME: name("alias.example.test.")}},
+		})
+		tests := []struct {
+			recordType string
+			keyword    string
+			ok         bool
+		}{
+			{"", "", true},
+			{"", "192.0.2.10", true},
+			{"", "192.0.2.1", false},
+			{"A", "", true},
+			{"A", "192.0.2.10", true},
+			{"A", "2001:db8::10", false},
+			{"AAAA", "2001:db8::10", true},
+			{"AAAA", "2001:0db8:0000::0010", true},
+			{"AAAA", "192.0.2.10", false},
+			{"CNAME", "", true},
+			{"CNAME", "alias.example.test", true},
+			{"CNAME", "other.example.test", false},
+			{"MX", "mail.example.test", true},
+			{"MX", "mail.example.test.", true},
+			{"MX", "example.test", false},
+			{"NS", "ns1.example.test", true},
+			{"NS", "ns2.example.test", false},
+			{"TXT", "v=spf1", true},
+			{"TXT", "_spf.example.test", true},
+			{"TXT", "v=spf2", false},
+			{"SRV", "", false},
+		}
+		for _, tt := range tests {
+			config := monitor.Config{Target: "example.test.", Server: serverAddr, RecordType: tt.recordType, Keyword: tt.keyword}
+			if tt.recordType == "CNAME" {
+				config.Server = aliasServerAddr
+			}
+			responseUs, err := monitorDNS(context.Background(), config)
+			if tt.ok {
+				require.NoError(t, err, "type %q keyword %q", tt.recordType, tt.keyword)
+				assert.GreaterOrEqual(t, responseUs, int64(0))
+			} else {
+				require.Error(t, err, "type %q keyword %q", tt.recordType, tt.keyword)
+				assert.Equal(t, int64(-1), responseUs)
+			}
+		}
+	})
+
+	t.Run("missing record type", func(t *testing.T) {
+		serverAddr := udpDNSTestServer(t, []string{"192.0.2.10"})
+		for _, recordType := range []string{"AAAA", "CNAME", "MX", "NS", "TXT"} {
+			config := monitor.Config{Target: "example.test.", Server: serverAddr, RecordType: recordType}
+			responseUs, err := monitorDNS(context.Background(), config)
+			require.Error(t, err, "type %q", recordType)
+			assert.Equal(t, int64(-1), responseUs)
+		}
+	})
+
 	t.Run("custom server unreachable", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "example.test.", "127.0.0.1:1")
+		responseUs, err := monitorDNS(context.Background(), monitor.Config{Target: "example.test.", Server: "127.0.0.1:1"})
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -561,7 +739,7 @@ func TestMonitorResolutionCancellation(t *testing.T) {
 				case "tcp":
 					_, err = monitorTCP(ctx, "monitor-cancellation.invalid.", 80)
 				case "dns":
-					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.", "")
+					_, err = monitorDNS(ctx, monitor.Config{Target: "monitor-cancellation.invalid."})
 				case "icmp":
 					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.")
 				}

@@ -231,6 +231,31 @@ func TestGenerateMonitorID(t *testing.T) {
 	}
 }
 
+func TestGenerateMonitorIDContentChecks(t *testing.T) {
+	dns := monitor.Config{Protocol: "dns", Target: "example.com", Server: "1.1.1.1"}
+	// the default lookup keeps the ID that existing monitors already have
+	assert.Equal(t, "2175898b", generateMonitorID("sys999", dns))
+
+	mx, txt := dns, dns
+	mx.RecordType = "MX"
+	txt.RecordType = "TXT"
+	assert.NotEqual(t, generateMonitorID("sys999", dns), generateMonitorID("sys999", mx))
+	assert.NotEqual(t, generateMonitorID("sys999", mx), generateMonitorID("sys999", txt))
+
+	// the expected content is a probe option and must not change the ID
+	withKeyword := mx
+	withKeyword.Keyword = "mail.example.com"
+	assert.Equal(t, generateMonitorID("sys999", mx), generateMonitorID("sys999", withKeyword))
+
+	httpConfig := monitor.Config{Protocol: "http", Target: "https://example.com"}
+	withJSON := httpConfig
+	withJSON.Keyword = "UP"
+	withJSON.JSONPath = "status"
+	// the record type only applies to DNS monitors
+	withJSON.RecordType = "MX"
+	assert.Equal(t, generateMonitorID("sys999", httpConfig), generateMonitorID("sys999", withJSON))
+}
+
 func TestNetworkMonitorShortIDRequests(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
@@ -303,6 +328,9 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"interval":      60,
 		"enabled":       true,
 		"skipTlsVerify": true,
+		"keyword":       "UP",
+		"jsonPath":      "status",
+		"recordType":    "MX",
 		"res":           1200,
 		"resAvg1h":      1300,
 		"resMin1h":      900,
@@ -321,6 +349,9 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
 	assert.True(t, newRecord.GetBool("skipTlsVerify"))
+	assert.Equal(t, "UP", newRecord.GetString("keyword"))
+	assert.Equal(t, "status", newRecord.GetString("jsonPath"))
+	assert.Equal(t, "MX", newRecord.GetString("recordType"))
 	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
@@ -416,4 +447,35 @@ func TestUpdateNetworkMonitorSystemAuthorization(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, records, 1)
 	assert.Equal(t, aliceSystemC.Id, records[0].GetString("system"))
+}
+
+func TestNetworkMonitorRecordTypeValidation(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+
+	user, err := createTestUser(hub)
+	require.NoError(t, err)
+	system, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "Record types", "host": "localhost", "port": "45876",
+		"status": "paused", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	collection, err := hub.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+
+	tests := map[string]bool{"": true, "A": true, "AAAA": true, "CNAME": true, "MX": true, "NS": true, "TXT": true, "mx": false, "SRV": false}
+	for recordType, valid := range tests {
+		record := core.NewRecord(collection)
+		record.Load(map[string]any{
+			"system": system.Id, "target": "example.com", "protocol": "dns", "server": recordType,
+			"interval": 60, "recordType": recordType, "keyword": "mail.example.com",
+		})
+		err := hub.Save(record)
+		if valid {
+			assert.NoError(t, err, "record type %q", recordType)
+		} else {
+			assert.Error(t, err, "record type %q", recordType)
+		}
+	}
 }
