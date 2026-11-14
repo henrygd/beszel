@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
@@ -60,6 +61,8 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
+	registry.Register(common.ApplyPackageUpdates, &ApplyPackageUpdatesHandler{})
+	registry.Register(common.SetPackageUpdatesAutoApply, &SetPackageUpdatesAutoApplyHandler{})
 
 	return registry
 }
@@ -218,9 +221,57 @@ type GetPackageUpdatesHandler struct{}
 
 func (h *GetPackageUpdatesHandler) Handle(hctx *HandlerContext) error {
 	if hctx.Agent.packageUpdates == nil {
-		return hctx.SendResponse(system.PackageUpdates{}, hctx.RequestID)
+		return hctx.SendResponse(system.PackageUpdates{ApplyEnabled: packageUpdatesApplyEnabled()}, hctx.RequestID)
 	}
 	return hctx.SendResponse(hctx.Agent.packageUpdates.list(), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// ApplyPackageUpdatesHandler starts (or reports) package update applies when enabled.
+// An empty/omitted mode with poll=true-style clients should use status via mode "".
+// Request Mode "status" returns the current async apply result without starting work.
+type ApplyPackageUpdatesHandler struct{}
+
+func (h *ApplyPackageUpdatesHandler) Handle(hctx *HandlerContext) error {
+	var req common.ApplyPackageUpdatesRequest
+	if len(hctx.Request.Data) > 0 {
+		if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+			return err
+		}
+	}
+	if hctx.Agent.packageUpdates == nil {
+		return hctx.SendResponse(system.PackageUpdatesApplyResult{
+			Status: "error",
+			Error:  "package updates are not available on this agent",
+		}, hctx.RequestID)
+	}
+	if strings.EqualFold(strings.TrimSpace(req.Mode), "status") {
+		return hctx.SendResponse(hctx.Agent.packageUpdates.applyStatus(), hctx.RequestID)
+	}
+	return hctx.SendResponse(hctx.Agent.packageUpdates.startApply(req), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// SetPackageUpdatesAutoApplyHandler sets the agent's automatic apply mode from the hub UI.
+type SetPackageUpdatesAutoApplyHandler struct{}
+
+func (h *SetPackageUpdatesAutoApplyHandler) Handle(hctx *HandlerContext) error {
+	var req common.SetPackageUpdatesAutoApplyRequest
+	if len(hctx.Request.Data) > 0 {
+		if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+			return err
+		}
+	}
+	if hctx.Agent.packageUpdates == nil {
+		return hctx.SendResponse(system.PackageUpdatesAutoApplyResult{
+			Error: "package updates are not available on this agent",
+		}, hctx.RequestID)
+	}
+	return hctx.SendResponse(hctx.Agent.packageUpdates.setAutoApplyMode(req.Mode), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

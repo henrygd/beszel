@@ -244,6 +244,24 @@ export interface PackageUpdates {
 	/** true if the package manager flags security updates per package */
 	securityKnown?: boolean
 	packages: PackageUpdate[] | null
+	/** true when the agent accepts apply requests */
+	applyEnabled?: boolean
+	/** "all", "security", or "off" when apply is enabled on the agent */
+	autoApply?: string
+	/** unix seconds of last successful apply */
+	lastAutoApplyAt?: number
+}
+
+export interface PackageUpdatesApplyResult {
+	ok: boolean
+	manager?: string
+	mode?: string
+	applied?: number
+	output?: string
+	error?: string
+	checkedAt?: number
+	/** started | running | done | error | idle */
+	status?: string
 }
 
 export interface ZfsDataset {

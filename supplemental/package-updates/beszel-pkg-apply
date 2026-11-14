@@ -1,0 +1,112 @@
+#!/bin/bash
+# Constrained package-apply helper for beszel-agent.
+# Installed as: /usr/local/lib/beszel/beszel-pkg-apply
+# Sudoers should allow ONLY:
+#   beszel ALL=(root) NOPASSWD: /usr/local/lib/beszel/beszel-pkg-apply security, /usr/local/lib/beszel/beszel-pkg-apply all
+#
+# Usage:
+#   beszel-pkg-apply security   # optional package names on stdin (one per line)
+#   beszel-pkg-apply all
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+export LC_ALL=C
+
+MODE="${1:-}"
+case "$MODE" in
+  security|all) ;;
+  *)
+    echo "usage: $0 security|all" >&2
+    exit 2
+    ;;
+esac
+
+read_packages() {
+  # Only allow safe package name characters from stdin.
+  awk '
+    /^[A-Za-z0-9][A-Za-z0-9._+:-]*$/ { print; next }
+    NF { print "invalid package name: " $0 > "/dev/stderr"; exit 2 }
+  '
+}
+
+run_apt() {
+  if [[ "$MODE" == "all" ]]; then
+    exec apt-get -y \
+      -o Dpkg::Options::=--force-confdef \
+      -o Dpkg::Options::=--force-confold \
+      dist-upgrade
+  fi
+
+  mapfile -t PKGS < <(read_packages || true)
+  if ((${#PKGS[@]} > 0)); then
+    exec apt-get install -y --only-upgrade --allow-downgrades --allow-change-held-packages -- "${PKGS[@]}"
+  fi
+  if command -v unattended-upgrade >/dev/null 2>&1; then
+    exec unattended-upgrade
+  fi
+  echo "no security package list provided and unattended-upgrade not installed" >&2
+  exit 1
+}
+
+run_dnf() {
+  if [[ "$MODE" == "security" ]]; then
+    mapfile -t PKGS < <(read_packages || true)
+    if ((${#PKGS[@]} > 0)); then
+      exec dnf -y upgrade -- "${PKGS[@]}"
+    fi
+    exec dnf -y upgrade --security
+  fi
+  exec dnf -y upgrade
+}
+
+run_zypper() {
+  if [[ "$MODE" == "security" ]]; then
+    mapfile -t PKGS < <(read_packages || true)
+    if ((${#PKGS[@]} > 0)); then
+      exec zypper --non-interactive install --force -- "${PKGS[@]}"
+    fi
+    exec zypper --non-interactive patch --category security
+  fi
+  exec zypper --non-interactive update
+}
+
+run_pacman() {
+  mapfile -t PKGS < <(read_packages || true)
+  if ((${#PKGS[@]} > 0)); then
+    exec pacman -S --noconfirm --needed -- "${PKGS[@]}"
+  fi
+  exec pacman -Syu --noconfirm
+}
+
+run_apk() {
+  mapfile -t PKGS < <(read_packages || true)
+  if ((${#PKGS[@]} > 0)); then
+    exec apk upgrade -- "${PKGS[@]}"
+  fi
+  exec apk upgrade
+}
+
+run_xbps() {
+  mapfile -t PKGS < <(read_packages || true)
+  if ((${#PKGS[@]} > 0)); then
+    exec xbps-install -uy -- "${PKGS[@]}"
+  fi
+  exec xbps-install -Suy
+}
+
+if command -v apt-get >/dev/null 2>&1 && dpkg-query -W apt >/dev/null 2>&1; then
+  run_apt
+elif command -v dnf >/dev/null 2>&1; then
+  run_dnf
+elif command -v zypper >/dev/null 2>&1; then
+  run_zypper
+elif command -v pacman >/dev/null 2>&1; then
+  run_pacman
+elif command -v apk >/dev/null 2>&1; then
+  run_apk
+elif command -v xbps-install >/dev/null 2>&1; then
+  run_xbps
+else
+  echo "no supported package manager found" >&2
+  exit 1
+fi

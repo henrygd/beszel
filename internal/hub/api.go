@@ -21,6 +21,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -221,6 +222,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
 	// get pending package updates
 	apiAuth.GET("/package-updates", h.getPackageUpdates)
+	// apply pending package updates on a system (admin only)
+	apiAuth.POST("/package-updates/apply", h.applyPackageUpdates).BindFunc(requireAdminRole)
+	// set automatic package-update apply mode on a system (admin only)
+	apiAuth.POST("/package-updates/auto-apply", h.setPackageUpdatesAutoApply).BindFunc(requireAdminRole)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -547,6 +552,76 @@ func (h *Hub) getPackageUpdates(e *core.RequestEvent) error {
 		return e.InternalServerError("", err)
 	}
 	return e.JSON(http.StatusOK, updates)
+}
+
+// applyPackageUpdates handles POST /api/beszel/package-updates/apply requests
+func (h *Hub) applyPackageUpdates(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	var req struct {
+		Mode string `json:"mode"`
+	}
+	if err := e.BindBody(&req); err != nil {
+		return e.BadRequestError("Invalid request body", err)
+	}
+	mode := strings.ToLower(strings.TrimSpace(req.Mode))
+	if mode == "" {
+		mode = "all"
+	}
+	if mode != "all" && mode != "security" && mode != "status" {
+		return e.BadRequestError("mode must be \"all\", \"security\", or \"status\"", nil)
+	}
+
+	// Package names are never accepted from the client; the agent applies from
+	// its own pending cache only.
+	result, err := system.ApplyPackageUpdatesOnAgent(common.ApplyPackageUpdatesRequest{
+		Mode: mode,
+	})
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	// Always 200 so the UI can read ok/status/error without PocketBase treating
+	// a 400 as a transport failure (and so long applies can return "started").
+	return e.JSON(http.StatusOK, result)
+}
+
+// setPackageUpdatesAutoApply handles POST /api/beszel/package-updates/auto-apply
+func (h *Hub) setPackageUpdatesAutoApply(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	var req struct {
+		Mode string `json:"mode"`
+	}
+	if err := e.BindBody(&req); err != nil {
+		return e.BadRequestError("Invalid request body", err)
+	}
+	mode := strings.ToLower(strings.TrimSpace(req.Mode))
+	if mode == "" {
+		mode = "all"
+	}
+	if mode != "all" && mode != "security" && mode != "off" {
+		return e.BadRequestError("mode must be \"all\", \"security\", or \"off\"", nil)
+	}
+
+	result, err := system.SetPackageUpdatesAutoApplyOnAgent(mode)
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, result)
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests

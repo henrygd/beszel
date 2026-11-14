@@ -14,6 +14,7 @@ import {
 import {
 	ArrowUpDownIcon,
 	GitCompareArrowsIcon,
+	LoaderCircleIcon,
 	PackageCheckIcon,
 	PackageIcon,
 	PackageOpenIcon,
@@ -21,17 +22,31 @@ import {
 	XIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge, type BadgeProps } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { pb } from "@/lib/api"
+import { toast } from "@/components/ui/use-toast"
+import { isAdmin, pb } from "@/lib/api"
 import { classifyVersionChange, type VersionChange } from "@/lib/package-updates"
 import { cn, formatShortDate } from "@/lib/utils"
-import type { PackageUpdate, PackageUpdates } from "@/types"
+import type { PackageUpdate, PackageUpdates, PackageUpdatesApplyResult } from "@/types"
+
+type AutoApplyMode = "all" | "security" | "off"
 
 interface PackageUpdateRow extends PackageUpdate {
 	change: VersionChange
@@ -180,7 +195,11 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 	const [error, setError] = useState<string | null>(null)
 	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
 	const [globalFilter, setGlobalFilter] = useState("")
+	const [applyMode, setApplyMode] = useState<"all" | "security" | null>(null)
+	const [applying, setApplying] = useState(false)
+	const [savingAutoApply, setSavingAutoApply] = useState(false)
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const admin = isAdmin()
 
 	useEffect(() => {
 		let cancelled = false
@@ -234,12 +253,101 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 		},
 	})
 
+	async function applyUpdates(mode: "all" | "security") {
+		setApplying(true)
+		try {
+			// Fire-and-forget: agent applies in the background. The package list
+			// refreshes when system.info.pu updates via the normal agent poll.
+			const result = await pb.send<PackageUpdatesApplyResult>("/api/beszel/package-updates/apply", {
+				method: "POST",
+				query: { system: systemId },
+				body: { mode },
+			})
+			if (result.status === "error" || (result.error && !result.ok && result.status !== "started" && result.status !== "running")) {
+				toast({
+					variant: "destructive",
+					title: t`Failed to apply package updates`,
+					description: result.error || result.status || t`Unknown error`,
+				})
+				return
+			}
+			toast({
+				title: mode === "security" ? t`Applying security updates` : t`Applying package updates`,
+				description: t`The list will refresh when the agent reports new counts.`,
+			})
+		} catch (err: any) {
+			const detail =
+				err?.response?.error || err?.data?.error || err?.message || String(err ?? "")
+			toast({
+				variant: "destructive",
+				title: t`Failed to apply package updates`,
+				description: detail,
+			})
+		} finally {
+			setApplying(false)
+			setApplyMode(null)
+		}
+	}
+
+	async function saveAutoApply(mode: AutoApplyMode) {
+		setSavingAutoApply(true)
+		try {
+			const result = await pb.send<{ ok?: boolean; mode?: string; error?: string }>(
+				"/api/beszel/package-updates/auto-apply",
+				{
+					method: "POST",
+					query: { system: systemId },
+					body: { mode },
+				}
+			)
+			if (!result.ok) {
+				toast({
+					variant: "destructive",
+					title: t`Failed to update auto-apply`,
+					description: result.error || t`Unknown error`,
+				})
+				return
+			}
+			setData((prev) =>
+				prev
+					? {
+							...prev,
+							autoApply: (result.mode as AutoApplyMode) || mode,
+						}
+					: prev
+			)
+			toast({
+				title: t`Auto-apply updated`,
+				description:
+					mode === "off"
+						? t`Automatic package updates are off for this host.`
+						: mode === "security"
+							? t`This host will auto-apply security updates.`
+							: t`This host will auto-apply all updates.`,
+			})
+		} catch (err: any) {
+			const detail =
+				err?.response?.error || err?.data?.error || err?.message || String(err ?? "")
+			toast({
+				variant: "destructive",
+				title: t`Failed to update auto-apply`,
+				description: detail,
+			})
+		} finally {
+			setSavingAutoApply(false)
+		}
+	}
+
 	if (!data && !error) {
 		return null
 	}
 
 	const securityCount = rows.filter((pkg) => pkg.security).length
 	const tableRows = table.getRowModel().rows
+	const canApply = admin && !!data?.applyEnabled && rows.length > 0
+	const canSetAutoApply = admin && !!data?.applyEnabled
+	const autoApplyValue: AutoApplyMode =
+		data?.autoApply === "security" || data?.autoApply === "all" ? data.autoApply : "off"
 
 	return (
 		<Card className="@container w-full px-3 py-5 sm:py-6 sm:px-6">
@@ -271,28 +379,104 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 							)}
 						</CardDescription>
 					</div>
-					{rows.length > 0 && (
-						<div className="relative ms-auto w-full max-w-full md:w-64">
-							<Input
-								placeholder={t`Filter...`}
-								value={globalFilter}
-								onChange={(event) => table.setGlobalFilter(event.target.value)}
-								className="px-4 w-full max-w-full md:w-64"
-							/>
-							{globalFilter && (
+					<div className="ms-auto flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+						{canSetAutoApply && (
+							<div className="flex items-center gap-2">
+								<span className="text-sm text-muted-foreground whitespace-nowrap">
+									<Trans>Auto-apply</Trans>
+								</span>
+								<Select
+									value={autoApplyValue}
+									disabled={savingAutoApply}
+									onValueChange={(value) => {
+										if (value === "all" || value === "security" || value === "off") {
+											void saveAutoApply(value)
+										}
+									}}
+								>
+									<SelectTrigger className="h-9 w-[9.5rem]" aria-label={t`Auto-apply`}>
+										{savingAutoApply ? (
+											<LoaderCircleIcon className="size-4 animate-spin" />
+										) : (
+											<SelectValue />
+										)}
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="all">
+											<Trans>All updates</Trans>
+										</SelectItem>
+										<SelectItem value="security">
+											<Trans>Security only</Trans>
+										</SelectItem>
+										<SelectItem value="off">
+											<Trans>Off</Trans>
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						)}
+						{!canSetAutoApply && data?.autoApply && (
+							<span className="text-sm text-muted-foreground">
+								<Trans>Auto-apply: {data.autoApply}</Trans>
+							</span>
+						)}
+						{canApply && (
+							<>
+								{securityKnown && securityCount > 0 && (
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										disabled={applying}
+										onClick={() => setApplyMode("security")}
+									>
+										{applying && applyMode === "security" ? (
+											<LoaderCircleIcon className="size-4 animate-spin" />
+										) : (
+											<ShieldAlertIcon className="size-4" />
+										)}
+										<Trans>Apply security</Trans>
+									</Button>
+								)}
 								<Button
 									type="button"
-									variant="ghost"
-									size="icon"
-									aria-label={t`Clear`}
-									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => table.setGlobalFilter("")}
+									variant="default"
+									size="sm"
+									disabled={applying}
+									onClick={() => setApplyMode("all")}
 								>
-									<XIcon className="h-4 w-4" />
+									{applying && applyMode === "all" ? (
+										<LoaderCircleIcon className="size-4 animate-spin" />
+									) : (
+										<PackageCheckIcon className="size-4" />
+									)}
+									<Trans>Apply all</Trans>
 								</Button>
-							)}
-						</div>
-					)}
+							</>
+						)}
+						{rows.length > 0 && (
+							<div className="relative w-full max-w-full md:w-64">
+								<Input
+									placeholder={t`Filter...`}
+									value={globalFilter}
+									onChange={(event) => table.setGlobalFilter(event.target.value)}
+									className="px-4 w-full max-w-full md:w-64"
+								/>
+								{globalFilter && (
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										aria-label={t`Clear`}
+										className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+										onClick={() => table.setGlobalFilter("")}
+									>
+										<XIcon className="h-4 w-4" />
+									</Button>
+								)}
+							</div>
+						)}
+					</div>
 				</div>
 			</CardHeader>
 			{error ? (
@@ -334,6 +518,40 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 				</div>
 			)}
 			{!error && <DataTablePagination table={table} showSelected={false} />}
+			<AlertDialog open={!!applyMode} onOpenChange={(open) => !open && !applying && setApplyMode(null)}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{applyMode === "security" ? (
+								<Trans>Apply security updates?</Trans>
+							) : (
+								<Trans>Apply all package updates?</Trans>
+							)}
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							<Trans>
+								This will run the host package manager on this system. Reboots are not triggered automatically.
+							</Trans>
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={applying}>
+							<Trans>Cancel</Trans>
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className={cn(buttonVariants({ variant: applyMode === "all" ? "destructive" : "default" }))}
+							disabled={applying || !applyMode}
+							onClick={(event) => {
+								event.preventDefault()
+								if (applyMode) void applyUpdates(applyMode)
+							}}
+						>
+							{applying ? <LoaderCircleIcon className="size-4 animate-spin" /> : null}
+							<Trans>Continue</Trans>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Card>
 	)
 }

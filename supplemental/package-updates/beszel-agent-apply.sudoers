@@ -1,0 +1,4 @@
+# Install: /etc/sudoers.d/beszel-agent-apply (mode 0440)
+# Only the constrained helper, fixed argv — no arbitrary apt-get from the agent.
+beszel ALL=(root) NOPASSWD: /usr/local/lib/beszel/beszel-pkg-apply security, /usr/local/lib/beszel/beszel-pkg-apply all
+Defaults:beszel !requiretty
