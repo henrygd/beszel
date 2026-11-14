@@ -254,17 +254,42 @@ func getCreatedTimeField(collectionName string, period time.Time) any {
 	return period.Format(types.DefaultDateLayout)
 }
 
+// maxInClauseIds bounds the number of ids per batched IN query, staying well
+// below SQLite's default parameter limit of 999 variables per statement.
+var maxInClauseIds = 500
+
+// fetchStatsBlobs fetches the stats blobs for the given record ids in batches,
+// replacing one query per record with one query per batch. Records that no
+// longer exist are omitted from the result.
+func fetchStatsBlobs(db dbx.Builder, table string, records RecordIds) (blobs [][]byte, err error) {
+	blobs = make([][]byte, 0, len(records))
+	for start := 0; start < len(records); start += maxInClauseIds {
+		end := min(start+maxInClauseIds, len(records))
+		ids := make([]any, 0, end-start)
+		for _, rec := range records[start:end] {
+			ids = append(ids, rec.Id)
+		}
+		var rows []StatsRecord
+		if err = db.Select("stats").From(table).Where(dbx.In("id", ids...)).All(&rows); err != nil {
+			return blobs, err
+		}
+		for _, row := range rows {
+			blobs = append(blobs, row.Stats)
+		}
+	}
+	return blobs, nil
+}
+
 // Calculate the average stats of a list of system_stats records without reflect
 func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *system.Stats {
-	stats := make([]system.Stats, 0, len(records))
-	var row StatsRecord
-	params := make(dbx.Params, 1)
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(params).One(&row)
+	blobs, err := fetchStatsBlobs(db, "system_stats", records)
+	if err != nil {
+		rm.app.Logger().Error("failed to fetch system_stats records", "err", err)
+	}
+	stats := make([]system.Stats, 0, len(blobs))
+	for _, blob := range blobs {
 		var s system.Stats
-		if err := json.Unmarshal(row.Stats, &s); err != nil {
+		if err := json.Unmarshal(blob, &s); err != nil {
 			continue
 		}
 		stats = append(stats, s)
@@ -649,15 +674,14 @@ func hasBattery(legacy [2]uint8, batteries map[string]uint8) bool {
 
 // Calculate the average stats of a list of container_stats records
 func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds) []container.Stats {
-	allStats := make([][]container.Stats, 0, len(records))
-	var row StatsRecord
-	params := make(dbx.Params, 1)
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(params).One(&row)
+	blobs, err := fetchStatsBlobs(db, "container_stats", records)
+	if err != nil {
+		rm.app.Logger().Error("failed to fetch container_stats records", "err", err)
+	}
+	allStats := make([][]container.Stats, 0, len(blobs))
+	for _, blob := range blobs {
 		var cs []container.Stats
-		if err := json.Unmarshal(row.Stats, &cs); err != nil {
+		if err := json.Unmarshal(blob, &cs); err != nil {
 			return []container.Stats{}
 		}
 		allStats = append(allStats, cs)

@@ -3,12 +3,14 @@
 package records_test
 
 import (
+	"fmt"
 	"sort"
 	"testing"
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/records"
+	"github.com/henrygd/beszel/internal/tests"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -898,4 +900,133 @@ func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
 	require.Len(t, result.ZfsPools, 1)
 	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
 	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
+}
+
+func TestAverageSystemStats_BatchFetch(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	user, err := tests.CreateUser(hub, "batch@example.com", "testtesttest")
+	require.NoError(t, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "batch-system", "host": "localhost", "port": "45876",
+		"status": "up", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	ids := records.RecordIds{}
+	for _, cpu := range []int{10, 20, 30} {
+		rec, err := tests.CreateRecord(hub, "system_stats", map[string]any{
+			"system": sys.Id, "type": "10m", "stats": fmt.Sprintf(`{"cpu":%d}`, cpu),
+		})
+		require.NoError(t, err)
+		ids = append(ids, records.RecordIds{{Id: rec.Id}}...)
+	}
+	// an id that no longer exists must be skipped
+	ids = append(ids, records.RecordIds{{Id: "missing"}}...)
+
+	rm := records.NewRecordManager(hub)
+	result := rm.AverageSystemStats(hub.DB(), ids)
+	require.NotNil(t, result)
+	assert.Equal(t, 20.0, result.Cpu)
+}
+
+func TestAverageSystemStats_ChunkedBatchFetch(t *testing.T) {
+	restore := records.WithMaxInClauseIds(2)
+	defer restore()
+
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	user, err := tests.CreateUser(hub, "chunk@example.com", "testtesttest")
+	require.NoError(t, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "chunk-system", "host": "localhost", "port": "45876",
+		"status": "up", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	ids := records.RecordIds{}
+	for _, cpu := range []int{2, 4, 6, 8, 10} {
+		rec, err := tests.CreateRecord(hub, "system_stats", map[string]any{
+			"system": sys.Id, "type": "10m", "stats": fmt.Sprintf(`{"cpu":%d}`, cpu),
+		})
+		require.NoError(t, err)
+		ids = append(ids, records.RecordIds{{Id: rec.Id}}...)
+	}
+
+	rm := records.NewRecordManager(hub)
+	result := rm.AverageSystemStats(hub.DB(), ids)
+	require.NotNil(t, result)
+	assert.Equal(t, 6.0, result.Cpu)
+}
+
+func TestAverageContainerStats_BatchFetch(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	user, err := tests.CreateUser(hub, "container-batch@example.com", "testtesttest")
+	require.NoError(t, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "container-batch-system", "host": "localhost", "port": "45876",
+		"status": "up", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	ids := records.RecordIds{}
+	for _, stats := range []string{
+		`[{"n":"web","c":10,"m":100},{"n":"db","c":30,"m":300}]`,
+		`[{"n":"web","c":20,"m":200}]`,
+	} {
+		rec, err := tests.CreateRecord(hub, "container_stats", map[string]any{
+			"system": sys.Id, "type": "10m", "stats": stats,
+		})
+		require.NoError(t, err)
+		ids = append(ids, records.RecordIds{{Id: rec.Id}}...)
+	}
+	// an id that no longer exists must be skipped
+	ids = append(ids, records.RecordIds{{Id: "missing"}}...)
+
+	rm := records.NewRecordManager(hub)
+	result := rm.AverageContainerStats(hub.DB(), ids)
+	require.Len(t, result, 2)
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	assert.Equal(t, "db", result[0].Name)
+	assert.Equal(t, 15.0, result[0].Cpu)
+	assert.Equal(t, 150.0, result[0].Mem)
+	assert.Equal(t, "web", result[1].Name)
+	assert.Equal(t, 15.0, result[1].Cpu)
+	assert.Equal(t, 150.0, result[1].Mem)
+}
+
+func BenchmarkAverageSystemStats(b *testing.B) {
+	hub, err := tests.NewTestHub(b.TempDir())
+	require.NoError(b, err)
+	defer hub.Cleanup()
+
+	user, err := tests.CreateUser(hub, "bench@example.com", "testtesttest")
+	require.NoError(b, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "bench-system", "host": "localhost", "port": "45876",
+		"status": "up", "users": []string{user.Id},
+	})
+	require.NoError(b, err)
+
+	ids := records.RecordIds{}
+	for range 1000 {
+		rec, err := tests.CreateRecord(hub, "system_stats", map[string]any{
+			"system": sys.Id, "type": "1m", "stats": `{"cpu":10}`,
+		})
+		require.NoError(b, err)
+		ids = append(ids, records.RecordIds{{Id: rec.Id}}...)
+	}
+
+	rm := records.NewRecordManager(hub)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rm.AverageSystemStats(hub.DB(), ids)
+	}
 }
