@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -745,6 +746,153 @@ func TestWebSocketDeadlineCoversSlowCollection(t *testing.T) {
 	if wsDeadline < minimumDeadline {
 		t.Fatalf("WebSocket deadline %s is shorter than the slow-collection window of %s", wsDeadline, minimumDeadline)
 	}
+}
+
+// countingPingHandler is a test WebSocket handler that counts inbound pings and
+// answers them like gws's default handler does.
+type countingPingHandler struct {
+	gws.BuiltinEventHandler
+	pings atomic.Int32
+}
+
+func (h *countingPingHandler) OnPing(conn *gws.Conn, payload []byte) {
+	h.pings.Add(1)
+	h.BuiltinEventHandler.OnPing(conn, payload)
+}
+
+// newTestWSUpstream returns a test WebSocket server that upgrades with handler
+// and the agent client configured to dial it.
+func newTestWSUpstream(t *testing.T, handler gws.Event) (*WebSocketClient, *httptest.Server) {
+	t.Helper()
+	agent := createTestAgent(t)
+	upgrader := gws.NewUpgrader(handler, nil)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r)
+		if err == nil {
+			go conn.ReadLoop()
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	t.Setenv("BESZEL_AGENT_HUB_URL", server.URL)
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	client, err := newWebSocketClient(agent)
+	require.NoError(t, err)
+	return client, server
+}
+
+// TestWebSocketClient_InboundStaleTracking covers the wall-clock liveness audit
+// backing the heartbeat.
+func TestWebSocketClient_InboundStaleTracking(t *testing.T) {
+	client, _ := newTestWSUpstream(t, &gws.BuiltinEventHandler{})
+
+	// A connection that never produced a frame is stale.
+	assert.True(t, client.inboundStale())
+
+	// A freshly marked connection is not stale.
+	client.markInbound()
+	assert.False(t, client.inboundStale())
+
+	// Silence longer than the staleness bound - e.g. a socket that survived a
+	// laptop lid close without ever erroring - must be reported stale. The
+	// timestamp is wall-clock, so time spent suspended counts.
+	client.lastInbound.Store(time.Now().Add(-wsStaleAfter - time.Second).UnixNano())
+	assert.True(t, client.inboundStale())
+}
+
+// TestWebSocketClient_HeartbeatClosesStaleConn reproduces issue #2162: a
+// connection that is open but has produced no inbound traffic for longer than
+// wsStaleAfter - the post-Modern-Standby state, where the socket deadline never
+// surfaced an error - must be closed by the heartbeat so the connection
+// manager's disconnect/reconnect path runs.
+func TestWebSocketClient_HeartbeatClosesStaleConn(t *testing.T) {
+	client, _ := newTestWSUpstream(t, &gws.BuiltinEventHandler{})
+	agent := client.agent
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 2)
+
+	// Drive the upgrade directly instead of Connect so the test controls the
+	// heartbeat; Connect would start its own wsHeartbeatInterval-paced loop.
+	conn, _, err := gws.NewClient(client, client.getOptions())
+	require.NoError(t, err)
+	client.connMu.Lock()
+	client.Conn = conn
+	client.connMu.Unlock()
+	go conn.ReadLoop()
+
+	// ReadLoop's OnOpen marks the connection live; wait for it so it cannot
+	// overwrite the stale timestamp seeded below.
+	require.Eventually(t, func() bool { return client.lastInbound.Load() != 0 },
+		2*time.Second, 5*time.Millisecond, "OnOpen should mark the connection live")
+
+	// Simulate post-resume state: the socket is still open but the last inbound
+	// frame predates the suspend gap.
+	client.lastInbound.Store(time.Now().Add(-wsStaleAfter - time.Minute).UnixNano())
+
+	done := make(chan struct{})
+	t.Cleanup(func() { close(done) })
+	go client.heartbeatLoop(conn, done, 10*time.Millisecond)
+
+	select {
+	case event := <-agent.connectionManager.eventChan:
+		assert.Equal(t, WebSocketDisconnect, event)
+	case <-time.After(5 * time.Second):
+		t.Fatalf("heartbeat did not force a disconnect on a stale connection (stale=%v connNil=%v lastInboundDelta=%v)",
+			client.inboundStale(), client.getConn() == nil,
+			time.Duration(time.Now().UnixNano()-client.lastInbound.Load()))
+	}
+	assert.Eventually(t, func() bool { return client.getConn() == nil },
+		2*time.Second, 10*time.Millisecond, "closed connection should be released")
+}
+
+// TestWebSocketClient_HeartbeatPingsKeepConnAlive verifies the heartbeat sends
+// real pings and that the hub's pongs keep marking the connection live, so a
+// healthy connection is never declared stale.
+func TestWebSocketClient_HeartbeatPingsKeepConnAlive(t *testing.T) {
+	handler := &countingPingHandler{}
+	client, _ := newTestWSUpstream(t, handler)
+	agent := client.agent
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 2)
+
+	require.NoError(t, client.Connect())
+	conn := client.getConn()
+	require.NotNil(t, conn)
+
+	// Connect must bind a heartbeat to the connection's session storage;
+	// startHeartbeat replaces it with a test-paced one.
+	_, bound := conn.Session().Load(wsHeartbeatSessionKey)
+	require.True(t, bound, "Connect should bind a heartbeat to the connection")
+	client.startHeartbeat(conn, 15*time.Millisecond)
+
+	require.Eventually(t, func() bool { return handler.pings.Load() >= 3 },
+		2*time.Second, 5*time.Millisecond, "heartbeat should ping the hub")
+	assert.NotNil(t, client.getConn(), "healthy connection must stay open")
+	assert.False(t, client.inboundStale(), "pong replies should refresh inbound liveness")
+	assert.Empty(t, agent.connectionManager.eventChan)
+}
+
+// TestWebSocketClient_CloseStopsHeartbeat verifies that closing the connection
+// stops its session-bound heartbeat so no pings continue on a dead connection.
+func TestWebSocketClient_CloseStopsHeartbeat(t *testing.T) {
+	handler := &countingPingHandler{}
+	client, _ := newTestWSUpstream(t, handler)
+	agent := client.agent
+	agent.connectionManager.eventChan = make(chan ConnectionEvent, 2)
+
+	require.NoError(t, client.Connect())
+	conn := client.getConn()
+	require.NotNil(t, conn)
+	client.startHeartbeat(conn, 15*time.Millisecond)
+
+	require.Eventually(t, func() bool { return handler.pings.Load() >= 1 },
+		2*time.Second, 5*time.Millisecond, "heartbeat should ping before close")
+
+	client.Close()
+	pingsAfterClose := handler.pings.Load()
+	time.Sleep(60 * time.Millisecond)
+
+	assert.LessOrEqual(t, handler.pings.Load(), pingsAfterClose+1,
+		"no heartbeat pings should be sent after Close")
+	assert.Nil(t, client.getConn())
 }
 
 // TestGetHubHeaders covers HUB_HEADERS parsing

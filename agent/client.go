@@ -14,6 +14,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel"
@@ -32,6 +33,19 @@ const (
 	// Keep the connection alive long enough for a slow collection cycle to
 	// finish before the hub considers the agent disconnected.
 	wsDeadline = 120 * time.Second
+	// wsHeartbeatInterval is how often the client pings the hub and audits the
+	// connection for inbound liveness while a WebSocket is open.
+	wsHeartbeatInterval = 30 * time.Second
+	// wsStaleAfter bounds how long the connection may go without any inbound
+	// frame before the client treats it as dead. It mirrors wsDeadline but is
+	// enforced by the heartbeat against the wall clock: the socket deadline
+	// runs on the runtime's monotonic timers, which are not reliable across
+	// Windows suspend/hibernate cycles, so a connection that survived a sleep
+	// can otherwise stay wedged open indefinitely (issue #2162).
+	wsStaleAfter = wsDeadline
+	// wsHeartbeatSessionKey stores a connection's heartbeat handle in its
+	// session storage.
+	wsHeartbeatSessionKey = "wsHeartbeat"
 )
 
 // errNoHubURL is returned when HUB_URL is unset. This is not a failure
@@ -70,6 +84,7 @@ type WebSocketClient struct {
 	hubVerified        bool                                // Whether the hub has been cryptographically verified
 	tlsConfig          *tls.Config                         // Optional TLS configuration with custom CA certificates
 	hubHeaders         http.Header                         // Extra request headers from HUB_HEADERS
+	lastInbound        atomic.Int64                        // Wall-clock unix nanos of the last inbound frame on the active connection
 }
 
 // newWebSocketClient creates a new WebSocket client for the given agent.
@@ -292,6 +307,12 @@ func (client *WebSocketClient) Connect() (err error) {
 	client.hubVerified = false
 	client.connMu.Unlock()
 
+	// The completed upgrade is itself inbound traffic; marking it here keeps a
+	// heartbeat tick that lands before OnOpen from seeing a never-used - or a
+	// previous connection's - timestamp.
+	client.markInbound()
+	client.startHeartbeat(conn, wsHeartbeatInterval)
+
 	go conn.ReadLoop()
 
 	return nil
@@ -301,11 +322,13 @@ func (client *WebSocketClient) Connect() (err error) {
 // It sets a deadline for the connection to prevent hanging.
 func (client *WebSocketClient) OnOpen(conn *gws.Conn) {
 	conn.SetDeadline(time.Now().Add(wsDeadline))
+	client.markInbound()
 }
 
 // OnClose handles WebSocket connection closure.
 // It logs the closure reason and notifies the connection manager.
 func (client *WebSocketClient) OnClose(conn *gws.Conn, err error) {
+	stopHeartbeat(conn)
 	client.connMu.Lock()
 	if client.Conn != conn {
 		client.connMu.Unlock()
@@ -328,6 +351,7 @@ func (client *WebSocketClient) OnMessage(conn *gws.Conn, message *gws.Message) {
 		return
 	}
 	conn.SetDeadline(time.Now().Add(wsDeadline))
+	client.markInbound()
 
 	if message.Opcode != gws.OpcodeBinary {
 		return
@@ -351,6 +375,93 @@ func (client *WebSocketClient) OnMessage(conn *gws.Conn, message *gws.Message) {
 func (client *WebSocketClient) OnPing(conn *gws.Conn, message []byte) {
 	conn.SetDeadline(time.Now().Add(wsDeadline))
 	conn.WritePong(message)
+	if client.getConn() == conn {
+		client.markInbound()
+	}
+}
+
+// OnPong handles pong responses to heartbeat pings. A pong proves the hub is
+// still reading the connection, so like any other inbound frame it refreshes
+// the deadline and the liveness timestamp.
+func (client *WebSocketClient) OnPong(conn *gws.Conn, message []byte) {
+	conn.SetDeadline(time.Now().Add(wsDeadline))
+	if client.getConn() == conn {
+		client.markInbound()
+	}
+}
+
+// markInbound records wall-clock receipt of a frame from the hub. The wall
+// clock is deliberate: the staleness check must measure real elapsed time so
+// silence that spans a system suspend is still counted.
+func (client *WebSocketClient) markInbound() {
+	client.lastInbound.Store(time.Now().UnixNano())
+}
+
+// inboundStale reports whether the connection has produced no inbound traffic
+// for longer than wsStaleAfter of wall-clock time.
+func (client *WebSocketClient) inboundStale() bool {
+	return time.Duration(time.Now().UnixNano()-client.lastInbound.Load()) > wsStaleAfter
+}
+
+// wsHeartbeat is the per-connection handle used to stop heartbeatLoop exactly
+// once when the connection it watches is closed or superseded.
+type wsHeartbeat struct {
+	done chan struct{}
+	once sync.Once
+}
+
+func (h *wsHeartbeat) stop() {
+	h.once.Do(func() { close(h.done) })
+}
+
+// startHeartbeat binds a heartbeat goroutine to conn's session storage so it
+// can be stopped from Close or OnClose, whichever runs first.
+func (client *WebSocketClient) startHeartbeat(conn *gws.Conn, interval time.Duration) {
+	stopHeartbeat(conn)
+	hb := &wsHeartbeat{done: make(chan struct{})}
+	conn.Session().Store(wsHeartbeatSessionKey, hb)
+	go client.heartbeatLoop(conn, hb.done, interval)
+}
+
+// stopHeartbeat stops the heartbeat bound to conn, if one is running.
+func stopHeartbeat(conn *gws.Conn) {
+	if conn == nil || conn.Session() == nil {
+		return
+	}
+	if hb, ok := conn.Session().Load(wsHeartbeatSessionKey); ok {
+		conn.Session().Delete(wsHeartbeatSessionKey)
+		hb.(*wsHeartbeat).stop()
+	}
+}
+
+// heartbeatLoop pings the hub and audits inbound liveness on interval until the
+// connection's heartbeat is stopped or the client moves to a different
+// connection. When inbound traffic stops for longer than wsStaleAfter of
+// wall-clock time - as happens when a socket deadline silently survives system
+// suspend - the connection is closed so the normal disconnect path runs.
+func (client *WebSocketClient) heartbeatLoop(conn *gws.Conn, done <-chan struct{}, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-done:
+			return
+		case <-ticker.C:
+			if client.getConn() != conn {
+				return
+			}
+			if client.inboundStale() {
+				slog.Warn("WebSocket heartbeat lost", "host", client.hubURL.Host)
+				client.Close()
+				return
+			}
+			// A failed ping tears the socket down via gws's write-error path,
+			// which surfaces as WebSocketDisconnect through OnClose.
+			if err := conn.WritePing(nil); err != nil {
+				return
+			}
+		}
+	}
 }
 
 // handleAuthChallenge verifies the authenticity of the hub and returns the system's fingerprint.
@@ -408,6 +519,7 @@ func (client *WebSocketClient) verifySignature(signature []byte) (err error) {
 // This method is safe to call multiple times.
 func (client *WebSocketClient) Close() {
 	if conn := client.getConn(); conn != nil {
+		stopHeartbeat(conn)
 		_ = conn.WriteClose(1000, nil)
 	}
 }
