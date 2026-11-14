@@ -6,11 +6,13 @@ package agent
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"embed"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -60,11 +62,14 @@ func newlhmProcess() (*lhmProcess, error) {
 		return nil, fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	// Only copy if executable doesn't exist
-	if _, err := os.Stat(execPath); os.IsNotExist(err) {
-		if err := copyEmbeddedDir(lhmFs, "lhm/bin/Release/net48", destDir); err != nil {
+	// Copy on every start so an upgraded agent replaces an older helper left in
+	// the temp directory. Files that are already up to date are not rewritten.
+	if err := copyEmbeddedDir(lhmFs, "lhm/bin/Release/net48", destDir); err != nil {
+		if _, statErr := os.Stat(execPath); statErr != nil {
 			return nil, fmt.Errorf("failed to copy embedded directory: %w", err)
 		}
+		// keep using the existing copy, for example if its files are in use
+		slog.Warn("Failed to update LHM helper, using existing copy", "err", err)
 	}
 
 	lhm := &lhmProcess{
@@ -254,9 +259,10 @@ func (lhm *lhmProcess) cleanup() {
 	}
 }
 
-// copyEmbeddedDir copies the embedded directory to the destination path
-func copyEmbeddedDir(fs embed.FS, srcPath, destPath string) error {
-	entries, err := fs.ReadDir(srcPath)
+// copyEmbeddedDir copies the embedded directory to the destination path,
+// skipping files whose content is already the same
+func copyEmbeddedDir(fsys fs.FS, srcPath, destPath string) error {
+	entries, err := fs.ReadDir(fsys, srcPath)
 	if err != nil {
 		return err
 	}
@@ -269,15 +275,19 @@ func copyEmbeddedDir(fs embed.FS, srcPath, destPath string) error {
 		destEntryPath := filepath.Join(destPath, entry.Name())
 
 		if entry.IsDir() {
-			if err := copyEmbeddedDir(fs, srcEntryPath, destEntryPath); err != nil {
+			if err := copyEmbeddedDir(fsys, srcEntryPath, destEntryPath); err != nil {
 				return err
 			}
 			continue
 		}
 
-		data, err := fs.ReadFile(srcEntryPath)
+		data, err := fs.ReadFile(fsys, srcEntryPath)
 		if err != nil {
 			return err
+		}
+
+		if existing, err := os.ReadFile(destEntryPath); err == nil && bytes.Equal(existing, data) {
+			continue
 		}
 
 		if err := os.WriteFile(destEntryPath, data, 0755); err != nil {
