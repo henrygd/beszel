@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"os"
 	"os/exec"
 	"path"
@@ -50,6 +51,41 @@ var (
 )
 
 var errNoSensors = errors.New("no sensors found (try running as admin with LHM=true)")
+
+// lhmFanReadings holds the fan speeds from the latest LHM sensor read. LHM reports
+// fans alongside temperatures, and a timed-out read may still finish in the background.
+type lhmFanReadings struct {
+	mu  sync.Mutex
+	rpm map[string]uint16
+}
+
+var lhmFans lhmFanReadings
+
+func (f *lhmFanReadings) set(rpm map[string]uint16) {
+	f.mu.Lock()
+	f.rpm = rpm
+	f.mu.Unlock()
+}
+
+// take returns the latest readings and clears them, so a failed or skipped
+// temperature read never reports the same fan speeds twice.
+func (f *lhmFanReadings) take() map[string]uint16 {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	rpm := f.rpm
+	f.rpm = nil
+	return rpm
+}
+
+// parseLHMFan parses the name and value of a "fan|<name>|<rpm>" line from the LHM helper.
+func parseLHMFan(name, value string) (string, uint16, bool) {
+	name = strings.TrimSpace(name)
+	rpm, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
+	if name == "" || err != nil || math.IsNaN(rpm) || rpm < 0 {
+		return "", 0, false
+	}
+	return name, uint16(min(math.Round(rpm), math.MaxUint16)), true
+}
 
 // newlhmProcess copies the embedded LHM executable to a temporary directory and starts it.
 func newlhmProcess() (*lhmProcess, error) {
@@ -161,6 +197,7 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 	}
 
 	// Read all sensor lines until we hit an empty line or EOF
+	fans := make(map[string]uint16)
 	for lhm.scanner.Scan() {
 		line := strings.TrimSpace(lhm.scanner.Text())
 		if line == "" {
@@ -168,6 +205,14 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 		}
 
 		parts := strings.Split(line, "|")
+		if len(parts) == 3 && parts[0] == "fan" {
+			if name, rpm, ok := parseLHMFan(parts[1], parts[2]); ok {
+				fans[name] = rpm
+			} else {
+				slog.Debug("Invalid fan sensor", "line", line)
+			}
+			continue
+		}
 		if len(parts) != 2 {
 			slog.Debug("Invalid sensor format", "line", line)
 			continue
@@ -198,8 +243,10 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 		return temps, err
 	}
 
+	lhmFans.set(fans)
+
 	// Handle no sensors case
-	if len(temps) == 0 {
+	if len(temps) == 0 && len(fans) == 0 {
 		lhm.consecutiveNoSensors++
 		if lhm.consecutiveNoSensors >= 3 {
 			lhm.stoppedNoSensors = true
@@ -211,6 +258,9 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 
 	lhm.consecutiveNoSensors = 0
 
+	if len(temps) == 0 {
+		return sensors.TemperaturesWithContext(ctx)
+	}
 	return temps, nil
 }
 

@@ -51,12 +51,13 @@ class Program
     var updated = false;
     foreach (var sensor in hardware.Sensors)
     {
-      if (sensor.SensorType != SensorType.Temperature ||
+      var isFan = sensor.SensorType == SensorType.Fan;
+      if (!isFan && (sensor.SensorType != SensorType.Temperature ||
           sensor.Name.IndexOf("Distance", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Limit", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Critical", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Warning", StringComparison.OrdinalIgnoreCase) >= 0 ||
-          sensor.Name.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0)
+          sensor.Name.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0))
       {
         continue;
       }
@@ -82,6 +83,14 @@ class Program
         continue;
       }
 
+      if (isFan)
+      {
+        // fan lines are "fan|<chip>_<name>|<rpm>", keyed like Linux hwmon fans
+        var rpm = temperature.Value.ToString("0", CultureInfo.InvariantCulture);
+        writer.WriteLine($"fan|{ChipName(hardware)}_{sensor.Name}|{rpm}");
+        continue;
+      }
+
       var name = sensor.Name;
       // if sensor.Name starts with "Temperature" replace with hardware.Identifier but retain the rest of the name.
       // usually this is a number like Temperature 3
@@ -95,5 +104,20 @@ class Program
       // write the name and value to the writer
       writer.WriteLine($"{name}|{value}");
     }
+  }
+
+  // ChipName returns the hardware's chip from its identifier, for example
+  // "nct6687d" for "/lpc/nct6687d/0" or "gpu-nvidia" for "/gpu-nvidia/0".
+  static string ChipName(IHardware hardware)
+  {
+    var parts = hardware.Identifier.ToString().Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+    for (var i = parts.Length - 1; i >= 0; i--)
+    {
+      if (!int.TryParse(parts[i], out _))
+      {
+        return parts[i];
+      }
+    }
+    return hardware.HardwareType.ToString().ToLowerInvariant();
   }
 }
