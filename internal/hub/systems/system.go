@@ -912,6 +912,25 @@ func (sys *System) FetchPackageUpdatesFromAgent() (system.PackageUpdates, error)
 	return result, err
 }
 
+// ApplyPackageUpdatesOnAgent asks the agent to start installing pending package updates.
+// The agent returns immediately with status "started"/"running"; poll with Mode "status".
+func (sys *System) ApplyPackageUpdatesOnAgent(req common.ApplyPackageUpdatesRequest) (system.PackageUpdatesApplyResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	var result system.PackageUpdatesApplyResult
+	err := sys.request(ctx, common.ApplyPackageUpdates, req, &result)
+	return result, err
+}
+
+// SetPackageUpdatesAutoApplyOnAgent sets the agent's automatic package-update apply mode.
+func (sys *System) SetPackageUpdatesAutoApplyOnAgent(mode string) (system.PackageUpdatesAutoApplyResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	var result system.PackageUpdatesAutoApplyResult
+	err := sys.request(ctx, common.SetPackageUpdatesAutoApply, common.SetPackageUpdatesAutoApplyRequest{Mode: mode}, &result)
+	return result, err
+}
+
 // FetchZfsDataFromAgent fetches ZFS detail data from the agent.
 func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

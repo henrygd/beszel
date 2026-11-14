@@ -97,6 +97,10 @@ msgstr "{totalCount, plural, one {# 個服務} other {# 個服務}}"
 msgid "{value, plural, one {# day} other {# days}}"
 msgstr "{value, plural, one {# 天} other {# 天}}"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "1 day"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1小時"
@@ -114,6 +118,10 @@ msgstr "1 分鐘"
 msgid "1 week"
 msgstr "1週"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "1 year"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "12 hours"
 msgstr "12小時"
@@ -127,6 +135,7 @@ msgstr "15 分鐘"
 msgid "24 hours"
 msgstr "24小時"
 
+#: src/components/routes/settings/api-keys.tsx
 #: src/lib/utils.ts
 msgid "30 days"
 msgstr "30天"
@@ -135,6 +144,14 @@ msgstr "30天"
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 分鐘"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "7 days"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "90 days"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -239,6 +256,47 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
+#: src/components/routes/system/package-updates-table.tsx
+msgid "All updates"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply all"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply all package updates?"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply security"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply security updates?"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Applying package updates"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Applying security updates"
+msgstr ""
+
 #: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
@@ -248,17 +306,35 @@ msgstr "您確定要刪除 {name} 嗎？"
 msgid "Are you sure?"
 msgstr "您確定嗎？"
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Auto-apply"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Auto-apply updated"
+msgstr ""
+
+#. placeholder {0}: data.autoApply
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Auto-apply: {0}"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "自動複製需要安全的上下文。"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "可用"
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Automatic package updates are off for this host."
+msgstr ""
 
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr "可用"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "可用"
 
@@ -410,7 +486,9 @@ msgstr "可停止"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -590,6 +668,7 @@ msgstr "容器"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "繼續"
@@ -653,6 +732,10 @@ msgstr "複製下面的代理程式安裝指令，或使用<0>通用令牌</0>�
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "複製下面的代理程式<0>docker-compose.yml</0>內容，或使用<1>通用令牌</1>自動註冊代理程式。"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
 msgid "Copy token"
@@ -711,6 +794,11 @@ msgstr "建立"
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "創建帳戶"
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
@@ -942,6 +1030,7 @@ msgstr "臨時"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -953,6 +1042,10 @@ msgstr "臨時"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "錯誤"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
@@ -981,6 +1074,14 @@ msgstr "退出活動狀態"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "已過期"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -1013,6 +1114,11 @@ msgstr "失敗屬性："
 #: src/lib/alerts.ts
 msgid "Failed Services"
 msgstr "失敗的服務"
+
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to apply package updates"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -1048,6 +1154,11 @@ msgstr "發送測試通知失敗"
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
+
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to update auto-apply"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to update monitors."
@@ -1468,6 +1579,10 @@ msgstr "公共接口的網絡流量"
 msgid "Network unit"
 msgstr "網路單位"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Never"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1529,6 +1644,10 @@ msgstr "通知可能包含最近的容器日誌片段。"
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "支援 OAuth 2 / OIDC"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Off"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
@@ -1597,6 +1716,10 @@ msgstr "軟件包"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Package Updates"
 msgstr "軟件包更新"
+
+#: src/components/routes/system/package-updates-table.tsx
+#~ msgid "Package updates applied"
+#~ msgstr ""
 
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Packet loss (%)"
@@ -1888,6 +2011,26 @@ msgstr "顯示令牌"
 msgid "Revision"
 msgstr "修訂"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1975,6 +2118,14 @@ msgid "Security"
 msgstr "安全性"
 
 #: src/components/routes/system/package-updates-table.tsx
+msgid "Security only"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+#~ msgid "Security updates applied"
+#~ msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Security: {securityCount}"
 msgstr "安全性：{securityCount}"
 
@@ -2022,6 +2173,10 @@ msgstr "定期向外部監控服務發送出站 ping，以便您在不將 Beszel
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
 msgstr "發送測試 heartbeat"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
@@ -2214,6 +2369,10 @@ msgstr "測試 heartbeat"
 msgid "Test notification sent"
 msgstr "測試通知已發送"
 
+#: src/components/routes/system/package-updates-table.tsx
+msgid "The list will refresh when the agent reports new counts."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
 msgstr "當所有系統都正常運行時，整體狀態為 <0>正常</0>；當觸發警報時為 <1>警告</1>；當任何系統故障時為 <2>錯誤</2>。"
@@ -2226,10 +2385,22 @@ msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
 
+#: src/components/routes/system/package-updates-table.tsx
+msgid "This host will auto-apply all updates."
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "This host will auto-apply security updates."
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "這將從資料庫中永久刪除所有選定的記錄。"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "This will run the host package manager on this system. Reboots are not triggered automatically."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
@@ -2412,6 +2583,11 @@ msgstr "通用令牌"
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "未知"
+
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Unknown error"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

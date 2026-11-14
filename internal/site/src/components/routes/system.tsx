@@ -75,8 +75,14 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
-	// counts key the table so it refetches the list only after a new check
-	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
+	// Show package updates for any up system so auto-apply controls stay available
+	// even when the agent omits pu while up to date. Prefer reported counts when present.
+	const packageUpdates =
+		system.status === SystemStatus.Up
+			? Array.isArray(system.info.pu)
+				? system.info.pu.join(",")
+				: "0"
+			: ""
 
 	// keep tabsRef in sync for keyboard navigation
 	const tabs = ["core", "network", "disk"]

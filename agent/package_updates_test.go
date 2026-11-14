@@ -525,7 +525,7 @@ func TestGetPackageUpdatesHandler(t *testing.T) {
 
 	// no supported package manager
 	require.NoError(t, handler.Handle(hctx))
-	assert.Equal(t, system.PackageUpdates{}, sent)
+	assert.Equal(t, system.PackageUpdates{ApplyEnabled: packageUpdatesApplyEnabled()}, sent)
 
 	packages := []system.PackageUpdate{{Name: "musl", Current: "1.2.5-r0", Available: "1.2.5-r3"}}
 	hctx.Agent.packageUpdates = &packageUpdatesManager{
@@ -534,7 +534,12 @@ func TestGetPackageUpdatesHandler(t *testing.T) {
 		checkedAt: time.Unix(1700000000, 0),
 	}
 	require.NoError(t, handler.Handle(hctx))
-	assert.Equal(t, system.PackageUpdates{Manager: "apk", CheckedAt: 1700000000, Packages: packages}, sent)
+	assert.Equal(t, system.PackageUpdates{
+		Manager:      "apk",
+		CheckedAt:    1700000000,
+		Packages:     packages,
+		ApplyEnabled: packageUpdatesApplyEnabled(),
+	}, sent)
 }
 
 func TestPacmanCheckSync(t *testing.T) {

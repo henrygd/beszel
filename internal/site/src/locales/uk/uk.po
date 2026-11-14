@@ -97,6 +97,10 @@ msgstr "{totalCount, plural, one {# служба} few {# служби} many {# �
 msgid "{value, plural, one {# day} other {# days}}"
 msgstr "{value, plural, one {# день} few {# дні} many {# днів} other {# дня}}"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "1 day"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 година"
@@ -114,6 +118,10 @@ msgstr "1 хвилина"
 msgid "1 week"
 msgstr "1 тиждень"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "1 year"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "12 hours"
 msgstr "12 годин"
@@ -127,6 +135,7 @@ msgstr "15 хв"
 msgid "24 hours"
 msgstr "24 години"
 
+#: src/components/routes/settings/api-keys.tsx
 #: src/lib/utils.ts
 msgid "30 days"
 msgstr "30 днів"
@@ -135,6 +144,14 @@ msgstr "30 днів"
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 хв"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "7 days"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "90 days"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -239,6 +256,47 @@ msgstr "Всі контейнери"
 msgid "All Systems"
 msgstr "Всі системи"
 
+#: src/components/routes/system/package-updates-table.tsx
+msgid "All updates"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply all"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply all package updates?"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply security"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Apply security updates?"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Applying package updates"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Applying security updates"
+msgstr ""
+
 #: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ви впевнені, що хочете видалити {name}?"
@@ -248,17 +306,35 @@ msgstr "Ви впевнені, що хочете видалити {name}?"
 msgid "Are you sure?"
 msgstr "Ви впевнені?"
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Auto-apply"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Auto-apply updated"
+msgstr ""
+
+#. placeholder {0}: data.autoApply
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Auto-apply: {0}"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматичне копіювання вимагає безпечного контексту."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
-msgid "Available"
-msgstr "Доступно"
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Automatic package updates are off for this host."
+msgstr ""
 
 #. Package version available to install
 #: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr "Доступно"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Доступно"
 
@@ -410,7 +486,9 @@ msgstr "Може зупинити"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Скасувати"
@@ -590,6 +668,7 @@ msgstr "Контейнери"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Продовжити"
@@ -653,6 +732,10 @@ msgstr "Скопіюйте наведену нижче команду встан
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Скопіюйте вміст <0>docker-compose.yml</0> для агента нижче, або зареєструйте агентів автоматично за допомогою <1>універсального токена</1>."
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
 msgid "Copy token"
@@ -711,6 +794,11 @@ msgstr "Створити"
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Створити обліковий запис"
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
@@ -942,6 +1030,7 @@ msgstr "Тимчасовий"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -953,6 +1042,10 @@ msgstr "Тимчасовий"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Помилка"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
@@ -981,6 +1074,14 @@ msgstr "Завершилося активно"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Термін дії закінчився"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -1013,6 +1114,11 @@ msgstr "Невдалі атрибути:"
 #: src/lib/alerts.ts
 msgid "Failed Services"
 msgstr "Служби з помилкою"
+
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to apply package updates"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -1048,6 +1154,11 @@ msgstr "Не вдалося надіслати тестове сповіщенн
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "Не вдалося оновити сповіщення"
+
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to update auto-apply"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to update monitors."
@@ -1468,6 +1579,10 @@ msgstr "Мережевий трафік публічних інтерфейсі�
 msgid "Network unit"
 msgstr "Одиниця виміру мережі"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Never"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1529,6 +1644,10 @@ msgstr "Сповіщення можуть містити фрагменти ос
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "Підтримка OAuth 2 / OIDC"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Off"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
@@ -1597,6 +1716,10 @@ msgstr "Пакет"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Package Updates"
 msgstr "Оновлення пакетів"
+
+#: src/components/routes/system/package-updates-table.tsx
+#~ msgid "Package updates applied"
+#~ msgstr ""
 
 #: src/components/routes/system/charts/monitors-charts.tsx
 msgid "Packet loss (%)"
@@ -1888,6 +2011,26 @@ msgstr "Показати токен"
 msgid "Revision"
 msgstr "Ревізія"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1975,6 +2118,14 @@ msgid "Security"
 msgstr "Безпека"
 
 #: src/components/routes/system/package-updates-table.tsx
+msgid "Security only"
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+#~ msgid "Security updates applied"
+#~ msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Security: {securityCount}"
 msgstr "Безпека: {securityCount}"
 
@@ -2022,6 +2173,10 @@ msgstr "Надсилайте періодичні вихідні пінги на
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
 msgstr "Надіслати тестовий heartbeat"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
@@ -2214,6 +2369,10 @@ msgstr "Тестовий heartbeat"
 msgid "Test notification sent"
 msgstr "Тестове сповіщення надіслано"
 
+#: src/components/routes/system/package-updates-table.tsx
+msgid "The list will refresh when the agent reports new counts."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
 msgstr "Загальний статус: <0>ok</0>, коли всі системи працюють, <1>попередження</1>, коли спрацювали сповіщення, і <2>помилка</2>, коли будь-яка система відключена."
@@ -2226,10 +2385,22 @@ msgstr "Потім увійдіть у бекенд і скиньте парол
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Цю дію не можна скасувати. Це назавжди видалить всі поточні записи для {name} з бази даних."
 
+#: src/components/routes/system/package-updates-table.tsx
+msgid "This host will auto-apply all updates."
+msgstr ""
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "This host will auto-apply security updates."
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "Це назавжди видалить усі вибрані записи з бази даних."
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "This will run the host package manager on this system. Reboots are not triggered automatically."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "Throughput of {extraFsName}"
@@ -2412,6 +2583,11 @@ msgstr "Універсальний токен"
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Невідомо"
+
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Unknown error"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

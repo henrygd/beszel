@@ -45,12 +45,19 @@ type packageUpdatesCheck func(ctx context.Context) (packageUpdatesResult, error)
 // updates in the background and caches the result, so checks never delay metrics.
 type packageUpdatesManager struct {
 	sync.Mutex
-	name      string
-	check     packageUpdatesCheck
-	interval  time.Duration
-	result    packageUpdatesResult
-	checkedAt time.Time
-	running   bool
+	name            string
+	dataDir         string
+	check           packageUpdatesCheck
+	interval        time.Duration
+	result          packageUpdatesResult
+	checkedAt       time.Time
+	running         bool
+	applying        bool
+	applyResult     *system.PackageUpdatesApplyResult
+	lastAutoApplyAt time.Time
+	// autoApplyOverride is set when the hub UI chooses a mode; empty means use env/default.
+	autoApplyOverride string
+	autoApplyLoaded   bool
 }
 
 // newPackageUpdatesManager returns nil if disabled or no supported package manager
@@ -69,8 +76,14 @@ func newPackageUpdatesManager(dataDir string) *packageUpdatesManager {
 	if check == nil {
 		return nil
 	}
-	slog.Debug("Package updates", "manager", name, "interval", interval)
-	return &packageUpdatesManager{name: name, check: check, interval: interval}
+	pm := &packageUpdatesManager{name: name, dataDir: dataDir, check: check, interval: interval}
+	autoMode := pm.autoApplyMode()
+	if autoMode != "" {
+		slog.Info("Package updates", "manager", name, "interval", interval, "autoApply", autoMode)
+	} else {
+		slog.Debug("Package updates", "manager", name, "interval", interval)
+	}
+	return pm
 }
 
 // packageUpdatesInterval reads PACKAGE_UPDATES_INTERVAL as a Go duration such as
@@ -109,13 +122,25 @@ func (pm *packageUpdatesManager) get(now time.Time) []uint16 {
 func (pm *packageUpdatesManager) list() system.PackageUpdates {
 	pm.Lock()
 	defer pm.Unlock()
+	applyEnabled := packageUpdatesApplyEnabled()
+	autoMode := pm.autoApplyModeLocked()
+	// When apply is enabled, expose "off" explicitly so the hub UI dropdown can
+	// round-trip Off without falling back to the default "all".
+	if applyEnabled && autoMode == "" {
+		autoMode = "off"
+	}
 	data := system.PackageUpdates{
 		Manager:       pm.name,
 		SecurityKnown: pm.result.securityKnown,
 		Packages:      pm.result.packages,
+		ApplyEnabled:  applyEnabled,
+		AutoApply:     autoMode,
 	}
 	if !pm.checkedAt.IsZero() {
 		data.CheckedAt = pm.checkedAt.Unix()
+	}
+	if !pm.lastAutoApplyAt.IsZero() {
+		data.LastAutoApplyAt = pm.lastAutoApplyAt.Unix()
 	}
 	return data
 }
@@ -133,6 +158,7 @@ func (pm *packageUpdatesManager) refresh() {
 	pm.checkedAt = time.Now()
 	pm.running = false
 	pm.Unlock()
+	pm.maybeAutoApply()
 }
 
 func runningInContainer() bool {

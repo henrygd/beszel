@@ -30,6 +30,10 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Apply pending package updates on the agent host (opt-in)
+	ApplyPackageUpdates
+	// Set automatic package-update apply mode on the agent (all|security|off)
+	SetPackageUpdatesAutoApply
 	// Add new actions here...
 )
 
@@ -90,4 +94,20 @@ type SystemdInfoRequest struct {
 
 type SystemdLogsRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
+}
+
+// ApplyPackageUpdatesRequest asks the agent to install pending package updates.
+// Mode is "all", "security", or "status" (poll). Packages from the wire are ignored;
+// the agent only applies names from its local pending cache. Auto marks an
+// agent-initiated automatic apply (PACKAGE_UPDATES_AUTO_APPLY).
+type ApplyPackageUpdatesRequest struct {
+	Mode     string   `cbor:"0,keyasint,omitempty" json:"mode,omitempty"`
+	Packages []string `cbor:"1,keyasint,omitempty" json:"packages,omitempty"` // ignored
+	Auto     bool     `cbor:"2,keyasint,omitempty" json:"auto,omitempty"`
+}
+
+// SetPackageUpdatesAutoApplyRequest sets the agent's automatic apply mode.
+// Mode is "all", "security", or "off".
+type SetPackageUpdatesAutoApplyRequest struct {
+	Mode string `cbor:"0,keyasint,omitempty" json:"mode,omitempty"`
 }
