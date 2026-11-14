@@ -22,7 +22,7 @@ import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemS
 import { $userSettings } from "@/lib/stores"
 import { cn, decimalString, formatBytes, formatTemperature, parseSemVer, secondsToUptimeString } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiSignalState } from "@/lib/wifi"
+import { connectedWiFi, strongestWiFi, strongestWiFiSignal, wifiNetworkName, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -350,7 +350,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 										</div>
 										<div className="flex gap-2 items-center text-xs">
 											<WiFiSignal wifi={wifi} className="shrink-0" />
-											{wifi.s && <span className="truncate max-w-40">{wifi.s}</span>}
+											{(wifi.s || wifi.p) && <span className="truncate max-w-40">{wifiNetworkName(wifi)}</span>}
 										</div>
 									</div>
 								))}

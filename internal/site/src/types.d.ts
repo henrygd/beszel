@@ -37,6 +37,8 @@ export interface SystemRecord extends RecordModel {
 export interface WiFi {
 	s?: string
 	r?: number
+	/** connection profile name (Windows), only sent when it differs from the SSID */
+	p?: string
 }
 
 export interface SystemInfo {

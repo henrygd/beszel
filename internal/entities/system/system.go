@@ -17,6 +17,8 @@ import (
 type WiFi struct {
 	SSID   string   `json:"s,omitempty" cbor:"0,keyasint,omitempty"`
 	Signal *float64 `json:"r,omitempty" cbor:"1,keyasint,omitempty"`
+	// Profile is the connection profile name (Windows only), set when it differs from the SSID
+	Profile string `json:"p,omitempty" cbor:"3,keyasint,omitempty"`
 }
 
 type Stats struct {

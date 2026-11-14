@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test"
 import { MeterState } from "@/lib/enums"
-import { connectedWiFi, strongestWiFiSignal, wifiColor, wifiSignalState } from "./wifi"
+import { connectedWiFi, strongestWiFiSignal, wifiColor, wifiNetworkName, wifiSignalState } from "./wifi"
 import type { SystemInfo } from "@/types"
 
 const system = (wf?: SystemInfo["wf"], status: "up" | "down" = "up") => ({ status, info: { wf } as SystemInfo })
@@ -37,4 +37,11 @@ test("wifiSignalState thresholds", () => {
 	expect(wifiSignalState(-66)).toBe(MeterState.Warn)
 	expect(wifiSignalState(-75)).toBe(MeterState.Warn)
 	expect(wifiSignalState(-76)).toBe(MeterState.Crit)
+})
+
+test("wifiNetworkName adds the profile name when it differs from the SSID", () => {
+	expect(wifiNetworkName({ s: "WiFi", r: -50 })).toBe("WiFi")
+	expect(wifiNetworkName({ s: "WiFi", p: "WiFi-B" })).toBe("WiFi · WiFi-B")
+	expect(wifiNetworkName({ p: "WiFi-B" })).toBe("WiFi-B")
+	expect(wifiNetworkName({ r: -50 })).toBe("")
 })

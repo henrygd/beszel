@@ -1,7 +1,8 @@
 # Connected Wi-Fi signal
 
 Reports connected station interfaces only (no scans). `info.wf` holds the current
-snapshot keyed by interface (`s` SSID, `r` RSSI in dBm when available);
+snapshot keyed by interface (`s` SSID, `r` RSSI in dBm when available, `p`
+profile name on Windows when it differs from the SSID);
 `stats.wf` stores available RSSI as integer dBm. Collected on the default
 interval only; real-time requests reuse the last snapshot. Set `SKIP_WIFI=true`
 on the agent to disable collection.
