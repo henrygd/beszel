@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"slices"
@@ -43,9 +44,17 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "get_system_stats",
 		Description: "Get historical metrics for one system over a time range. " +
-			"Records are stored at 1m, 10m, 20m, 120m and 480m resolutions, kept for 1h, 12h, 24h, 7d and 30d respectively; " +
-			"by default the finest resolution covering the requested hours is used.",
+			"Records are stored at 1m, 10m, 20m, 120m and 480m resolutions, kept for 1h, 12h, 24h, 7d and 30d respectively. " +
+			"The range covers hours ending at until (default now), so a past incident can be inspected with e.g. hours=2 and until set shortly after it; " +
+			"by default the finest resolution still holding the start of the range is used.",
 	}, h.getSystemStats)
+	mcpsdk.AddTool(server, &mcpsdk.Tool{
+		Name: "get_container_stats",
+		Description: "Get historical CPU, memory and network usage of one system's containers over a time range: average and peak values per container, " +
+			"with the time of each peak, sorted by peak CPU by default. To find which containers caused a past spike seen in get_system_stats, " +
+			"set until and hours to a window around it. Pass container to also get that container's time series samples. " +
+			"Resolutions and retention are the same as get_system_stats.",
+	}, h.getContainerStats)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "list_containers",
 		Description: "List docker/podman containers with current status, health, CPU, memory and network usage. " +
@@ -396,10 +405,16 @@ func systemCurrentFromStats(record *core.Record) (*systemCurrent, error) {
 	return current, nil
 }
 
+// historyParams are the time range params of the history tools.
+type historyParams struct {
+	Period string  `json:"period,omitzero" jsonschema:"record resolution: one of 1m, 10m, 20m, 120m or 480m (default: the finest resolution that still holds the start of the range)"`
+	Hours  float64 `json:"hours,omitzero" jsonschema:"length of the range in hours, ending at until (1-720, default 24)"`
+	Until  string  `json:"until,omitzero" jsonschema:"end of the range as an RFC3339 time, e.g. 2026-01-02T15:04:05Z (default: now)"`
+}
+
 type getSystemStatsParams struct {
-	System string  `json:"system" jsonschema:"system name or id"`
-	Period string  `json:"period,omitzero" jsonschema:"record resolution: one of 1m, 10m, 20m, 120m or 480m (default: the finest resolution that covers the requested hours)"`
-	Hours  float64 `json:"hours,omitzero" jsonschema:"how many hours to look back (1-720, default 24)"`
+	System string `json:"system" jsonschema:"system name or id"`
+	historyParams
 }
 
 // statsPeriods lists the stored system_stats resolutions with their retention
@@ -431,12 +446,11 @@ type systemStats struct {
 
 // resolvePeriod validates the period param against the stored resolutions and
 // returns it with its retention and retention label. Without a period, the
-// finest resolution whose retention covers the lookback is used (like the web
-// UI chart ranges).
-func resolvePeriod(period string, hours float64) (string, time.Duration, string, error) {
-	lookback := time.Duration(hours * float64(time.Hour))
+// finest resolution whose retention reaches back far enough is used (like the
+// web UI chart ranges).
+func resolvePeriod(period string, reach time.Duration) (string, time.Duration, string, error) {
 	for _, p := range statsPeriods {
-		if period == p.period || (period == "" && lookback <= p.retention) {
+		if period == p.period || (period == "" && reach <= p.retention) {
 			return p.period, p.retention, p.label, nil
 		}
 	}
@@ -447,18 +461,69 @@ func resolvePeriod(period string, hours float64) (string, time.Duration, string,
 	return "", 0, "", fmt.Errorf("invalid period %q: must be one of 1m, 10m, 20m, 120m, 480m", period)
 }
 
+// statsRange is the resolved time range and resolution of a history query.
+type statsRange struct {
+	period string
+	from   time.Time
+	to     time.Time
+	note   string // explains a range shortened to the period's retention
+}
+
+// resolve validates the history params. The range ends at until (default now,
+// later times are capped to now) and spans hours. Without a period, the finest
+// resolution whose retention still holds the start of the range is used; a
+// range reaching further back than its period's retention is shortened, with a
+// note explaining why.
+func (p historyParams) resolve(now time.Time) (statsRange, error) {
+	hours := p.Hours
+	if hours <= 0 {
+		hours = 24
+	}
+	hours = min(hours, maxStatsHours)
+	to := now
+	if p.Until != "" {
+		until, err := time.Parse(time.RFC3339, p.Until)
+		if err != nil {
+			return statsRange{}, fmt.Errorf("invalid until %q: must be an RFC3339 time such as 2026-01-02T15:04:05Z", p.Until)
+		}
+		if until.Before(now) {
+			to = until.UTC()
+		}
+	}
+	from := to.Add(-time.Duration(hours * float64(time.Hour)))
+	period, retention, retentionLabel, err := resolvePeriod(p.Period, now.Sub(from))
+	if err != nil {
+		return statsRange{}, err
+	}
+	r := statsRange{period: period, from: from, to: to}
+	if oldest := now.Add(-retention); from.Before(oldest) {
+		r.from = oldest
+		switch {
+		case !oldest.Before(to):
+			r.from = to
+			r.note = fmt.Sprintf("%s records are only kept for %s, so this range holds no data", period, retentionLabel)
+		case p.Period != "":
+			r.note = fmt.Sprintf("%s records are only kept for %s, so the range was shortened; omit period to pick a resolution covering %g hours",
+				period, retentionLabel, hours)
+		default:
+			r.note = fmt.Sprintf("records are only kept for %s, so the range was shortened", retentionLabel)
+		}
+	}
+	return r, nil
+}
+
+// joinNotes joins non-empty notes of a history result.
+func joinNotes(notes ...string) string {
+	return strings.Join(slices.DeleteFunc(notes, func(note string) bool { return note == "" }), "; ")
+}
+
 // getSystemStats returns historical samples and a summary for one system.
 func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest, params getSystemStatsParams) (*mcpsdk.CallToolResult, systemStats, error) {
 	auth, err := h.authRecord(ctx)
 	if err != nil {
 		return nil, systemStats{}, err
 	}
-	hours := params.Hours
-	if hours <= 0 {
-		hours = 24
-	}
-	hours = min(hours, maxStatsHours)
-	period, retention, retentionLabel, err := resolvePeriod(params.Period, hours)
+	rng, err := params.resolve(time.Now().UTC())
 	if err != nil {
 		return nil, systemStats{}, err
 	}
@@ -466,42 +531,21 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 	if err != nil {
 		return nil, systemStats{}, err
 	}
-	// an explicit period can't reach further back than its retention, so
-	// report the range actually covered instead of the requested one
-	lookback := time.Duration(hours * float64(time.Hour))
-	var note string
-	if lookback > retention {
-		lookback = retention
-		note = fmt.Sprintf("%s records are only kept for %s, so the range was shortened; omit period to pick a resolution covering %g hours",
-			period, retentionLabel, hours)
-	}
-	now := time.Now().UTC()
-	from := now.Add(-lookback)
 	result := systemStats{
 		System: record.GetString("name"),
-		Period: period,
-		From:   from.Format(time.RFC3339),
-		To:     now.Format(time.RFC3339),
-		Note:   note,
+		Period: rng.period,
+		From:   rng.from.Format(time.RFC3339),
+		To:     rng.to.Format(time.RFC3339),
+		Note:   rng.note,
 		// empty array rather than null when there are no records
 		Samples: []statsSample{},
 	}
-	systemStatsParams := dbx.Params{
-		"system": record.Id,
-		"period": period,
-		"from":   from.Format(types.DefaultDateLayout),
-	}
-	records, err := h.app.FindRecordsByFilter("system_stats", "system = {:system} && type = {:period} && created >= {:from}",
-		"created", 0, 0, systemStatsParams)
+	records, err := h.findStatsRecords("system_stats", record.Id, rng)
 	if err != nil {
 		return nil, systemStats{}, err
 	}
 	if len(records) == 0 {
-		empty := fmt.Sprintf("no %s records in this range (the system may be new, down or paused)", period)
-		if note != "" {
-			empty = note + "; " + empty
-		}
-		result.Note = empty
+		result.Note = joinNotes(rng.note, fmt.Sprintf("no %s records in this range (the system may be new, down or paused)", rng.period))
 		return nil, result, nil
 	}
 	// decode stats records once; records that fail to decode are skipped
@@ -522,11 +566,7 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 	// for missing data
 	if skipped := len(records) - len(decoded); skipped > 0 {
 		h.app.Logger().Warn("MCP: failed to decode system stats", "system", record.Id, "skipped", skipped, "err", decodeErr)
-		skippedNote := fmt.Sprintf("%d of %d records could not be decoded and were skipped", skipped, len(records))
-		if result.Note != "" {
-			skippedNote = result.Note + "; " + skippedNote
-		}
-		result.Note = skippedNote
+		result.Note = joinNotes(result.Note, fmt.Sprintf("%d of %d records could not be decoded and were skipped", skipped, len(records)))
 	}
 	// build samples (down-sampled by even stride past the maxSamples backstop)
 	stride := 1
@@ -543,6 +583,19 @@ func (h *mcphub) getSystemStats(ctx context.Context, req *mcpsdk.CallToolRequest
 	result.Samples = samples
 	result.Summary = summarizeStats(decoded)
 	return nil, result, nil
+}
+
+// findStatsRecords returns the records of a stats collection (system_stats or
+// container_stats) of one system within the range, oldest first.
+func (h *mcphub) findStatsRecords(collection string, systemId string, rng statsRange) ([]*core.Record, error) {
+	return h.app.FindRecordsByFilter(collection,
+		"system = {:system} && type = {:period} && created >= {:from} && created <= {:to}", "created", 0, 0,
+		dbx.Params{
+			"system": systemId,
+			"period": rng.period,
+			"from":   rng.from.Format(types.DefaultDateLayout),
+			"to":     rng.to.Format(types.DefaultDateLayout),
+		})
 }
 
 // decodedStat pairs a system_stats record's creation time with its stats,
@@ -1306,4 +1359,195 @@ type networkMonitorList struct {
 	Count     int              `json:"count"`
 	Truncated bool             `json:"truncated,omitzero"` // more monitors exist beyond the limit
 	Monitors  []networkMonitor `json:"monitors"`
+}
+
+// ---------------------------------------------------------------------------
+// get_container_stats
+
+type getContainerStatsParams struct {
+	System    string `json:"system" jsonschema:"system name or id"`
+	Container string `json:"container,omitzero" jsonschema:"only containers whose name contains this text; their time series samples are included too"`
+	Sort      string `json:"sort,omitzero" jsonschema:"one of cpu, memory or net (by peak value, highest first; default cpu)"`
+	Limit     int    `json:"limit,omitzero" jsonschema:"maximum number of containers (1-200, default 200)"`
+	historyParams
+}
+
+var containerHistorySorts = sortOptions{
+	{"cpu", "cpu"},
+	{"memory", "memory"},
+	{"net", "net"},
+}
+
+type containerStatsResult struct {
+	System     string             `json:"system"`
+	Period     string             `json:"period"`
+	From       string             `json:"from"` // RFC3339
+	To         string             `json:"to"`   // RFC3339
+	Note       string             `json:"note,omitempty"`
+	Count      int                `json:"count"`
+	Truncated  bool               `json:"truncated,omitzero"` // more containers match beyond the limit
+	Containers []containerHistory `json:"containers"`
+}
+
+// containerHistory summarizes one container's usage over the range.
+type containerHistory struct {
+	Name        string            `json:"name"`
+	SampleCount int               `json:"sample_count"` // records the container appears in
+	AvgCpu      float64           `json:"avg_cpu_pct"`
+	MaxCpu      float64           `json:"max_cpu_pct"`
+	MaxCpuTime  string            `json:"max_cpu_time"` // RFC3339
+	AvgMem      float64           `json:"avg_mem_mb"`
+	MaxMem      float64           `json:"max_mem_mb"`
+	MaxMemTime  string            `json:"max_mem_time"`         // RFC3339
+	AvgNet      float64           `json:"avg_net_bps,omitzero"` // sent + received
+	MaxNet      uint64            `json:"max_net_bps,omitzero"`
+	MaxNetTime  string            `json:"max_net_time,omitempty"` // RFC3339
+	Samples     []containerSample `json:"samples,omitempty"`      // only when filtered by container
+}
+
+type containerSample struct {
+	Time string  `json:"time"` // RFC3339
+	Cpu  float64 `json:"cpu_pct"`
+	Mem  float64 `json:"mem_mb"`
+	Net  uint64  `json:"net_bps,omitzero"` // sent + received
+}
+
+// containerNetBytes returns a container's sent + received bytes/sec,
+// converting the deprecated MB/s fields of older agents.
+func containerNetBytes(c *container.Stats) uint64 {
+	if net := c.Bandwidth[0] + c.Bandwidth[1]; net > 0 {
+		return net
+	}
+	return uint64((c.NetworkSent + c.NetworkRecv) * 1024 * 1024)
+}
+
+// add records one container sample in the history.
+func (c *containerHistory) add(sample containerSample, keepSamples bool) {
+	c.SampleCount++
+	c.AvgCpu += sample.Cpu
+	c.AvgMem += sample.Mem
+	c.AvgNet += float64(sample.Net)
+	if c.MaxCpuTime == "" || sample.Cpu > c.MaxCpu {
+		c.MaxCpu, c.MaxCpuTime = sample.Cpu, sample.Time
+	}
+	if c.MaxMemTime == "" || sample.Mem > c.MaxMem {
+		c.MaxMem, c.MaxMemTime = sample.Mem, sample.Time
+	}
+	if sample.Net > c.MaxNet {
+		c.MaxNet, c.MaxNetTime = sample.Net, sample.Time
+	}
+	if keepSamples {
+		c.Samples = append(c.Samples, sample)
+	}
+}
+
+// finish turns the accumulated sums into averages and down-samples the time
+// series past the maxSamples backstop.
+func (c *containerHistory) finish() {
+	count := float64(c.SampleCount)
+	c.AvgCpu /= count
+	c.AvgMem /= count
+	c.AvgNet /= count
+	if len(c.Samples) > maxSamples {
+		stride := (len(c.Samples) + maxSamples - 1) / maxSamples
+		samples := make([]containerSample, 0, maxSamples)
+		for i := 0; i < len(c.Samples); i += stride {
+			samples = append(samples, c.Samples[i])
+		}
+		c.Samples = samples
+	}
+}
+
+// getContainerStats returns per-container usage history of one system, with
+// average and peak values, sorted by peak usage.
+func (h *mcphub) getContainerStats(ctx context.Context, req *mcpsdk.CallToolRequest, params getContainerStatsParams) (*mcpsdk.CallToolResult, containerStatsResult, error) {
+	auth, err := h.authRecord(ctx)
+	if err != nil {
+		return nil, containerStatsResult{}, err
+	}
+	sortBy, err := containerHistorySorts.resolve(params.Sort, "cpu")
+	if err != nil {
+		return nil, containerStatsResult{}, err
+	}
+	rng, err := params.resolve(time.Now().UTC())
+	if err != nil {
+		return nil, containerStatsResult{}, err
+	}
+	record, err := h.resolveSystem(auth, params.System)
+	if err != nil {
+		return nil, containerStatsResult{}, err
+	}
+	result := containerStatsResult{
+		System:     record.GetString("name"),
+		Period:     rng.period,
+		From:       rng.from.Format(time.RFC3339),
+		To:         rng.to.Format(time.RFC3339),
+		Note:       rng.note,
+		Containers: []containerHistory{},
+	}
+	records, err := h.findStatsRecords("container_stats", record.Id, rng)
+	if err != nil {
+		return nil, containerStatsResult{}, err
+	}
+	if len(records) == 0 {
+		result.Note = joinNotes(rng.note, fmt.Sprintf("no %s container records in this range (the system may have no containers, or be new, down or paused)", rng.period))
+		return nil, result, nil
+	}
+	filter := strings.ToLower(params.Container)
+	histories := map[string]*containerHistory{}
+	var decodeErr error
+	skipped := 0
+	for _, statsRecord := range records {
+		var containers []*container.Stats
+		if err := statsRecord.UnmarshalJSONField("stats", &containers); err != nil {
+			decodeErr = err
+			skipped++
+			continue
+		}
+		recordTime := statsRecord.GetDateTime("created").Time().UTC().Format(time.RFC3339)
+		for _, c := range containers {
+			if c == nil || (filter != "" && !strings.Contains(strings.ToLower(c.Name), filter)) {
+				continue
+			}
+			history := histories[c.Name]
+			if history == nil {
+				history = &containerHistory{Name: c.Name}
+				histories[c.Name] = history
+			}
+			history.add(containerSample{Time: recordTime, Cpu: c.Cpu, Mem: c.Mem, Net: containerNetBytes(c)}, filter != "")
+		}
+	}
+	if skipped > 0 {
+		h.app.Logger().Warn("MCP: failed to decode container stats", "system", record.Id, "skipped", skipped, "err", decodeErr)
+		result.Note = joinNotes(result.Note, fmt.Sprintf("%d of %d records could not be decoded and were skipped", skipped, len(records)))
+	}
+	if len(histories) == 0 && filter != "" {
+		result.Note = joinNotes(result.Note, fmt.Sprintf("no containers matching %q in this range", params.Container))
+	}
+	for _, history := range histories {
+		history.finish()
+		result.Containers = append(result.Containers, *history)
+	}
+	peak := func(c containerHistory) float64 {
+		switch sortBy {
+		case "memory":
+			return c.MaxMem
+		case "net":
+			return float64(c.MaxNet)
+		}
+		return c.MaxCpu
+	}
+	slices.SortFunc(result.Containers, func(a, b containerHistory) int {
+		if order := cmp.Compare(peak(b), peak(a)); order != 0 {
+			return order
+		}
+		return strings.Compare(a.Name, b.Name)
+	})
+	limit := scopeParams{Limit: params.Limit}.limit()
+	if len(result.Containers) > limit {
+		result.Containers = result.Containers[:limit]
+		result.Truncated = true
+	}
+	result.Count = len(result.Containers)
+	return nil, result, nil
 }

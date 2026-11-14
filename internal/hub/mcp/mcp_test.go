@@ -107,19 +107,29 @@ func createSystem(t *testing.T, hub *beszelTests.TestHub, name string, userId st
 	return reloaded
 }
 
-// createStatsRecord adds a system_stats record for the system, with created
-// set to the given number of minutes ago for deterministic ordering.
+// createStatsRecord adds a 1m system_stats record for the system, with
+// created set to the given number of minutes ago for deterministic ordering.
 func createStatsRecord(t *testing.T, hub *beszelTests.TestHub, systemId string, stats map[string]any, minutesAgo int) {
+	t.Helper()
+	createHistoryRecord(t, hub, "system_stats", systemId, "1m", stats, minutesAgo)
+}
+
+// createHistoryRecord adds a system_stats or container_stats record of the
+// given period, created the given number of minutes ago.
+func createHistoryRecord(t *testing.T, hub *beszelTests.TestHub, collection string, systemId string, period string, stats any, minutesAgo int) {
 	t.Helper()
 	raw, err := json.Marshal(stats)
 	require.NoError(t, err)
-	created := time.Now().UTC().Add(-time.Duration(minutesAgo) * time.Minute).Format(types.DefaultDateLayout)
-	_, err = beszelTests.CreateRecord(hub, "system_stats", map[string]any{
-		"system":  systemId,
-		"type":    "1m",
-		"stats":   string(raw),
-		"created": created,
+	record, err := beszelTests.CreateRecord(hub, collection, map[string]any{
+		"system": systemId,
+		"type":   period,
+		"stats":  string(raw),
 	})
+	require.NoError(t, err)
+	// created is an autodate field, so it is set after creation
+	created := time.Now().UTC().Add(-time.Duration(minutesAgo) * time.Minute).Format(types.DefaultDateLayout)
+	_, err = hub.DB().NewQuery("UPDATE " + collection + " SET created = {:created} WHERE id = {:id}").
+		Bind(dbx.Params{"created": created, "id": record.Id}).Execute()
 	require.NoError(t, err)
 }
 
@@ -557,7 +567,7 @@ func TestMcpToolsList(t *testing.T) {
 		names = append(names, tool.Name)
 	}
 	require.ElementsMatch(t, []string{
-		"list_systems", "get_system", "get_system_stats", "list_containers", "list_alerts",
+		"list_systems", "get_system", "get_system_stats", "get_container_stats", "list_containers", "list_alerts",
 		"list_alert_events", "list_services", "get_disk_health", "list_network_monitors",
 	}, names)
 }
@@ -643,6 +653,132 @@ func TestMcpStatsExplicitPeriodRetention(t *testing.T) {
 	from, err := time.Parse(time.RFC3339, data["from"].(string))
 	require.NoError(t, err)
 	require.WithinDuration(t, from, time.Now().UTC().Add(-time.Hour), 5*time.Minute)
+}
+
+func TestMcpStatsUntil(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	// a spike 12 hours ago and recent normal usage, at 20m resolution
+	createHistoryRecord(t, hub, "system_stats", userSystem.Id, "20m", map[string]any{"cpu": 95}, 12*60)
+	createHistoryRecord(t, hub, "system_stats", userSystem.Id, "20m", map[string]any{"cpu": 10}, 60)
+	now := time.Now().UTC()
+
+	// a 2 hour window ending 11 hours ago reaches back 13 hours, so 20m
+	// records are used and only the spike is in range
+	until := now.Add(-11 * time.Hour)
+	data := callTool(t, session, "get_system_stats", map[string]any{
+		"system": "user-system-1", "hours": 2, "until": until.Format(time.RFC3339),
+	})
+	require.Equal(t, "20m", data["period"])
+	require.NotContains(t, data, "note")
+	require.Equal(t, until.Format(time.RFC3339), data["to"])
+	require.Equal(t, until.Add(-2*time.Hour).Format(time.RFC3339), data["from"])
+	samples := data["samples"].([]any)
+	require.Len(t, samples, 1)
+	require.Equal(t, float64(95), samples[0].(map[string]any)["cpu_pct"])
+
+	// until in the future is capped to now
+	data = callTool(t, session, "get_system_stats", map[string]any{
+		"system": "user-system-1", "until": now.Add(time.Hour).Format(time.RFC3339),
+	})
+	to, err := time.Parse(time.RFC3339, data["to"].(string))
+	require.NoError(t, err)
+	require.WithinDuration(t, now, to, time.Minute)
+	require.Len(t, data["samples"].([]any), 2)
+
+	// a range older than any retention holds no data
+	data = callTool(t, session, "get_system_stats", map[string]any{
+		"system": "user-system-1", "until": now.Add(-40 * 24 * time.Hour).Format(time.RFC3339),
+	})
+	require.Equal(t, "480m", data["period"])
+	require.Contains(t, data["note"], "so this range holds no data")
+	require.Equal(t, []any{}, data["samples"])
+
+	// a range partly older than the auto-selected period's retention is shortened
+	data = callTool(t, session, "get_system_stats", map[string]any{
+		"system": "user-system-1", "hours": 720, "until": now.Add(-24 * time.Hour).Format(time.RFC3339),
+	})
+	require.Equal(t, "480m", data["period"])
+	require.Contains(t, data["note"], "records are only kept for 30 days, so the range was shortened")
+
+	errText := callToolError(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "until": "yesterday"})
+	require.Contains(t, errText, "invalid until")
+}
+
+func TestMcpContainerStats(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	createHistoryRecord(t, hub, "container_stats", userSystem.Id, "1m", []map[string]any{
+		{"n": "web", "c": 10, "m": 100, "b": [2]uint64{100, 200}},
+		{"n": "db", "c": 5, "m": 500},
+	}, 30)
+	createHistoryRecord(t, hub, "container_stats", userSystem.Id, "1m", []map[string]any{
+		{"n": "web", "c": 90, "m": 120},
+		// deprecated MB/s network fields of older agents
+		{"n": "db", "c": 20, "m": 800, "ns": 1},
+	}, 20)
+	createHistoryRecord(t, hub, "container_stats", userSystem.Id, "1m", []map[string]any{
+		{"n": "web", "c": 15, "m": 110},
+	}, 10)
+	now := time.Now().UTC()
+
+	// summaries sorted by peak CPU, without samples
+	data := callTool(t, session, "get_container_stats", map[string]any{"system": "user-system-1", "hours": 1})
+	require.Equal(t, "user-system-1", data["system"])
+	require.Equal(t, "1m", data["period"])
+	require.Equal(t, float64(2), data["count"])
+	containers := data["containers"].([]any)
+	require.Len(t, containers, 2)
+	web := containers[0].(map[string]any)
+	require.Equal(t, "web", web["name"])
+	require.Equal(t, float64(3), web["sample_count"])
+	require.InDelta(t, 38.3333, web["avg_cpu_pct"], 0.001)
+	require.Equal(t, float64(90), web["max_cpu_pct"])
+	maxCpuTime, err := time.Parse(time.RFC3339, web["max_cpu_time"].(string))
+	require.NoError(t, err)
+	require.WithinDuration(t, now.Add(-20*time.Minute), maxCpuTime, time.Minute)
+	require.Equal(t, float64(300), web["max_net_bps"])
+	require.NotContains(t, web, "samples")
+	db := containers[1].(map[string]any)
+	require.Equal(t, "db", db["name"])
+	require.Equal(t, float64(2), db["sample_count"])
+	require.Equal(t, float64(650), db["avg_mem_mb"])
+	require.Equal(t, float64(800), db["max_mem_mb"])
+	require.Equal(t, float64(1048576), db["max_net_bps"])
+
+	// sort by peak memory, limited
+	data = callTool(t, session, "get_container_stats", map[string]any{"system": "user-system-1", "hours": 1, "sort": "memory", "limit": 1})
+	require.Equal(t, true, data["truncated"])
+	containers = data["containers"].([]any)
+	require.Len(t, containers, 1)
+	require.Equal(t, "db", containers[0].(map[string]any)["name"])
+
+	// a container filter (case-insensitive substring) includes its samples
+	data = callTool(t, session, "get_container_stats", map[string]any{"system": "user-system-1", "hours": 1, "container": "WE"})
+	containers = data["containers"].([]any)
+	require.Len(t, containers, 1)
+	samples := containers[0].(map[string]any)["samples"].([]any)
+	require.Len(t, samples, 3)
+	require.Equal(t, float64(90), samples[1].(map[string]any)["cpu_pct"])
+	data = callTool(t, session, "get_container_stats", map[string]any{"system": "user-system-1", "hours": 1, "container": "nope"})
+	require.Equal(t, []any{}, data["containers"])
+	require.Contains(t, data["note"], `no containers matching "nope"`)
+
+	// until limits the range to the first two records
+	data = callTool(t, session, "get_container_stats", map[string]any{
+		"system": "user-system-1", "period": "1m", "hours": 1, "until": now.Add(-15 * time.Minute).Format(time.RFC3339),
+	})
+	web = data["containers"].([]any)[0].(map[string]any)
+	require.Equal(t, float64(2), web["sample_count"])
+	require.Equal(t, float64(90), web["max_cpu_pct"])
+
+	// no records
+	data = callTool(t, session, "get_container_stats", map[string]any{"system": "user-system-2"})
+	require.Equal(t, []any{}, data["containers"])
+	require.Contains(t, data["note"], "no 20m container records")
+
+	require.Contains(t, callToolError(t, session, "get_container_stats", map[string]any{"system": "other-system"}), "not found or not visible")
+	require.Contains(t, callToolError(t, session, "get_container_stats", map[string]any{"system": "user-system-1", "sort": "name"}), "invalid sort")
 }
 
 func TestMcpTruncatedSystems(t *testing.T) {
