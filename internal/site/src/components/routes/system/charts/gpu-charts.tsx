@@ -115,7 +115,7 @@ export function GpuCharts({
 }) {
 	const gpuIds = Object.keys(lastGpus)
 	return (
-		<div className="grid gap-4">
+		<div data-alert-section="gpu" className="grid gap-4">
 			{(children || hasGpuEnginesData) && (
 				<div className="grid xl:grid-cols-2 gap-4">
 					{children}

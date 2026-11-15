@@ -33,6 +33,7 @@ export function BandwidthChart({
 
 	return (
 		<ChartCard
+			alertSection="bandwidth"
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Bandwidth`}
