@@ -23,6 +23,7 @@ import { DataTablePagination, usePagination } from "@/components/ui/data-table-p
 import { Input } from "@/components/ui/input"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
+import { logLinksTransformer } from "@/lib/log-links"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -47,6 +48,7 @@ async function getSystemdLogsHtml(systemId: string, serviceName: string): Promis
 				lang: "log",
 				theme: syntaxTheme,
 				decorations: getLogTimestampDecorations(logs),
+				transformers: [logLinksTransformer],
 			})
 		: ""
 }

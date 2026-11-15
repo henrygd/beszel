@@ -2,7 +2,27 @@
 import { t } from "@lingui/core/macro"
 import { useStore } from "@nanostores/react"
 import { ClockIcon, RefreshCwIcon } from "lucide-react"
-import { type ComponentProps, type FocusEvent, type RefObject, useEffect, useRef } from "react"
+import {
+	type ComponentProps,
+	type FocusEvent,
+	type MouseEvent,
+	type RefObject,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle, dialogIconButtonClassName } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -12,6 +32,65 @@ import { cn } from "@/lib/utils"
 type LogsDisplayProps = {
 	logsDisplay: string
 	containerRef: RefObject<HTMLDivElement | null>
+}
+
+function LogsHtml({ html, className }: { html: string; className?: string }) {
+	const [url, setUrl] = useState("")
+	const linkRef = useRef<HTMLAnchorElement | null>(null)
+	const confirmLink = useCallback((event: MouseEvent<HTMLDivElement>) => {
+		const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[data-log-url]") : null
+		if (!link || !event.currentTarget.contains(link)) return
+		event.preventDefault()
+		if (event.button > 1) return
+		const target = link.dataset.logUrl
+		if (!target || !/^https?:\/\//i.test(target)) return
+		linkRef.current = link
+		setUrl(target)
+	}, [])
+	// Keep the highlighted DOM stable while the confirmation opens/closes so focus can return.
+	const markup = useMemo(
+		() => (
+			<div
+				className={className}
+				onClickCapture={confirmLink}
+				onAuxClickCapture={confirmLink}
+				dangerouslySetInnerHTML={{ __html: html }}
+			/>
+		),
+		[html, className, confirmLink]
+	)
+	return (
+		<>
+			{markup}
+			<AlertDialog
+				open={!!url}
+				onOpenChange={(open) => {
+					if (!open) setUrl("")
+				}}
+			>
+				<AlertDialogContent
+					onCloseAutoFocus={(event) => {
+						event.preventDefault()
+						linkRef.current?.focus()
+					}}
+				>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t`Open external link?`}</AlertDialogTitle>
+						<AlertDialogDescription>
+							{t`This URL comes from log output. Only open it if you trust the destination.`}
+							<span className="mt-2 block break-all font-mono text-foreground">{url}</span>
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
+						<AlertDialogAction asChild>
+							<a href={url} target="_blank" rel="noopener noreferrer">{t`Open link`}</a>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
+	)
 }
 
 // Radix opens a tooltip on any focus, including when a sheet or dialog moves focus to
@@ -62,7 +141,7 @@ export function LogsDisplay({ logsDisplay, containerRef }: LogsDisplayProps) {
 				!logsDisplay && ["animate-pulse", "h-full"]
 			)}
 		>
-			<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
+			<LogsHtml html={logsDisplay} />
 		</div>
 	)
 }
@@ -106,7 +185,7 @@ export function LogsFullscreenDialog({
 							!showTimestamps && "[&_.log-timestamp]:hidden"
 						)}
 					>
-						<div className="py-3" dangerouslySetInnerHTML={{ __html: logsDisplay }} />
+						<LogsHtml className="py-3" html={logsDisplay} />
 					</div>
 				</div>
 				<LogsTimestampToggle className="absolute end-18 top-2 hover:bg-white/10 hover:text-white aria-pressed:bg-white/15 aria-pressed:text-white" />
