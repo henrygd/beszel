@@ -16,7 +16,7 @@ require (
 	github.com/mdlayher/netlink v1.11.2
 	github.com/mdlayher/wifi v0.10.0
 	github.com/modelcontextprotocol/go-sdk v1.8.0
-	github.com/nicholas-fedor/shoutrrr v0.23.0
+	github.com/nicholas-fedor/shoutrrr v0.24.0
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/safchain/ethtool v0.7.0
 	github.com/shirou/gopsutil/v4 v4.26.10
