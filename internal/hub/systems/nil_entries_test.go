@@ -16,6 +16,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/vm"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
 
@@ -25,7 +26,8 @@ import (
 
 func TestSanitizeNilEntries(t *testing.T) {
 	data := &system.CombinedData{
-		Containers: []*container.Stats{nil, {Id: "abc"}, nil},
+		Containers:      []*container.Stats{nil, {Id: "abc"}, nil},
+		VirtualMachines: []*vm.Stats{nil, {UUID: "vm-id"}, nil},
 		Stats: system.Stats{
 			ExtraFs:  map[string]*system.FsStats{"bad": nil, "good": {DiskTotal: 1}},
 			ZfsPools: map[string]*system.ZfsPool{"bad": nil},
@@ -34,6 +36,8 @@ func TestSanitizeNilEntries(t *testing.T) {
 	sanitizeNilEntries(data)
 	assert.Len(t, data.Containers, 1)
 	assert.Equal(t, "abc", data.Containers[0].Id)
+	assert.Len(t, data.VirtualMachines, 1)
+	assert.Equal(t, "vm-id", data.VirtualMachines[0].UUID)
 	assert.Len(t, data.Stats.ExtraFs, 1)
 	assert.Contains(t, data.Stats.ExtraFs, "good")
 	assert.Empty(t, data.Stats.ZfsPools)

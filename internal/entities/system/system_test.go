@@ -8,6 +8,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/vm"
 	"github.com/henrygd/beszel/internal/entities/zfs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -206,6 +207,27 @@ func TestCombinedDataContainerValidityTransport(t *testing.T) {
 	var decodedInvalid CombinedData
 	require.NoError(t, cbor.Unmarshal(invalidData, &decodedInvalid))
 	assert.Nil(t, decodedInvalid.Containers)
+}
+
+func TestCombinedDataVMValidityTransport(t *testing.T) {
+	validEmpty := CombinedData{VirtualMachines: []*vm.Stats{}}
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json": json.Marshal,
+		"cbor": cbor.Marshal,
+	} {
+		t.Run(name, func(t *testing.T) {
+			encoded, err := marshal(validEmpty)
+			require.NoError(t, err)
+			var decoded CombinedData
+			if name == "json" {
+				require.NoError(t, json.Unmarshal(encoded, &decoded))
+			} else {
+				require.NoError(t, cbor.Unmarshal(encoded, &decoded))
+			}
+			assert.NotNil(t, decoded.VirtualMachines)
+			assert.Empty(t, decoded.VirtualMachines)
+		})
+	}
 }
 
 // PocketBase marshals record JSON fields with encoding/json/v2, where omitempty

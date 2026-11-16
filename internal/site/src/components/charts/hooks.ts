@@ -10,6 +10,7 @@ export interface ContainerChartConfigs {
 	cpu: ChartConfig
 	memory: ChartConfig
 	network: ChartConfig
+	disk: ChartConfig
 }
 
 /**
@@ -17,12 +18,15 @@ export interface ContainerChartConfigs {
  * @param containerData - Array of container statistics data points
  * @returns Chart configurations for CPU, memory, and network metrics
  */
-export function useContainerChartConfigs(containerData: ChartData["containerData"]): ContainerChartConfigs {
+export function useContainerChartConfigs(
+	containerData: ChartData["containerData"] | ChartData["vmData"]
+): ContainerChartConfigs {
 	return useMemo(() => {
 		const configs = {
 			cpu: {} as ChartConfig,
 			memory: {} as ChartConfig,
 			network: {} as ChartConfig,
+			disk: {} as ChartConfig,
 		}
 
 		// Aggregate usage metrics for each container
@@ -30,6 +34,7 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 			cpu: new Map<string, number>(),
 			memory: new Map<string, number>(),
 			network: new Map<string, number>(),
+			disk: new Map<string, number>(),
 		}
 
 		// Process each data point to calculate totals
@@ -53,12 +58,14 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 				const currentCpu = totalUsage.cpu.get(containerName) ?? 0
 				const currentMemory = totalUsage.memory.get(containerName) ?? 0
 				const currentNetwork = totalUsage.network.get(containerName) ?? 0
+				const currentDisk = totalUsage.disk.get(containerName) ?? 0
 				const sentBytes = containerStats.b?.[0] ?? (containerStats.ns ?? 0) * 1024 * 1024
 				const recvBytes = containerStats.b?.[1] ?? (containerStats.nr ?? 0) * 1024 * 1024
 
 				totalUsage.cpu.set(containerName, currentCpu + (containerStats.c ?? 0))
 				totalUsage.memory.set(containerName, currentMemory + (containerStats.m ?? 0))
 				totalUsage.network.set(containerName, currentNetwork + sentBytes + recvBytes)
+				totalUsage.disk.set(containerName, currentDisk + (containerStats.d?.[0] ?? 0) + (containerStats.d?.[1] ?? 0))
 			}
 		}
 
@@ -107,7 +114,7 @@ export function useYAxisWidth() {
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				document.body.appendChild(div)
-				const width = div.offsetWidth + 20 
+				const width = div.offsetWidth + 20
 				if (width > yAxisWidth) {
 					setYAxisWidth(width)
 				}
@@ -123,9 +130,10 @@ export function useYAxisWidth() {
 export function useContainerDataPoints(
 	chartConfig: ChartConfig,
 	// biome-ignore lint/suspicious/noExplicitAny: container data records have dynamic keys
-	dataFn: (key: string, data: Record<string, any>) => number | null
+	dataFn: (key: string, data: Record<string, any>) => number | null,
+	store: typeof $containerFilter = $containerFilter
 ) {
-	const filter = useStore($containerFilter)
+	const filter = useStore(store)
 	const { dataPoints, filteredKeys } = useMemo(() => {
 		const filterTerms = filter
 			? filter

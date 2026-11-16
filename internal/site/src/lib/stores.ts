@@ -45,7 +45,9 @@ export const $maxValues = atom(false)
 const logTimestampsKey = "besz-log-ts"
 
 /** Whether to show timestamps in Docker and systemd logs */
-export const $showLogTimestamps = atom<boolean>(JSON.parse(globalThis.localStorage?.getItem(logTimestampsKey) ?? "true"))
+export const $showLogTimestamps = atom<boolean>(
+	JSON.parse(globalThis.localStorage?.getItem(logTimestampsKey) ?? "true")
+)
 
 export function toggleLogTimestamps() {
 	const next = !$showLogTimestamps.get()
@@ -88,6 +90,7 @@ export function hydrateUserSettings(settings: UserSettings) {
 
 /** Container chart filter */
 export const $containerFilter = atom("")
+export const $vmFilter = atom("")
 
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")

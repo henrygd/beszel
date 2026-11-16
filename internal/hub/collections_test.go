@@ -86,6 +86,15 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Nil(t, containerStatsCollection.UpdateRule)
 	assert.Nil(t, containerStatsCollection.DeleteRule)
 
+	// vm_stats collection
+	vmStatsCollection, err := hub.FindCollectionByNameOrId("vm_stats")
+	require.NoError(t, err, "Failed to find vm_stats collection")
+	assert.Equal(t, isUserInSystemUsers, *vmStatsCollection.ListRule)
+	assert.Nil(t, vmStatsCollection.ViewRule)
+	assert.Nil(t, vmStatsCollection.CreateRule)
+	assert.Nil(t, vmStatsCollection.UpdateRule)
+	assert.Nil(t, vmStatsCollection.DeleteRule)
+
 	// fingerprints collection
 	fingerprintsCollection, err := hub.FindCollectionByNameOrId("fingerprints")
 	require.NoError(t, err, "Failed to find fingerprints collection")
@@ -213,6 +222,15 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Nil(t, containerStatsCollection.CreateRule)
 	assert.Nil(t, containerStatsCollection.UpdateRule)
 	assert.Nil(t, containerStatsCollection.DeleteRule)
+
+	// vm_stats collection
+	vmStatsCollection, err := hub.FindCollectionByNameOrId("vm_stats")
+	require.NoError(t, err, "Failed to find vm_stats collection")
+	assert.Equal(t, isUser, *vmStatsCollection.ListRule)
+	assert.Nil(t, vmStatsCollection.ViewRule)
+	assert.Nil(t, vmStatsCollection.CreateRule)
+	assert.Nil(t, vmStatsCollection.UpdateRule)
+	assert.Nil(t, vmStatsCollection.DeleteRule)
 
 	// fingerprints collection
 	fingerprintsCollection, err := hub.FindCollectionByNameOrId("fingerprints")

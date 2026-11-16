@@ -25,6 +25,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
+	"github.com/henrygd/beszel/internal/entities/vm"
 	"github.com/henrygd/beszel/internal/entities/zfs"
 
 	"github.com/henrygd/beszel"
@@ -303,6 +304,22 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		// A non-nil empty slice is a valid fresh snapshot: persist it so a host
+		// whose final domain was removed does not keep displaying stale VMs.
+		if data.VirtualMachines != nil {
+			vmStatsCollection, err := txApp.FindCachedCollectionByNameOrId("vm_stats")
+			if err != nil {
+				return err
+			}
+			vmStatsRecord := core.NewRecord(vmStatsCollection)
+			vmStatsRecord.Set("system", systemRecord.Id)
+			vmStatsRecord.Set("stats", data.VirtualMachines)
+			vmStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(vmStatsRecord); err != nil {
+				return err
+			}
+		}
+
 		// Update systemd service records when the agent reports a fresh snapshot.
 		// The length check keeps snapshots from older agents working, while the
 		// explicit marker lets newer agents report that a fresh snapshot is empty.
@@ -383,6 +400,7 @@ func sanitizeNilEntries(data *system.CombinedData) {
 		return
 	}
 	data.Containers = slices.DeleteFunc(data.Containers, func(c *container.Stats) bool { return c == nil })
+	data.VirtualMachines = slices.DeleteFunc(data.VirtualMachines, func(machine *vm.Stats) bool { return machine == nil })
 	maps.DeleteFunc(data.Stats.ExtraFs, func(_ string, fs *system.FsStats) bool { return fs == nil })
 	maps.DeleteFunc(data.Stats.ZfsPools, func(_ string, p *system.ZfsPool) bool { return p == nil })
 }
