@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { toast } from "@/components/ui/use-toast"
 import { pb } from "@/lib/api"
-import { cn, getHubURL } from "@/lib/utils"
+import { cn, formatTimeUnit, getHubURL } from "@/lib/utils"
 
 const DAY = 24 * 60 * 60
 const NEVER = "never"
@@ -61,11 +61,11 @@ function SectionCreate() {
 	const [created, setCreated] = useState<{ token: string; expires: string } | null>(null)
 
 	const durations = [
-		{ value: DAY, label: t`1 day` },
-		{ value: 7 * DAY, label: t`7 days` },
-		{ value: 30 * DAY, label: t`30 days` },
-		{ value: 90 * DAY, label: t`90 days` },
-		{ value: 365 * DAY, label: t`1 year` },
+		{ value: DAY, label: formatTimeUnit(1, "day") },
+		{ value: 7 * DAY, label: formatTimeUnit(7, "day") },
+		{ value: 30 * DAY, label: formatTimeUnit(30, "day") },
+		{ value: 90 * DAY, label: formatTimeUnit(90, "day") },
+		{ value: 365 * DAY, label: formatTimeUnit(1, "year") },
 		{ value: NEVER, label: t`Never` },
 	]
 

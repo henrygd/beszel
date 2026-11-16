@@ -23,6 +23,7 @@ import (
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/mcp"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
 )
@@ -227,6 +228,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		apiAuth.GET("/containers/logs", h.getContainerLogs)
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
+	}
+	// model context protocol (MCP) server for AI agents, enabled with MCP=true
+	if err := mcp.RegisterRoutes(h, se); err != nil {
+		return err
 	}
 	return nil
 }
