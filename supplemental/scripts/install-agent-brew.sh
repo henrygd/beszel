@@ -90,6 +90,9 @@ normalize_env_file() {
     case "$value" in
     \"*\" | \'*\') value="${value:1:$((${#value} - 2))}" ;;
     esac
+    # brew strips whitespace around values, so match it
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
     [ "$2" = warn ] && case "$value" in
     *'$'* | *'`'*) echo "Warning: $key in $1 contains shell syntax that will not be expanded" >&2 ;;
     esac
