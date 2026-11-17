@@ -78,6 +78,7 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 				.getList(0, 2000, {
 					fields: "name,state,sub,cpu,cpuPeak,memory,memPeak,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
+					requestKey: `systemd-${systemId ?? "all"}`,
 				})
 				.then(
 					({ items }) =>
