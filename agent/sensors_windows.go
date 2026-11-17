@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/shirou/gopsutil/v4/sensors"
 )
 
@@ -87,21 +88,58 @@ func parseLHMFan(name, value string) (string, uint16, bool) {
 	return name, uint16(min(math.Round(rpm), math.MaxUint16)), true
 }
 
+// lhmDirPrefix starts the name of the folder the LHM helper is extracted to.
+// The folder is named after the agent version, so each release extracts its own
+// helper and never overwrites one that may still be running or locked.
+const lhmDirPrefix = "lhm-"
+
+// helperExts are the file types extracted from the embedded LHM directory. Old
+// releases extracted these straight into the beszel temp directory.
+var helperExts = map[string]struct{}{
+	".exe": {}, ".dll": {}, ".config": {}, ".pdb": {}, ".xml": {}, ".sys": {},
+}
+
+// removeOutdatedLHM deletes LHM helpers left in baseDir by other agent versions:
+// other lhm-* folders, and the files older releases extracted directly into
+// baseDir. It's best effort, so errors (such as a helper that is still running
+// and locked) are ignored. Other folders, like smartmontools, are left alone.
+func removeOutdatedLHM(baseDir, keep string) {
+	entries, err := os.ReadDir(baseDir)
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() {
+			if strings.HasPrefix(name, lhmDirPrefix) && name != keep {
+				os.RemoveAll(filepath.Join(baseDir, name))
+			}
+			continue
+		}
+		if _, ok := helperExts[strings.ToLower(filepath.Ext(name))]; ok && entry.Type().IsRegular() {
+			os.Remove(filepath.Join(baseDir, name))
+		}
+	}
+}
+
 // newlhmProcess copies the embedded LHM executable to a temporary directory and starts it.
 func newlhmProcess() (*lhmProcess, error) {
-	destDir := filepath.Join(os.TempDir(), "beszel")
+	baseDir := filepath.Join(os.TempDir(), "beszel")
+	destDir := filepath.Join(baseDir, lhmDirPrefix+beszel.Version)
 	execPath := filepath.Join(destDir, "beszel_lhm.exe")
 
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	// Only copy if executable doesn't exist
+	// Only copy if executable doesn't exist. The folder name includes the agent
+	// version, so this is true on the first start of each release.
 	if _, err := os.Stat(execPath); os.IsNotExist(err) {
 		if err := copyEmbeddedDir(lhmFs, "lhm/bin/Release/net48", destDir); err != nil {
 			return nil, fmt.Errorf("failed to copy embedded directory: %w", err)
 		}
 	}
+	removeOutdatedLHM(baseDir, filepath.Base(destDir))
 
 	lhm := &lhmProcess{
 		execPath: execPath,
