@@ -705,6 +705,62 @@ func TestMcpStatsUntil(t *testing.T) {
 	require.Contains(t, errText, "invalid until")
 }
 
+func TestMcpStatsSummaryUsesStoredPeaks(t *testing.T) {
+	hub, user, _, server, userSystem := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	// rollup records hold window averages plus the peaks within each window:
+	// one minute at 100% CPU inside an otherwise idle 20 minutes
+	const gib = 1024 * 1024 * 1024
+	createHistoryRecord(t, hub, "system_stats", userSystem.Id, "20m", map[string]any{
+		"cpu": 9.75, "cpum": 100,
+		"mp": 40, "mem": [4]uint64{16 * gib, 6 * gib, 0, 0}, "memm": 15 * gib,
+		"b": [2]uint64{1000, 2000}, "bm": [2]uint64{50000, 60000},
+		"dio": [2]uint64{300, 400}, "diom": [2]uint64{70000, 80000},
+	}, 120)
+	createHistoryRecord(t, hub, "system_stats", userSystem.Id, "20m", map[string]any{
+		"cpu": 5, "cpum": 7, "mp": 50, "mem": [4]uint64{16 * gib, 8 * gib, 0, 0},
+		"b": [2]uint64{1500, 1000}, "dio": [2]uint64{500, 100},
+	}, 60)
+	// rollup created by an older hub with deprecated MB/s network and GB memory fields
+	createHistoryRecord(t, hub, "system_stats", userSystem.Id, "20m", map[string]any{
+		"cpu": 6, "ns": 0.01, "nr": 0.02, "nsm": 0.5, "nrm": 0.01,
+		"mp": 30, "m": 8, "mu": 2.4, "mm": 7,
+	}, 40)
+
+	// the default 24 hour range uses 20m records
+	data := callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1"})
+	require.Equal(t, "20m", data["period"])
+	summary := data["summary"].(map[string]any)
+	// peaks come from the stored maxima, not the highest window average
+	require.Equal(t, float64(100), summary["max_cpu_pct"])
+	require.Equal(t, 93.75, summary["max_memory_pct"])
+	require.Equal(t, []any{float64(524288), float64(60000)}, summary["max_bandwidth_bps"])
+	require.Equal(t, []any{float64(70000), float64(80000)}, summary["max_disk_io_bps"])
+	// averages are unchanged
+	require.InDelta(t, 6.9167, summary["avg_cpu_pct"], 0.001)
+	require.InDelta(t, 40, summary["avg_memory_pct"], 0.001)
+	// samples still report the window averages
+	samples := data["samples"].([]any)
+	require.Len(t, samples, 3)
+	require.Equal(t, 9.75, samples[0].(map[string]any)["cpu_pct"])
+	require.Equal(t, float64(40), samples[0].(map[string]any)["memory_pct"])
+	// each peak carries the time of the record holding it
+	times := make([]any, len(samples))
+	for i, sample := range samples {
+		times[i] = sample.(map[string]any)["time"]
+	}
+	require.Equal(t, times[0], summary["max_cpu_time"])
+	require.Equal(t, times[0], summary["max_memory_time"])
+	require.Equal(t, []any{times[2], times[0]}, summary["max_bandwidth_time"])
+	require.Equal(t, []any{times[0], times[0]}, summary["max_disk_io_time"])
+
+	// the peak of older records comes from the deprecated GB fields
+	data = callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "period": "20m", "hours": 1})
+	summary = data["summary"].(map[string]any)
+	require.Equal(t, float64(1), summary["count"])
+	require.Equal(t, 87.5, summary["max_memory_pct"])
+}
+
 func TestMcpContainerStats(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
 	session := mcpClient(t, server.URL, user.Token)

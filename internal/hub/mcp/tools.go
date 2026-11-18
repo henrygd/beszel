@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"math"
 	"slices"
 	"strings"
 	"time"
@@ -46,14 +47,17 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 		Description: "Get historical metrics for one system over a time range. " +
 			"Records are stored at 1m, 10m, 20m, 120m and 480m resolutions, kept for 1h, 12h, 24h, 7d and 30d respectively. " +
 			"The range covers hours ending at until (default now), so a past incident can be inspected with e.g. hours=2 and until set shortly after it; " +
-			"by default the finest resolution still holding the start of the range is used.",
+			"by default the finest resolution still holding the start of the range is used. " +
+			"Samples are averages over each record's interval; the summary's max CPU, memory, bandwidth and disk I/O values are the peaks within those intervals, " +
+			"each with the time of the record holding it (the peak falls within the interval ending at that time).",
 	}, h.getSystemStats)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "get_container_stats",
 		Description: "Get historical CPU, memory and network usage of one system's containers over a time range: average and peak values per container, " +
 			"with the time of each peak, sorted by peak CPU by default. To find which containers caused a past spike seen in get_system_stats, " +
 			"set until and hours to a window around it. Pass container to also get that container's time series samples. " +
-			"Resolutions and retention are the same as get_system_stats.",
+			"Resolutions and retention are the same as get_system_stats. Peaks within an interval are not stored for containers, so at resolutions coarser than 1m " +
+			"their max values are the highest interval averages and short spikes appear diluted.",
 	}, h.getContainerStats)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "list_containers",
@@ -177,17 +181,21 @@ type serverInfo struct {
 }
 
 type statsSummary struct {
-	Count        int         `json:"count"`
-	AvgCpu       float64     `json:"avg_cpu_pct"`
-	MaxCpu       float64     `json:"max_cpu_pct"`
-	AvgMem       float64     `json:"avg_memory_pct"`
-	MaxMem       float64     `json:"max_memory_pct"`
-	AvgDisk      float64     `json:"avg_disk_pct"`
-	MaxDisk      float64     `json:"max_disk_pct"`
-	AvgBandwidth *[2]float64 `json:"avg_bandwidth_bps,omitzero"` // [sent, recv]
-	MaxBandwidth *[2]float64 `json:"max_bandwidth_bps,omitzero"` // [sent, recv]
-	AvgDiskIO    *[2]float64 `json:"avg_disk_io_bps,omitzero"`   // [read, write]
-	MaxDiskIO    *[2]float64 `json:"max_disk_io_bps,omitzero"`   // [read, write]
+	Count            int         `json:"count"`
+	AvgCpu           float64     `json:"avg_cpu_pct"`
+	MaxCpu           float64     `json:"max_cpu_pct"`
+	MaxCpuTime       string      `json:"max_cpu_time,omitempty"` // RFC3339
+	AvgMem           float64     `json:"avg_memory_pct"`
+	MaxMem           float64     `json:"max_memory_pct"`
+	MaxMemTime       string      `json:"max_memory_time,omitempty"` // RFC3339
+	AvgDisk          float64     `json:"avg_disk_pct"`
+	MaxDisk          float64     `json:"max_disk_pct"`
+	AvgBandwidth     *[2]float64 `json:"avg_bandwidth_bps,omitzero"`  // [sent, recv]
+	MaxBandwidth     *[2]float64 `json:"max_bandwidth_bps,omitzero"`  // [sent, recv]
+	MaxBandwidthTime [2]string   `json:"max_bandwidth_time,omitzero"` // [sent, recv] RFC3339, empty if zero
+	AvgDiskIO        *[2]float64 `json:"avg_disk_io_bps,omitzero"`    // [read, write]
+	MaxDiskIO        *[2]float64 `json:"max_disk_io_bps,omitzero"`    // [read, write]
+	MaxDiskIOTime    [2]string   `json:"max_disk_io_time,omitzero"`   // [read, write] RFC3339, empty if zero
 }
 
 type statsSample struct {
@@ -631,6 +639,24 @@ func newStatsSample(recordTime string, s system.Stats) statsSample {
 	return sample
 }
 
+// peakMemPct returns the stored peak memory usage of a rollup record as a
+// percentage of total memory, or 0 if the record holds no peak (1m records).
+// Records created before 0.21.1 only hold the deprecated GB fields.
+func peakMemPct(s system.Stats) float64 {
+	const gb = 1024 * 1024 * 1024
+	total, maxUsed := float64(s.MemBytes[0]), float64(s.MaxMemBytes)
+	if total == 0 {
+		total = s.Mem * gb
+	}
+	if maxUsed == 0 {
+		maxUsed = s.MaxMem * gb
+	}
+	if total == 0 || maxUsed == 0 {
+		return 0
+	}
+	return math.Round(maxUsed/total*100*100) / 100
+}
+
 // summarizeStats computes aggregate metrics over the decoded records.
 func summarizeStats(decoded []decodedStat) statsSummary {
 	summary := statsSummary{Count: len(decoded)}
@@ -641,22 +667,41 @@ func summarizeStats(decoded []decodedStat) statsSummary {
 	count := float64(len(decoded))
 	for _, item := range decoded {
 		s := item.stats
+		// records coarser than 1m hold window averages, with the peaks within
+		// each window stored separately
 		summary.AvgCpu += s.Cpu
-		summary.MaxCpu = max(summary.MaxCpu, s.Cpu)
+		if peak := max(s.Cpu, s.MaxCpu); summary.MaxCpuTime == "" || peak > summary.MaxCpu {
+			summary.MaxCpu, summary.MaxCpuTime = peak, item.time
+		}
 		summary.AvgMem += s.MemPct
-		summary.MaxMem = max(summary.MaxMem, s.MemPct)
+		if peak := max(s.MemPct, peakMemPct(s)); summary.MaxMemTime == "" || peak > summary.MaxMem {
+			summary.MaxMem, summary.MaxMemTime = peak, item.time
+		}
 		summary.AvgDisk += s.DiskPct
 		summary.MaxDisk = max(summary.MaxDisk, s.DiskPct)
 		// sample conversion applies the deprecated-field fallbacks
 		sample := newStatsSample("", s)
 		avgBandwidth[0] += float64(sample.NetSent)
 		avgBandwidth[1] += float64(sample.NetRecv)
-		maxBandwidth[0] = max(maxBandwidth[0], float64(sample.NetSent))
-		maxBandwidth[1] = max(maxBandwidth[1], float64(sample.NetRecv))
 		avgDiskIO[0] += float64(sample.DiskRead)
 		avgDiskIO[1] += float64(sample.DiskWrite)
-		maxDiskIO[0] = max(maxDiskIO[0], float64(sample.DiskRead))
-		maxDiskIO[1] = max(maxDiskIO[1], float64(sample.DiskWrite))
+		// stored peaks, including the deprecated MB/s fields of records created by older hubs
+		peakBandwidth := [2]float64{
+			max(float64(sample.NetSent), float64(s.MaxBandwidth[0]), s.MaxNetworkSent*1024*1024),
+			max(float64(sample.NetRecv), float64(s.MaxBandwidth[1]), s.MaxNetworkRecv*1024*1024),
+		}
+		peakDiskIO := [2]float64{
+			max(float64(sample.DiskRead), float64(s.MaxDiskIO[0])),
+			max(float64(sample.DiskWrite), float64(s.MaxDiskIO[1])),
+		}
+		for i := range 2 {
+			if peakBandwidth[i] > maxBandwidth[i] {
+				maxBandwidth[i], summary.MaxBandwidthTime[i] = peakBandwidth[i], item.time
+			}
+			if peakDiskIO[i] > maxDiskIO[i] {
+				maxDiskIO[i], summary.MaxDiskIOTime[i] = peakDiskIO[i], item.time
+			}
+		}
 	}
 	f := func(v [2]float64) *[2]float64 { return &v }
 	summary.AvgCpu /= count
