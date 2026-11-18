@@ -12,7 +12,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/hub/utils"
 
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 )
 
 const agentConnectPath = "/api/beszel/agent-connect"
