@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/email"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -19,8 +20,8 @@ import (
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -97,6 +98,10 @@ func (h *Hub) StartHub() error {
 		if err := h.sm.Initialize(); err != nil {
 			return err
 		}
+		// start agent-only server if configured (after system manager is ready)
+		if err := h.startAgentServer(e); err != nil {
+			return err
+		}
 		// start heartbeat if configured
 		if h.hb != nil {
 			go h.hb.Start(h.hbStop)
@@ -111,6 +116,7 @@ func (h *Hub) StartHub() error {
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
 	bindNetworkMonitorsEvents(h)
+	email.BindAuthEmails(h.App)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {

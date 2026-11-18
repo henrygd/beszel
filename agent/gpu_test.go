@@ -722,7 +722,7 @@ func TestCalculateDeltas(t *testing.T) {
 	})
 }
 
-func TestCalculateIntelGPUUsage(t *testing.T) {
+func TestCalculateEngineUsage(t *testing.T) {
 	gm := &GPUManager{}
 
 	t.Run("with no previous snapshot", func(t *testing.T) {
@@ -736,7 +736,7 @@ func TestCalculateIntelGPUUsage(t *testing.T) {
 				"Compute":   60.0,
 			},
 		}
-		maxUsage := gm.calculateIntelGPUUsage(gpuAvg, gpu, nil, 2)
+		maxUsage := gm.calculateEngineUsage(gpuAvg, gpu, nil, 2)
 
 		assert.Equal(t, 40.0, maxUsage, "Should return max engine usage (80/2=40)")
 		assert.Equal(t, 40.0, gpuAvg.Engines["Render/3D"])
@@ -762,7 +762,7 @@ func TestCalculateIntelGPUUsage(t *testing.T) {
 				"Compute":   60.0,
 			},
 		}
-		maxUsage := gm.calculateIntelGPUUsage(gpuAvg, gpu, snapshot, 5)
+		maxUsage := gm.calculateEngineUsage(gpuAvg, gpu, snapshot, 5)
 
 		// Deltas: Render/3D=100, Video=60, Compute=80 over 5 counts
 		assert.Equal(t, 20.0, maxUsage, "Should return max engine delta (100/5=20)")
@@ -787,7 +787,7 @@ func TestCalculateIntelGPUUsage(t *testing.T) {
 				// NewEngine doesn't exist in snapshot
 			},
 		}
-		maxUsage := gm.calculateIntelGPUUsage(gpuAvg, gpu, snapshot, 2)
+		maxUsage := gm.calculateEngineUsage(gpuAvg, gpu, snapshot, 2)
 
 		assert.Equal(t, 25.0, maxUsage)
 		assert.Equal(t, 10.0, gpuAvg.Engines["Render/3D"], "Should use delta for existing engine")

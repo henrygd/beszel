@@ -8,10 +8,11 @@ import (
 	"sync"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/mailer"
+	"github.com/henrygd/beszel/internal/email"
 	"github.com/nicholas-fedor/shoutrrr"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
 type hubLike interface {
@@ -261,8 +262,8 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 		return nil
 	}
 	addresses := []mail.Address{}
-	for _, email := range userAlertSettings.Emails {
-		addresses = append(addresses, mail.Address{Address: email})
+	for _, address := range userAlertSettings.Emails {
+		addresses = append(addresses, mail.Address{Address: address})
 	}
 	message := mailer.Message{
 		To:      addresses,
@@ -272,6 +273,17 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 			Address: am.hub.Settings().Meta.SenderAddress,
 			Name:    am.hub.Settings().Meta.SenderName,
 		},
+	}
+	if html, err := email.RenderAlert(email.Alert{
+		Title:        data.Title,
+		Message:      data.Message,
+		Link:         data.Link,
+		LinkText:     data.LinkText,
+		SettingsLink: am.hub.MakeLink("settings", "notifications"),
+	}); err != nil {
+		am.hub.Logger().Error("Failed to render email alert HTML", "err", err)
+	} else {
+		message.HTML = html
 	}
 	err = am.hub.NewMailClient().Send(&message)
 	if err != nil {

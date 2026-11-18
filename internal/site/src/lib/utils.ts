@@ -130,7 +130,7 @@ export const chartTimeData: ChartTimeData = {
 	"1m": {
 		type: "1m",
 		expectedInterval: 2000, // allow a bit of latency for one second updates (#1247)
-		label: () => t`1 minute`,
+		label: () => formatTimeUnit(1, "minute"),
 		format: (timestamp: string) => hourWithSeconds(timestamp),
 		ticks: 3,
 		getOffset: (endTime: Date) => timeMinute.offset(endTime, -1),
@@ -139,7 +139,7 @@ export const chartTimeData: ChartTimeData = {
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
-		label: () => t`1 hour`,
+		label: () => formatTimeUnit(1, "hour"),
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
@@ -147,7 +147,7 @@ export const chartTimeData: ChartTimeData = {
 	"12h": {
 		type: "10m",
 		expectedInterval: 60_000 * 10,
-		label: () => t`12 hours`,
+		label: () => formatTimeUnit(12, "hour"),
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
@@ -155,14 +155,14 @@ export const chartTimeData: ChartTimeData = {
 	"24h": {
 		type: "20m",
 		expectedInterval: 60_000 * 20,
-		label: () => t`24 hours`,
+		label: () => formatTimeUnit(24, "hour"),
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	"1w": {
 		type: "120m",
 		expectedInterval: 60_000 * 120,
-		label: () => t`1 week`,
+		label: () => formatTimeUnit(1, "week"),
 		ticks: 7,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
@@ -170,7 +170,7 @@ export const chartTimeData: ChartTimeData = {
 	"30d": {
 		type: "480m",
 		expectedInterval: 60_000 * 480,
-		label: () => t`30 days`,
+		label: () => formatTimeUnit(30, "day"),
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
@@ -190,6 +190,16 @@ function numberLocale() {
 /** Format number using the app's selected language (e.g. decimal and grouping separators) */
 export function formatNumber(num: number) {
 	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
+}
+
+/** Format an amount of a time unit in the app's selected language (e.g. "7 days", "7 Tage") */
+export function formatTimeUnit(num: number, unit: "minute" | "hour" | "day" | "week" | "month" | "year") {
+	return new Intl.NumberFormat(numberLocale(), {
+		style: "unit",
+		unit,
+		unitDisplay: "long",
+		numberingSystem: "latn",
+	}).format(num)
 }
 
 const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()
@@ -223,15 +233,15 @@ export function formatMicroseconds(microseconds: number, fixedDigits = true): st
 
 	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
 
-	if (microseconds < 1_000_000) {
-		const milliseconds = microseconds / 1000
-		const digits = milliseconds >= 10 ? 1 : 2
-		return `${digitFormatter(milliseconds, digits)}ms`
+	// Thresholds are where the printed value rounds up to the next unit or
+	// digit count (999.95ms -> 1.00s, 9.995ms -> 10.0ms, 9.995s -> 10.0s)
+	if (microseconds < 999_950) {
+		const digits = microseconds >= 9_995 ? 1 : 2
+		return `${digitFormatter(microseconds / 1000, digits)}ms`
 	}
 
-	const seconds = microseconds / 1_000_000
-	const digits = seconds >= 10 ? 1 : 2
-	return `${digitFormatter(seconds, digits)}s`
+	const digits = microseconds >= 9_995_000 ? 1 : 2
+	return `${digitFormatter(microseconds / 1_000_000, digits)}s`
 }
 
 /** Get value from local or session storage */
@@ -441,6 +451,25 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 	return (...args: Parameters<T>) => {
 		clearTimeout(timeout)
 		timeout = setTimeout(() => func(...args), wait)
+	}
+}
+
+/** Debounce separately per key, so a pending call for one key is never replaced by a call for another */
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
+export function debounceByKey<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number
+): (key: string, ...args: Parameters<T>) => void {
+	const timeouts = new Map<string, ReturnType<typeof setTimeout>>()
+	return (key: string, ...args: Parameters<T>) => {
+		clearTimeout(timeouts.get(key))
+		timeouts.set(
+			key,
+			setTimeout(() => {
+				timeouts.delete(key)
+				func(...args)
+			}, wait)
+		)
 	}
 }
 

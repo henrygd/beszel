@@ -5,11 +5,12 @@ package hub_test
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	pbTests "ganigeorgiev.com/pocketbase/pocketbase/tests"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/pocketbase/core"
-	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -145,7 +146,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserInUsers, *systemsCollection.ListRule)
 	assert.Equal(t, isUserInUsers, *systemsCollection.ViewRule)
 	assert.Equal(t, isUserInUsersNotReadonly, *systemsCollection.CreateRule)
-	assert.Equal(t, isUserInUsersNotReadonly, *systemsCollection.UpdateRule)
+	assert.Equal(t, isUserInUsersNotReadonly+` && (@request.body.users:changed = false || @request.auth.role = "admin")`, *systemsCollection.UpdateRule)
 	assert.Equal(t, isUserInUsersNotReadonly, *systemsCollection.DeleteRule)
 
 	// universal_tokens collection
@@ -273,7 +274,7 @@ func TestCollectionRulesShareAllSystems(t *testing.T) {
 	assert.Equal(t, isUser, *systemsCollection.ListRule)
 	assert.Equal(t, isUser, *systemsCollection.ViewRule)
 	assert.Equal(t, isUserNotReadonly, *systemsCollection.CreateRule)
-	assert.Equal(t, isUserNotReadonly, *systemsCollection.UpdateRule)
+	assert.Equal(t, isUserNotReadonly+` && (@request.body.users:changed = false || @request.auth.role = "admin")`, *systemsCollection.UpdateRule)
 	assert.Equal(t, isUserNotReadonly, *systemsCollection.DeleteRule)
 
 	// universal_tokens collection
@@ -346,6 +347,9 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 	userReadonly, _ := beszelTests.CreateUserWithRole(hub, "userreadonly@example.com", "password", "readonly")
 	userReadonlyToken, _ := userReadonly.NewAuthToken()
 
+	userAdmin, _ := beszelTests.CreateUserWithRole(hub, "useradmin@example.com", "password", "admin")
+	userAdminToken, _ := userAdmin.NewAuthToken()
+
 	userOneSystem, _ := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "system1",
 		"users": []string{user1.Id},
@@ -354,7 +358,7 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 
 	sharedSystem, _ := beszelTests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "system2",
-		"users": []string{user1.Id, user2.Id},
+		"users": []string{user1.Id, user2.Id, userAdmin.Id},
 		"host":  "127.0.0.2",
 	})
 
@@ -372,7 +376,7 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 	})
 
 	userRecords, _ := hub.CountRecords("users")
-	assert.EqualValues(t, 3, userRecords, "all users should be created")
+	assert.EqualValues(t, 4, userRecords, "all users should be created")
 
 	systemRecords, _ := hub.CountRecords("systems")
 	assert.EqualValues(t, 3, systemRecords, "all systems should be created")
@@ -473,6 +477,70 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
 				t.Setenv("SHARE_ALL_SYSTEMS", "")
 				hub.SetCollectionAuthSettings()
+			},
+		},
+		{
+			Name:   "User can update a shared system without changing its users",
+			Method: http.MethodPatch,
+			URL:    fmt.Sprintf("/api/collections/systems/records/%s", sharedSystem.Id),
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:            strings.NewReader(fmt.Sprintf(`{"name":"system2-renamed","users":["%s","%s","%s"]}`, user1.Id, user2.Id, userAdmin.Id)),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"name":"system2-renamed"`},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "User cannot remove other users from a shared system",
+			Method: http.MethodPatch,
+			URL:    fmt.Sprintf("/api/collections/systems/records/%s", sharedSystem.Id),
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:            strings.NewReader(fmt.Sprintf(`{"users":["%s"]}`, user1.Id)),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"resource wasn't found"},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				system, err := app.FindRecordById("systems", sharedSystem.Id)
+				require.NoError(t, err)
+				assert.ElementsMatch(t, []string{user1.Id, user2.Id, userAdmin.Id}, system.GetStringSlice("users"))
+			},
+		},
+		{
+			Name:   "User cannot add users to a shared system",
+			Method: http.MethodPatch,
+			URL:    fmt.Sprintf("/api/collections/systems/records/%s", sharedSystem.Id),
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:            strings.NewReader(fmt.Sprintf(`{"users+":["%s"]}`, userReadonly.Id)),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"resource wasn't found"},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				system, err := app.FindRecordById("systems", sharedSystem.Id)
+				require.NoError(t, err)
+				assert.ElementsMatch(t, []string{user1.Id, user2.Id, userAdmin.Id}, system.GetStringSlice("users"))
+			},
+		},
+		{
+			Name:   "Admin can change the users of a shared system",
+			Method: http.MethodPatch,
+			URL:    fmt.Sprintf("/api/collections/systems/records/%s", sharedSystem.Id),
+			Headers: map[string]string{
+				"Authorization": userAdminToken,
+			},
+			Body:               strings.NewReader(fmt.Sprintf(`{"users":["%s","%s"]}`, user1.Id, userAdmin.Id)),
+			ExpectedStatus:     200,
+			ExpectedContent:    []string{user1.Id, userAdmin.Id},
+			NotExpectedContent: []string{user2.Id},
+			TestAppFactory:     testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				system, err := app.FindRecordById("systems", sharedSystem.Id)
+				require.NoError(t, err)
+				assert.ElementsMatch(t, []string{user1.Id, userAdmin.Id}, system.GetStringSlice("users"))
 			},
 		},
 		{

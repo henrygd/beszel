@@ -28,7 +28,7 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
+import { formatMonitorFields, getMonitorTarget, isHttpsTarget, parseMonitorFields } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -196,8 +196,13 @@ function getMonitorIdentityKey({ system, target, protocol, port, server, ipVersi
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", rawIpVersion = ""] =
-		line.split(",")
+	let fields: string[]
+	try {
+		fields = parseMonitorFields(line)
+	} catch (err) {
+		throw new Error(`Line ${lineNumber}: ${err instanceof Error ? err.message : "invalid monitor entry"}`)
+	}
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", rawIpVersion = ""] = fields
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
@@ -235,7 +240,9 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
 	const ipVersion = monitor.ipVersion ? `ipv${monitor.ipVersion}` : ""
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, ipVersion]).join(",")
+	return formatMonitorFields(
+		trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, ipVersion])
+	)
 }
 
 export function SystemMultiSelect({

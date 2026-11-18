@@ -4,12 +4,14 @@ package agent
 
 import (
 	"errors"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/stretchr/testify/assert"
 )
@@ -70,6 +72,67 @@ func TestServiceUnitName(t *testing.T) {
 			assert.Equal(t, want, serviceUnitName(input))
 		})
 	}
+}
+
+func TestKeepUnit(t *testing.T) {
+	tests := []struct {
+		name        string
+		activeState string
+		timestamp   any  // ActiveEnterTimestamp value
+		hadEntry    bool // unit has a failed entry from an earlier update
+		wantKeep    bool
+		wantLookup  bool // ActiveEnterTimestamp is read
+		wantEntry   bool // failed entry is still there afterwards
+	}{
+		{name: "active unit with timestamp", activeState: "active", timestamp: uint64(1762500000000000), wantKeep: true, wantLookup: true},
+		{name: "never-run inactive unit", activeState: "inactive", timestamp: uint64(0), wantLookup: true},
+		{name: "failed oneshot with timestamp 0", activeState: "failed", timestamp: uint64(0), wantKeep: true},
+		{name: "timestamp MaxUint64", activeState: "inactive", timestamp: uint64(math.MaxUint64), wantLookup: true},
+		{name: "timestamp not a uint64", activeState: "inactive", timestamp: "unexpected", wantLookup: true},
+		{name: "recovered oneshot removes stale entry", activeState: "inactive", timestamp: uint64(0), hadEntry: true, wantLookup: true},
+		{name: "failed oneshot running again keeps entry", activeState: "activating", timestamp: uint64(0), hadEntry: true, wantLookup: true, wantEntry: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := &systemdManager{serviceStatsMap: map[string]*systemd.Service{}}
+			if tt.hadEntry {
+				sm.serviceStatsMap["backup.service"] = &systemd.Service{Name: "backup", State: systemd.StatusFailed}
+			}
+			lookedUp := false
+
+			keep, err := sm.keepUnit(dbus.UnitStatus{Name: "backup.service", ActiveState: tt.activeState}, func() (any, error) {
+				lookedUp = true
+				return tt.timestamp, nil
+			})
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantKeep, keep)
+			assert.Equal(t, tt.wantLookup, lookedUp)
+			assert.Equal(t, tt.wantEntry, sm.serviceStatsMap["backup.service"] != nil)
+			wantCount := 0
+			if tt.wantEntry {
+				wantCount = 1
+			}
+			assert.Equal(t, wantCount, sm.getServiceStatsCount())
+			assert.EqualValues(t, wantCount, sm.getFailedServiceCount())
+		})
+	}
+
+	t.Run("lookup error keeps existing entry", func(t *testing.T) {
+		sm := &systemdManager{serviceStatsMap: map[string]*systemd.Service{
+			"backup.service": {Name: "backup", State: systemd.StatusFailed},
+		}}
+		lookupErr := errors.New("dbus error")
+
+		keep, err := sm.keepUnit(dbus.UnitStatus{Name: "backup.service", ActiveState: "inactive"}, func() (any, error) {
+			return nil, lookupErr
+		})
+
+		assert.ErrorIs(t, err, lookupErr)
+		assert.False(t, keep)
+		assert.Contains(t, sm.serviceStatsMap, "backup.service")
+	})
 }
 
 func TestCanReadSystemJournal(t *testing.T) {
