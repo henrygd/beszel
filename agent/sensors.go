@@ -142,14 +142,14 @@ func parseSensorFilter(val string) sensorFilter {
 
 // updateTemperatures updates the agent with the latest sensor temperatures
 func (a *Agent) updateTemperatures(systemStats *system.Stats) {
+	// reset high temp (GPU temperatures can still set it when sensors are skipped)
+	a.systemInfo.DashboardTemp = 0
+
 	// skip if sensors whitelist is set to empty string
 	if a.sensorConfig.skipCollection {
 		slog.Debug("Skipping temperature collection")
 		return
 	}
-
-	// reset high temp
-	a.systemInfo.DashboardTemp = 0
 
 	temps, err := a.getTempsWithTimeout(getSensorTemps)
 	if err != nil {
