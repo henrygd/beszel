@@ -100,13 +100,13 @@ func TestStartAgentServer(t *testing.T) {
 
 	se := &core.ServeEvent{App: testApp}
 
-	t.Run("not started when AGENT_PORT is unset", func(t *testing.T) {
-		t.Setenv("AGENT_PORT", "")
+	t.Run("not started when AGENT_LISTEN is unset", func(t *testing.T) {
+		t.Setenv("AGENT_LISTEN", "")
 		require.NoError(t, hub.startAgentServer(se))
 	})
 
-	t.Run("invalid AGENT_PORT returns an error", func(t *testing.T) {
-		t.Setenv("AGENT_PORT", "not-a-port")
+	t.Run("invalid AGENT_LISTEN returns an error", func(t *testing.T) {
+		t.Setenv("AGENT_LISTEN", "not-a-port")
 		assert.Error(t, hub.startAgentServer(se))
 	})
 
@@ -114,7 +114,7 @@ func TestStartAgentServer(t *testing.T) {
 		busy, err := net.Listen("tcp", "127.0.0.1:0")
 		require.NoError(t, err)
 		defer busy.Close()
-		t.Setenv("AGENT_PORT", busy.Addr().String())
+		t.Setenv("AGENT_LISTEN", busy.Addr().String())
 		assert.Error(t, hub.startAgentServer(se))
 	})
 
@@ -125,7 +125,7 @@ func TestStartAgentServer(t *testing.T) {
 		addr := probe.Addr().String()
 		require.NoError(t, probe.Close())
 
-		t.Setenv("BESZEL_HUB_AGENT_PORT", addr)
+		t.Setenv("BESZEL_HUB_AGENT_LISTEN", addr)
 		require.NoError(t, hub.startAgentServer(se))
 
 		client := &http.Client{Timeout: 3 * time.Second}

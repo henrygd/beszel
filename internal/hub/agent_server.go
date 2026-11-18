@@ -17,7 +17,7 @@ import (
 
 const agentConnectPath = "/api/beszel/agent-connect"
 
-// parseAgentListenAddr converts the AGENT_PORT value to a listen address.
+// parseAgentListenAddr converts the AGENT_LISTEN value to a listen address.
 // A bare port ("8091") listens on all interfaces; otherwise the value must be
 // a host:port pair ("127.0.0.1:8091", ":8091", "[::1]:8091"). An empty value
 // returns an empty address, meaning the agent server is disabled.
@@ -30,11 +30,11 @@ func parseAgentListenAddr(value string) (string, error) {
 	if strings.Contains(value, ":") {
 		var err error
 		if host, port, err = net.SplitHostPort(value); err != nil {
-			return "", fmt.Errorf("invalid AGENT_PORT %q: %w", value, err)
+			return "", fmt.Errorf("invalid AGENT_LISTEN %q: %w", value, err)
 		}
 	}
 	if n, err := strconv.Atoi(port); err != nil || n < 1 || n > 65535 {
-		return "", fmt.Errorf("invalid AGENT_PORT %q: port must be a number between 1 and 65535", value)
+		return "", fmt.Errorf("invalid AGENT_LISTEN %q: port must be a number between 1 and 65535", value)
 	}
 	return net.JoinHostPort(host, port), nil
 }
@@ -52,10 +52,10 @@ func (h *Hub) newAgentServerHandler() http.Handler {
 }
 
 // startAgentServer starts an additional listener that only exposes the agent
-// connection endpoint, if AGENT_PORT is set. This allows the main port (UI and
+// connection endpoint, if AGENT_LISTEN is set. This allows the main port (UI and
 // API) to be kept private while agents connect through a separate port.
 func (h *Hub) startAgentServer(se *core.ServeEvent) error {
-	value, _ := utils.GetEnv("AGENT_PORT")
+	value, _ := utils.GetEnv("AGENT_LISTEN")
 	addr, err := parseAgentListenAddr(value)
 	if err != nil || addr == "" {
 		return err
