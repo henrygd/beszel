@@ -642,7 +642,9 @@ func summarizeStats(decoded []decodedStat) statsSummary {
 	for _, item := range decoded {
 		s := item.stats
 		summary.AvgCpu += s.Cpu
-		summary.MaxCpu = max(summary.MaxCpu, s.Cpu)
+		// records coarser than 1m hold window averages, with the peaks within
+		// each window stored separately
+		summary.MaxCpu = max(summary.MaxCpu, s.Cpu, s.MaxCpu)
 		summary.AvgMem += s.MemPct
 		summary.MaxMem = max(summary.MaxMem, s.MemPct)
 		summary.AvgDisk += s.DiskPct
@@ -651,12 +653,13 @@ func summarizeStats(decoded []decodedStat) statsSummary {
 		sample := newStatsSample("", s)
 		avgBandwidth[0] += float64(sample.NetSent)
 		avgBandwidth[1] += float64(sample.NetRecv)
-		maxBandwidth[0] = max(maxBandwidth[0], float64(sample.NetSent))
-		maxBandwidth[1] = max(maxBandwidth[1], float64(sample.NetRecv))
+		// stored peaks, including the deprecated MB/s fields of older agents
+		maxBandwidth[0] = max(maxBandwidth[0], float64(sample.NetSent), float64(s.MaxBandwidth[0]), s.MaxNetworkSent*1024*1024)
+		maxBandwidth[1] = max(maxBandwidth[1], float64(sample.NetRecv), float64(s.MaxBandwidth[1]), s.MaxNetworkRecv*1024*1024)
 		avgDiskIO[0] += float64(sample.DiskRead)
 		avgDiskIO[1] += float64(sample.DiskWrite)
-		maxDiskIO[0] = max(maxDiskIO[0], float64(sample.DiskRead))
-		maxDiskIO[1] = max(maxDiskIO[1], float64(sample.DiskWrite))
+		maxDiskIO[0] = max(maxDiskIO[0], float64(sample.DiskRead), float64(s.MaxDiskIO[0]))
+		maxDiskIO[1] = max(maxDiskIO[1], float64(sample.DiskWrite), float64(s.MaxDiskIO[1]))
 	}
 	f := func(v [2]float64) *[2]float64 { return &v }
 	summary.AvgCpu /= count
