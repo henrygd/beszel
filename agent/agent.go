@@ -40,6 +40,7 @@ type Agent struct {
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
 	dockerManager             *dockerManager                                        // Manages Docker API requests
+	libvirtManager            *libvirtManager                                       // Manages libvirt VM metrics
 	sensorConfig              *SensorConfig                                         // Sensors config
 	tempsReading              atomic.Bool                                           // A temperature read is still running (possibly blocked in the kernel)
 	fansReading               atomic.Bool                                           // A fan read is still running (possibly blocked in the kernel)
@@ -124,6 +125,14 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize system info
 	agent.refreshSystemDetails()
+
+	// initialize libvirt after system details so CPU normalization knows the
+	// host thread count. VM monitoring is opt-in through LIBVIRT_URI or
+	// LIBVIRT_SOCKET.
+	agent.libvirtManager, err = newLibvirtManager(agent)
+	if err != nil {
+		slog.Warn("Libvirt monitoring unavailable", "err", err)
+	}
 
 	// SMART_INTERVAL env var to update smart data at this interval
 	if smartIntervalEnv, exists := utils.GetEnv("SMART_INTERVAL"); exists {
@@ -231,6 +240,15 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 		}
 	}
 
+	if a.libvirtManager != nil {
+		if vmStats, err := a.libvirtManager.getStats(cacheTimeMs); err == nil {
+			data.VirtualMachines = vmStats
+			slog.Debug("Virtual machines", "count", len(vmStats))
+		} else {
+			slog.Debug("Virtual machines", "err", err)
+		}
+	}
+
 	if a.monitorManager != nil {
 		data.Monitors = a.monitorManager.GetResults(cacheTimeMs)
 		slog.Debug("Monitors", "data", data.Monitors)
@@ -292,6 +310,9 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 // It runs until ctx is cancelled or the process receives SIGINT or SIGTERM.
 func (a *Agent) Start(ctx context.Context, serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
+	if a.libvirtManager != nil {
+		defer a.libvirtManager.close()
+	}
 	err := a.connectionManager.Start(ctx, serverOptions)
 	if err != nil {
 		a.cleanupSensorShadow()

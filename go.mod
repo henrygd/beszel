@@ -7,6 +7,7 @@ require (
 	ganigeorgiev.com/pocketbase/pocketbase v0.42.2
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.7.0
+	github.com/digitalocean/go-libvirt v0.0.0-20261013170128-efbbdf578ac8
 	github.com/distribution/reference v0.6.0
 	github.com/ebitengine/purego v0.11.3
 	github.com/fxamacker/cbor/v2 v2.10.0

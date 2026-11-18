@@ -4,11 +4,14 @@ package records
 import (
 	"encoding/json"
 	"math"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/vm"
 
 	"ganigeorgiev.com/pocketbase/dbx"
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
@@ -88,12 +91,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	err := rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
 
-		collections := [2]*core.Collection{}
+		collections := [3]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		collections[2], err = txApp.FindCachedCollectionByNameOrId("vm_stats")
 		if err != nil {
 			return err
 		}
@@ -171,6 +178,8 @@ func (rm *RecordManager) CreateLongerRecords() {
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+					case "vm_stats":
+						longerRecord.Set("stats", rm.AverageVMStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						txApp.Logger().Error("failed to save longer record", "err", err)
@@ -701,6 +710,87 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
 		})
 	}
+	return result
+}
+
+// AverageVMStats averages utilization while preserving the last observed VM
+// metadata and state. A VM is divided by the number of snapshots in which it
+// appears, so a newly created VM is not artificially averaged toward zero.
+func (rm *RecordManager) AverageVMStats(db dbx.Builder, records RecordIds) []vm.Stats {
+	allStats := make([][]vm.Stats, 0, len(records))
+	var row StatsRecord
+	params := make(dbx.Params, 1)
+	for _, rec := range records {
+		params["id"] = rec.Id
+		if err := db.NewQuery("SELECT stats FROM vm_stats WHERE id = {:id}").Bind(params).One(&row); err != nil {
+			return []vm.Stats{}
+		}
+		var stats []vm.Stats
+		if err := json.Unmarshal(row.Stats, &stats); err != nil {
+			return []vm.Stats{}
+		}
+		allStats = append(allStats, stats)
+	}
+	return AverageVMStatsSlice(allStats)
+}
+
+func AverageVMStatsSlice(records [][]vm.Stats) []vm.Stats {
+	type aggregate struct {
+		stat        vm.Stats
+		count       uint64
+		memoryCount uint64
+	}
+	sums := make(map[string]*aggregate)
+	for _, snapshot := range records {
+		for i := range snapshot {
+			stat := snapshot[i]
+			agg := sums[stat.UUID]
+			if agg == nil {
+				agg = &aggregate{}
+				sums[stat.UUID] = agg
+			}
+			agg.count++
+			agg.stat.Name = stat.Name
+			agg.stat.UUID = stat.UUID
+			agg.stat.State = stat.State
+			agg.stat.VCPUs = stat.VCPUs
+			agg.stat.Autostart = stat.Autostart
+			agg.stat.DiskCapacity = stat.DiskCapacity
+			agg.stat.DiskAllocation = stat.DiskAllocation
+			agg.stat.CPU += stat.CPU
+			agg.stat.GuestCPU += stat.GuestCPU
+			if stat.MemoryFresh {
+				agg.stat.MemoryFresh = true
+				agg.stat.MemoryTotal = stat.MemoryTotal
+				agg.stat.Memory += stat.Memory
+				agg.memoryCount++
+			}
+			agg.stat.Bandwidth[0] += stat.Bandwidth[0]
+			agg.stat.Bandwidth[1] += stat.Bandwidth[1]
+			agg.stat.DiskIO[0] += stat.DiskIO[0]
+			agg.stat.DiskIO[1] += stat.DiskIO[1]
+		}
+	}
+	result := make([]vm.Stats, 0, len(sums))
+	for _, agg := range sums {
+		count := float64(agg.count)
+		agg.stat.CPU = twoDecimals(agg.stat.CPU / count)
+		agg.stat.GuestCPU = twoDecimals(agg.stat.GuestCPU / count)
+		if agg.memoryCount > 0 {
+			agg.stat.Memory = twoDecimals(agg.stat.Memory / float64(agg.memoryCount))
+		}
+		agg.stat.Bandwidth[0] = uint64(float64(agg.stat.Bandwidth[0]) / count)
+		agg.stat.Bandwidth[1] = uint64(float64(agg.stat.Bandwidth[1]) / count)
+		agg.stat.DiskIO[0] = uint64(float64(agg.stat.DiskIO[0]) / count)
+		agg.stat.DiskIO[1] = uint64(float64(agg.stat.DiskIO[1]) / count)
+		result = append(result, agg.stat)
+	}
+	slices.SortFunc(result, func(a, b vm.Stats) int {
+		if cmp := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); cmp != 0 {
+			return cmp
+		}
+		return strings.Compare(a.UUID, b.UUID)
+	})
 	return result
 }
 

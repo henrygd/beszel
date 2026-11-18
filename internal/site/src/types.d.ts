@@ -300,6 +300,46 @@ export interface ContainerStatsRecord extends RecordModel {
 	created: string | number
 }
 
+export interface VMStatsRecord extends RecordModel {
+	system: string
+	stats: VMStats[]
+	created: string | number
+}
+
+export interface VMStats {
+	/** display name */
+	n: string
+	/** stable libvirt UUID */
+	id: string
+	/** libvirt domain state */
+	s: number
+	/** CPU percent normalized to total host capacity */
+	c: number
+	/** CPU percent normalized to assigned vCPUs */
+	cg?: number
+	/** guest memory used (MiB) */
+	m?: number
+	/** guest memory total (MiB) */
+	mt?: number
+	/** whether the balloon memory sample is fresh */
+	mf?: boolean
+	/** bandwidth bytes/s [sent, received] */
+	b?: [number, number]
+	/** disk bytes/s [read, written] */
+	d?: [number, number]
+	/** aggregate virtual disk capacity in bytes */
+	dc?: number
+	/** aggregate host allocation in bytes */
+	da?: number
+	/** assigned vCPUs */
+	v?: number
+	/** starts automatically with libvirt */
+	a?: boolean
+	/** legacy container fields, intentionally absent */
+	ns?: never
+	nr?: never
+}
+
 interface ContainerStats {
 	/** name */
 	n: string
@@ -313,6 +353,8 @@ interface ContainerStats {
 	nr?: number
 	/** bandwidth bytes [sent, recv] */
 	b?: [number, number]
+	/** VM-only disk I/O field, intentionally absent */
+	d?: never
 }
 
 export interface SystemStatsRecord extends RecordModel {
@@ -415,6 +457,12 @@ type ChartDataContainer = {
 	[key: string]: key extends "created" ? never : ContainerStats
 }
 
+export type ChartDataVM = {
+	created: number | null
+} & {
+	[key: string]: key extends "created" ? never : VMStats
+}
+
 export interface SemVer {
 	major: number
 	minor: number
@@ -430,6 +478,7 @@ export interface ChartOptions {
 export interface ChartData extends ChartOptions {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
+	vmData: ChartDataVM[]
 }
 
 export interface AlertInfo {

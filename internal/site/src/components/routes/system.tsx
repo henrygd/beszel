@@ -2,7 +2,7 @@ import { memo, useState } from "react"
 import { Trans } from "@lingui/react/macro"
 import { compareSemVer, parseSemVer, supportsNetworkMonitors } from "@/lib/utils"
 import { SystemStatus } from "@/lib/enums"
-import type { GPUData } from "@/types"
+import type { GPUData, VMStats } from "@/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import InfoBar from "./system/info-bar"
 import { useSystemData } from "./system/use-system-data"
@@ -24,9 +24,19 @@ import {
 	SystemdTable,
 } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
+import {
+	ContainerIcon,
+	CpuIcon,
+	HardDriveIcon,
+	MonitorIcon,
+	NetworkIcon,
+	PackageIcon,
+	TerminalSquareIcon,
+} from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import ContainersTable from "../containers-table/containers-table"
+import { VMDiskChart, VMMemoryChart, VMNetworkChart, VMCPUChart } from "./system/charts/vm-charts"
+import { VirtualMachinesTable } from "./system/virtual-machines-table"
 
 const SEMVER_0_14_0 = parseSemVer("0.14.0")
 const SEMVER_0_15_0 = parseSemVer("0.15.0")
@@ -40,6 +50,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		containerData,
 		chartData,
 		containerChartConfigs,
+		vmData,
+		vmChartConfigs,
 		details,
 		grid,
 		setGrid,
@@ -69,6 +81,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}
 
 	const hasContainers = containerData.length > 0
+	const lastVMPoint = vmData.at(-1)
+	const virtualMachines = lastVMPoint
+		? Object.entries(lastVMPoint)
+				.filter(([key]) => key !== "created")
+				.map(([, machine]) => machine as VMStats)
+		: []
+	const hasVMs = virtualMachines.length > 0
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
@@ -82,12 +101,28 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const tabs = ["core", "network", "disk"]
 	if (hasGpu) tabs.push("gpu")
 	if (hasContainers) tabs.push("containers")
+	if (hasVMs) tabs.push("virtual-machines")
 	if (hasSystemd) tabs.push("services")
 	if (packageUpdates) tabs.push("updates")
 	tabsRef.current = tabs
 
 	// shared chart props
 	const coreProps = { chartData, grid, dataEmpty, showMax, isLongerChart, maxValues }
+	const vmProps = { chartData, grid, dataEmpty }
+
+	function virtualMachinesContent() {
+		return (
+			<>
+				<div className="grid xl:grid-cols-2 gap-4">
+					<VMCPUChart {...vmProps} config={vmChartConfigs.cpu} />
+					<VMMemoryChart {...vmProps} config={vmChartConfigs.memory} />
+					<VMNetworkChart {...vmProps} config={vmChartConfigs.network} />
+					<VMDiskChart {...vmProps} config={vmChartConfigs.disk} />
+				</div>
+				<VirtualMachinesTable machines={virtualMachines} />
+			</>
+		)
+	}
 
 	function defaultLayout() {
 		return (
@@ -166,6 +201,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{hasContainersTable && <LazyContainersTable systemId={system.id} />}
 
+				{hasVMs && virtualMachinesContent()}
+
 				{hasSystemd && <LazySystemdTable systemId={system.id} />}
 
 				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
@@ -201,6 +238,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<TabsTrigger value="containers" className="w-full flex items-center gap-2">
 							<ContainerIcon className="size-3.5" />
 							<Trans>Containers</Trans>
+						</TabsTrigger>
+					)}
+					{hasVMs && (
+						<TabsTrigger value="virtual-machines" className="w-full flex items-center gap-2">
+							<MonitorIcon className="size-3.5" />
+							<Trans>Virtual Machines</Trans>
 						</TabsTrigger>
 					)}
 					{hasSystemd && (
@@ -300,6 +343,16 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								{hasContainersTable && <ContainersTable systemId={system.id} />}
 							</>
 						)}
+					</TabsContent>
+				)}
+
+				{hasVMs && (
+					<TabsContent
+						value="virtual-machines"
+						forceMount
+						className={activeTab === "virtual-machines" ? "contents" : "hidden"}
+					>
+						{mountedTabs.has("virtual-machines") && virtualMachinesContent()}
 					</TabsContent>
 				)}
 

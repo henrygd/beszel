@@ -8,6 +8,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/vm"
 	"github.com/henrygd/beszel/internal/records"
 
 	"github.com/stretchr/testify/assert"
@@ -898,4 +899,38 @@ func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
 	require.Len(t, result.ZfsPools, 1)
 	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
 	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
+}
+
+func TestAverageVMStatsSlice(t *testing.T) {
+	result := records.AverageVMStatsSlice([][]vm.Stats{
+		{
+			{UUID: "b", Name: "beta", State: vm.StateRunning, CPU: 10, GuestCPU: 20, Memory: 100, MemoryFresh: true, Bandwidth: [2]uint64{100, 200}},
+		},
+		{
+			{UUID: "a", Name: "alpha", State: vm.StatePaused, CPU: 30, GuestCPU: 40, Memory: 300, MemoryFresh: true, DiskIO: [2]uint64{50, 70}},
+			{UUID: "b", Name: "beta-renamed", State: vm.StateShutoff, CPU: 20, GuestCPU: 30, Memory: 200, MemoryFresh: true, Bandwidth: [2]uint64{300, 400}},
+		},
+	})
+
+	require.Len(t, result, 2)
+	assert.Equal(t, "alpha", result[0].Name)
+	assert.Equal(t, float64(30), result[0].CPU, "VMs absent from older snapshots use their own sample count")
+	assert.Equal(t, "beta-renamed", result[1].Name)
+	assert.Equal(t, vm.StateShutoff, result[1].State)
+	assert.Equal(t, float64(15), result[1].CPU)
+	assert.Equal(t, float64(25), result[1].GuestCPU)
+	assert.Equal(t, float64(150), result[1].Memory)
+	assert.Equal(t, [2]uint64{200, 300}, result[1].Bandwidth)
+}
+
+func TestAverageVMStatsSlicePreservesFreshMemorySample(t *testing.T) {
+	result := records.AverageVMStatsSlice([][]vm.Stats{
+		{{UUID: "vm", Name: "guest", Memory: 512, MemoryTotal: 2048, MemoryFresh: true}},
+		{{UUID: "vm", Name: "guest", MemoryFresh: false}},
+	})
+
+	require.Len(t, result, 1)
+	assert.True(t, result[0].MemoryFresh)
+	assert.Equal(t, float64(512), result[0].Memory)
+	assert.Equal(t, float64(2048), result[0].MemoryTotal)
 }

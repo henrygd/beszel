@@ -7,6 +7,7 @@ import type {
 	ContainerStatsRecord,
 	NetworkMonitorStatsRecord,
 	SystemStatsRecord,
+	VMStatsRecord,
 } from "@/types"
 
 type ChartTimeData = {
@@ -20,7 +21,12 @@ type ChartTimeData = {
 
 export const cache = new Map<
 	string,
-	ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[] | ChartData["containerData"]
+	| ChartTimeData
+	| SystemStatsRecord[]
+	| ContainerStatsRecord[]
+	| VMStatsRecord[]
+	| ChartData["containerData"]
+	| ChartData["vmData"]
 >()
 
 /** Append new records onto prev with gap detection. Converts string `created` values to ms timestamps in place.
@@ -51,7 +57,9 @@ export function appendData<T extends { created: string | number | null }>(
 	return result
 }
 
-export async function getStats<T extends SystemStatsRecord | ContainerStatsRecord | NetworkMonitorStatsRecord>(
+export async function getStats<
+	T extends SystemStatsRecord | ContainerStatsRecord | VMStatsRecord | NetworkMonitorStatsRecord,
+>(
 	collection: string,
 	systemId: string,
 	chartTime: ChartTimes,
@@ -68,6 +76,26 @@ export async function getStats<T extends SystemStatsRecord | ContainerStatsRecor
 		fields: "created,stats",
 		sort: "created",
 	})
+}
+
+export function makeVMData(records: VMStatsRecord[]): ChartData["vmData"] {
+	const result = [] as ChartData["vmData"]
+	for (const { created, stats } of records) {
+		if (!created) {
+			result.push({ created: null } as ChartData["vmData"][number])
+			continue
+		}
+		result.push(makeVMPoint(new Date(created).getTime(), stats))
+	}
+	return result
+}
+
+export function makeVMPoint(created: number, stats: VMStatsRecord["stats"]): ChartData["vmData"][number] {
+	const point = { created } as ChartData["vmData"][number]
+	for (const machine of stats) {
+		;(point as Record<string, unknown>)[machine.n] = machine
+	}
+	return point
 }
 
 export function makeContainerData(containers: ContainerStatsRecord[]): ChartDataContainer[] {
