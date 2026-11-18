@@ -55,8 +55,8 @@ import {
 	EyeIcon,
 	GlobeIcon,
 	LandmarkIcon,
+	Layers2Icon,
 	LoaderCircleIcon,
-	NetworkIcon,
 	ServerIcon,
 	Settings2Icon,
 	ShieldCheckIcon,
@@ -740,7 +740,7 @@ function NetworkMonitorSheetContent({
 						{!!monitor.ipVersion && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
-								<NetworkIcon className="size-3.5 text-muted-foreground" />
+								<Layers2Icon className="size-3.5 text-muted-foreground" />
 								<span>IPv{monitor.ipVersion}</span>
 							</>
 						)}

@@ -24,4 +24,4 @@ var MinVersionZfsData = semver.MustParse("0.18.9")
 var MinVersionNetworkMonitors = semver.MustParse("0.20.0")
 
 // MinVersionMonitorIPVersion is the minimum agent version that honors a monitor's IP version.
-var MinVersionMonitorIPVersion = semver.MustParse("0.21.2")
+var MinVersionMonitorIPVersion = semver.MustParse("0.22.0")

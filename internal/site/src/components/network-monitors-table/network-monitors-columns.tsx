@@ -17,7 +17,7 @@ import {
 	CopyIcon,
 	ShieldCheckIcon,
 	ShieldOffIcon,
-	NetworkIcon,
+	Layers2Icon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -188,7 +188,7 @@ export function getMonitorColumns({
 			id: "ipVersion",
 			meta: { label: t`IP Version` },
 			accessorFn: (record) => record.ipVersion ?? 0,
-			header: ({ column }) => <HeaderButton column={column} name={t`IP`} Icon={NetworkIcon} />,
+			header: ({ column }) => <HeaderButton column={column} name={t`IP`} Icon={Layers2Icon} />,
 			cell: ({ getValue }) => {
 				const ipVersion = getValue() as number
 				return <Badge variant="secondary">{ipVersion ? `IPv${ipVersion}` : <Trans>Auto</Trans>}</Badge>
