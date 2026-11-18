@@ -98,6 +98,10 @@ func (h *Hub) StartHub() error {
 		if err := h.sm.Initialize(); err != nil {
 			return err
 		}
+		// start agent-only server if configured (after system manager is ready)
+		if err := h.startAgentServer(e); err != nil {
+			return err
+		}
 		// start heartbeat if configured
 		if h.hb != nil {
 			go h.hb.Start(h.hbStop)
