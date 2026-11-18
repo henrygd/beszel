@@ -8,7 +8,7 @@ msgstr ""
 "Language: ca\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-11-12 17:40\n"
+"PO-Revision-Date: 2026-10-21 14:44\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -184,10 +184,6 @@ msgstr "Afegeix un sistema"
 msgid "Add URL"
 msgstr "Afegeix un URL"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Address"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Ajusta les opcions de visualització dels gràfics."
@@ -222,7 +218,6 @@ msgstr "Historial d'alertes"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
-#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Alertes"
 
@@ -243,7 +238,7 @@ msgstr "Tots els contenidors"
 msgid "All Systems"
 msgstr "Tots els sistemes"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Segur que vols eliminar {name}?"
 
@@ -256,13 +251,13 @@ msgstr "N'estàs segur?"
 msgid "Automatic copy requires a secure context."
 msgstr "La còpia automàtica requereix un context segur."
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Disponible"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Disponible"
 
@@ -373,18 +368,10 @@ msgstr "Beszel utilitza <0>Shoutrrr</0> per integrar-se amb serveis de notificac
 msgid "Binary"
 msgstr "Binari"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "BIOS"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bits (Kbps, Mbps, Gbps)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Board"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -398,10 +385,6 @@ msgstr "Afegeix en bloc"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "Afegeix {foo} en bloc"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Bus"
-msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -427,7 +410,7 @@ msgstr "Es pot aturar"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Cancel·la"
 
@@ -495,10 +478,6 @@ msgstr "Opcions del gràfic"
 msgid "Chart width"
 msgstr "Amplada del gràfic"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Chassis"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Consulta {email} per trobar-hi un enllaç de restabliment."
@@ -523,10 +502,6 @@ msgstr "Comprovat {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Errors de suma de verificació"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Class"
-msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -566,11 +541,6 @@ msgstr "Fes clic en un sistema per veure'n més informació."
 msgid "Click to copy"
 msgstr "Fes clic per copiar"
 
-#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Collected {0}"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -583,10 +553,6 @@ msgstr "Compara amb altres sistemes"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Compara amb altres destinacions"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Component"
-msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -609,10 +575,6 @@ msgstr "Conflictes"
 msgid "Connection is down"
 msgstr "S'ha perdut la connexió"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Connector"
-msgstr ""
-
 #: src/lib/alerts.ts
 msgid "Container"
 msgstr "Contenidor"
@@ -627,7 +589,7 @@ msgstr "Contenidors"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Continua"
 
@@ -661,7 +623,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Copia de"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Copia l'amfitrió"
 
@@ -670,7 +632,7 @@ msgstr "Copia l'amfitrió"
 msgid "Copy Linux command"
 msgstr "Copia l'ordre de Linux"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Copia el nom"
 
@@ -705,7 +667,6 @@ msgid "Core"
 msgstr "Nucli"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -818,7 +779,7 @@ msgstr "Període de temps per defecte"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Elimina"
 
@@ -834,9 +795,6 @@ msgstr "Descripció"
 msgid "Detail"
 msgstr "Detall"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Dispositiu"
@@ -864,10 +822,6 @@ msgstr "Ús del disc"
 msgid "Disk usage of {extraFsName}"
 msgstr "Ús del disc de {extraFsName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Disks"
-msgstr ""
-
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -877,10 +831,6 @@ msgstr "Descarta"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Visualització"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Displays"
-msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -905,7 +855,6 @@ msgstr "Documentació"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -920,18 +869,13 @@ msgstr "Inactius ({downSystemsLength})"
 msgid "Download"
 msgstr "Baixada"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Driver"
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Durada"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Edita"
 
@@ -955,7 +899,6 @@ msgid "Email notifications"
 msgstr "Notificacions per correu electrònic"
 
 #. Context: Battery state
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Buida"
@@ -1078,10 +1021,6 @@ msgstr "No s'ha pogut autenticar"
 msgid "Failed to delete monitors."
 msgstr "No s'han pogut eliminar els monitors."
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Failed to load hardware inventory"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1139,7 +1078,6 @@ msgstr "Filtra..."
 msgid "Fingerprint"
 msgstr "Empremta"
 
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Microprogramari"
@@ -1168,7 +1106,7 @@ msgstr "Ordre de FreeBSD"
 #: src/components/routes/system/info-bar.tsx
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Complet"
+msgstr "Plena"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1205,11 +1143,6 @@ msgstr "Ús de la GPU"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Graella"
-
-#: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Hardware"
-msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1270,11 +1203,6 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "Utilització d'E/S"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "ID"
-msgstr ""
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1302,10 +1230,6 @@ msgstr "Hi ha una actualització de la imatge disponible"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inactiu"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Interface"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1341,10 +1265,6 @@ msgstr "Cicle de vida"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "límit"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Link"
-msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1382,7 +1302,6 @@ msgid "Log Out"
 msgstr "Tanca la sessió"
 
 #: src/components/login/login.tsx
-#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Inici de sessió"
 
@@ -1412,10 +1331,6 @@ msgstr "Pèrdua"
 msgid "Loss 1h"
 msgstr "Pèrdua 1h"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "MAC"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "PID principal"
@@ -1434,10 +1349,6 @@ msgstr "Gestiona les preferències de visualització i de notificacions."
 msgid "Manual setup instructions"
 msgstr "Instruccions de configuració manual"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Manufacturer"
-msgstr ""
-
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1449,7 +1360,6 @@ msgid "Max 1h"
 msgstr "Màx. 1h"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1486,8 +1396,6 @@ msgid "Minor"
 msgstr "Menor"
 
 #. Device model
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1495,7 +1403,6 @@ msgstr "Model"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -1521,7 +1428,6 @@ msgid "Net"
 msgstr "Xarxa"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Xarxa"
 
@@ -1659,7 +1565,7 @@ msgstr "Contrasenya d'un sol ús"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Obre el menú"
 
@@ -1711,10 +1617,6 @@ msgstr "Pàgina {0} de {1}"
 msgid "Pages / Settings"
 msgstr "Pàgines / Configuració"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Part number"
-msgstr ""
-
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1723,10 +1625,6 @@ msgstr "Contrasenya"
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "La contrasenya ha de tenir almenys 8 caràcters."
-
-#: src/components/login/auth-form.tsx
-msgid "Password must be at most 71 characters."
-msgstr "La contrasenya ha de tenir com a màxim 71 caràcters."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1746,7 +1644,7 @@ msgid "Patch"
 msgstr "Pedaç"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Posa en pausa"
 
@@ -1761,14 +1659,6 @@ msgstr "En pausa ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Format de la càrrega útil"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI devices"
-msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1827,10 +1717,6 @@ msgstr "Consulta <0>la documentació</0> per a les instruccions."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Inicia la sessió al teu compte"
-
-#: src/components/login/auth-form.tsx
-msgid "Please wait a moment and try again."
-msgstr "Espereu un moment i torneu-ho a provar."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1891,7 +1777,7 @@ msgstr "Profunditat de la cua"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
-msgstr "Hores de descans"
+msgstr "Hores de silenci"
 
 #: src/components/routes/system/raw-capacity-label.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1978,7 +1864,7 @@ msgid "Restarts"
 msgstr "Reinicis"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Reprèn"
 
@@ -2046,11 +1932,11 @@ msgstr "Programació"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
-msgstr "Programa hores de descans en què no s'enviaran notificacions, per exemple durant els períodes de manteniment."
+msgstr "Programa hores de silenci en què no s'enviaran notificacions, per exemple durant els períodes de manteniment."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent."
-msgstr "Programa hores de descans en què no s'enviaran notificacions."
+msgstr "Programa hores de silenci en què no s'enviaran notificacions."
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -2131,14 +2017,6 @@ msgstr "Envia un senyal de vida de prova"
 msgid "Sent"
 msgstr "Enviat"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Serial"
-msgstr ""
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Número de sèrie"
@@ -2186,16 +2064,6 @@ msgstr "Inicia la sessió"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Intensitat del senyal de les interfícies Wi-Fi connectades"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Size"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Slot"
-msgstr ""
-
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "Configuració SMTP"
@@ -2204,11 +2072,6 @@ msgstr "Configuració SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Ordena per"
-
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Speed"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2258,8 +2121,6 @@ msgstr "Canvia el tema"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2351,7 +2212,7 @@ msgstr "L'estat general és <0>ok</0> quan tots els sistemes estan actius, <1>wa
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Després inicia la sessió al backend i restableix la contrasenya del teu compte d'usuari a la taula d'usuaris."
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Aquesta acció no es pot desfer. S'eliminaran permanentment de la base de dades tots els registres actuals de {name}."
 
@@ -2398,17 +2259,11 @@ msgstr "Testimonis i empremtes"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
-"Els testimonis (tokens) permeten que els agents es connectin i es registrin. Les \n"
-"empremtes són identificadors estables i únics de cada sistema, que s'estableixen en la primera connexió."
+msgstr "Els testimonis permeten que els agents es connectin i es registrin. Les empremtes són identificadors estables i únics de cada sistema, que s'estableixen en la primera connexió."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Els testimonis i les empremtes s'utilitzen per autenticar les connexions WebSocket amb el hub."
-
-#: src/components/login/auth-form.tsx
-msgid "Too many login attempts"
-msgstr "Massa intents d’inici de sessió"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2513,8 +2368,6 @@ msgstr "S'activa quan l'ús de qualsevol disc supera un llindar"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2611,10 +2464,6 @@ msgstr "Ús"
 msgid "Usage of storage pool {displayName}"
 msgstr "Ús del grup d'emmagatzematge {displayName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "USB devices"
-msgstr ""
-
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Utilitza-ho per a certificats autosignats."
@@ -2640,14 +2489,6 @@ msgstr "Utilització"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Valor"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Vendor"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Version"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2743,10 +2584,6 @@ msgstr "Configuració YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "Configuració YAML"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Year"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

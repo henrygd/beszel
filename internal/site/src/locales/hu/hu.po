@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-22 17:15\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -184,10 +184,6 @@ msgstr "Hozzáadás Rendszer"
 msgid "Add URL"
 msgstr "URL hozzáadása"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Address"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "A diagramok megjelenítésének beállítása."
@@ -222,7 +218,6 @@ msgstr "Riasztási előzmények"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
-#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Riasztások"
 
@@ -243,7 +238,7 @@ msgstr "Minden konténer"
 msgid "All Systems"
 msgstr "Minden rendszer"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Biztosan törölni szeretnéd {name}-t?"
 
@@ -256,13 +251,13 @@ msgstr "Biztos vagy benne?"
 msgid "Automatic copy requires a secure context."
 msgstr "Az automatikus másolás biztonságos környezetet igényel."
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Elérhető"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Elérhető"
 
@@ -373,18 +368,10 @@ msgstr "A Beszel a <0>Shoutrrr</0>-t használja a népszerű értesítési szolg
 msgid "Binary"
 msgstr "Bináris"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "BIOS"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bitek (Kbps, Mbps, Gbps)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Board"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -398,10 +385,6 @@ msgstr "Tömeges hozzáadás"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "{foo} tömeges hozzáadása"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Bus"
-msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -427,7 +410,7 @@ msgstr "Leállítható"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Mégsem"
 
@@ -495,10 +478,6 @@ msgstr "Diagram beállítások"
 msgid "Chart width"
 msgstr "Grafikon szélessége"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Chassis"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Ellenőrizd a {email} címet a visszaállító linkért."
@@ -523,10 +502,6 @@ msgstr "Ellenőrizve: {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Ellenőrzőösszeg-hibák"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Class"
-msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -566,11 +541,6 @@ msgstr "További információkért kattints egy rendszerre."
 msgid "Click to copy"
 msgstr "Kattints a másoláshoz"
 
-#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Collected {0}"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -583,10 +553,6 @@ msgstr "Összehasonlítás más rendszerekkel"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Összehasonlítás más célokkal"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Component"
-msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -609,10 +575,6 @@ msgstr "Konfliktusok"
 msgid "Connection is down"
 msgstr "Kapcsolat megszakadt"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Connector"
-msgstr ""
-
 #: src/lib/alerts.ts
 msgid "Container"
 msgstr "Konténer"
@@ -627,7 +589,7 @@ msgstr "Konténerek"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Tovább"
 
@@ -661,7 +623,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Másolás innen:"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Hoszt másolása"
 
@@ -670,7 +632,7 @@ msgstr "Hoszt másolása"
 msgid "Copy Linux command"
 msgstr "Linux parancs másolása"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Név másolása"
 
@@ -705,7 +667,6 @@ msgid "Core"
 msgstr "Mag"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -818,7 +779,7 @@ msgstr "Alapértelmezett időszak"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Törlés"
 
@@ -834,9 +795,6 @@ msgstr "Leírás"
 msgid "Detail"
 msgstr "Részlet"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Eszköz"
@@ -864,10 +822,6 @@ msgstr "Lemezhasználat"
 msgid "Disk usage of {extraFsName}"
 msgstr "Lemezhasználat a {extraFsName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Disks"
-msgstr ""
-
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -877,10 +831,6 @@ msgstr "Elvetés"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Megjelenítés"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Displays"
-msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -905,7 +855,6 @@ msgstr "Dokumentáció"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -920,18 +869,13 @@ msgstr "Offline ({downSystemsLength})"
 msgid "Download"
 msgstr "Letöltés"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Driver"
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Időtartam"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Szerkesztés"
 
@@ -955,7 +899,6 @@ msgid "Email notifications"
 msgstr "E-mail értesítések"
 
 #. Context: Battery state
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Üres"
@@ -1078,10 +1021,6 @@ msgstr "Hitelesítés sikertelen"
 msgid "Failed to delete monitors."
 msgstr "A monitorok törlése sikertelen."
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Failed to load hardware inventory"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1139,7 +1078,6 @@ msgstr "Szűrő..."
 msgid "Fingerprint"
 msgstr "Ujjlenyomat"
 
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Firmware"
@@ -1206,11 +1144,6 @@ msgstr "GPU használat"
 msgid "Grid"
 msgstr "Rács"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Hardware"
-msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1270,11 +1203,6 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O kihasználtság"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "ID"
-msgstr ""
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1302,10 +1230,6 @@ msgstr "Képfrissítés érhető el"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inaktív"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Interface"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1341,10 +1265,6 @@ msgstr "Életciklus"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "korlát"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Link"
-msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1382,7 +1302,6 @@ msgid "Log Out"
 msgstr "Kijelentkezés"
 
 #: src/components/login/login.tsx
-#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Bejelentkezés"
 
@@ -1412,10 +1331,6 @@ msgstr "Veszteség"
 msgid "Loss 1h"
 msgstr "Veszteség 1 óra"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "MAC"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Fő PID"
@@ -1434,10 +1349,6 @@ msgstr "A megjelenítési és értesítési beállítások kezelése."
 msgid "Manual setup instructions"
 msgstr "Manuális beállítási lépések"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Manufacturer"
-msgstr ""
-
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1449,7 +1360,6 @@ msgid "Max 1h"
 msgstr "Max. 1 óra"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1486,8 +1396,6 @@ msgid "Minor"
 msgstr "Kisebb"
 
 #. Device model
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Modell"
@@ -1495,7 +1403,6 @@ msgstr "Modell"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -1521,7 +1428,6 @@ msgid "Net"
 msgstr "Hálózat"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Hálózat"
 
@@ -1659,7 +1565,7 @@ msgstr "Egyszeri jelszó"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menü megnyitása"
 
@@ -1711,10 +1617,6 @@ msgstr "{0}/{1} oldal"
 msgid "Pages / Settings"
 msgstr "Oldalak / Beállítások"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Part number"
-msgstr ""
-
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1723,10 +1625,6 @@ msgstr "Jelszó"
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "A jelszónak legalább 8 karakternek kell lennie."
-
-#: src/components/login/auth-form.tsx
-msgid "Password must be at most 71 characters."
-msgstr "A jelszó legfeljebb 71 karakter hosszú lehet."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1746,7 +1644,7 @@ msgid "Patch"
 msgstr "Javítás"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Szüneteltetés"
 
@@ -1761,14 +1659,6 @@ msgstr "Szüneteltetve ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Payload formátum"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI devices"
-msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1827,10 +1717,6 @@ msgstr "Kérjük, nézze meg <0>a dokumentációt</0> az utasításokért."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Kérjük, jelentkezzen be a fiókjába"
-
-#: src/components/login/auth-form.tsx
-msgid "Please wait a moment and try again."
-msgstr "Várjon egy pillanatot, majd próbálja újra."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1978,7 +1864,7 @@ msgid "Restarts"
 msgstr "Újraindítások"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Folytatás"
 
@@ -2131,14 +2017,6 @@ msgstr "Teszt heartbeat küldése"
 msgid "Sent"
 msgstr "Elküldve"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Serial"
-msgstr ""
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Sorozatszám"
@@ -2186,16 +2064,6 @@ msgstr "Bejelentkezés"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "A csatlakoztatott Wi-Fi interfészek jelerőssége"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Size"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Slot"
-msgstr ""
-
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP beállítások"
@@ -2204,11 +2072,6 @@ msgstr "SMTP beállítások"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Rendezés"
-
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Speed"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2258,8 +2121,6 @@ msgstr "Téma váltása"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2351,7 +2212,7 @@ msgstr "Az összesített állapot <0>ok</0>, ha minden rendszer fut, <1>warn</1>
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ezután jelentkezzen be a backendbe, és állítsa vissza a felhasználói fiók jelszavát a felhasználók táblázatban."
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ezt a műveletet nem lehet visszavonni! Véglegesen törli a {name} összes jelenlegi rekordját az adatbázisból!"
 
@@ -2403,10 +2264,6 @@ msgstr "A tokenek lehetővé teszik az ügynökök csatlakozását és regisztr�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "A tokeneket és fingeravtrykkokat a hubhoz való WebSocket kapcsolatok hitelesítésére használják."
-
-#: src/components/login/auth-form.tsx
-msgid "Too many login attempts"
-msgstr "Túl sok bejelentkezési kísérlet"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2511,8 +2368,6 @@ msgstr "Riaszt, ha a lemezhasználat túllép egy küszöbértéket"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2609,10 +2464,6 @@ msgstr "Használat"
 msgid "Usage of storage pool {displayName}"
 msgstr "A(z) {displayName} tárolókészlet kihasználtsága"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "USB devices"
-msgstr ""
-
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Önaláírt tanúsítványokhoz használja."
@@ -2638,14 +2489,6 @@ msgstr "Kihasználtság"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Érték"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Vendor"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Version"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2741,10 +2584,6 @@ msgstr "YAML konfiguráció"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML konfiguráció"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Year"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

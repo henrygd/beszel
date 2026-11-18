@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-22 17:15\n"
+"PO-Revision-Date: 2026-10-20 17:17\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -184,10 +184,6 @@ msgstr "Dodaj Sistemsko"
 msgid "Add URL"
 msgstr "Dodaj URL"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Address"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Prilagodi možnosti prikaza za grafikone."
@@ -222,7 +218,6 @@ msgstr "Zgodovina opozoril"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
-#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Opozorila"
 
@@ -243,7 +238,7 @@ msgstr "Vsi kontejnerji"
 msgid "All Systems"
 msgstr "Vsi sistemi"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 
@@ -256,13 +251,13 @@ msgstr "Ali ste prepričani?"
 msgid "Automatic copy requires a secure context."
 msgstr "Za samodejno kopiranje je potreben varen kontekst."
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Na voljo"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Na voljo"
 
@@ -373,18 +368,10 @@ msgstr "Beszel uporablja <0>Shoutrrr</0> za integracijo s priljubljenimi storitv
 msgid "Binary"
 msgstr "Binarno"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "BIOS"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Biti (Kbps, Mbps, Gbps)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Board"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -398,10 +385,6 @@ msgstr "Množično dodajanje"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "Množično dodajanje {foo}"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Bus"
-msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -427,7 +410,7 @@ msgstr "Lahko ustavi"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Prekliči"
 
@@ -495,10 +478,6 @@ msgstr "Možnosti grafikona"
 msgid "Chart width"
 msgstr "Širina grafikona"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Chassis"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Preverite {email} za povezavo za ponastavitev."
@@ -523,10 +502,6 @@ msgstr "Preverjeno {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Napake kontrolne vsote"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Class"
-msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -566,11 +541,6 @@ msgstr "Kliknite na sistem za več informacij."
 msgid "Click to copy"
 msgstr "Klikni za kopiranje"
 
-#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Collected {0}"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -583,10 +553,6 @@ msgstr "Primerjaj z drugimi sistemi"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Primerjaj z drugimi cilji"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Component"
-msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -609,10 +575,6 @@ msgstr "Konflikti"
 msgid "Connection is down"
 msgstr "Povezava je prekinjena"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Connector"
-msgstr ""
-
 #: src/lib/alerts.ts
 msgid "Container"
 msgstr "Vsebnik"
@@ -627,7 +589,7 @@ msgstr "Vsebniki"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Nadaljuj"
 
@@ -661,7 +623,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Kopiraj iz"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopiraj gostitelja"
 
@@ -670,7 +632,7 @@ msgstr "Kopiraj gostitelja"
 msgid "Copy Linux command"
 msgstr "Kopiraj Linux ukaz"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Kopiraj ime"
 
@@ -705,7 +667,6 @@ msgid "Core"
 msgstr "Jedro"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -818,7 +779,7 @@ msgstr "Privzeto časovno obdobje"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Izbriši"
 
@@ -834,9 +795,6 @@ msgstr "Opis"
 msgid "Detail"
 msgstr "Podrobnost"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Naprava"
@@ -864,10 +822,6 @@ msgstr "Poraba diska"
 msgid "Disk usage of {extraFsName}"
 msgstr "Poraba diska za {extraFsName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Disks"
-msgstr ""
-
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -877,10 +831,6 @@ msgstr "Opusti"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Zaslon"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Displays"
-msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -905,7 +855,6 @@ msgstr "Dokumentacija"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -920,18 +869,13 @@ msgstr "Nedelujoči ({downSystemsLength})"
 msgid "Download"
 msgstr "Prenesi"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Driver"
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Trajanje"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Uredi"
 
@@ -955,7 +899,6 @@ msgid "Email notifications"
 msgstr "E-poštna obvestila"
 
 #. Context: Battery state
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Prazna"
@@ -1078,10 +1021,6 @@ msgstr "Preverjanje pristnosti ni uspelo"
 msgid "Failed to delete monitors."
 msgstr "Brisanje monitorjev ni uspelo."
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Failed to load hardware inventory"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1139,7 +1078,6 @@ msgstr "Filtriraj..."
 msgid "Fingerprint"
 msgstr "Prstni odtis"
 
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Vdelana programska oprema"
@@ -1206,11 +1144,6 @@ msgstr "Poraba GPU"
 msgid "Grid"
 msgstr "Mreža"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Hardware"
-msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1270,11 +1203,6 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O izkoriščenost"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "ID"
-msgstr ""
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1302,10 +1230,6 @@ msgstr "Na voljo je posodobitev slike"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Neaktivno"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Interface"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1341,10 +1265,6 @@ msgstr "Življenjski cikel"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "omejitev"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Link"
-msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1382,7 +1302,6 @@ msgid "Log Out"
 msgstr "Odjava"
 
 #: src/components/login/login.tsx
-#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Prijava"
 
@@ -1412,10 +1331,6 @@ msgstr "Izguba"
 msgid "Loss 1h"
 msgstr "Izguba 1 h"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "MAC"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Glavni PID"
@@ -1434,10 +1349,6 @@ msgstr "Upravljajte nastavitve prikaza in obvestil."
 msgid "Manual setup instructions"
 msgstr "Navodila za ročno nastavitev"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Manufacturer"
-msgstr ""
-
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1449,7 +1360,6 @@ msgid "Max 1h"
 msgstr "Najv. 1 h"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1486,8 +1396,6 @@ msgid "Minor"
 msgstr "Manjša"
 
 #. Device model
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1495,7 +1403,6 @@ msgstr "Model"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Monitor"
 
@@ -1521,7 +1428,6 @@ msgid "Net"
 msgstr "Mreža"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Omrežje"
 
@@ -1659,7 +1565,7 @@ msgstr "Enkratno geslo"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Odpri menu"
 
@@ -1711,10 +1617,6 @@ msgstr "Stran {0} od {1}"
 msgid "Pages / Settings"
 msgstr "Strani / Nastavitve"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Part number"
-msgstr ""
-
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1723,10 +1625,6 @@ msgstr "Geslo"
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "Geslo mora imeti vsaj 8 znakov."
-
-#: src/components/login/auth-form.tsx
-msgid "Password must be at most 71 characters."
-msgstr "Geslo lahko vsebuje največ 71 znakov."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1746,7 +1644,7 @@ msgid "Patch"
 msgstr "Popravek"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Premor"
 
@@ -1761,14 +1659,6 @@ msgstr "Pavzirano za {pausedSystemsLength}"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Oblika tovora (payload)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI devices"
-msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1827,10 +1717,6 @@ msgstr "Za navodila glejte <0>dokumentacijo</0>."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Prijavite se v svoj račun"
-
-#: src/components/login/auth-form.tsx
-msgid "Please wait a moment and try again."
-msgstr "Počakajte trenutek in poskusite znova."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1978,7 +1864,7 @@ msgid "Restarts"
 msgstr "Ponovni zagoni"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Nadaljuj"
 
@@ -2131,14 +2017,6 @@ msgstr "Pošlji testni srčni utrip"
 msgid "Sent"
 msgstr "Poslano"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Serial"
-msgstr ""
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Serijska številka"
@@ -2186,16 +2064,6 @@ msgstr "Prijavite se"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Jakost signala povezanih vmesnikov Wi-Fi"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Size"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Slot"
-msgstr ""
-
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP nastavitve"
@@ -2204,11 +2072,6 @@ msgstr "SMTP nastavitve"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Razvrsti po"
-
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Speed"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2258,8 +2121,6 @@ msgstr "Zamenjaj temo"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2351,7 +2212,7 @@ msgstr "Splošno stanje je <0>v redu</0>, ko vsi sistemi delujejo, <1>opozorilo<
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Nato se prijavite v zaledni sistem in ponastavite geslo svojega uporabniškega računa v tabeli uporabnikov."
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo vse trenutne zapise za {name} iz zbirke podatkov."
 
@@ -2403,10 +2264,6 @@ msgstr "Žetoni omogočajo agentom povezavo in registracijo. Prstni odtisi so st
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Žetoni in prstni odtisi se uporabljajo za preverjanje pristnosti WebSocket povezav do vozlišča."
-
-#: src/components/login/auth-form.tsx
-msgid "Too many login attempts"
-msgstr "Preveč poskusov prijave"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2511,8 +2368,6 @@ msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2609,10 +2464,6 @@ msgstr "Uporaba"
 msgid "Usage of storage pool {displayName}"
 msgstr "Uporaba shranjevalnega poola {displayName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "USB devices"
-msgstr ""
-
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Uporabite za samopodpisana potrdila."
@@ -2638,14 +2489,6 @@ msgstr "Izkoriščenost"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Vrednost"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Vendor"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Version"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2741,10 +2584,6 @@ msgstr "YAML nastaviitev"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML nastavitev"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Year"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

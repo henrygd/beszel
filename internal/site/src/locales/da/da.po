@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-22 17:14\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -184,10 +184,6 @@ msgstr "Tilføj System"
 msgid "Add URL"
 msgstr "Tilføj URL"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Address"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Juster visningsindstillinger for diagrammer."
@@ -222,7 +218,6 @@ msgstr "Advarselshistorik"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
-#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Alarmer"
 
@@ -243,7 +238,7 @@ msgstr "Alle containere"
 msgid "All Systems"
 msgstr "Alle systemer"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Er du sikker på, at du vil slette {name}?"
 
@@ -256,13 +251,13 @@ msgstr "Er du sikker?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisk kopiering kræver en sikker kontekst."
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Tilgængelig"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Tilgængelig"
 
@@ -334,7 +329,7 @@ msgstr "Båndbredde"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Bat."
+msgstr ""
 
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
@@ -373,18 +368,10 @@ msgstr "Beszel bruger <0>Shoutrrr</0> til at integrere med populære notifikatio
 msgid "Binary"
 msgstr "Binær"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "BIOS"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bits (Kbps, Mbps, Gbps)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Board"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -398,10 +385,6 @@ msgstr "Tilføj flere"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "Tilføj flere {foo}"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Bus"
-msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -427,7 +410,7 @@ msgstr "Kan stoppe"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Fortryd"
 
@@ -495,10 +478,6 @@ msgstr "Diagrammuligheder"
 msgid "Chart width"
 msgstr "Grafbredde"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Chassis"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Tjek {email} for et nulstillingslink."
@@ -523,10 +502,6 @@ msgstr "Kontrolleret {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "Kontrolsumfejl"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Class"
-msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -566,11 +541,6 @@ msgstr "Klik på et system for at se mere information."
 msgid "Click to copy"
 msgstr "Klik for at kopiere"
 
-#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Collected {0}"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -583,10 +553,6 @@ msgstr "Sammenlign med andre systemer"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Sammenlign med andre mål"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Component"
-msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -609,10 +575,6 @@ msgstr "Konflikter"
 msgid "Connection is down"
 msgstr "Forbindelsen er nede"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Connector"
-msgstr ""
-
 #: src/lib/alerts.ts
 msgid "Container"
 msgstr "Container"
@@ -627,7 +589,7 @@ msgstr "Containere"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Fortsæt"
 
@@ -661,7 +623,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Kopier fra"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopier vært"
 
@@ -670,7 +632,7 @@ msgstr "Kopier vært"
 msgid "Copy Linux command"
 msgstr "Kopier Linux kommando"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Kopier navn"
 
@@ -705,7 +667,6 @@ msgid "Core"
 msgstr "Kerne"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -818,7 +779,7 @@ msgstr "Standard tidsperiode"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Slet"
 
@@ -834,9 +795,6 @@ msgstr "Beskrivelse"
 msgid "Detail"
 msgstr "Detalje"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "Enhed"
@@ -864,10 +822,6 @@ msgstr "Diskforbrug"
 msgid "Disk usage of {extraFsName}"
 msgstr "Diskforbrug af {extraFsName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Disks"
-msgstr ""
-
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -877,10 +831,6 @@ msgstr "Afvis"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Visning"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Displays"
-msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -905,7 +855,6 @@ msgstr "Dokumentation"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -920,18 +869,13 @@ msgstr "Nede ({downSystemsLength})"
 msgid "Download"
 msgstr "Hent ned"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Driver"
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Varighed"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Rediger"
 
@@ -955,7 +899,6 @@ msgid "Email notifications"
 msgstr "Email-notifikationer"
 
 #. Context: Battery state
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Tom"
@@ -1078,10 +1021,6 @@ msgstr "Kunne ikke godkende"
 msgid "Failed to delete monitors."
 msgstr "Kunne ikke slette overvågninger."
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Failed to load hardware inventory"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1139,7 +1078,6 @@ msgstr "Filter..."
 msgid "Fingerprint"
 msgstr "Fingeraftryk"
 
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "Firmware"
@@ -1206,11 +1144,6 @@ msgstr "GPU-forbrug"
 msgid "Grid"
 msgstr "Gitter"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Hardware"
-msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1270,11 +1203,6 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "I/O Udnyttelse"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "ID"
-msgstr ""
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1302,10 +1230,6 @@ msgstr "Imageopdatering tilgængelig"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inaktiv"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Interface"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1341,10 +1265,6 @@ msgstr "Livscyklus"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "grænse"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Link"
-msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1382,7 +1302,6 @@ msgid "Log Out"
 msgstr "Log ud"
 
 #: src/components/login/login.tsx
-#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Log ind"
 
@@ -1412,10 +1331,6 @@ msgstr "Tab"
 msgid "Loss 1h"
 msgstr "Tab 1h"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "MAC"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "Primær PID"
@@ -1434,10 +1349,6 @@ msgstr "Administrer display og notifikationsindstillinger."
 msgid "Manual setup instructions"
 msgstr "Manuel opsætningsvejledning"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Manufacturer"
-msgstr ""
-
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1449,7 +1360,6 @@ msgid "Max 1h"
 msgstr "Maks 1h"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1486,8 +1396,6 @@ msgid "Minor"
 msgstr "Mindre"
 
 #. Device model
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "Model"
@@ -1495,7 +1403,6 @@ msgstr "Model"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "Overvågning"
 
@@ -1521,7 +1428,6 @@ msgid "Net"
 msgstr "Net"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "Netværk"
 
@@ -1659,7 +1565,7 @@ msgstr "Engangsadgangskode"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Åbn menu"
 
@@ -1711,10 +1617,6 @@ msgstr "Side {0} af {1}"
 msgid "Pages / Settings"
 msgstr "Sider / Indstillinger"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Part number"
-msgstr ""
-
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1723,10 +1625,6 @@ msgstr "Adgangskode"
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "Adgangskoden skal være på mindst 8 tegn."
-
-#: src/components/login/auth-form.tsx
-msgid "Password must be at most 71 characters."
-msgstr "Adgangskoden må højst indeholde 71 tegn."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1746,7 +1644,7 @@ msgid "Patch"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pause"
 
@@ -1761,14 +1659,6 @@ msgstr "Sat på pause ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Payload-format"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI devices"
-msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1827,10 +1717,6 @@ msgstr "Se <0>dokumentationen</0> for instruktioner."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Log venligst ind på din konto"
-
-#: src/components/login/auth-form.tsx
-msgid "Please wait a moment and try again."
-msgstr "Vent et øjeblik, og prøv igen."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1978,7 +1864,7 @@ msgid "Restarts"
 msgstr "Genstarter"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Genoptag"
 
@@ -2131,14 +2017,6 @@ msgstr "Send test-heartbeat"
 msgid "Sent"
 msgstr "Sendt"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Serial"
-msgstr ""
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "Serienummer"
@@ -2186,16 +2064,6 @@ msgstr "Log ind"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Signalstyrke for tilsluttede Wi-Fi-interfaces"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Size"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Slot"
-msgstr ""
-
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP-indstillinger"
@@ -2204,11 +2072,6 @@ msgstr "SMTP-indstillinger"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Sorter efter"
-
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Speed"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2258,8 +2121,6 @@ msgstr "Skift tema"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2351,7 +2212,7 @@ msgstr "Den overordnede status er <0>ok</0>, når alle systemer kører, <1>warn<
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Log derefter ind på backend og nulstil adgangskoden til din brugerkonto i tabellen brugere."
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktuelle elementer for {name} fra databasen."
 
@@ -2384,7 +2245,7 @@ msgstr "Nøgle"
 #. placeholder {0}: fingerprint.expand.system.name
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token for {0}"
-msgstr "Token til {0}"
+msgstr "Token for {0}"
 
 #: src/components/token-value.tsx
 msgid "Token hidden"
@@ -2403,10 +2264,6 @@ msgstr "Nøgler tillader agenter at oprette forbindelse og registrere. Fingeraft
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Nøgler og fingeraftryk bruges til at godkende WebSocket-forbindelser til hubben."
-
-#: src/components/login/auth-form.tsx
-msgid "Too many login attempts"
-msgstr "For mange loginforsøg"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2511,8 +2368,6 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2609,10 +2464,6 @@ msgstr "Forbrug"
 msgid "Usage of storage pool {displayName}"
 msgstr "Forbrug af lagerpool {displayName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "USB devices"
-msgstr ""
-
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "Bruges til selvsignerede certifikater."
@@ -2638,14 +2489,6 @@ msgstr "Udnyttelse"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "Værdi"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Vendor"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Version"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2741,10 +2584,6 @@ msgstr "YAML Konfiguration"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML Konfiguration"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Year"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx

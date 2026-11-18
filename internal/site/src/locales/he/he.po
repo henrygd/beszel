@@ -8,7 +8,7 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-22 17:15\n"
+"PO-Revision-Date: 2026-10-20 17:16\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
@@ -184,10 +184,6 @@ msgstr "הוסף מערכת"
 msgid "Add URL"
 msgstr "הוסף URL"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Address"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "התאם אפשרויות תצוגה עבור גרפים."
@@ -222,7 +218,6 @@ msgstr "היסטוריית התראות"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
-#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "התראות"
 
@@ -243,7 +238,7 @@ msgstr "כל הקונטיינרים"
 msgid "All Systems"
 msgstr "כל המערכות"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "האם אתה בטוח שברצונך למחוק את {name}?"
 
@@ -256,13 +251,13 @@ msgstr "האם אתה בטוח?"
 msgid "Automatic copy requires a secure context."
 msgstr "העתקה אוטומטית דורשת הקשר מאובטח."
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "זמין"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "זמין"
 
@@ -373,18 +368,10 @@ msgstr "Beszel משתמש ב-<0>Shoutrrr</0> לשילוב עם שירותי הת
 msgid "Binary"
 msgstr "בינרי"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "BIOS"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "ביטים (Kbps, Mbps, Gbps)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Board"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -398,10 +385,6 @@ msgstr "הוספה מרוכזת"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Bulk Add {foo}"
 msgstr "הוספה מרוכזת של {foo}"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Bus"
-msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -427,7 +410,7 @@ msgstr "יכול לעצור"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "ביטול"
 
@@ -495,10 +478,6 @@ msgstr "אפשרויות גרף"
 msgid "Chart width"
 msgstr "רוחב תרשים"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Chassis"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "בדוק את {email} לקישור איפוס."
@@ -523,10 +502,6 @@ msgstr "נבדק {0}"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
 msgstr "שגיאות סכום ביקורת"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Class"
-msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -566,11 +541,6 @@ msgstr "לחץ על מערכת כדי לצפות במידע נוסף."
 msgid "Click to copy"
 msgstr "לחץ כדי להעתיק"
 
-#. placeholder {0}: formatShortDate(new Date(inv.collected * 1000).toISOString())
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Collected {0}"
-msgstr ""
-
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -583,10 +553,6 @@ msgstr "השווה למערכות אחרות"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "השווה ליעדים אחרים"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Component"
-msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -609,10 +575,6 @@ msgstr "התנגשויות"
 msgid "Connection is down"
 msgstr "החיבור נפל"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Connector"
-msgstr ""
-
 #: src/lib/alerts.ts
 msgid "Container"
 msgstr "קונטיינר"
@@ -627,7 +589,7 @@ msgstr "קונטיינרים"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "המשך"
 
@@ -661,7 +623,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "העתקה מ־"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "העתק מארח"
 
@@ -670,7 +632,7 @@ msgstr "העתק מארח"
 msgid "Copy Linux command"
 msgstr "העתק פקודת Linux"
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "העתק שם"
 
@@ -705,7 +667,6 @@ msgid "Core"
 msgstr "ליבה"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -818,7 +779,7 @@ msgstr "תקופת זמן ברירת מחדל"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "מחק"
 
@@ -834,9 +795,6 @@ msgstr "תיאור"
 msgid "Detail"
 msgstr "פרט"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
 msgstr "התקן"
@@ -864,10 +822,6 @@ msgstr "שימוש בדיסק"
 msgid "Disk usage of {extraFsName}"
 msgstr "שימוש בדיסק של {extraFsName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Disks"
-msgstr ""
-
 #: src/components/alert-banner-sheet.tsx
 #: src/components/alert-banner-sheet.tsx
 msgid "Dismiss"
@@ -877,10 +831,6 @@ msgstr "סגור"
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "תצוגה"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Displays"
-msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
@@ -905,7 +855,6 @@ msgstr "תיעוד"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -920,18 +869,13 @@ msgstr "כבוי ({downSystemsLength})"
 msgid "Download"
 msgstr "הורדה"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Driver"
-msgstr ""
-
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "משך זמן"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "ערוך"
 
@@ -955,7 +899,6 @@ msgid "Email notifications"
 msgstr "התראות אימייל"
 
 #. Context: Battery state
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "ריק"
@@ -1078,10 +1021,6 @@ msgstr "אימות נכשל"
 msgid "Failed to delete monitors."
 msgstr "מחיקת המנטרים נכשלה."
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Failed to load hardware inventory"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Failed to load logs."
@@ -1139,7 +1078,6 @@ msgstr "סנן..."
 msgid "Fingerprint"
 msgstr "טביעת אצבע"
 
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
 msgstr "קושחה"
@@ -1206,11 +1144,6 @@ msgstr "שימוש GPU"
 msgid "Grid"
 msgstr "רשת"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Hardware"
-msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
@@ -1270,11 +1203,6 @@ msgctxt "Percent of time the disk is busy with I/O"
 msgid "I/O Utilization"
 msgstr "ניצול קלט/פלט"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "ID"
-msgstr ""
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
@@ -1302,10 +1230,6 @@ msgstr "עדכון תמונה זמין"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "לא פעיל"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Interface"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -1341,10 +1265,6 @@ msgstr "מחזור חיים"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
 msgstr "גבול"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Link"
-msgstr ""
 
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "Load Average"
@@ -1382,7 +1302,6 @@ msgid "Log Out"
 msgstr "התנתק"
 
 #: src/components/login/login.tsx
-#: src/components/login/login.tsx
 msgid "Login"
 msgstr "התחבר"
 
@@ -1412,10 +1331,6 @@ msgstr "אובדן"
 msgid "Loss 1h"
 msgstr "אובדן שעה אחת"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "MAC"
-msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
 msgstr "PID ראשי"
@@ -1434,10 +1349,6 @@ msgstr "נהל העדפות תצוגה והתראות."
 msgid "Manual setup instructions"
 msgstr "הוראות התקנה ידניות"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Manufacturer"
-msgstr ""
-
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
@@ -1449,7 +1360,6 @@ msgid "Max 1h"
 msgstr "מקסימום שעה אחת"
 
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1486,8 +1396,6 @@ msgid "Minor"
 msgstr "משני"
 
 #. Device model
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "דגם"
@@ -1495,7 +1403,6 @@ msgstr "דגם"
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Monitor"
 msgstr "מנטר"
 
@@ -1521,7 +1428,6 @@ msgid "Net"
 msgstr "רשת"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 msgid "Network"
 msgstr "רשת"
 
@@ -1659,7 +1565,7 @@ msgstr "סיסמה חד-פעמית"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "פתח תפריט"
 
@@ -1711,10 +1617,6 @@ msgstr "עמוד {0} מתוך {1}"
 msgid "Pages / Settings"
 msgstr "עמודים / הגדרות"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Part number"
-msgstr ""
-
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
@@ -1723,10 +1625,6 @@ msgstr "סיסמה"
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "הסיסמה חייבת להכיל לפחות 8 תווים."
-
-#: src/components/login/auth-form.tsx
-msgid "Password must be at most 71 characters."
-msgstr "הסיסמה חייבת להכיל לכל היותר 71 תווים."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1746,7 +1644,7 @@ msgid "Patch"
 msgstr "תיקון"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "השהה"
 
@@ -1761,14 +1659,6 @@ msgstr "מושהה ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "תבנית מטען (Payload)"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "PCI devices"
-msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1827,10 +1717,6 @@ msgstr "אנא ראה <0>את התיעוד</0> להוראות."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "אנא התחבר לחשבון שלך"
-
-#: src/components/login/auth-form.tsx
-msgid "Please wait a moment and try again."
-msgstr "יש להמתין רגע ולנסות שוב."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1978,7 +1864,7 @@ msgid "Restarts"
 msgstr "הפעלות מחדש"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "המשך"
 
@@ -2131,14 +2017,6 @@ msgstr "שליחת דופק לבדיקה"
 msgid "Sent"
 msgstr "נשלח"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Serial"
-msgstr ""
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
 msgstr "מספר סידורי"
@@ -2186,16 +2064,6 @@ msgstr "התחבר"
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "עוצמת האות של ממשקי Wi-Fi מחוברים"
 
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Size"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Slot"
-msgstr ""
-
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "הגדרות SMTP"
@@ -2204,11 +2072,6 @@ msgstr "הגדרות SMTP"
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "מיין לפי"
-
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Speed"
-msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2258,8 +2121,6 @@ msgstr "החלף ערכת נושא"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -2351,7 +2212,7 @@ msgstr "הסטטוס הכללי הוא <0>ok</0> כשכל המערכות פוע�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "לאחר מכן התחבר ל-backend ואפס את סיסמת חשבון המשתמש שלך בטבלת המשתמשים."
 
-#: src/components/system-actions-button.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "פעולה זו לא ניתנת לביטול. פעולה זו תמחק לצמיתות את כל הרשומות הנוכחיות עבור {name} ממסד הנתונים."
 
@@ -2403,10 +2264,6 @@ msgstr "Tokens מאפשרים לסוכנים להתחבר ולהירשם. טבי
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens וטביעות אצבע משמשים לאימות חיבורי WebSocket ל-hub."
-
-#: src/components/login/auth-form.tsx
-msgid "Too many login attempts"
-msgstr "יותר מדי ניסיונות התחברות"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2511,8 +2368,6 @@ msgstr "מופעל כאשר שימוש בכל דיסק עולה על סף"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/routes/system/hardware-inventory.tsx
-#: src/components/routes/system/hardware-inventory.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
@@ -2609,10 +2464,6 @@ msgstr "שימוש"
 msgid "Usage of storage pool {displayName}"
 msgstr "שימוש במאגר האחסון {displayName}"
 
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "USB devices"
-msgstr ""
-
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Use for self-signed certificates."
 msgstr "להשתמש עבור אישורים בחתימה עצמית."
@@ -2638,14 +2489,6 @@ msgstr "ניצולת"
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
 msgstr "ערך"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Vendor"
-msgstr ""
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Version"
-msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -2741,10 +2584,6 @@ msgstr "תצורת YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "תצורת YAML"
-
-#: src/components/routes/system/hardware-inventory.tsx
-msgid "Year"
-msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
