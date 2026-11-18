@@ -315,3 +315,21 @@ func TestPoolStatsKeepsRawCapacityWithoutRootDataset(t *testing.T) {
 		})
 	}
 }
+
+func TestARCSizeFallsBackToLpl(t *testing.T) {
+	root := t.TempDir()
+	oldProc, oldLpl := procZfsPath, lplZfsPath
+	procZfsPath = filepath.Join(root, "spl-missing")
+	lplZfsPath = filepath.Join(root, "lpl")
+	t.Cleanup(func() { procZfsPath, lplZfsPath = oldProc, oldLpl })
+
+	require.NoError(t, os.MkdirAll(lplZfsPath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(lplZfsPath, "arcstats"), []byte(
+		"c_max                           4    47686539045\n"+
+			"size                            4    35401502949\n",
+	), 0o644))
+
+	size, err := ARCSize()
+	require.NoError(t, err)
+	assert.Equal(t, uint64(35401502949), size)
+}

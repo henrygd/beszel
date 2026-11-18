@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	pbTests "ganigeorgiev.com/pocketbase/pocketbase/tests"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/pocketbase/core"
-	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

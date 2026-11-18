@@ -17,11 +17,11 @@ import (
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	pbTests "ganigeorgiev.com/pocketbase/pocketbase/tests"
 	"github.com/henrygd/beszel/internal/migrations"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
-	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/require"
 )
 

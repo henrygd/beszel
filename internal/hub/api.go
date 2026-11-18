@@ -15,16 +15,17 @@ import (
 	"time"
 	"uuid"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/mcp"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // UpdateInfo holds information about the latest update check
@@ -205,6 +206,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get, create, or delete universal tokens (POST keeps tokens out of URLs; GET is kept for legacy clients)
 	apiAuth.GET("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
 	apiAuth.POST("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
+	// create static API keys for the current user, or revoke all of them
+	apiAuth.POST("/api-keys", createApiKey).BindFunc(requireSessionToken)
+	apiAuth.POST("/api-keys/revoke", revokeApiKeys).BindFunc(requireSessionToken)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
@@ -224,6 +228,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		apiAuth.GET("/containers/logs", h.getContainerLogs)
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
+	}
+	// model context protocol (MCP) server for AI agents, enabled with MCP=true
+	if err := mcp.RegisterRoutes(h, se); err != nil {
+		return err
 	}
 	return nil
 }
