@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"math"
 	"slices"
 	"strings"
 	"time"
@@ -46,7 +47,8 @@ func registerTools(app core.App, server *mcpsdk.Server) {
 		Description: "Get historical metrics for one system over a time range. " +
 			"Records are stored at 1m, 10m, 20m, 120m and 480m resolutions, kept for 1h, 12h, 24h, 7d and 30d respectively. " +
 			"The range covers hours ending at until (default now), so a past incident can be inspected with e.g. hours=2 and until set shortly after it; " +
-			"by default the finest resolution still holding the start of the range is used.",
+			"by default the finest resolution still holding the start of the range is used. " +
+			"Samples are averages over each record's interval; the summary's max CPU, memory, bandwidth and disk I/O values are the peaks within those intervals.",
 	}, h.getSystemStats)
 	mcpsdk.AddTool(server, &mcpsdk.Tool{
 		Name: "get_container_stats",
@@ -631,6 +633,24 @@ func newStatsSample(recordTime string, s system.Stats) statsSample {
 	return sample
 }
 
+// peakMemPct returns the stored peak memory usage of a rollup record as a
+// percentage of total memory, or 0 if the record holds no peak (1m records).
+// Records created before 0.21.1 only hold the deprecated GB fields.
+func peakMemPct(s system.Stats) float64 {
+	const gb = 1024 * 1024 * 1024
+	total, maxUsed := float64(s.MemBytes[0]), float64(s.MaxMemBytes)
+	if total == 0 {
+		total = s.Mem * gb
+	}
+	if maxUsed == 0 {
+		maxUsed = s.MaxMem * gb
+	}
+	if total == 0 || maxUsed == 0 {
+		return 0
+	}
+	return math.Round(maxUsed/total*100*100) / 100
+}
+
 // summarizeStats computes aggregate metrics over the decoded records.
 func summarizeStats(decoded []decodedStat) statsSummary {
 	summary := statsSummary{Count: len(decoded)}
@@ -646,7 +666,7 @@ func summarizeStats(decoded []decodedStat) statsSummary {
 		// each window stored separately
 		summary.MaxCpu = max(summary.MaxCpu, s.Cpu, s.MaxCpu)
 		summary.AvgMem += s.MemPct
-		summary.MaxMem = max(summary.MaxMem, s.MemPct)
+		summary.MaxMem = max(summary.MaxMem, s.MemPct, peakMemPct(s))
 		summary.AvgDisk += s.DiskPct
 		summary.MaxDisk = max(summary.MaxDisk, s.DiskPct)
 		// sample conversion applies the deprecated-field fallbacks
