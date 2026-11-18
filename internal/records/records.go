@@ -10,9 +10,9 @@ import (
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
@@ -49,6 +49,7 @@ func NewRecordManager(app core.App) *RecordManager {
 	return &RecordManager{app}
 }
 
+// StatsRecord holds the raw stats blob of a shorter record.
 type StatsRecord struct {
 	Stats []byte `db:"stats"`
 }
@@ -136,8 +137,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 							continue
 						}
 					}
-					// get shorter records from the past x minutes
-					var recordIds RecordIds
+					// get shorter records from the past x minutes, oldest first
+					// since averaging keeps the last value of some fields
+					var shorterRecords []StatsRecord
 
 					params := dbx.Params{
 						"type":    recordData.shorterType,
@@ -146,20 +148,21 @@ func (rm *RecordManager) CreateLongerRecords() {
 					}
 
 					err := db.
-						Select("id").
+						Select("stats").
 						From(collection.Name).
 						Where(dbx.NewExp(
 							"system={:system} AND type={:type} AND created > {:created}",
 							params,
 						)).
 						OrderBy("created").
-						All(&recordIds)
+						All(&shorterRecords)
 					if err != nil {
-						return err
+						rm.app.Logger().Error("failed to fetch shorter records", "collection", collection.Name, "system", system.Id, "err", err)
+						continue
 					}
 
 					// continue if not enough shorter records
-					if len(recordIds) < recordData.minShorterRecords {
+					if len(shorterRecords) < recordData.minShorterRecords {
 						continue
 					}
 					// average the shorter records and create longer record
@@ -168,9 +171,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					longerRecord.Set("type", recordData.longerType)
 					switch collection.Name {
 					case "system_stats":
-						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
+						longerRecord.Set("stats", AverageSystemStats(shorterRecords))
 					case "container_stats":
-						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+						longerRecord.Set("stats", AverageContainerStats(shorterRecords))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						txApp.Logger().Error("failed to save longer record", "err", err)
@@ -254,23 +257,18 @@ func getCreatedTimeField(collectionName string, period time.Time) any {
 	return period.Format(types.DefaultDateLayout)
 }
 
-// Calculate the average stats of a list of system_stats records without reflect
-func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *system.Stats {
+// AverageSystemStats calculates the average stats of system_stats records.
+// Records must be in creation order: some fields keep the value of the last record.
+func AverageSystemStats(records []StatsRecord) system.Stats {
 	stats := make([]system.Stats, 0, len(records))
-	var row StatsRecord
-	params := make(dbx.Params, 1)
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(params).One(&row)
+	for _, record := range records {
 		var s system.Stats
-		if err := json.Unmarshal(row.Stats, &s); err != nil {
+		if err := json.Unmarshal(record.Stats, &s); err != nil {
 			continue
 		}
 		stats = append(stats, s)
 	}
-	result := AverageSystemStatsSlice(stats)
-	return &result
+	return AverageSystemStatsSlice(stats)
 }
 
 // AverageSystemStatsSlice computes the average of a slice of system stats.
@@ -414,6 +412,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				sum.ExtraFs = make(map[string]*system.FsStats, len(stats.ExtraFs))
 			}
 			for key, value := range stats.ExtraFs {
+				if value == nil {
+					continue
+				}
 				if _, ok := sum.ExtraFs[key]; !ok {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}
@@ -644,17 +645,13 @@ func hasBattery(legacy [2]uint8, batteries map[string]uint8) bool {
 	return legacy != [2]uint8{} || len(batteries) > 0
 }
 
-// Calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds) []container.Stats {
+// AverageContainerStats calculates the average stats of container_stats records.
+// Records must be in creation order, matching the averaging of system stats.
+func AverageContainerStats(records []StatsRecord) []container.Stats {
 	allStats := make([][]container.Stats, 0, len(records))
-	var row StatsRecord
-	params := make(dbx.Params, 1)
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(params).One(&row)
+	for _, record := range records {
 		var cs []container.Stats
-		if err := json.Unmarshal(row.Stats, &cs); err != nil {
+		if err := json.Unmarshal(record.Stats, &cs); err != nil {
 			return []container.Stats{}
 		}
 		allStats = append(allStats, cs)

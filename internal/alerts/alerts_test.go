@@ -9,8 +9,8 @@ import (
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
 
+	"ganigeorgiev.com/pocketbase/dbx"
 	"github.com/henrygd/beszel/internal/alerts"
-	"github.com/pocketbase/dbx"
 	"github.com/stretchr/testify/assert"
 )
 

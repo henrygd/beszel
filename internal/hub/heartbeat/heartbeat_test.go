@@ -9,9 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	beszeltests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

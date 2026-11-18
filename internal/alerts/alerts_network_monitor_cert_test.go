@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	pbTests "ganigeorgiev.com/pocketbase/pocketbase/tests"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

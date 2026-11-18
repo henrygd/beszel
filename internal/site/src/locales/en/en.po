@@ -213,6 +213,7 @@ msgstr "Alert History"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Alerts"
 
@@ -233,7 +234,7 @@ msgstr "All Containers"
 msgid "All Systems"
 msgstr "All Systems"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Are you sure you want to delete {name}?"
 
@@ -405,7 +406,7 @@ msgstr "Can stop"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -584,7 +585,7 @@ msgstr "Containers"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Continue"
 
@@ -618,7 +619,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Copy from"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Copy host"
 
@@ -627,7 +628,7 @@ msgstr "Copy host"
 msgid "Copy Linux command"
 msgstr "Copy Linux command"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Copy name"
 
@@ -774,7 +775,7 @@ msgstr "Default time period"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -870,7 +871,7 @@ msgstr "Duration"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Edit"
 
@@ -1297,6 +1298,7 @@ msgid "Log Out"
 msgstr "Log Out"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Login"
 
@@ -1560,7 +1562,7 @@ msgstr "One-time password"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Open menu"
 
@@ -1622,6 +1624,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Password must be at least 8 characters."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Password must be at most 71 characters."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Password must be less than 72 bytes."
 
@@ -1639,7 +1645,7 @@ msgid "Patch"
 msgstr "Patch"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Pause"
 
@@ -1712,6 +1718,10 @@ msgstr "Please see <0>the documentation</0> for instructions."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Please sign in to your account"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Please wait a moment and try again."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1859,7 +1869,7 @@ msgid "Restarts"
 msgstr "Restarts"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Resume"
 
@@ -2207,7 +2217,7 @@ msgstr "The overall status is <0>ok</0> when all systems are up, <1>warn</1> whe
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Then log into the backend and reset your user account password in the users table."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 
@@ -2259,6 +2269,10 @@ msgstr "Tokens allow agents to connect and register. Fingerprints are stable ide
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Too many login attempts"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx

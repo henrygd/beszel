@@ -94,6 +94,18 @@ func (s Uint8Slice) MarshalJSON() ([]byte, error) {
 	return json.Marshal(arr)
 }
 
+// UnmarshalJSON accepts the numeric array written by MarshalJSON. Without it,
+// encoding/json/v2 (used by PocketBase to read record JSON fields) only accepts
+// base64 strings for byte slices and rejects the whole value.
+func (s *Uint8Slice) UnmarshalJSON(data []byte) error {
+	var arr []uint8
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	*s = arr
+	return nil
+}
+
 // Battery stores the representative battery's percent and charge state.
 // Its custom JSON encoding keeps the public and persisted representation as a
 // numeric tuple under both encoding/json v1 and v2.
