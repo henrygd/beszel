@@ -3,7 +3,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 import type * as React from "react"
 
-import { IconButton } from "@/components/ui/icon-button"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -63,11 +63,17 @@ function SheetContent({
 				{...props}
 			>
 				{children}
-				<IconButton label={t`Dismiss`} className="absolute top-2 end-2" asChild>
+				<Button
+					variant="ghost"
+					size="icon"
+					aria-label={t`Dismiss`}
+					className="absolute top-2 end-2 size-8 opacity-70 transition-opacity hover:opacity-100"
+					asChild
+				>
 					<SheetClose>
 						<XIcon className="size-4" />
 					</SheetClose>
-				</IconButton>
+				</Button>
 			</SheetPrimitive.Content>
 		</SheetPortal>
 	)

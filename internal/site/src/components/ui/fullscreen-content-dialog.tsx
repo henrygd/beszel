@@ -1,8 +1,8 @@
 import { t } from "@lingui/core/macro"
 import { XIcon } from "lucide-react"
 import type { ReactNode, Ref } from "react"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog"
-import { IconButton } from "@/components/ui/icon-button"
 import { cn } from "@/lib/utils"
 
 export function FullscreenContentDialog({
@@ -36,11 +36,17 @@ export function FullscreenContentDialog({
 					</div>
 				</div>
 				{toolbar && <div className="absolute end-10 top-2 flex items-center">{toolbar}</div>}
-				<IconButton label={t`Dismiss`} onDarkBackground className="absolute end-2 top-2" asChild>
+				<Button
+					variant="ghost"
+					size="icon"
+					aria-label={t`Dismiss`}
+					className="absolute end-2 top-2 size-8 text-white hover:bg-white/10 hover:text-white opacity-70 transition-opacity hover:opacity-100"
+					asChild
+				>
 					<DialogClose>
 						<XIcon className="size-4" />
 					</DialogClose>
-				</IconButton>
+				</Button>
 			</DialogContent>
 		</Dialog>
 	)

@@ -3,7 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import * as React from "react"
 
-import { IconButton } from "@/components/ui/icon-button"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root
@@ -45,11 +45,17 @@ const DialogContent = React.forwardRef<
 		>
 			{children}
 			{showCloseButton && (
-				<IconButton label={t`Dismiss`} className="absolute end-2 top-2" asChild>
+				<Button
+					variant="ghost"
+					size="icon"
+					aria-label={t`Dismiss`}
+					className="absolute end-2 top-2 size-8 opacity-70 transition-opacity hover:opacity-100"
+					asChild
+				>
 					<DialogClose>
 						<X className="size-4" />
 					</DialogClose>
-				</IconButton>
+				</Button>
 			)}
 		</DialogPrimitive.Content>
 	</DialogPortal>
