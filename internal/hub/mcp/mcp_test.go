@@ -744,6 +744,15 @@ func TestMcpStatsSummaryUsesStoredPeaks(t *testing.T) {
 	require.Len(t, samples, 3)
 	require.Equal(t, 9.75, samples[0].(map[string]any)["cpu_pct"])
 	require.Equal(t, float64(40), samples[0].(map[string]any)["memory_pct"])
+	// each peak carries the time of the record holding it
+	times := make([]any, len(samples))
+	for i, sample := range samples {
+		times[i] = sample.(map[string]any)["time"]
+	}
+	require.Equal(t, times[0], summary["max_cpu_time"])
+	require.Equal(t, times[0], summary["max_memory_time"])
+	require.Equal(t, []any{times[2], times[0]}, summary["max_bandwidth_time"])
+	require.Equal(t, []any{times[0], times[0]}, summary["max_disk_io_time"])
 
 	// the peak of older records comes from the deprecated GB fields
 	data = callTool(t, session, "get_system_stats", map[string]any{"system": "user-system-1", "period": "20m", "hours": 1})
