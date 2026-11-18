@@ -20,8 +20,8 @@ import (
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -96,6 +96,10 @@ func (h *Hub) StartHub() error {
 		}
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
+			return err
+		}
+		// start agent-only server if configured (after system manager is ready)
+		if err := h.startAgentServer(e); err != nil {
 			return err
 		}
 		// start heartbeat if configured

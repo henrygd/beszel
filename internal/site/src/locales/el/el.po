@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:16\n"
+"PO-Revision-Date: 2026-10-22 17:14\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -222,6 +222,7 @@ msgstr "Ιστορικό ειδοποιήσεων"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Ειδοποιήσεις"
 
@@ -242,7 +243,7 @@ msgstr "Όλα τα κοντέινερ"
 msgid "All Systems"
 msgstr "Όλα τα συστήματα"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Είστε βέβαιοι ότι θέλετε να διαγράψετε το {name};"
 
@@ -426,7 +427,7 @@ msgstr "Δυνατότητα διακοπής"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Ακύρωση"
 
@@ -626,7 +627,7 @@ msgstr "Κοντέινερ"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Συνέχεια"
 
@@ -660,7 +661,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Αντιγραφή από"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Αντιγραφή κεντρικού υπολογιστή"
 
@@ -669,7 +670,7 @@ msgstr "Αντιγραφή κεντρικού υπολογιστή"
 msgid "Copy Linux command"
 msgstr "Αντιγραφή εντολής Linux"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Αντιγραφή ονόματος"
 
@@ -817,7 +818,7 @@ msgstr "Προεπιλεγμένη χρονική περίοδος"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Διαγραφή"
 
@@ -930,7 +931,7 @@ msgstr "Διάρκεια"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Επεξεργασία"
 
@@ -1381,6 +1382,7 @@ msgid "Log Out"
 msgstr "Αποσύνδεση"
 
 #: src/components/login/login.tsx
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Σύνδεση"
 
@@ -1657,7 +1659,7 @@ msgstr "Κωδικός μίας χρήσης"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Άνοιγμα μενού"
 
@@ -1723,6 +1725,10 @@ msgid "Password must be at least 8 characters."
 msgstr "Ο κωδικός πρόσβασης πρέπει να έχει τουλάχιστον 8 χαρακτήρες."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Ο κωδικός πρόσβασης πρέπει να έχει το πολύ 71 χαρακτήρες."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "Ο κωδικός πρόσβασης πρέπει να είναι μικρότερος από 72 byte."
 
@@ -1740,7 +1746,7 @@ msgid "Patch"
 msgstr "Διόρθωση"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Παύση"
 
@@ -1821,6 +1827,10 @@ msgstr "Ανατρέξτε στην <0>τεκμηρίωση</0> για οδηγ�
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Συνδεθείτε στον λογαριασμό σας"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Περιμένετε λίγο και δοκιμάστε ξανά."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1968,7 +1978,7 @@ msgid "Restarts"
 msgstr "Επανεκκινήσεις"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Συνέχιση"
 
@@ -2341,7 +2351,7 @@ msgstr "Η συνολική κατάσταση είναι <0>ok</0> όταν ό�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Στη συνέχεια, συνδεθείτε στο backend και επαναφέρετε τον κωδικό πρόσβασης του λογαριασμού χρήστη στον πίνακα χρηστών."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγράψει οριστικά όλες τις τρέχουσες εγγραφές για το {name} από τη βάση δεδομένων."
 
@@ -2393,6 +2403,10 @@ msgstr "Τα διακριτικά επιτρέπουν στους πράκτορ
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Τα διακριτικά και τα αποτυπώματα χρησιμοποιούνται για την ταυτοποίηση συνδέσεων WebSocket προς τον κόμβο."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "Πάρα πολλές προσπάθειες σύνδεσης"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx

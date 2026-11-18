@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { $alerts } from "@/lib/stores"
 import { cn } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
-import { AlertDialogContent } from "./alerts-sheet"
+import { AlertDialogContent, alertsSheetClassName } from "./alerts-sheet"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const [opened, setOpened] = useState(false)
@@ -26,9 +26,7 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 						/>
 					</Button>
 				</SheetTrigger>
-				<SheetContent className="max-h-full overflow-auto w-160 !max-w-full p-4 sm:p-6">
-					{opened && <AlertDialogContent system={system} />}
-				</SheetContent>
+				<SheetContent className={alertsSheetClassName}>{opened && <AlertDialogContent system={system} />}</SheetContent>
 			</Sheet>
 		),
 		[opened, hasSystemAlert]

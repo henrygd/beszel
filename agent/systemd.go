@@ -226,6 +226,33 @@ func (sm *systemdManager) getServiceStats(conn *dbus.Conn, refresh bool) []*syst
 	return services
 }
 
+// keepUnit reports whether a unit should be listed. Units that are loaded but
+// have never been active are skipped. Failed units are kept without calling
+// activeEnterTimestamp: a service that fails while starting, such as a
+// Type=oneshot service without RemainAfterExit, never becomes active, so its
+// ActiveEnterTimestamp is never set (#2776).
+//
+// When a skipped unit is inactive again, its entry from an earlier update is
+// removed so that a failed oneshot which has since succeeded is not kept as
+// failed. While it is running again, its last state is kept so that the failed
+// count doesn't drop mid-run. The caller must hold the lock.
+func (sm *systemdManager) keepUnit(unit dbus.UnitStatus, activeEnterTimestamp func() (any, error)) (bool, error) {
+	if unit.ActiveState == "failed" {
+		return true, nil
+	}
+	value, err := activeEnterTimestamp()
+	if err != nil {
+		return false, err
+	}
+	if ts, ok := value.(uint64); ok && ts != 0 && ts != math.MaxUint64 {
+		return true, nil
+	}
+	if unit.ActiveState == "inactive" {
+		delete(sm.serviceStatsMap, unit.Name)
+	}
+	return false, nil
+}
+
 // updateServiceStats updates the statistics for a single systemd service.
 func (sm *systemdManager) updateServiceStats(conn *dbus.Conn, unit dbus.UnitStatus) (*systemd.Service, error) {
 	sm.Lock()
@@ -233,13 +260,19 @@ func (sm *systemdManager) updateServiceStats(conn *dbus.Conn, unit dbus.UnitStat
 
 	ctx := context.Background()
 
-	// if service has never been active (no active since time), skip it
-	if activeEnterTsProp, err := conn.GetUnitTypePropertyContext(ctx, unit.Name, "Unit", "ActiveEnterTimestamp"); err == nil {
-		if ts, ok := activeEnterTsProp.Value.Value().(uint64); !ok || ts == 0 || ts == math.MaxUint64 {
-			return nil, errNoActiveTime
+	// skip services that have never been active (no active since time), see keepUnit
+	keep, err := sm.keepUnit(unit, func() (any, error) {
+		prop, err := conn.GetUnitTypePropertyContext(ctx, unit.Name, "Unit", "ActiveEnterTimestamp")
+		if err != nil {
+			return nil, err
 		}
-	} else {
+		return prop.Value.Value(), nil
+	})
+	if err != nil {
 		return nil, err
+	}
+	if !keep {
+		return nil, errNoActiveTime
 	}
 
 	service, serviceExists := sm.serviceStatsMap[unit.Name]

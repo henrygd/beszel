@@ -9,6 +9,13 @@ import (
 	"github.com/henrygd/beszel/agent/utils"
 )
 
+// canSubtractZfsArc reports whether the host ZFS ARC may be subtracted from
+// used memory. Inside LXC, /proc/spl/kstat/zfs/arcstats exposes the host's ARC,
+// which is not part of the guest's memory (issue #2766).
+func canSubtractZfsArc() bool {
+	return !inLxc()
+}
+
 // containerMemoryMetrics is only used when USE_CGROUP is explicitly enabled.
 // Unlike /proc/stat, lxcfs already serves a container-scoped /proc/meminfo,
 // so LXC keeps the existing memory path by default.

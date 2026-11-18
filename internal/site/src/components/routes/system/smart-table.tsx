@@ -77,7 +77,7 @@ export const smartColumns: ColumnDef<SmartAttribute>[] = [
 	},
 	{
 		accessorFn: (row) => {
-			if (row.n === "DataUnitsWritten" || row.n === "DataUnitsRead") {
+			if (!row.rs && (row.n === "DataUnitsWritten" || row.n === "DataUnitsRead")) {
 				return formatDataUnits(Number(row.rv ?? 0))
 			}
 			return row.rs || row.rv?.toString()
