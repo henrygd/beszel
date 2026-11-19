@@ -379,16 +379,21 @@ func (h *APIHandler) buildPublicStatusPage(record *core.Record) *statuspage.Publ
 			json.Unmarshal([]byte(statsJSON), &uptimeStats)
 		}
 
+		// Latest heartbeat carries the real error message for down/degraded monitors
+		heartbeats, lastError := h.recentHeartbeats(monitorID, 90)
+
 		publicMonitors = append(publicMonitors, statuspage.PublicMonitorStatus{
 			ID:          monitorID,
 			Name:        monitorRecord.GetString("name"),
 			DisplayName: link.GetString("display_name"),
 			Group:       link.GetString("group"),
 			Status:      status,
+			LastError:   lastError,
 			Uptime24h:   uptimeStats["24h"],
 			Uptime7d:    uptimeStats["7d"],
 			Uptime30d:   uptimeStats["30d"],
 			LastCheck:   monitorRecord.GetDateTime("last_check").Time(),
+			Heartbeats:  heartbeats,
 		})
 	}
 
@@ -423,6 +428,41 @@ func (h *APIHandler) buildPublicStatusPage(record *core.Record) *statuspage.Publ
 		OverallStatus: overallStatus,
 		UpdatedAt:     record.GetDateTime("updated").Time(),
 	}
+}
+
+// recentHeartbeats returns the newest `limit` heartbeats for a monitor
+// (oldest-first for rendering) plus the latest non-empty error message.
+func (h *APIHandler) recentHeartbeats(monitorID string, limit int) ([]statuspage.PublicHeartbeat, string) {
+	var records []*core.Record
+	err := h.app.RecordQuery("monitor_heartbeats").
+		AndWhere(dbx.NewExp("monitor = {:monitor}", dbx.Params{"monitor": monitorID})).
+		OrderBy("-time").
+		Limit(int64(limit)).
+		All(&records)
+	if err != nil || len(records) == 0 {
+		return nil, ""
+	}
+
+	// records are newest-first: first non-empty msg on a non-up beat is the current error
+	lastError := ""
+	for _, r := range records {
+		if msg := r.GetString("msg"); msg != "" && r.GetString("status") != string(monitor.StatusUp) {
+			lastError = msg
+			break
+		}
+	}
+
+	heartbeats := make([]statuspage.PublicHeartbeat, 0, len(records))
+	for i := len(records) - 1; i >= 0; i-- {
+		r := records[i]
+		heartbeats = append(heartbeats, statuspage.PublicHeartbeat{
+			Status: r.GetString("status"),
+			Ping:   r.GetInt("ping"),
+			Msg:    r.GetString("msg"),
+			Time:   r.GetDateTime("time").Time(),
+		})
+	}
+	return heartbeats, lastError
 }
 
 // recordToResponse converts a record to a response

@@ -98,66 +98,76 @@ func (s *LookupService) LookupDomain(ctx context.Context, domainName string) (*d
 	return d, nil
 }
 
-// LookupWHOIS performs WHOIS lookup with multiple fallback methods
+// LookupWHOIS performs WHOIS lookup with multiple fallback methods.
+// Expiry-bearing data wins; the first partially valid result is kept as
+// last resort so GDPR-redacted responses (e.g. .eu) still return something.
 func (s *LookupService) LookupWHOIS(ctx context.Context, domainName string) (*domain.WHOISData, string, error) {
 	var lastErr error
+	var partial *domain.WHOISData
+	var partialRaw string
+
+	consider := func(data *domain.WHOISData, raw string, err error) bool {
+		if err != nil {
+			lastErr = err
+			return false
+		}
+		if data == nil {
+			return false
+		}
+		if hasExpiry(data) {
+			partial, partialRaw = data, raw
+			return true
+		}
+		if partial == nil && hasValidData(data) {
+			partial, partialRaw = data, raw
+		}
+		return false
+	}
 
 	// Try RDAP first
 	data, err := s.tryRDAP(ctx, domainName)
-	if err == nil && data != nil && hasValidData(data) {
-		return data, "", nil
-	}
-	if err != nil {
-		lastErr = err
+	if consider(data, "", err) {
+		return partial, partialRaw, nil
 	}
 
 	// Try TCP WHOIS (this should work for .eu domains)
 	data, raw, err := s.tryTCPWHOIS(ctx, domainName)
-	if err == nil && data != nil && hasValidData(data) {
-		return data, raw, nil
-	}
-	if err != nil {
-		lastErr = err
+	if consider(data, raw, err) {
+		return partial, partialRaw, nil
 	}
 
 	// Try native whois command (often works when TCP fails)
 	data, raw, err = s.tryNativeWHOIS(ctx, domainName)
-	if err == nil && data != nil && hasValidData(data) {
-		return data, raw, nil
-	}
-	if err != nil {
-		lastErr = err
+	if consider(data, raw, err) {
+		return partial, partialRaw, nil
 	}
 
 	// Try EURid web scraping for .eu domains to get expiry dates
 	parts := strings.Split(domainName, ".")
 	if len(parts) >= 2 && strings.ToLower(parts[len(parts)-1]) == "eu" {
 		data, err = s.tryEURidWebScraping(ctx, domainName)
-		if err == nil && data != nil && hasValidData(data) {
-			return data, "", nil
-		}
-		if err != nil {
-			lastErr = err
+		if consider(data, "", err) {
+			return partial, partialRaw, nil
 		}
 
 		// Try alternative WHOIS services for .eu domains
 		data, err = s.tryAlternativeWHOIS(ctx, domainName)
-		if err == nil && data != nil && hasValidData(data) {
-			return data, "", nil
-		}
-		if err != nil {
-			lastErr = err
+		if consider(data, "", err) {
+			return partial, partialRaw, nil
 		}
 	}
 
 	// Try WhoisXML API if key is configured (this can provide expiry dates for .eu domains)
 	if s.whoisXMLAPIKey != "" {
 		data, err = s.tryWhoisXML(ctx, domainName)
-		if err == nil && data != nil {
-			return data, "", nil
+		if consider(data, "", err) {
+			return partial, partialRaw, nil
 		}
 	}
 
+	if partial != nil {
+		return partial, partialRaw, nil
+	}
 	return nil, "", fmt.Errorf("all WHOIS lookup methods failed for %s: %w", domainName, lastErr)
 }
 
@@ -456,17 +466,13 @@ func (s *LookupService) tryWhoisXML(ctx context.Context, domainName string) (*do
 	record := result.WhoisRecord
 	registry := record.RegistryData
 
-	creationDate, _ := time.Parse("2006-01-02", registry.CreatedDateNormalized)
-	expiryDate, _ := time.Parse("2006-01-02", registry.ExpiresDateNormalized)
-	updatedDate, _ := time.Parse("2006-01-02", registry.UpdatedDateNormalized)
-
 	return &domain.WHOISData{
 		DomainName: record.DomainName,
 		Status:     strings.Split(registry.Status, ", "),
 		Dates: domain.WHOISDates{
-			ExpiryDate:   &expiryDate,
-			CreationDate: &creationDate,
-			UpdatedDate:  &updatedDate,
+			ExpiryDate:   parseDatePtr(registry.ExpiresDateNormalized),
+			CreationDate: parseDatePtr(registry.CreatedDateNormalized),
+			UpdatedDate:  parseDatePtr(registry.UpdatedDateNormalized),
 		},
 		Registrar: domain.WHOISRegistrar{
 			Name: record.RegistrarName,
@@ -1707,6 +1713,20 @@ func (s *LookupService) detectProviders(d *domain.Domain) {
 		}
 		d.HostingProvider = detect.DetectHostingProvider(headerMap)
 	}
+}
+
+// parseDatePtr parses "2006-01-02" into a *time.Time, nil on failure or empty
+func parseDatePtr(s string) *time.Time {
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil || t.IsZero() {
+		return nil
+	}
+	return &t
+}
+
+// hasExpiry checks if WHOIS data contains a non-zero expiry date
+func hasExpiry(data *domain.WHOISData) bool {
+	return data.Dates.ExpiryDate != nil && !data.Dates.ExpiryDate.IsZero()
 }
 
 // hasValidData checks if WHOIS data has useful parsed fields

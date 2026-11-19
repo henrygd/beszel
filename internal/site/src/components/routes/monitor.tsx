@@ -28,6 +28,7 @@ import {
 	Trash2,
 	CheckCircle2,
 	XCircle,
+	AlertTriangle,
 	PauseIcon,
 	PlayIcon,
 	TrendingUp,
@@ -783,6 +784,27 @@ export default memo(function MonitorDetail({ id }: { id: string }) {
 					</div>
 				</CardContent>
 			</Card>
+
+			{monitor.status === "down" && (
+				<Card className="border-red-500/50 bg-red-500/5">
+					<CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4">
+						<div className="flex items-center gap-3">
+							<AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+							<p className="text-sm">
+								<Trans>This monitor is down.</Trans>{" "}
+								<span className="text-muted-foreground">
+									<Trans>An incident was opened automatically — track it on the incidents page.</Trans>
+								</span>
+							</p>
+						</div>
+						<Button variant="outline" size="sm" asChild>
+							<Link href="/incidents">
+								<Trans>View Incidents</Trans>
+							</Link>
+						</Button>
+					</CardContent>
+				</Card>
+			)}
 
 			{/* Summary Bar */}
 			<div className="grid sm:grid-cols-4 gap-4">

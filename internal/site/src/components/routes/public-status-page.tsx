@@ -98,7 +98,18 @@ function generateUptimeBars(uptimePercent: number, seed: string): { day: number;
 function MonitorCard({ monitor }: { monitor: PublicMonitorStatus }) {
 	const config = getStatusConfig(monitor.status)
 	const Icon = config.icon
-	const uptimeBars = useMemo(() => generateUptimeBars(monitor.uptime_30d || 99, monitor.id), [monitor.uptime_30d, monitor.id])
+	const uptimeBars = useMemo(() => {
+		if (monitor.heartbeats && monitor.heartbeats.length > 0) {
+			return monitor.heartbeats.map((hb) => ({
+				status: hb.status === "up" ? ("operational" as const) : ("major" as const),
+				title: `${new Date(hb.time).toLocaleString()}: ${hb.status}${hb.msg ? ` — ${hb.msg}` : ""}`,
+			}))
+		}
+		return generateUptimeBars(monitor.uptime_30d || 99, monitor.id).map((b) => ({
+			status: b.status,
+			title: `Day ${b.day + 1}: ${b.status}`,
+		}))
+	}, [monitor.heartbeats, monitor.uptime_30d, monitor.id])
 
 	return (
 		<div className="sp-monitor-card">
@@ -120,7 +131,13 @@ function MonitorCard({ monitor }: { monitor: PublicMonitorStatus }) {
 					</span>
 				</div>
 			</div>
-			
+
+			{monitor.last_error && monitor.status !== "up" && (
+				<div className="sp-monitor-error" style={{ color: config.color, fontSize: "0.85em", margin: "0.5em 0" }}>
+					{monitor.last_error}
+				</div>
+			)}
+
 			<div className="sp-uptime-section">
 				<div className="sp-uptime-header">
 					<span className="sp-uptime-label">30-day uptime</span>
@@ -133,7 +150,7 @@ function MonitorCard({ monitor }: { monitor: PublicMonitorStatus }) {
 						<div
 							key={i}
 							className={`sp-uptime-bar sp-uptime-bar--${bar.status}`}
-							title={`Day ${bar.day + 1}: ${bar.status}`}
+							title={bar.title}
 						/>
 					))}
 				</div>

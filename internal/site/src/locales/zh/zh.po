@@ -294,6 +294,10 @@ msgstr ""
 msgid "All Types"
 msgstr ""
 
+#: src/components/routes/monitor.tsx
+msgid "An incident was opened automatically — track it on the incidents page."
+msgstr ""
+
 #: src/components/routes/settings/api-keys.tsx
 msgid "API key"
 msgstr ""
@@ -2742,6 +2746,10 @@ msgstr "然後登入後台並在使用者列表中重設您的帳號密碼。"
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法復原。這將永久刪除資料庫中{name}的所有當前記錄。"
 
+#: src/components/routes/monitor.tsx
+msgid "This monitor is down."
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -3094,6 +3102,10 @@ msgstr ""
 #: src/components/alert-banner-sheet.tsx
 msgid "View details"
 msgstr "檢視詳細資料"
+
+#: src/components/routes/monitor.tsx
+msgid "View Incidents"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx

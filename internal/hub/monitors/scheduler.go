@@ -14,6 +14,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/incident"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/hub/monitors/checks"
+	"github.com/henrygd/beszel/internal/hub/notifications"
 )
 
 // AlertCallback is a function that sends alerts
@@ -30,6 +31,7 @@ type Scheduler struct {
 	mu            sync.RWMutex
 	running       bool
 	alertCallback AlertCallback
+	dispatcher    *notifications.Dispatcher
 }
 
 // ScheduledMonitor wraps a monitor with scheduling info
@@ -42,10 +44,11 @@ type ScheduledMonitor struct {
 // NewScheduler creates a new monitor scheduler
 func NewScheduler(app core.App) *Scheduler {
 	return &Scheduler{
-		app:      app,
-		registry: checks.NewCheckerRegistry(),
-		monitors: store.New(map[string]*ScheduledMonitor{}),
-		stopChan: make(chan struct{}),
+		app:        app,
+		registry:   checks.NewCheckerRegistry(),
+		monitors:   store.New(map[string]*ScheduledMonitor{}),
+		dispatcher: notifications.NewDispatcher(app),
+		stopChan:   make(chan struct{}),
 	}
 }
 
@@ -272,6 +275,19 @@ func (s *Scheduler) handleStatusChange(m *monitor.Monitor, record *core.Record, 
 	}
 
 	s.createIncident(m, prevStatus, newStatus, result, isRecovery)
+
+	// Notify per-monitor providers (Discord, Slack, Telegram, email, etc.)
+	if s.dispatcher != nil {
+		s.dispatcher.SendNotification(m, &monitor.Heartbeat{
+			MonitorID:  m.ID,
+			Status:     newStatus,
+			Ping:       result.Ping,
+			Msg:        result.Msg,
+			CertExpiry: result.CertExpiry,
+			CertValid:  result.CertValid,
+			Time:       time.Now(),
+		}, isRecovery)
+	}
 
 	// Send notification via AlertManager if available
 	if s.alertCallback != nil {

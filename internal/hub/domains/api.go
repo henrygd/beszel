@@ -191,7 +191,7 @@ func (h *APIHandler) createDomain(e *core.RequestEvent) error {
 			h.applyLookupData(record, domainData)
 			// Calculate status based on lookup results
 			status := domain.DomainStatusUnknown
-			if domainData.ExpiryDate != nil {
+			if domainData.ExpiryDate != nil && !domainData.ExpiryDate.IsZero() {
 				lookupHadExpiry = true
 				daysUntil := int(time.Until(*domainData.ExpiryDate).Hours() / 24)
 				if daysUntil < 0 {
@@ -682,13 +682,13 @@ func (h *APIHandler) recordToResponse(record *core.Record) map[string]interface{
 }
 
 func (h *APIHandler) applyLookupData(record *core.Record, domainData *domain.Domain) {
-	if domainData.ExpiryDate != nil {
+	if domainData.ExpiryDate != nil && !domainData.ExpiryDate.IsZero() {
 		record.Set("expiry_date", *domainData.ExpiryDate)
 	}
-	if domainData.CreationDate != nil {
+	if domainData.CreationDate != nil && !domainData.CreationDate.IsZero() {
 		record.Set("creation_date", *domainData.CreationDate)
 	}
-	if domainData.UpdatedDate != nil {
+	if domainData.UpdatedDate != nil && !domainData.UpdatedDate.IsZero() {
 		record.Set("updated_date", *domainData.UpdatedDate)
 	}
 	record.Set("registrar_name", domainData.RegistrarName)

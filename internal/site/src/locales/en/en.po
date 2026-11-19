@@ -289,6 +289,10 @@ msgstr "All Tags"
 msgid "All Types"
 msgstr "All Types"
 
+#: src/components/routes/monitor.tsx
+msgid "An incident was opened automatically — track it on the incidents page."
+msgstr "An incident was opened automatically — track it on the incidents page."
+
 #: src/components/routes/settings/api-keys.tsx
 msgid "API key"
 msgstr "API key"
@@ -2737,6 +2741,10 @@ msgstr "Then log into the backend and reset your user account password in the us
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 
+#: src/components/routes/monitor.tsx
+msgid "This monitor is down."
+msgstr "This monitor is down."
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -3089,6 +3097,10 @@ msgstr "View and manage incidents"
 #: src/components/alert-banner-sheet.tsx
 msgid "View details"
 msgstr "View details"
+
+#: src/components/routes/monitor.tsx
+msgid "View Incidents"
+msgstr "View Incidents"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
