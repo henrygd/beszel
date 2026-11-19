@@ -23,6 +23,21 @@ ProtectSystem=strict
 PrivateTmp=yes
 RemoveIPC=yes
 RestrictSUIDSGID=true
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+MemoryDenyWriteExecute=yes
+UMask=0077
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+# intel_gpu_top reads GPU counters through perf_event_open.
+SystemCallFilter=perf_event_open
+SystemCallErrorNumber=EPERM
+# Not set on purpose, because the agent needs the access: PrivateDevices (SMART/GPU),
+# ProcSubset=pid (host metrics), PrivateUsers (docker group, capabilities),
+# NoNewPrivileges (helpers granted capabilities with setcap).
 
 [Install]
 WantedBy=multi-user.target
