@@ -10,6 +10,7 @@ dist/
 beszel-agent
 beszel-server
 beszel-test
+hub
 internal/cmd/hub/hub
 internal/cmd/agent/agent
 agent.test
