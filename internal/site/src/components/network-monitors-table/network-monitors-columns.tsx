@@ -56,6 +56,7 @@ const protocolColors: Record<string, string> = {
 	http: "bg-teal-500/15! text-teal-700 dark:text-teal-400",
 	https: "bg-green-500/15! text-green-700 dark:text-green-400",
 	dns: "bg-amber-500/15! text-amber-600 dark:text-amber-400",
+	push: "bg-pink-500/15! text-pink-600 dark:text-pink-400",
 	// HTTP monitors that skip TLS certificate verification
 	insecure: "bg-orange-500/15! text-orange-600 dark:text-orange-400",
 }
@@ -232,7 +233,8 @@ export function getMonitorColumns({
 				const { loss1h, res, system } = row.original
 				const systemRecord = useStore($allSystemsById)[system]
 
-				if (loss1h === undefined || (!res && !loss1h)) {
+				// Push monitors have no response time, so 0% loss is a valid result for them.
+				if (loss1h === undefined || (!res && !loss1h && row.original.protocol !== "push")) {
 					return <span className="ms-1.5 text-muted-foreground">-</span>
 				}
 
@@ -373,6 +375,8 @@ const responseTimeThresholds = {
 	tcp: { warning: 500_000, critical: 2_000_000 },
 	icmp: { warning: 100_000, critical: 500_000 },
 	dns: { warning: 150_000, critical: 800_000 },
+	// push monitors have no response time
+	push: { warning: Number.POSITIVE_INFINITY, critical: Number.POSITIVE_INFINITY },
 }
 
 function responseTimeCell(cell: CellContext<NetworkMonitorRecord, unknown>) {
