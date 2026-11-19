@@ -16,10 +16,12 @@ function client({
 	firstRun = false,
 	firstRunFailed = false,
 	authMethods = methods,
+	authMethodsFailures = 0,
 	refresh = (_signal: AbortSignal) => Promise.resolve(success()),
 } = {}) {
 	const pb = new PocketBase("http://localhost/beszel/")
 	const requests: string[] = []
+	let authMethodsRequests = 0
 	pb.beforeSend = (url, options) => ({
 		url,
 		options: {
@@ -30,7 +32,12 @@ function client({
 				if (path.endsWith("/first-run")) {
 					return Promise.resolve(Response.json({ firstRun }, { status: firstRunFailed ? 500 : 200 }))
 				}
-				if (path.endsWith("/auth-methods")) return Promise.resolve(Response.json(authMethods))
+				if (path.endsWith("/auth-methods")) {
+					if (authMethodsRequests++ < authMethodsFailures) {
+						return Promise.reject(new TypeError("Failed to fetch"))
+					}
+					return Promise.resolve(Response.json(authMethods))
+				}
 				if (path.endsWith("/auth-refresh")) return refresh(options.signal as AbortSignal)
 				throw new Error(`Unexpected request: ${path}`)
 			},
@@ -115,6 +122,42 @@ describe("initial login authentication", () => {
 		const { pb, requests } = client()
 		await loadLogin(pb, { ...context, search: "?code=example&state=test" }, new AbortController().signal)
 		expect(requests).toHaveLength(2)
+	})
+
+	test("retries auth-methods while the hub is starting up and recovers the real config", async () => {
+		const { pb, requests } = client({
+			authMethodsFailures: 2,
+			authMethods: { ...methods, password: { ...methods.password, enabled: false } },
+		})
+		const result = await loadLogin(pb, context, new AbortController().signal)
+		// the recovered config is the real one (password disabled), not the fallback
+		expect(result.authMethods.password.enabled).toBe(false)
+		expect(requests.filter((path) => path.endsWith("/auth-methods"))).toHaveLength(3)
+	})
+
+	test("persistent auth-methods failure still renders the password form instead of a blank page", async () => {
+		const consoleError = console.error
+		console.error = () => {}
+		try {
+			const { pb, requests } = client({ authMethodsFailures: 99 })
+			const result = await loadLogin(pb, context, new AbortController().signal)
+			expect(result.authMethods.password.enabled).toBe(true)
+			expect(result.authMethods.oauth2.enabled).toBe(false)
+			expect(requests.filter((path) => path.endsWith("/auth-methods"))).toHaveLength(3)
+		} finally {
+			console.error = consoleError
+		}
+	})
+
+	test("aborting stops auth-methods retries", async () => {
+		const controller = new AbortController()
+		const { pb, requests } = client({ authMethodsFailures: 99 })
+		const loading = loadLogin(pb, context, controller.signal)
+		// abort once the first attempt has failed and the retry delay is pending
+		await new Promise((resolve) => setTimeout(resolve, 50))
+		controller.abort()
+		await expect(loading).rejects.toThrow()
+		expect(requests.filter((path) => path.endsWith("/auth-methods"))).toHaveLength(1)
 	})
 
 	for (const loggedOut of [false, true]) {
