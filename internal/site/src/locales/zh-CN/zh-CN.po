@@ -800,6 +800,14 @@ msgstr "详情"
 msgid "Device"
 msgstr "设备"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk"
+msgstr "钉钉"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk, WeCom, and Feishu accept the bot webhook URL. You can also use dingtalk://token, wecom://key, or feishu://token. Add a secret or keyword query parameter when the bot requires a signature or keyword."
+msgstr "钉钉、企业微信和飞书可以直接使用机器人 webhook 地址，也可以使用 dingtalk://token、wecom://key 或 feishu://token。若机器人要求签名或关键词，请加上 secret 或 keyword 查询参数。"
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
@@ -1061,6 +1069,10 @@ msgstr "失败: {0}"
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
 msgstr "风扇"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Feishu"
+msgstr "飞书"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -2558,6 +2570,10 @@ msgstr "警告阈值"
 msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "WeCom"
+msgstr "企业微信"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "启用后，此令牌允许代理无需事先创建系统即可自行注册。"
@@ -2608,3 +2624,4 @@ msgstr "是"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
+

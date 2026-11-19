@@ -39,12 +39,16 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		setEmails(userSettings.emails ?? [])
 	}, [userSettings])
 
-	function addWebhook() {
-		setWebhooks([...webhooks, ""])
+	function addWebhook(initial = "") {
+		setWebhooks([...webhooks, initial])
 		// focus on the new input
 		queueMicrotask(() => {
 			const inputs = document.querySelectorAll("#webhooks input") as NodeListOf<HTMLInputElement>
-			inputs[inputs.length - 1]?.focus()
+			const input = inputs[inputs.length - 1]
+			input?.focus()
+			if (initial) {
+				input?.select()
+			}
 		})
 	}
 	const removeWebhook = (index: number) => setWebhooks(webhooks.filter((_, i) => i !== index))
@@ -136,12 +140,35 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 									to integrate with popular notification services.
 								</Trans>
 							</p>
+							<p className="text-sm text-muted-foreground leading-relaxed mt-1.5">
+								<Trans>
+									DingTalk, WeCom, and Feishu accept the bot webhook URL. You can also use dingtalk://token,
+									wecom://key, or feishu://token. Add a secret or keyword query parameter when the bot requires a
+									signature or keyword.
+								</Trans>
+							</p>
 						</div>
-						<Button type="button" variant="outline" className="h-10 shrink-0" onClick={addWebhook}>
+						<Button type="button" variant="outline" className="h-10 shrink-0" onClick={() => addWebhook()}>
 							<PlusIcon className="size-4" />
 							<span className="ms-1">
 								<Trans>Add URL</Trans>
 							</span>
+						</Button>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onClick={() => addWebhook("dingtalk://access_token?secret=&keyword=")}
+						>
+							<Trans>DingTalk</Trans>
+						</Button>
+						<Button type="button" variant="outline" size="sm" onClick={() => addWebhook("wecom://key")}>
+							<Trans>WeCom</Trans>
+						</Button>
+						<Button type="button" variant="outline" size="sm" onClick={() => addWebhook("feishu://token?secret=")}>
+							<Trans>Feishu</Trans>
 						</Button>
 					</div>
 					{webhooks.length > 0 && (

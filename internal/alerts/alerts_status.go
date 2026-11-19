@@ -2,7 +2,6 @@ package alerts
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
@@ -153,8 +152,12 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 		emoji = "\U0001F534" // Red alert emoji
 	}
 
-	title := fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji)
-	message := strings.TrimSuffix(title, emoji)
+	statusText := "离线"
+	if alertStatus == "up" {
+		statusText = "恢复"
+	}
+	title := fmt.Sprintf("与 %s 的连接已%s %v", systemName, statusText, emoji)
+	message := fmt.Sprintf("与 %s 的连接已%s", systemName, statusText)
 
 	// Get system ID for the link
 	systemID := alertData.SystemID
@@ -165,7 +168,7 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 		Title:    title,
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),
-		LinkText: "View " + systemName,
+		LinkText: "查看 " + systemName,
 	})
 }
 

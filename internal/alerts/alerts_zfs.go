@@ -51,10 +51,10 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 		poolName = e.Record.GetString("name")
 	}
 
-	title := fmt.Sprintf("Storage pool %s on %s: %s", newHealth, systemName, poolName)
-	message := fmt.Sprintf("Storage pool %s (%s) was first observed as %s", poolName, systemName, newHealth)
+	title := fmt.Sprintf("%s 上的存储池状态为 %s：%s", systemName, newHealth, poolName)
+	message := fmt.Sprintf("存储池 %s（%s）首次观测状态为 %s", poolName, systemName, newHealth)
 	if oldSeverity > 0 {
-		message = fmt.Sprintf("Storage pool %s (%s) health changed from %s to %s", poolName, systemName, oldHealth, newHealth)
+		message = fmt.Sprintf("存储池 %s（%s）的健康状态从 %s 变为 %s", poolName, systemName, oldHealth, newHealth)
 	}
 
 	userIDs := systemRecord.GetStringSlice("users")
@@ -69,7 +69,7 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 			Title:    title,
 			Message:  message,
 			Link:     am.hub.MakeLink("system", systemID),
-			LinkText: "View " + systemName,
+			LinkText: "查看 " + systemName,
 		}); err != nil {
 			e.App.Logger().Error("Failed to send ZFS alert", "err", err, "userID", userID)
 		}

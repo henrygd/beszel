@@ -17,8 +17,8 @@ var cpuStateAlerts = map[string]struct {
 	index int
 	label string
 }{
-	"CPUIOWait": {2, "CPU I/O Wait"},
-	"CPUSteal":  {3, "CPU Steal Time"},
+	"CPUIOWait": {2, "CPU I/O 等待"},
+	"CPUSteal":  {3, "CPU 窃取时间"},
 }
 
 func cpuStateAlertValue(name string, breakdown []float64) (float64, bool) {
@@ -336,7 +336,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				sumTemp := float32(value) / float32(alert.count)
 				if sumTemp > maxTemp {
 					maxTemp = sumTemp
-					alert.descriptor = fmt.Sprintf("Highest sensor %s", key)
+					alert.descriptor = fmt.Sprintf("传感器 %s 的最高温度", key)
 				}
 			}
 			alert.val = float64(maxTemp)
@@ -378,9 +378,39 @@ func zfsDiskAlertKey(poolName string) string {
 
 func diskAlertDescriptor(key string) string {
 	if poolName, ok := strings.CutPrefix(key, "zfs:"); ok {
-		return fmt.Sprintf("Usage of storage pool %s", poolName)
+		return fmt.Sprintf("存储池 %s 的使用率", poolName)
 	}
-	return fmt.Sprintf("Usage of %s", key)
+	return fmt.Sprintf("%s 的使用率", key)
+}
+
+func systemAlertTitle(name string) string {
+	if state, ok := cpuStateAlerts[name]; ok {
+		return state.label
+	}
+	switch name {
+	case "CPU":
+		return "CPU"
+	case "Memory":
+		return "内存"
+	case "Disk":
+		return "磁盘使用率"
+	case "Bandwidth":
+		return "带宽"
+	case "GPU":
+		return "GPU"
+	case "Temperature":
+		return "温度"
+	case "LoadAvg1":
+		return "1 分钟负载"
+	case "LoadAvg5":
+		return "5 分钟负载"
+	case "LoadAvg15":
+		return "15 分钟负载"
+	case "Battery":
+		return "电池"
+	default:
+		return name
+	}
 }
 
 func hasRepresentativeBattery(legacy [2]uint8, batteries map[string]uint8) bool {
@@ -390,48 +420,18 @@ func hasRepresentativeBattery(legacy [2]uint8, batteries map[string]uint8) bool 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
 	systemName := alert.systemRecord.GetString("name")
+	titleAlertName := systemAlertTitle(alert.name)
 
-	if state, ok := cpuStateAlerts[alert.name]; ok {
-		alert.name = state.label
-	}
-	// change Disk to Disk usage
-	if alert.name == "Disk" {
-		alert.name += " usage"
-	}
-	// format LoadAvg5 and LoadAvg15
-	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {
-		alert.name = after + "m Load"
-	}
-
-	// make title alert name lowercase if not CPU or GPU
-	titleAlertName := alert.name
-	if titleAlertName != "CPU" && titleAlertName != "GPU" && !strings.HasPrefix(titleAlertName, "CPU") {
-		titleAlertName = strings.ToLower(titleAlertName)
-	}
-
-	var subject string
+	relation := "高于阈值"
 	lowAlert := isLowAlert(alert.name)
-	if alert.triggered {
-		if lowAlert {
-			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
-		} else {
-			subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
-		}
-	} else {
-		if lowAlert {
-			subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
-		} else {
-			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
-		}
+	if alert.triggered == lowAlert {
+		relation = "低于阈值"
 	}
-	minutesLabel := "minute"
-	if alert.min > 1 {
-		minutesLabel += "s"
-	}
+	subject := fmt.Sprintf("%s %s %s", systemName, titleAlertName, relation)
 	if alert.descriptor == "" {
-		alert.descriptor = alert.name
+		alert.descriptor = titleAlertName
 	}
-	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
+	body := fmt.Sprintf("%s 在过去 %v 分钟内平均为 %.2f%s。", alert.descriptor, alert.min, alert.val, alert.unit)
 
 	if err := am.setAlertTriggered(alert.alertData, alert.triggered); err != nil {
 		// app.Logger().Error("failed to save alert record", "err", err)
@@ -443,7 +443,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		Title:    subject,
 		Message:  body,
 		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
-		LinkText: "View " + systemName,
+		LinkText: "查看 " + systemName,
 	})
 }
 

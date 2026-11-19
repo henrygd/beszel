@@ -75,8 +75,8 @@ func TestNetworkMonitorCertAlertLifecycle(t *testing.T) {
 	setMonitorCert(t, hub, m, cert)
 	check(true, 1, 1)
 	assert.Contains(t, lastMessage(), "https://example.com")
-	assert.Contains(t, lastMessage(), "expires in 25 days ("+time.UnixMilli(cert.Expires).UTC().Format(time.DateOnly)+")")
-	assert.Contains(t, lastMessage(), "within the 30-day threshold")
+	assert.Contains(t, lastMessage(), "将在 25 天后过期（"+time.UnixMilli(cert.Expires).UTC().Format(time.DateOnly)+"）")
+	assert.Contains(t, lastMessage(), "未超过 30 天阈值")
 	// Repeated checks and a hub restart do not notify again.
 	check(true, 1, 1)
 	am = alerts.NewTestAlertManagerWithoutWorker(hub)
@@ -84,9 +84,9 @@ func TestNetworkMonitorCertAlertLifecycle(t *testing.T) {
 	// A renewed certificate resolves the incident.
 	setMonitorCert(t, hub, m, certExpiringIn(90))
 	check(false, 0, 2)
-	assert.Contains(t, lastMessage(), "expires in 90 days")
-	assert.Contains(t, hub.TestMailer.Messages()[hub.TestMailer.TotalSend()-1].Subject, "Certificate expiry recovered")
-	assert.Contains(t, lastMessage(), "beyond the 30-day threshold")
+	assert.Contains(t, lastMessage(), "将在 90 天后过期")
+	assert.Contains(t, hub.TestMailer.Messages()[hub.TestMailer.TotalSend()-1].Subject, "证书到期告警已恢复")
+	assert.Contains(t, lastMessage(), "已超过 30 天阈值")
 	// A new incident opens when expiry nears again.
 	setMonitorCert(t, hub, m, certExpiringIn(20))
 	check(true, 1, 3)
@@ -131,8 +131,8 @@ func TestNetworkMonitorCertAlertExpired(t *testing.T) {
 	require.NoError(t, am.HandleNetworkMonitorAlerts(system, nil))
 	require.Equal(t, count+1, hub.TestMailer.TotalSend())
 	message := hub.TestMailer.Messages()[count]
-	assert.Contains(t, message.Subject, "Certificate expired")
-	assert.Contains(t, message.Text, "certificate expired on "+time.UnixMilli(cert.Expires).UTC().Format(time.DateOnly))
+	assert.Contains(t, message.Subject, "证书已过期")
+	assert.Contains(t, message.Text, "已于 "+time.UnixMilli(cert.Expires).UTC().Format(time.DateOnly)+" 过期")
 	histories, err := hub.FindAllRecords("alerts_history")
 	require.NoError(t, err)
 	require.Len(t, histories, 1)

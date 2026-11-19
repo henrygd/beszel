@@ -51,7 +51,7 @@ func TestSmartDeviceAlert(t *testing.T) {
 
 	// Check the email content
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "SMART failure on test-system")
+	assert.Contains(t, lastMessage.Subject, "test-system 的 SMART 故障")
 	assert.Contains(t, lastMessage.Subject, "/dev/sda")
 	assert.Contains(t, lastMessage.Text, "Samsung SSD 970 EVO")
 	assert.Contains(t, lastMessage.Text, "FAILED")
@@ -87,7 +87,7 @@ func TestSmartDeviceAlertPassedToWarning(t *testing.T) {
 
 	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after state changed to WARNING")
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "SMART warning on test-system")
+	assert.Contains(t, lastMessage.Subject, "test-system 的 SMART 警告")
 	assert.Contains(t, lastMessage.Text, "WARNING")
 }
 
@@ -121,7 +121,7 @@ func TestSmartDeviceAlertWarningToFailed(t *testing.T) {
 
 	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after state changed from WARNING to FAILED")
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "SMART failure on test-system")
+	assert.Contains(t, lastMessage.Subject, "test-system 的 SMART 故障")
 	assert.Contains(t, lastMessage.Text, "FAILED")
 }
 

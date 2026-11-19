@@ -109,11 +109,11 @@ func (am *AlertManager) sendSystemdAlert(triggered bool, systemName string, aler
 
 	var title, message string
 	if triggered {
-		title = fmt.Sprintf("Failed services on %s %v", systemName, "\U0001F534") // Red alert emoji
-		message = fmt.Sprintf("%s on %s: %s", pluralizeServices(len(failed)), systemName, formatServiceList(failed))
+		title = fmt.Sprintf("%s 存在失败的服务 %v", systemName, "\U0001F534")
+		message = fmt.Sprintf("%s 上%s：%s", systemName, pluralizeServices(len(failed)), formatServiceList(failed))
 	} else {
-		title = fmt.Sprintf("Services recovered on %s %v", systemName, "✅") // Green checkmark emoji
-		message = fmt.Sprintf("No services are in the failed state on %s.", systemName)
+		title = fmt.Sprintf("%s 的服务已恢复 %v", systemName, "✅")
+		message = fmt.Sprintf("%s 上没有处于失败状态的服务。", systemName)
 	}
 
 	systemID := alertData.SystemID
@@ -124,16 +124,16 @@ func (am *AlertManager) sendSystemdAlert(triggered bool, systemName string, aler
 		Title:    title,
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),
-		LinkText: "View " + systemName,
+		LinkText: "查看 " + systemName,
 	})
 }
 
 // pluralizeServices returns a count label like "1 failed service" or "3 failed services".
 func pluralizeServices(count int) string {
 	if count == 1 {
-		return "1 failed service"
+		return "1 个失败的服务"
 	}
-	return fmt.Sprintf("%d failed services", count)
+	return fmt.Sprintf("%d 个失败的服务", count)
 }
 
 // formatServiceList joins service names, truncating long lists.
@@ -142,7 +142,7 @@ func formatServiceList(names []string) string {
 		return strings.Join(names, ", ")
 	}
 	remaining := len(names) - maxListedServices
-	return fmt.Sprintf("%s and %d more", strings.Join(names[:maxListedServices], ", "), remaining)
+	return fmt.Sprintf("%s，另有 %d 个", strings.Join(names[:maxListedServices], "、"), remaining)
 }
 
 // resolveSystemdAlerts resolves triggered systemd alerts for systems that no longer

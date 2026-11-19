@@ -110,7 +110,7 @@ func TestContainerHealthAlertTriggersAndResolves(t *testing.T) {
 
 		msg := fixture.hub.TestMailer.LastMessage()
 		assert.Contains(t, msg.Subject, "web", "Subject should name the unhealthy container")
-		assert.Contains(t, strings.ToLower(msg.Subject), "unhealthy")
+		assert.Contains(t, msg.Subject, "不健康")
 
 		fixture.submit(t, []*container.Stats{unhealthyContainer("web")}, nil)
 		fixture.assertPending(t, false)
@@ -124,7 +124,7 @@ func TestContainerHealthAlertTriggersAndResolves(t *testing.T) {
 
 		fixture.assertTriggered(t, false, "Alert should resolve once the container is healthy again")
 		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend(), "A second email should have been sent for the recovery")
-		assert.Contains(t, fixture.hub.TestMailer.LastMessage().Subject, " healthy")
+		assert.Contains(t, fixture.hub.TestMailer.LastMessage().Subject, "已恢复健康")
 	})
 }
 

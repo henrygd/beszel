@@ -2,7 +2,6 @@ package alerts
 
 import (
 	"fmt"
-	"strings"
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
 )
@@ -35,12 +34,12 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 	statusLabel := smartStateLabel(newState)
 
 	// Build alert message
-	title := fmt.Sprintf("SMART %s on %s: %s %s", statusLabel, systemName, deviceName, smartStateEmoji(newState))
+	title := fmt.Sprintf("%s 的 SMART %s：%s %s", systemName, statusLabel, deviceName, smartStateEmoji(newState))
 	var message string
 	if model != "" {
-		message = fmt.Sprintf("Disk %s (%s) SMART status changed to %s", deviceName, model, newState)
+		message = fmt.Sprintf("磁盘 %s（%s）的 SMART 状态变为 %s", deviceName, model, newState)
 	} else {
-		message = fmt.Sprintf("Disk %s SMART status changed to %s", deviceName, newState)
+		message = fmt.Sprintf("磁盘 %s 的 SMART 状态变为 %s", deviceName, newState)
 	}
 
 	// Get users associated with the system
@@ -57,7 +56,7 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 			Title:    title,
 			Message:  message,
 			Link:     am.hub.MakeLink("system", systemID),
-			LinkText: "View " + systemName,
+			LinkText: "查看 " + systemName,
 		}); err != nil {
 			e.App.Logger().Error("Failed to send SMART alert", "err", err, "userID", userID)
 		}
@@ -100,8 +99,10 @@ func smartStateEmoji(state string) string {
 func smartStateLabel(state string) string {
 	switch state {
 	case "FAILED":
-		return "failure"
+		return "故障"
+	case "WARNING":
+		return "警告"
 	default:
-		return strings.ToLower(state)
+		return state
 	}
 }

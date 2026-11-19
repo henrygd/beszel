@@ -1,5 +1,7 @@
 ## 0.21.2
 
+- Add DingTalk, WeCom, and Feishu bot webhooks for alert notifications.
+
 - Add an actions menu with alert settings to the system detail page (#2803)
 
 - Add `FAN_SENSORS` to include or exclude fan sensors (#2713)

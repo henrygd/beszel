@@ -197,13 +197,13 @@ func (am *AlertManager) CancelPendingContainerAlerts(systemID string) {
 // error/fatal lines) for up to containerAlertMaxLogged of the affected containers.
 func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName string, alertData CachedAlertData, containers []containerAlertTarget, fetchLogs FetchContainerLogsFunc) error {
 	link := am.hub.MakeLink("system", alertData.SystemID)
-	linkText := "View " + systemName
+	linkText := "查看 " + systemName
 
 	if !unhealthy {
 		if err := am.setAlertTriggered(alertData, false); err != nil {
 			return err
 		}
-		title := fmt.Sprintf("%s containers are healthy ✅", systemName)
+		title := fmt.Sprintf("%s 的容器已恢复健康 ✅", systemName)
 		return am.SendAlert(AlertMessageData{
 			UserID:   alertData.UserID,
 			SystemID: alertData.SystemID,
@@ -221,18 +221,18 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 
 	var title string
 	if len(names) == 1 {
-		title = fmt.Sprintf("Unhealthy container %s on %s \U0001F534", names[0], systemName)
+		title = fmt.Sprintf("%s 上的容器 %s 不健康 \U0001F534", systemName, names[0])
 	} else {
-		title = fmt.Sprintf("%d unhealthy containers on %s \U0001F534", len(names), systemName)
+		title = fmt.Sprintf("%s 上有 %d 个不健康容器 \U0001F534", systemName, len(names))
 	}
 
 	var body strings.Builder
-	fmt.Fprintf(&body, "Unhealthy: %s", strings.Join(names, ", "))
+	fmt.Fprintf(&body, "不健康：%s", strings.Join(names, "、"))
 	body.WriteString(am.buildContainerLogsSection(containers, fetchLogs))
 
 	message := body.String()
 	if len(message) > containerAlertMessageMaxChars {
-		message = message[:containerAlertMessageMaxChars] + "\n…(truncated)"
+		message = message[:containerAlertMessageMaxChars] + "\n…（已截断）"
 	}
 
 	claimed, err := am.claimPendingContainerAlert(alertData)
@@ -269,11 +269,11 @@ func (am *AlertManager) buildContainerLogsSection(containers []containerAlertTar
 		if excerpt == "" {
 			continue
 		}
-		fmt.Fprintf(&section, "\n\n%s logs:\n```\n%s\n```", c.name, excerpt)
+		fmt.Fprintf(&section, "\n\n%s 日志：\n```\n%s\n```", c.name, excerpt)
 	}
 
 	if len(containers) > containerAlertMaxLogged {
-		fmt.Fprintf(&section, "\n\n(+%d more unhealthy container(s), logs omitted)", len(containers)-containerAlertMaxLogged)
+		fmt.Fprintf(&section, "\n\n（另有 %d 个不健康容器，已省略日志）", len(containers)-containerAlertMaxLogged)
 	}
 
 	return section.String()

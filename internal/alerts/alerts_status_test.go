@@ -413,7 +413,7 @@ func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
 		require.Len(t, messages, 1, "only the first user's alert should send after one minute")
 		require.Len(t, messages[0].To, 1)
 		assert.Equal(t, "user1@example.com", messages[0].To[0].Address)
-		assert.Contains(t, messages[0].Subject, "Connection to shared-system is down")
+		assert.Contains(t, messages[0].Subject, "与 shared-system 的连接已离线")
 		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "the later user alert should still be pending")
 
 		time.Sleep(58 * time.Second)
@@ -427,7 +427,7 @@ func TestStatusAlertMultipleUsersRespectDifferentMinutes(t *testing.T) {
 		require.Len(t, messages, 2, "both users should eventually receive their own status alert")
 		require.Len(t, messages[1].To, 1)
 		assert.Equal(t, "user2@example.com", messages[1].To[0].Address)
-		assert.Contains(t, messages[1].Subject, "Connection to shared-system is down")
+		assert.Contains(t, messages[1].Subject, "与 shared-system 的连接已离线")
 		assert.Zero(t, hub.GetPendingAlertsCount(), "all pending alerts should be consumed after both timers fire")
 
 		alertUser1, err = hub.FindRecordById("alerts", alertUser1.Id)
@@ -500,7 +500,7 @@ func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *
 		require.Len(t, messages, 1, "the first user's down alert should send before recovery")
 		require.Len(t, messages[0].To, 1)
 		assert.Equal(t, "user1@example.com", messages[0].To[0].Address)
-		assert.Contains(t, messages[0].Subject, "Connection to shared-system is down")
+		assert.Contains(t, messages[0].Subject, "与 shared-system 的连接已离线")
 		assert.Equal(t, 1, hub.GetPendingAlertsCount(), "the second user's alert should still be pending")
 
 		system.Set("status", "up")
@@ -515,7 +515,7 @@ func TestStatusAlertMultipleUsersRecoveryBetweenMinutesOnlyAlertsEarlierUser(t *
 			require.Len(t, message.To, 1)
 			assert.Equal(t, "user1@example.com", message.To[0].Address)
 		}
-		assert.Contains(t, messages[1].Subject, "Connection to shared-system is up")
+		assert.Contains(t, messages[1].Subject, "与 shared-system 的连接已恢复")
 		assert.Zero(t, hub.GetPendingAlertsCount(), "recovery should cancel the later user's pending alert")
 
 		time.Sleep(61 * time.Second)

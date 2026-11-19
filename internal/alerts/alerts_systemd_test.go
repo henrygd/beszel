@@ -98,7 +98,7 @@ func TestSystemdAlertFiresImmediately(t *testing.T) {
 	messages := hub.TestMailer.Messages()
 	require.NotEmpty(t, messages)
 	last := messages[len(messages)-1]
-	assert.Contains(t, last.Subject, "Failed services")
+	assert.Contains(t, last.Subject, "失败的服务")
 	assert.Contains(t, last.Text, "a.service", "notification should name the failed service")
 
 	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
@@ -128,8 +128,8 @@ func TestSystemdAlertFullCycle(t *testing.T) {
 
 	messages := hub.TestMailer.Messages()
 	require.Len(t, messages, 2)
-	assert.Contains(t, messages[0].Subject, "Failed services")
-	assert.Contains(t, messages[1].Subject, "Services recovered")
+	assert.Contains(t, messages[0].Subject, "失败的服务")
+	assert.Contains(t, messages[1].Subject, "服务已恢复")
 
 	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
 	require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestSystemdAlertSendsRecoveryWhenTriggered(t *testing.T) {
 	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "recovery notification should be sent")
 	messages := hub.TestMailer.Messages()
 	require.NotEmpty(t, messages)
-	assert.Contains(t, messages[len(messages)-1].Subject, "Services recovered")
+	assert.Contains(t, messages[len(messages)-1].Subject, "服务已恢复")
 
 	alertRecord, err := hub.FindRecordById("alerts", alert.Id)
 	require.NoError(t, err)
