@@ -62,7 +62,7 @@ func (am *AlertManager) HandleContainerAlerts(systemRecord *core.Record, data *s
 		// toward the minimum unhealthy duration.
 		var result error
 		for _, alertData := range alerts {
-			if err := am.clearPendingContainerAlert(alertData); err != nil {
+			if err := am.clearPendingAlert(alertData); err != nil {
 				result = errors.Join(result, err)
 			}
 		}
@@ -86,7 +86,7 @@ func (am *AlertManager) HandleContainerAlerts(systemRecord *core.Record, data *s
 			}
 			min := max(1, int(alertData.Min))
 			if alertData.PendingSince.IsZero() {
-				pendingSince, err := am.setPendingContainerAlert(alertData, now)
+				pendingSince, err := am.setPendingAlert(alertData, now)
 				if err != nil {
 					result = errors.Join(result, err)
 					continue
@@ -109,7 +109,7 @@ func (am *AlertManager) HandleContainerAlerts(systemRecord *core.Record, data *s
 		}
 
 		// no unhealthy containers right now
-		if err := am.clearPendingContainerAlert(alertData); err != nil {
+		if err := am.clearPendingAlert(alertData); err != nil {
 			result = errors.Join(result, err)
 		}
 		if !alertData.Triggered {
@@ -130,9 +130,9 @@ func snapshotContainerAlertTargets(containers []*container.Stats) []containerAle
 	return targets
 }
 
-// setPendingContainerAlert durably records the first unhealthy observation and
+// setPendingAlert durably records the first unhealthy observation and
 // returns the persisted generation used to claim delivery.
-func (am *AlertManager) setPendingContainerAlert(alertData CachedAlertData, since time.Time) (time.Time, error) {
+func (am *AlertManager) setPendingAlert(alertData CachedAlertData, since time.Time) (time.Time, error) {
 	record, err := am.hub.FindRecordById("alerts", alertData.Id)
 	if err != nil {
 		return time.Time{}, err
@@ -150,7 +150,7 @@ func (am *AlertManager) setPendingContainerAlert(alertData CachedAlertData, sinc
 	return since, am.hub.Save(record)
 }
 
-func (am *AlertManager) clearPendingContainerAlert(alertData CachedAlertData) error {
+func (am *AlertManager) clearPendingAlert(alertData CachedAlertData) error {
 	if alertData.PendingSince.IsZero() {
 		return nil
 	}
@@ -186,7 +186,7 @@ func (am *AlertManager) claimPendingContainerAlert(alertData CachedAlertData) (b
 // system. Called when monitoring pauses or the system goes down.
 func (am *AlertManager) CancelPendingContainerAlerts(systemID string) {
 	for _, alertData := range am.alertsCache.GetAlertsByName(systemID, containerAlertName) {
-		if err := am.clearPendingContainerAlert(alertData); err != nil {
+		if err := am.clearPendingAlert(alertData); err != nil {
 			am.hub.Logger().Error("Failed to clear pending container alert", "err", err)
 		}
 	}

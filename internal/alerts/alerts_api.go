@@ -18,7 +18,7 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 
 	reqData := struct {
-		Min       uint8    `json:"min"`
+		Min       uint16   `json:"min"`
 		Value     float64  `json:"value"`
 		Name      string   `json:"name"`
 		Systems   []string `json:"systems"`
@@ -27,6 +27,13 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	err := e.BindBody(&reqData)
 	if err != nil || userID == "" || reqData.Name == "" || len(reqData.Systems) == 0 {
 		return e.BadRequestError("Bad data", err)
+	}
+	maxMin := uint16(60)
+	if reqData.Name == packageUpdateAlertName {
+		maxMin = 43200
+	}
+	if reqData.Min > maxMin {
+		return e.BadRequestError("Alert duration is out of range", nil)
 	}
 
 	if isNetworkMonitorAlert(reqData.Name) {

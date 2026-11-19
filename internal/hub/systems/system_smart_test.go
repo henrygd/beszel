@@ -34,8 +34,9 @@ func (stubHub) HandleStatusAlerts(status string, systemRecord *core.Record) erro
 func (stubHub) HandleContainerAlerts(systemRecord *core.Record, data *esystem.CombinedData, fetchLogs func(containerID string) (string, error)) error {
 	return nil
 }
-func (stubHub) CancelPendingStatusAlerts(systemID string)    {}
-func (stubHub) CancelPendingContainerAlerts(systemID string) {}
+func (stubHub) CancelPendingStatusAlerts(systemID string)        {}
+func (stubHub) CancelPendingContainerAlerts(systemID string)     {}
+func (stubHub) CancelPendingPackageUpdateAlerts(systemID string) {}
 
 // newTestSystemWithHub creates a System backed by a real (temp) database, along
 // with a matching "systems" record, for tests that need to exercise DB reads/writes.
