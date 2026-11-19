@@ -206,6 +206,17 @@ type Monitor struct {
 	Description            string             `json:"description" db:"description"`
 	CertExpiryNotification bool               `json:"cert_expiry_notification" db:"cert_expiry_notification"`
 	CertExpiryDays         int                `json:"cert_expiry_days" db:"cert_expiry_days"`
+	NotifyOnDown           bool               `json:"notify_on_down" db:"notify_on_down"`
+	NotifyOnRecover        bool               `json:"notify_on_recover" db:"notify_on_recover"`
+	NotifyOnResponseTime   bool               `json:"notify_on_response_time" db:"notify_on_response_time"`
+	ResponseTimeThreshold  int                `json:"response_time_threshold" db:"response_time_threshold"`
+	NotifyOnUptimeDrop     bool               `json:"notify_on_uptime_drop" db:"notify_on_uptime_drop"`
+	UptimeThreshold        float64            `json:"uptime_threshold" db:"uptime_threshold"`
+	NotifyRepeatedFailures bool               `json:"notify_repeated_failures" db:"notify_repeated_failures"`
+	ConsecutiveFailures    int                `json:"consecutive_failures" db:"consecutive_failures"`
+	QuietHoursEnabled      bool               `json:"quiet_hours_enabled" db:"quiet_hours_enabled"`
+	QuietHoursStart        string             `json:"quiet_hours_start" db:"quiet_hours_start"`
+	QuietHoursEnd          string             `json:"quiet_hours_end" db:"quiet_hours_end"`
 	ProxyID                string             `json:"proxy" db:"proxy"`
 	IgnoreTLSError         bool               `json:"ignore_tls_error" db:"ignore_tls_error"`
 }

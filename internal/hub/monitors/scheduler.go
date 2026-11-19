@@ -249,6 +249,20 @@ func (s *Scheduler) saveResult(m *monitor.Monitor, result *monitor.CheckResult) 
 		s.handleStatusChange(m, record, prevStatus, newStatus, result)
 	}
 
+	// Per-check performance thresholds (response time, uptime drop)
+	if s.dispatcher != nil {
+		hb := &monitor.Heartbeat{
+			MonitorID:  m.ID,
+			Status:     newStatus,
+			Ping:       result.Ping,
+			Msg:        result.Msg,
+			CertExpiry: result.CertExpiry,
+			CertValid:  result.CertValid,
+			Time:       now,
+		}
+		s.dispatcher.EvaluateThresholds(m, hb, stats["uptime_24h"])
+	}
+
 	return nil
 }
 
@@ -595,7 +609,19 @@ func recordToMonitor(record *core.Record) *monitor.Monitor {
 		Description:            record.GetString("description"),
 		CertExpiryNotification: record.GetBool("cert_expiry_notification"),
 		CertExpiryDays:         record.GetInt("cert_expiry_days"),
-		IgnoreTLSError:         record.GetBool("ignore_tls_error"),
+		NotifyOnDown:           record.GetBool("notify_on_down"),
+		NotifyOnRecover:        record.GetBool("notify_on_recover"),
+		NotifyOnResponseTime:   record.GetBool("notify_on_response_time"),
+		ResponseTimeThreshold:  record.GetInt("response_time_threshold"),
+		NotifyOnUptimeDrop:     record.GetBool("notify_on_uptime_drop"),
+		UptimeThreshold:        record.GetFloat("uptime_threshold"),
+		NotifyRepeatedFailures: record.GetBool("notify_repeated_failures"),
+		ConsecutiveFailures:    record.GetInt("consecutive_failures"),
+		QuietHoursEnabled:      record.GetBool("quiet_hours_enabled"),
+		QuietHoursStart:        record.GetString("quiet_hours_start"),
+		QuietHoursEnd:          record.GetString("quiet_hours_end"),
+
+		IgnoreTLSError: record.GetBool("ignore_tls_error"),
 	}
 
 	// Parse JSON fields

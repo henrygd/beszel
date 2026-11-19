@@ -22,6 +22,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/incidents"
 	"github.com/henrygd/beszel/internal/hub/maintenance"
 	"github.com/henrygd/beszel/internal/hub/monitors"
+	"github.com/henrygd/beszel/internal/hub/notifications"
 	"github.com/henrygd/beszel/internal/hub/settings"
 	"github.com/henrygd/beszel/internal/hub/statuspages"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -188,6 +189,8 @@ func (h *Hub) StartHub() error {
 		h.settingsAPI.RegisterRoutes(e)
 		// register export API routes
 		h.exportAPI.RegisterRoutes(e)
+		// register notification API routes
+		notifications.RegisterRoutes(h.App, e)
 		return e.Next()
 	})
 
