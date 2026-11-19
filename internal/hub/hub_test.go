@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	beszelTests "github.com/henrygd/beszel/internal/tests"
@@ -115,7 +116,7 @@ func TestGetSSHKey(t *testing.T) {
 		tempDir := t.TempDir()
 
 		// Ensure pubKey is initially empty or different to ensure GetSSHKey sets it
-		hub.SetPubkey("")
+		hub.ResetSSHKey()
 
 		signer, err := hub.GetSSHKey(tempDir)
 		assert.NoError(t, err, "GetSSHKey should not error when generating a new key")
@@ -163,7 +164,7 @@ func TestGetSSHKey(t *testing.T) {
 		expectedPubKeyStr := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPubKey)))
 
 		// Reset h.pubKey to ensure it's set by GetSSHKey from the file
-		hub.SetPubkey("")
+		hub.ResetSSHKey()
 
 		signer, err := hub.GetSSHKey(tempDir)
 		assert.NoError(t, err, "GetSSHKey should not error when reading an existing key")
@@ -234,7 +235,7 @@ func TestGetSSHKey(t *testing.T) {
 				require.NoError(t, err, "Setup failed")
 
 				// Reset h.pubKey before each test case
-				hub.SetPubkey("")
+				hub.ResetSSHKey()
 
 				// Attempt to get SSH key
 				_, err = hub.GetSSHKey(tempDir)
@@ -247,6 +248,97 @@ func TestGetSSHKey(t *testing.T) {
 			})
 		}
 	})
+}
+
+// runConcurrentGetSSHKey calls GetSSHKey from many goroutines at once and returns the public key text of each signer.
+func runConcurrentGetSSHKey(t *testing.T, hub *beszelTests.TestHub, dir string, n int) []string {
+	t.Helper()
+	keys := make([]string, n)
+	errs := make([]error, n)
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			<-start
+			signer, err := hub.GetSSHKey(dir)
+			errs[i] = err
+			if err == nil {
+				keys[i] = strings.TrimSpace(string(ssh.MarshalAuthorizedKey(signer.PublicKey())))
+			}
+		}(i)
+	}
+	close(start)
+	wg.Wait()
+	for _, err := range errs {
+		require.NoError(t, err)
+	}
+	return keys
+}
+
+func TestGetSSHKeyConcurrentExistingKey(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+	dir := t.TempDir()
+
+	rawPubKey, rawPrivKey, err := ed25519.GenerateKey(nil)
+	require.NoError(t, err)
+	pemBlock, err := ssh.MarshalPrivateKey(rawPrivKey, "")
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "id_ed25519"), pem.EncodeToMemory(pemBlock), 0600))
+	sshPubKey, err := ssh.NewPublicKey(rawPubKey)
+	require.NoError(t, err)
+	expected := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPubKey)))
+
+	hub.ResetSSHKey()
+	for _, key := range runConcurrentGetSSHKey(t, hub, dir, 16) {
+		assert.Equal(t, expected, key)
+	}
+	assert.Equal(t, expected, hub.GetPubkey())
+}
+
+func TestGetSSHKeyConcurrentNewKey(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+	dir := t.TempDir()
+
+	hub.ResetSSHKey()
+	keys := runConcurrentGetSSHKey(t, hub, dir, 16)
+
+	files, err := filepath.Glob(filepath.Join(dir, "id_ed25519*"))
+	require.NoError(t, err)
+	require.Len(t, files, 1)
+	keyData, err := os.ReadFile(files[0])
+	require.NoError(t, err)
+	private, err := ssh.ParsePrivateKey(keyData)
+	require.NoError(t, err)
+	expected := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(private.PublicKey())))
+	for _, key := range keys {
+		assert.Equal(t, expected, key)
+	}
+	assert.Equal(t, expected, hub.GetPubkey())
+}
+
+func TestGetSSHKeyRetriesAfterReadError(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+	dir := t.TempDir()
+	keyPath := filepath.Join(dir, "id_ed25519")
+
+	hub.ResetSSHKey()
+	// a folder at the key path makes ReadFile fail with an error other than "not exist"
+	require.NoError(t, os.Mkdir(keyPath, 0700))
+	signer, err := hub.GetSSHKey(dir)
+	require.Error(t, err)
+	assert.Nil(t, signer)
+	assert.Empty(t, hub.GetPubkey())
+
+	require.NoError(t, os.Remove(keyPath))
+	signer, err = hub.GetSSHKey(dir)
+	require.NoError(t, err)
+	require.NotNil(t, signer)
+	assert.NotEmpty(t, hub.GetPubkey())
 }
 
 func TestAppUrl(t *testing.T) {
