@@ -56,12 +56,14 @@ type Stats struct {
 	MaxDiskIoStats    [6]float64           `json:"diosm,omitzero" cbor:"-"`                     // max values for DiskIoStats
 	Fans              map[string]uint16    `json:"f,omitempty" cbor:"36,keyasint,omitempty"`
 	Batteries         map[string]uint8     `json:"bats,omitempty" cbor:"37,keyasint,omitempty"`
-	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
-	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
-	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
-	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
-	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
-	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
+	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`    // ZFS pool metrics, keyed by pool name
+	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"`   // [total read bytes, total write bytes] cumulative device counters
+	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"`   // RSSI dBm keyed by interface; unavailable readings omitted
+	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`    // [total, used, buff/cache, zfs arc] bytes
+	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                      // max used memory bytes
+	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"`   // [total, used] bytes
+	TcpConnections    [6]uint32            `json:"tcp,omitzero" cbor:"43,keyasint,omitzero"`    // [established, time_wait, total, close_wait, syn_recv, syn_sent]
+	TcpInterfaces     map[string][5]uint32 `json:"tcpi,omitempty" cbor:"44,keyasint,omitempty"` // [established, time_wait, close_wait, syn_recv, syn_sent] by network interface
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.

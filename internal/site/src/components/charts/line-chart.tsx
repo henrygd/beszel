@@ -67,6 +67,7 @@ export default function LineChartDefault({
 	legend,
 	itemSorter,
 	showTotal = false,
+	getTotal,
 	reverseStackOrder = false,
 	hideYAxis = false,
 	filter,
@@ -92,6 +93,9 @@ export default function LineChartDefault({
 	domain2?: AxisDomain
 	legend?: boolean
 	showTotal?: boolean
+	/** Tooltip total from the data record instead of summing the series (requires showTotal) */
+	// biome-ignore lint/suspicious/noExplicitAny: accepts different data source types
+	getTotal?: (data: any) => number | undefined
 	// biome-ignore lint/suspicious/noExplicitAny: recharts tooltip item interop
 	itemSorter?: (a: any, b: any) => number
 	reverseStackOrder?: boolean
@@ -222,6 +226,7 @@ export default function LineChartDefault({
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={contentFormatter}
 								showTotal={showTotal}
+								getTotal={getTotal}
 								filter={filter}
 								truncate={truncate}
 							/>
