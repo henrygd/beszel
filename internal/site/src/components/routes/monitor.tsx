@@ -41,6 +41,7 @@ import {
 	LayoutDashboard,
 	type LucideIcon,
 } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
 	type Heartbeat,
 	type Monitor,
@@ -83,48 +84,64 @@ function UptimeBarVisualization({ heartbeats }: { heartbeats?: HeartbeatRow[] })
 
 	if (!recent.length) {
 		return (
-			<div className="flex gap-0.5 h-8 items-center">
+			<div className="flex gap-1 h-10 items-center">
 				{Array.from({ length: 12 }).map((_, i) => (
-					<div key={i} className="flex-1 h-6 rounded-sm bg-muted/50" />
+					<div key={i} className="flex-1 h-8 rounded-full bg-muted/50" />
 				))}
 			</div>
 		)
 	}
 
+	const getBarStyle = (status: string) => {
+		switch (status) {
+			case "up":
+				return "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)] dark:shadow-[0_0_12px_rgba(34,197,94,0.7)]"
+			case "down":
+				return "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] dark:shadow-[0_0_12px_rgba(239,68,68,0.7)]"
+			case "paused":
+				return "bg-gray-400"
+			default:
+				return "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)] dark:shadow-[0_0_12px_rgba(234,179,8,0.7)]"
+		}
+	}
+
 	return (
-		<div className="space-y-2">
-			<div className="flex gap-0.5 h-8">
-				{recent.map((hb, i) => (
-					<div
-						key={i}
-						className={cn(
-							"flex-1 rounded-sm transition-all hover:opacity-80 cursor-pointer",
-							hb.status === "up"
-								? "bg-green-500"
-								: hb.status === "down"
-									? "bg-red-500"
-									: hb.status === "paused"
-										? "bg-gray-400"
-										: "bg-yellow-500"
-						)}
-						title={`${hb.status} • ${formatPing(hb.ping)} • ${formatDate(hb.time || "")}`}
-					/>
-				))}
+		<TooltipProvider>
+			<div className="space-y-3">
+				<div className="flex gap-1 h-10">
+					{recent.map((hb, i) => (
+						<Tooltip key={i}>
+							<TooltipTrigger asChild>
+								<div
+									className={cn(
+										"flex-1 rounded-full transition-all hover:scale-110 cursor-pointer min-w-[4px]",
+										getBarStyle(hb.status)
+									)}
+								/>
+							</TooltipTrigger>
+							<TooltipContent side="bottom" className="text-xs">
+								<p className="capitalize font-medium">{hb.status}</p>
+								<p className="text-muted-foreground">{formatPing(hb.ping)}</p>
+								<p className="text-muted-foreground">{formatDate(hb.time || "")}</p>
+							</TooltipContent>
+						</Tooltip>
+					))}
+				</div>
+				<div className="flex justify-between text-xs text-muted-foreground">
+					<span className="font-medium">{recent.length} recent checks</span>
+					<div className="flex items-center gap-3">
+						<span className="inline-flex items-center gap-1.5">
+							<span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]" />
+							{recent.filter((h) => h.status === "up").length} up
+						</span>
+						<span className="inline-flex items-center gap-1.5">
+							<span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]" />
+							{recent.filter((h) => h.status === "down").length} down
+						</span>
+					</div>
+				</div>
 			</div>
-			<div className="flex justify-between text-xs text-muted-foreground">
-				<span>{recent.length} recent checks</span>
-				<span>
-					<span className="inline-flex items-center gap-1">
-						<span className="w-2 h-2 rounded-full bg-green-500" />
-						{recent.filter((h) => h.status === "up").length} up
-					</span>
-					<span className="inline-flex items-center gap-1 ml-3">
-						<span className="w-2 h-2 rounded-full bg-red-500" />
-						{recent.filter((h) => h.status === "down").length} down
-					</span>
-				</span>
-			</div>
-		</div>
+		</TooltipProvider>
 	)
 }
 
@@ -259,23 +276,30 @@ function formatMs(ms: number): string {
 
 function CoreWebVitalsCard({ monitorId, url }: { monitorId: string; url?: string }) {
 	const [strategy, setStrategy] = useState<"mobile" | "desktop">("mobile")
+	const [lastError, setLastError] = useState<string | null>(null)
 	const { toast } = useToast()
 
 	const {
 		data,
 		isPending: isPageSpeedLoading,
 		mutate,
+		error: mutationError,
 	} = useMutation({
 		mutationFn: () => runPageSpeedCheck(monitorId, strategy),
 		onSuccess: () => {
+			setLastError(null)
 			toast({ title: "Lighthouse check complete" })
 		},
 		onError: (err: Error) => {
-			toast({ title: "Check failed", description: err.message, variant: "destructive" })
+			const msg = err.message || "Unknown error"
+			setLastError(msg)
+			toast({ title: "Check failed", description: msg, variant: "destructive" })
 		},
 	})
 
 	if (!url) return null
+
+	const errorMessage = lastError || (mutationError ? (mutationError as Error).message : null)
 
 	return (
 		<Card>
@@ -321,7 +345,27 @@ function CoreWebVitalsCard({ monitorId, url }: { monitorId: string; url?: string
 				</div>
 			</CardHeader>
 			<CardContent>
-				{data ? (
+				{errorMessage ? (
+					<div className="flex flex-col items-center justify-center py-8 gap-3">
+						<div className="p-3 bg-red-500/10 rounded-full">
+							<XCircle className="h-6 w-6 text-red-500" />
+						</div>
+						<div className="text-center max-w-md">
+							<p className="text-sm font-medium text-red-600 dark:text-red-400">Check failed</p>
+							<p className="text-sm text-muted-foreground mt-1">
+								{errorMessage.includes("429") || errorMessage.includes("quota")
+									? "PageSpeed API quota exceeded. Please try again later."
+									: errorMessage.includes("network")
+										? "Network error. Please check your connection and try again."
+										: "An error occurred while running the check."}
+							</p>
+						</div>
+						<Button variant="outline" size="sm" onClick={() => mutate()} disabled={isPageSpeedLoading}>
+							<RefreshCw className={cn("mr-2 h-4 w-4", isPageSpeedLoading && "animate-spin")} />
+							Retry
+						</Button>
+					</div>
+				) : data ? (
 					<div className="space-y-4">
 						{/* Lighthouse Scores */}
 						<div className="flex items-center gap-4 justify-center sm:justify-start">
@@ -593,10 +637,11 @@ export default memo(function MonitorDetail({ id }: { id: string }) {
 			"30d": 30 * 24 * 60 * 60 * 1000,
 		}
 		const cutoff = now - (ranges[timeRange] || ranges["24h"])
-		return heartbeats.filter((h: HeartbeatRow) => {
+		const filtered = heartbeats.filter((h: HeartbeatRow) => {
 			const t = new Date(h.time || "").getTime()
 			return t >= cutoff
 		})
+		return filtered.length > 0 ? filtered : heartbeats
 	}, [heartbeats, timeRange])
 
 	// Prepare chart data from heartbeats
@@ -810,62 +855,63 @@ export default memo(function MonitorDetail({ id }: { id: string }) {
 				</CardHeader>
 				<CardContent>
 					<div className="h-[300px]">
-						{chartData.length > 0 ? (
-							<ResponsiveContainer width="100%" height="100%">
-								<LineChart data={chartData}>
-									<defs>
-										<linearGradient id="colorResponse" x1="0" y1="0" x2="0" y2="1">
-											<stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-											<stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-										</linearGradient>
-									</defs>
-									<CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
-									<XAxis dataKey="time" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-									<YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} unit="ms" />
-									<Tooltip
-										contentStyle={{
-											backgroundColor: "hsl(var(--card))",
-											border: "1px solid hsl(var(--border))",
-											borderRadius: "8px",
-										}}
-										formatter={(value: number) => [`${value}ms`, "Response Time"]}
-									/>
-									<Line
-										type="monotone"
-										dataKey="responseTime"
-										stroke="hsl(var(--chart-1))"
-										strokeWidth={1.5}
-										fillOpacity={1}
-										fill="url(#colorResponse)"
-										name="Response Time"
-										isAnimationActive={false}
-										dot={false}
-									/>
-								</LineChart>
-							</ResponsiveContainer>
-						) : (
-							<div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
-								<div className="p-3 bg-muted/50 rounded-full">
-									<Activity className="h-6 w-6 opacity-50" />
-								</div>
-								<p className="text-sm">
-									{isPending
-										? "No check data yet. Run a check to see the chart."
-										: "No data available for selected time range"}
-								</p>
-								{isPending && (
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => checkMutation.mutate()}
-										disabled={checkMutation.isPending}
-									>
-										<RefreshCw className={cn("mr-2 h-4 w-4", checkMutation.isPending && "animate-spin")} />
-										Run First Check
-									</Button>
-								)}
-							</div>
-						)}
+							{chartData.length > 0 ? (
+								<ResponsiveContainer width="100%" height="100%">
+									<LineChart data={chartData}>
+										<defs>
+											<linearGradient id="colorResponse" x1="0" y1="0" x2="0" y2="1">
+												<stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+												<stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+											</linearGradient>
+										</defs>
+										<CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
+										<XAxis dataKey="time" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+										<YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} unit="ms" />
+										<Tooltip
+											contentStyle={{
+												backgroundColor: "hsl(var(--card))",
+												border: "1px solid hsl(var(--border))",
+												borderRadius: "8px",
+											}}
+											formatter={(value: number) => [`${value}ms`, "Response Time"]}
+										/>
+										<Line
+											type="monotone"
+											dataKey="responseTime"
+											stroke="#3b82f6"
+											strokeWidth={2}
+											fillOpacity={1}
+											fill="url(#colorResponse)"
+											name="Response Time"
+											isAnimationActive={false}
+											dot={false}
+											activeDot={{ r: 4, fill: "#3b82f6", stroke: "#fff", strokeWidth: 2 }}
+										/>
+									</LineChart>
+								</ResponsiveContainer>
+							) : (
+								<div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
+									<div className="p-3 bg-muted/50 rounded-full">
+										<Activity className="h-6 w-6 opacity-50" />
+									</div>
+									<p className="text-sm font-medium">
+										{isPending
+											? "No check data yet. Run a check to see the chart."
+											: "No data available for selected time range"}
+									</p>
+									{isPending && (
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => checkMutation.mutate()}
+											disabled={checkMutation.isPending}
+										>
+												<RefreshCw className={cn("mr-2 h-4 w-4", checkMutation.isPending && "animate-spin")} />
+												Run First Check
+											</Button>
+										)}
+									</div>
+							)}
 					</div>
 				</CardContent>
 			</Card>
