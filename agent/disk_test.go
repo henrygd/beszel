@@ -3,12 +3,10 @@
 package agent
 
 import (
-	"errors"
 	"math"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 	"time"
 
@@ -1255,27 +1253,13 @@ func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
 	assert.False(t, agent.fsStats["D:"].Root)
 }
 
-// setDiskutilInfo swaps the diskutil plist provider for the duration of a test.
-func setDiskutilInfo(t *testing.T, fn func(string) ([]byte, error)) {
+// setApfsPhysicalDisk swaps the APFS volume -> physical disk lookup for the
+// duration of a test.
+func setApfsPhysicalDisk(t *testing.T, fn func(string) string) {
 	t.Helper()
-	old := diskutilInfo
-	diskutilInfo = fn
-	t.Cleanup(func() { diskutilInfo = old })
-}
-
-// apfsPlist builds a minimal `diskutil info -plist` document for an APFS volume.
-func apfsPlist(container string, stores ...string) []byte {
-	var b strings.Builder
-	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-<key>APFSContainerReference</key><string>` + container + `</string>
-<key>APFSPhysicalStores</key><array>`)
-	for _, s := range stores {
-		b.WriteString(`<dict><key>APFSPhysicalStore</key><string>` + s + `</string></dict>`)
-	}
-	b.WriteString(`</array><key>FilesystemType</key><string>apfs</string></dict></plist>`)
-	return []byte(b.String())
+	old := apfsPhysicalDisk
+	apfsPhysicalDisk = fn
+	t.Cleanup(func() { apfsPhysicalDisk = old })
 }
 
 func TestRegisterFilesystemStatsAPFS(t *testing.T) {
@@ -1290,10 +1274,10 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 
 	t.Run("maps apfs volume to its physical store disk", func(t *testing.T) {
 		calls := 0
-		setDiskutilInfo(t, func(dev string) ([]byte, error) {
+		setApfsPhysicalDisk(t, func(dev string) string {
 			calls++
 			assert.Equal(t, "/dev/disk13s1", dev)
-			return apfsPlist("disk13", "disk12s2"), nil
+			return "disk12"
 		})
 
 		key, stats, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1", "/Volumes/DriveD", false, "DriveD", darwinCtx)
@@ -1305,7 +1289,7 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 	})
 
 	t.Run("maps apfs root volume to its physical store disk", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) { return apfsPlist("disk13", "disk12s2"), nil })
+		setApfsPhysicalDisk(t, func(string) string { return "disk12" })
 
 		key, _, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1s1", "/", true, "", darwinCtx)
 
@@ -1313,18 +1297,8 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 		assert.Equal(t, "disk12", key)
 	})
 
-	t.Run("uses first physical store for multi-store containers", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) { return apfsPlist("disk13", "disk12s2", "disk3s2"), nil })
-
-		key, _, _ := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1", "/Volumes/Fusion", false, "", darwinCtx)
-
-		assert.Equal(t, "disk12", key)
-	})
-
 	t.Run("hfs volume keeps prefix fallback", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) {
-			return []byte(`<?xml version="1.0" encoding="UTF-8"?><plist version="1.0"><dict><key>FilesystemType</key><string>hfs</string></dict></plist>`), nil
-		})
+		setApfsPhysicalDisk(t, func(string) string { return "" })
 
 		key, _, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk3s2", "/Volumes/DriveA", false, "", darwinCtx)
 
@@ -1332,8 +1306,8 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 		assert.Equal(t, "disk3", key)
 	})
 
-	t.Run("diskutil failure falls back to existing behaviour", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) { return nil, errors.New("diskutil not found") })
+	t.Run("unresolved lookup falls back to existing behaviour", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "" })
 
 		key, _, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1", "/Volumes/DriveD", false, "", darwinCtx)
 
@@ -1341,18 +1315,18 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 		assert.Equal(t, "disk1", key, "unchanged prefix fallback")
 	})
 
-	t.Run("physical store without io counters falls back", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) { return apfsPlist("disk20", "disk19s2"), nil })
+	t.Run("physical disk without io counters falls back", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "disk19" })
 
 		key, _, _ := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk20s1", "/Volumes/Other", false, "", darwinCtx)
 
 		assert.Equal(t, "disk20s1", key)
 	})
 
-	t.Run("exact io match skips diskutil", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) {
-			t.Fatal("diskutil should not be called")
-			return nil, nil
+	t.Run("exact io match skips lookup", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string {
+			t.Fatal("APFS lookup should not be called")
+			return ""
 		})
 
 		key, _, _ := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk3", "/Volumes/Raw", false, "", darwinCtx)
@@ -1360,10 +1334,10 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 		assert.Equal(t, "disk3", key)
 	})
 
-	t.Run("non-darwin never calls diskutil", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) {
-			t.Fatal("diskutil should not be called")
-			return nil, nil
+	t.Run("non-darwin never calls lookup", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string {
+			t.Fatal("APFS lookup should not be called")
+			return ""
 		})
 		ctx := darwinCtx
 		ctx.isDarwin = false
@@ -1372,28 +1346,6 @@ func TestRegisterFilesystemStatsAPFS(t *testing.T) {
 
 		assert.Equal(t, "disk1", key)
 	})
-}
-
-func TestApfsPhysicalDisk(t *testing.T) {
-	tests := []struct {
-		name string
-		out  []byte
-		err  error
-		want string
-	}{
-		{"apfs volume", apfsPlist("disk6", "disk5s2"), nil, "disk5"},
-		{"store is whole disk", apfsPlist("disk6", "disk5"), nil, "disk5"},
-		{"no physical stores", apfsPlist("disk6"), nil, ""},
-		{"malformed store name", apfsPlist("disk6", "bogus"), nil, ""},
-		{"invalid plist", []byte("not a plist"), nil, ""},
-		{"command error", nil, errors.New("boom"), ""},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			setDiskutilInfo(t, func(string) ([]byte, error) { return tt.out, tt.err })
-			assert.Equal(t, tt.want, apfsPhysicalDisk("/dev/disk6s2"))
-		})
-	}
 }
 
 func TestAddPartitionRootFsAPFS(t *testing.T) {
@@ -1415,9 +1367,9 @@ func TestAddPartitionRootFsAPFS(t *testing.T) {
 	}
 
 	t.Run("maps apfs root snapshot to physical disk", func(t *testing.T) {
-		setDiskutilInfo(t, func(dev string) ([]byte, error) {
+		setApfsPhysicalDisk(t, func(dev string) string {
 			assert.Equal(t, "/dev/disk3s1s1", dev)
-			return apfsPlist("disk3", "disk0s2"), nil
+			return "disk0"
 		})
 		agent, d := newDiscovery(true)
 
@@ -1428,8 +1380,8 @@ func TestAddPartitionRootFsAPFS(t *testing.T) {
 		assert.Equal(t, "/", stats.Mountpoint)
 	})
 
-	t.Run("diskutil failure keeps existing behaviour", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) { return nil, errors.New("boom") })
+	t.Run("unresolved lookup keeps existing behaviour", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "" })
 		agent, d := newDiscovery(true)
 
 		// Unchanged: no prefix match, so the caller falls back to
@@ -1438,10 +1390,10 @@ func TestAddPartitionRootFsAPFS(t *testing.T) {
 		assert.Empty(t, agent.fsStats)
 	})
 
-	t.Run("non-darwin never calls diskutil", func(t *testing.T) {
-		setDiskutilInfo(t, func(string) ([]byte, error) {
-			t.Fatal("diskutil should not be called")
-			return nil, nil
+	t.Run("non-darwin never calls lookup", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string {
+			t.Fatal("APFS lookup should not be called")
+			return ""
 		})
 		_, d := newDiscovery(false)
 
