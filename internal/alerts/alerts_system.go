@@ -47,7 +47,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		return nil
 	}
 
-	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, "Status", alertNameSystemdFailed, containerAlertName, alertNameNetworkMonitorLoss, alertNameNetworkMonitorCert)
+	excluded := append([]string{"Status", alertNameSystemdFailed, containerAlertName}, networkMonitorAlertNames...)
+	alerts := am.alertsCache.GetAlertsExcludingNames(systemRecord.Id, excluded...)
 	if len(alerts) == 0 {
 		return nil
 	}

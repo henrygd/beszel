@@ -445,6 +445,8 @@ export interface AlertInfo {
 	singleDesc?: () => string
 	/** Hides the duration slider for alerts that fire on first observation */
 	noDuration?: boolean
+	/** Replaces the duration slider with successful checks in a row needed to resolve, stored in min */
+	recoveryChecks?: { max: number }
 	/** Hides the threshold control for binary alerts */
 	noThreshold?: boolean
 	/** Description shown instead of numeric threshold and duration values */
@@ -452,6 +454,8 @@ export interface AlertInfo {
 	/** Additional information that remains visible while the alert is enabled */
 	note?: () => string
 	invert?: boolean
+	/** Threshold accepts whole numbers only */
+	integer?: boolean
 	/** Selectable threshold units. Values are stored in the first unit (factor 1) */
 	units?: AlertUnit[]
 }

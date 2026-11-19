@@ -152,3 +152,24 @@ func TestMonitorHistorySampleCount(t *testing.T) {
 	require.True(t, ok)
 	assert.EqualValues(t, 4, result.SampleCount)
 }
+
+func TestMonitorHistoryStreak(t *testing.T) {
+	history := newMonitorHistory()
+	now := time.Date(2026, time.September, 14, 12, 0, 0, 0, time.UTC)
+	record := func(responseUs int64) int64 {
+		now = now.Add(10 * time.Second)
+		return history.record(monitorSample{responseUs: responseUs, timestamp: now}).Streak
+	}
+	assert.Equal(t, int64(1), record(10))
+	assert.Equal(t, int64(2), record(10))
+	assert.Equal(t, int64(-1), record(-1))
+	assert.Equal(t, int64(-2), record(-1))
+	assert.Equal(t, int64(-3), record(-1))
+	assert.Equal(t, int64(1), record(10))
+
+	// Reads report the streak without changing it, and clones keep it.
+	result, ok := history.result(time.Hour, now.Add(time.Minute))
+	require.True(t, ok)
+	assert.Equal(t, int64(1), result.Streak)
+	assert.Equal(t, int64(1), history.clone().streak)
+}

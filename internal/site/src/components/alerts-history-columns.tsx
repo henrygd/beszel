@@ -69,6 +69,13 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 				return <span className="ps-2">{t`Down`}</span>
 			}
 			const value = getValue() as number
+			if (name === "NetworkMonitorDown") {
+				return (
+					<span className="tabular-nums ps-2.5">
+						<Plural value={value} one="# failed check" other="# failed checks" />
+					</span>
+				)
+			}
 			if (name === "NetworkMonitorCert") {
 				return (
 					<span className="tabular-nums ps-2.5">
