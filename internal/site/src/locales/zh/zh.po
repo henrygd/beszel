@@ -800,6 +800,14 @@ msgstr "詳細資訊"
 msgid "Device"
 msgstr "裝置"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk"
+msgstr "釘釘"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk, WeCom, and Feishu accept the bot webhook URL. You can also use dingtalk://token, wecom://key, or feishu://token. Add a secret or keyword query parameter when the bot requires a signature or keyword."
+msgstr "釘釘、企業微信和飛書可以直接使用機器人 webhook 網址，也可以使用 dingtalk://token、wecom://key 或 feishu://token。若機器人要求簽章或關鍵詞，請加上 secret 或 keyword 查詢參數。"
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
@@ -1061,6 +1069,10 @@ msgstr "失敗：{0}"
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
 msgstr "風扇"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Feishu"
+msgstr "飛書"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -2558,6 +2570,10 @@ msgstr "警告閾值"
 msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "WeCom"
+msgstr "企業微信"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "啟用後，此 Token 可讓 Agent 自行註冊，無需預先在系統中建立項目。"
@@ -2608,3 +2624,4 @@ msgstr "是"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "已更新您的使用者設定"
+

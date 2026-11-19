@@ -152,11 +152,12 @@ func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	if err != nil || data.URL == "" {
 		return e.BadRequestError("URL is required", err)
 	}
+	restricted := !e.Auth.IsSuperuser() && e.Auth.GetString("role") != "admin"
 	send := shoutrrr.Send
-	if !e.Auth.IsSuperuser() && e.Auth.GetString("role") != "admin" {
+	if restricted {
 		send = sendPublicNotification
 	}
-	err = am.sendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel", send)
+	err = am.sendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel", send, restricted)
 	if errors.Is(err, errInternalDestination) || errors.Is(err, errUnrestrictedService) {
 		return e.ForbiddenError(err.Error(), nil)
 	}

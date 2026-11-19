@@ -800,6 +800,14 @@ msgstr "Подробности"
 msgid "Device"
 msgstr "Устройство"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk, WeCom, and Feishu accept the bot webhook URL. You can also use dingtalk://token, wecom://key, or feishu://token. Add a secret or keyword query parameter when the bot requires a signature or keyword."
+msgstr ""
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
@@ -1061,6 +1069,10 @@ msgstr "Неуспешни: {0}"
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
 msgstr "Вентилатори"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Feishu"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -2558,6 +2570,10 @@ msgstr "Прагове за предупреждение"
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Пуш нотификации"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "WeCom"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "Когато е активиран, този токен позволява на агентите да се регистрират сами без предварително създаване на система."
@@ -2608,3 +2624,4 @@ msgstr "Да"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Настройките за потребителя ти са обновени."
+

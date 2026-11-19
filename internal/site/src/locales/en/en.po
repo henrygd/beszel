@@ -795,6 +795,14 @@ msgstr "Detail"
 msgid "Device"
 msgstr "Device"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk"
+msgstr "DingTalk"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "DingTalk, WeCom, and Feishu accept the bot webhook URL. You can also use dingtalk://token, wecom://key, or feishu://token. Add a secret or keyword query parameter when the bot requires a signature or keyword."
+msgstr "DingTalk, WeCom, and Feishu accept the bot webhook URL. You can also use dingtalk://token, wecom://key, or feishu://token. Add a secret or keyword query parameter when the bot requires a signature or keyword."
+
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
@@ -1056,6 +1064,10 @@ msgstr "Failed: {0}"
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
 msgstr "Fans"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Feishu"
+msgstr "Feishu"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -2553,6 +2565,10 @@ msgstr "Warning thresholds"
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push notifications"
 
+#: src/components/routes/settings/notifications.tsx
+msgid "WeCom"
+msgstr "WeCom"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "When enabled, this token allows agents to self-register without prior system creation."
@@ -2603,3 +2619,4 @@ msgstr "Yes"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Your user settings have been updated."
+
