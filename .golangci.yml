@@ -1,0 +1,7 @@
+# golangci-lint was introduced long after the project started; the codebase
+# carries ~69 pre-existing findings (mostly errcheck in tests and small
+# staticcheck nits). Lint only new/changed code until that debt is paid -
+# run `golangci-lint run --build-tags testing,no_ui` locally to see it all.
+version: "2"
+issues:
+  new: true
