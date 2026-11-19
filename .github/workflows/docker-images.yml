@@ -1,15 +1,11 @@
-name: Build Docker images
+name: Make docker images
 
 on:
   push:
     branches:
-      - "**"
+      - main
     tags:
       - "v*"
-
-permissions:
-  contents: read
-  packages: write
 
 concurrency:
   group: docker-images-${{ github.ref }}
@@ -17,72 +13,138 @@ concurrency:
 
 jobs:
   build:
-    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         include:
-          - name: Hub
-            image: beszel
+          # beszel
+          - image: beszel
             dockerfile: ./internal/dockerfile_hub
-            platforms: linux/amd64,linux/arm64,linux/arm/v7
             tags: |
-              type=raw,value=latest,enable={{is_default_branch}}
-              type=raw,value=edge,enable={{is_default_branch}}
-              type=ref,event=branch
-              type=sha,prefix=sha-
+              type=raw,value=edge
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+          # beszel-agent
+          - image: beszel-agent
+            dockerfile: ./internal/dockerfile_agent
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+          # beszel-agent:alpine
+          - image: beszel-agent
+            dockerfile: ./internal/dockerfile_agent_alpine
+            flavor: latest=false
+            tags: |
+              type=raw,value=alpine
+              type=semver,pattern={{version}}-alpine
+              type=semver,pattern={{major}}.{{minor}}-alpine
+              type=semver,pattern={{major}}-alpine
+
+          # beszel-agent-nvidia
+          - image: beszel-agent-nvidia
+            dockerfile: ./internal/dockerfile_agent_nvidia
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+          # beszel-agent-nvidia:slim
+          - image: beszel-agent-nvidia
+            dockerfile: ./internal/dockerfile_agent_nvidia_slim
+            flavor: latest=false
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              type=raw,value=slim
+              type=semver,pattern={{version}}-slim
+              type=semver,pattern={{major}}.{{minor}}-slim
+              type=semver,pattern={{major}}-slim
+
+          # beszel-agent-intel
+          - image: beszel-agent-intel
+            dockerfile: ./internal/dockerfile_agent_intel
+            platforms: linux/amd64
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
 
-      - name: Normalize GHCR owner
-        id: ghcr
-        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-        shell: bash
-
-      - name: Set up Bun
+      - name: Set up bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install frontend dependencies
-        run: bun install --frozen-lockfile --cwd ./internal/site
-        shell: bash
+      - name: Install dependencies
+        run: bun install --no-save --cwd ./internal/site
 
-      - name: Build frontend
+      - name: Build site
         run: bun run --cwd ./internal/site build
-        shell: bash
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Sign in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker metadata
         id: metadata
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
-          images: ghcr.io/${{ steps.ghcr.outputs.owner }}/${{ matrix.image }}
+          # Each image is built once and pushed to both registries.
+          # Docker Hub is skipped when its token is missing (e.g. forks).
+          images: |
+            name=ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          # Variant images must not overwrite the standard image's latest tag.
+          flavor: ${{ matrix.flavor || 'latest=auto' }}
           tags: ${{ matrix.tags }}
 
-      - name: Build and publish
-        uses: docker/build-push-action@v6
+      # https://github.com/docker/login-action
+      - name: Login to Docker Hub
+        env:
+          password_secret_exists: ${{ secrets.DOCKERHUB_TOKEN != '' && 'true' || 'false' }}
+        if: github.event_name != 'pull_request' && env.password_secret_exists == 'true'
+        uses: docker/login-action@v4
         with:
-          context: .
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./
           file: ${{ matrix.dockerfile }}
-          platforms: ${{ matrix.platforms }}
-          push: true
+          platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7' }}
+          push: ${{ github.event_name != 'pull_request' }}
+          provenance: mode=max
+          sbom: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}

@@ -18,24 +18,58 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPauseSystemPreservesAgentVersion(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "pause-info-test",
+		"host":  "localhost",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	record.Set("info", system.Info{
+		AgentVersion: "0.20.0",
+		Cpu:          42.5,
+		MemPct:       60,
+		Uptime:       3600,
+		Services:     []uint16{3, 1},
+	})
+	require.NoError(t, hub.Save(record))
+
+	record.Set("status", "paused")
+	require.NoError(t, hub.Save(record))
+
+	pausedRecord, err := hub.FindRecordById("systems", record.Id)
+	require.NoError(t, err)
+	assert.Equal(t, "paused", pausedRecord.GetString("status"))
+	var info system.Info
+	require.NoError(t, pausedRecord.UnmarshalJSONField("info", &info))
+	assert.Equal(t, system.Info{AgentVersion: "0.20.0"}, info)
+}
+
 func TestSystemManagerNew(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer hub.Cleanup()
+	sm := hub.GetSystemManager()
+
+	user, err := tests.CreateUser(hub, "test@test.com", "testtesttest")
+	require.NoError(t, err)
+
 	synctest.Test(t, func(t *testing.T) {
-		hub, err := tests.NewTestHub(t.TempDir())
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer hub.Cleanup()
-		sm := hub.GetSystemManager()
-
-		user, err := tests.CreateUser(hub, "test@test.com", "testtesttest")
-		require.NoError(t, err)
-
+		sm.ResetContextForTesting(t)
 		sm.Initialize()
 
+		// Use a closed loopback endpoint so fake-clock tests do not initialise shared DNS state.
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
 			"name":  "it-was-coney-island",
-			"host":  "the-playground-of-the-world",
-			"port":  "33914",
+			"host":  "127.0.0.1",
+			"port":  "0",
 			"users": []string{user.Id},
 		})
 		require.NoError(t, err)
@@ -76,8 +110,8 @@ func TestSystemManagerNew(t *testing.T) {
 		// let's also make sure a system is removed from the store when the record is deleted
 		record, err = tests.CreateRecord(hub, "systems", map[string]any{
 			"name":  "there-was-no-place-like-it",
-			"host":  "in-the-whole-world",
-			"port":  "33914",
+			"host":  "127.0.0.1",
+			"port":  "0",
 			"users": []string{user.Id},
 		})
 		require.NoError(t, err)
@@ -110,7 +144,13 @@ func TestSystemManagerNew(t *testing.T) {
 		err = hub.Delete(record)
 		require.NoError(t, err)
 		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after deletion")
+	})
 
+	// The following subtests run outside the synctest bubble.
+	sm.ResetContextForTesting(t)
+	testOld(t, hub)
+
+	synctest.Test(t, func(t *testing.T) {
 		time.Sleep(time.Second)
 		synctest.Wait()
 
@@ -122,20 +162,57 @@ func TestSystemManagerNew(t *testing.T) {
 
 		assert.Equal(t, 0, sm.GetSystemCount(), "System count should be 0")
 
-		// NOTE: extend with websocket client integration tests
+		// TODO: test with websocket client
 	})
+}
 
-	hub, err := tests.NewTestHub(t.TempDir())
-	require.NoError(t, err)
+func TestStatusAlertRecoveryAfterPendingTransition(t *testing.T) {
+	hub, user := tests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	sm := hub.GetSystemManager()
-	sm.Initialize()
-
-	_, err = tests.CreateUser(hub, "test@test.com", "testtesttest")
+	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
 	require.NoError(t, err)
+	userSettings.Set("settings", map[string]any{
+		"emails":   []string{"test@example.com"},
+		"webhooks": []string{},
+	})
+	require.NoError(t, hub.Save(userSettings))
 
-	testOld(t, hub)
+	record, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "changed-address",
+		"host":  "192.0.2.1",
+		"port":  "33914",
+		"users": []string{user.Id},
+	})
+	require.NoError(t, err)
+	record.Set("status", "down")
+	require.NoError(t, hub.Save(record))
+
+	alert, err := tests.CreateRecord(hub, "alerts", map[string]any{
+		"name":      "Status",
+		"system":    record.Id,
+		"user":      user.Id,
+		"min":       1,
+		"triggered": true,
+	})
+	require.NoError(t, err)
+	initialEmailCount := hub.TestMailer.TotalSend()
+
+	// The edit dialog temporarily moves the system through pending. The active
+	// status alert must remain active until the new connection is confirmed.
+	record.Set("host", "192.0.2.2")
+	record.Set("status", "pending")
+	require.NoError(t, hub.Save(record))
+	alert, err = hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.True(t, alert.GetBool("triggered"), "pending connection update should preserve the active status alert")
+
+	record.Set("status", "up")
+	require.NoError(t, hub.Save(record))
+	alert, err = hub.FindRecordById("alerts", alert.Id)
+	require.NoError(t, err)
+	assert.False(t, alert.GetBool("triggered"), "pending -> up should resolve the active status alert")
+	assert.Equal(t, initialEmailCount+1, hub.TestMailer.TotalSend(), "recovery should send an up notification")
 }
 
 func testOld(t *testing.T, hub *tests.TestHub) {
@@ -149,7 +226,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 	_, err = tests.CreateUser(hub, "test@test.com", "testtesttest")
 	require.Error(t, err)
 
-	// Test collection existence
+	// Test collection existence. todo: move to hub package tests
 	t.Run("CollectionExistence", func(t *testing.T) {
 		// Verify that required collections exist
 		systems, err := hub.FindCachedCollectionByNameOrId("systems")
@@ -302,7 +379,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 			Containers: []*container.Stats{},
 		}
 
-		// Test handling system data
+		// Test handling system data. todo: move to hub/alerts package tests
 		err = hub.HandleSystemAlerts(record, testData)
 		assert.NoError(t, err)
 	})
@@ -422,7 +499,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 		assert.NoError(t, err)
 		assert.NotNil(t, newCtx, "New system context should not be nil")
 		assert.NotNil(t, newCancel, "New system cancel function should not be nil")
-		assert.NotEqual(t, originalCtx, newCtx, "New context should be different from original")
+		assert.NotSame(t, originalCtx, newCtx, "New context should be different from original")
 
 		// Clean up
 		err = sm.RemoveSystem(record.Id)

@@ -1,23 +1,20 @@
 /** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
-import { pb, verifyAuth } from "@/lib/api"
+import { pb } from "@/lib/api"
 import {
 	$allSystemsById,
 	$allSystemsByName,
 	$downSystems,
-	$longestSystemNameLen,
 	$pausedSystems,
+	$systemsLoaded,
 	$upSystems,
 } from "@/lib/stores"
-import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
+import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
 const FIELDS_DEFAULT = "id,name,host,port,info,status"
-
-/** Maximum system name length for display purposes */
-const MAX_SYSTEM_NAME_LENGTH = 22
 
 let initialized = false
 // biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
@@ -44,7 +41,7 @@ export function init() {
 		}
 
 		if (!newSystem) {
-			onSystemsChanged(newSystems, undefined)
+			onSystemsChanged()
 			return
 		}
 
@@ -68,23 +65,13 @@ export function init() {
 		}
 
 		// run things that need to be done when systems change
-		onSystemsChanged(newSystems, newSystem)
+		onSystemsChanged()
 	})
 }
 
-/** Update the longest system name length and favicon based on system status */
-function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: SystemRecord | undefined) {
-	const downSystemsStore = $downSystems.get()
-	const downSystems = Object.values(downSystemsStore)
-
-	// Update longest system name length
-	const longestName = $longestSystemNameLen.get()
-	const nameLen = Math.min(MAX_SYSTEM_NAME_LENGTH, getVisualStringWidth(changedSystem?.name || ""))
-	if (nameLen > longestName) {
-		$longestSystemNameLen.set(nameLen)
-	}
-
-	updateFavicon(downSystems.length)
+/** Update the favicon based on system status */
+function onSystemsChanged() {
+	updateFavicon(Object.keys($downSystems.get()).length)
 }
 
 /** Fetch systems from collection */
@@ -167,16 +154,13 @@ export async function subscribe() {
 export async function refresh() {
 	try {
 		const records = await fetchSystems()
-		if (!records.length) {
-			// No systems found, verify authentication
-			verifyAuth()
-			return
-		}
 		for (const record of records) {
 			add(record)
 		}
 	} catch (error) {
 		console.error("Failed to refresh systems:", error)
+	} finally {
+		$systemsLoaded.set(true)
 	}
 }
 

@@ -1,9 +1,9 @@
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { subscribeKeys } from "nanostores"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useContainerChartConfigs } from "@/components/charts/hooks"
-import { pb } from "@/lib/api"
+import { pb, queueUserSettings } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import {
 	$allSystemsById,
@@ -14,8 +14,9 @@ import {
 	$maxValues,
 	$systems,
 	$userSettings,
+	getUserChartTime,
 } from "@/lib/stores"
-import { chartTimeData, listen, parseSemVer, useBrowserStorage } from "@/lib/utils"
+import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
 	ContainerStatsRecord,
@@ -26,7 +27,7 @@ import type {
 	SystemStatsRecord,
 } from "@/types"
 import { $router, navigate } from "../../router"
-import { appendData, cache, getStats, getTimeData, makeContainerData, makeContainerPoint } from "./chart-data"
+import { appendData, cache, getStats, makeContainerData, makeContainerPoint } from "./chart-data"
 
 export type SystemData = ReturnType<typeof useSystemData>
 
@@ -35,8 +36,42 @@ export function useSystemData(id: string) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
-	const [grid, setGrid] = useBrowserStorage("grid", true)
-	const [displayMode, setDisplayMode] = useBrowserStorage<"default" | "tabs">("displayMode", "default")
+	const [grid, _setGrid] = useState<boolean>(
+		() => $userSettings.get().grid ?? JSON.parse(localStorage.getItem("besz-grid") ?? "null") ?? true
+	)
+	const [displayMode, _setDisplayMode] = useState<"default" | "tabs">(
+		() =>
+			$userSettings.get().displayMode ??
+			(JSON.parse(localStorage.getItem("besz-displayMode") || "null") as "default" | "tabs" | null) ??
+			"default"
+	)
+
+	const applied = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["grid", "displayMode"], (vals) => {
+			if (!applied.current.has("grid") && vals.grid !== undefined) {
+				applied.current.add("grid")
+				_setGrid(vals.grid)
+			}
+			if (!applied.current.has("displayMode") && vals.displayMode !== undefined) {
+				applied.current.add("displayMode")
+				_setDisplayMode(vals.displayMode)
+			}
+		})
+	}, [])
+
+	const setGrid = useCallback((v: boolean) => {
+		_setGrid(v)
+		localStorage.setItem("besz-grid", JSON.stringify(v))
+		$userSettings.setKey("grid", v)
+		queueUserSettings({ grid: v })
+	}, [])
+	const setDisplayMode = useCallback((v: "default" | "tabs") => {
+		_setDisplayMode(v)
+		localStorage.setItem("besz-displayMode", JSON.stringify(v))
+		$userSettings.setKey("displayMode", v)
+		queueUserSettings({ displayMode: v })
+	}, [])
 	const [activeTab, setActiveTabRaw] = useState("core")
 	const [mountedTabs, setMountedTabs] = useState(() => new Set<string>(["core"]))
 	const tabsRef = useRef<string[]>(["core", "disk"])
@@ -56,7 +91,7 @@ export function useSystemData(id: string) {
 	useEffect(() => {
 		return () => {
 			if (!persistChartTime.current) {
-				$chartTime.set($userSettings.get().chartTime)
+				$chartTime.set(getUserChartTime())
 			}
 			persistChartTime.current = false
 			setSystemStats([])
@@ -97,7 +132,7 @@ export function useSystemData(id: string) {
 		}
 		pb.collection<SystemDetailsRecord>("system_details")
 			.getOne(system.id, {
-				fields: "hostname,kernel,cores,threads,cpu,os,os_name,arch,memory,podman",
+				fields: "hostname,kernel,cores,threads,sockets,cpu,os,os_name,arch,memory,podman",
 				headers: {
 					"Cache-Control": "public, max-age=60",
 				},
@@ -108,6 +143,11 @@ export function useSystemData(id: string) {
 	// subscribe to realtime metrics if chart time is 1m
 	useEffect(() => {
 		let unsub = () => {}
+		// subscribe() resolves only after the server confirms the subscription. If the
+		// effect is cleaned up before that (e.g. switching back to 1h quickly, or a slow
+		// realtime connection behind a proxy), unsub is still the no-op above, so the
+		// subscription would stay active and its 1m points would overwrite the history.
+		let cancelled = false
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -116,10 +156,14 @@ export function useSystemData(id: string) {
 			return
 		}
 		let isFirst = true
+		const { expectedInterval } = chartTimeData["1m"]
 		pb.realtime
 			.subscribe(
 				`rt_metrics`,
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
+					if (cancelled) {
+						return
+					}
 					const now = Date.now()
 					const statsPoint = { created: now, stats: data.stats } as SystemStatsRecord
 					const containerPoint =
@@ -133,17 +177,22 @@ export function useSystemData(id: string) {
 						setContainerData(containerPoint ? [containerPoint] : [])
 						return
 					}
-					setSystemStats((prev) => appendData(prev, [statsPoint], 1000, 60))
+					setSystemStats((prev) => appendData(prev, [statsPoint], expectedInterval, 60))
 					if (containerPoint) {
-						setContainerData((prev) => appendData(prev, [containerPoint], 1000, 60))
+						setContainerData((prev) => appendData(prev, [containerPoint], expectedInterval, 60))
 					}
 				},
 				{ query: { system: system.id } }
 			)
 			.then((us) => {
+				if (cancelled) {
+					us()
+					return
+				}
 				unsub = us
 			})
 		return () => {
+			cancelled = true
 			unsub?.()
 		}
 	}, [chartTime, system.id])
@@ -151,16 +200,11 @@ export function useSystemData(id: string) {
 	const agentVersion = useMemo(() => parseSemVer(system?.info?.v), [system?.info?.v])
 
 	const chartData: ChartData = useMemo(() => {
-		const lastCreated = Math.max(
-			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0
-		)
 		return {
 			systemStats,
 			containerData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
-			...getTimeData(chartTime, lastCreated),
 			agentVersion,
 		}
 	}, [systemStats, containerData, direction])
@@ -171,6 +215,7 @@ export function useSystemData(id: string) {
 	// get stats when system "changes." (Not just system to system,
 	// also when new info comes in via systemManager realtime connection, indicating an update)
 	useEffect(() => {
+		const requestId = ++statsRequestId.current
 		if (!system.id || !chartTime || chartTime === "1m") {
 			return
 		}
@@ -179,7 +224,6 @@ export function useSystemData(id: string) {
 		const { expectedInterval } = chartTimeData[chartTime]
 		const ss_cache_key = `${systemId}_${chartTime}_system_stats`
 		const cs_cache_key = `${systemId}_${chartTime}_container_stats`
-		const requestId = ++statsRequestId.current
 
 		const cachedSystemStats = cache.get(ss_cache_key) as SystemStatsRecord[] | undefined
 		const cachedContainerData = cache.get(cs_cache_key) as ChartData["containerData"] | undefined
@@ -200,10 +244,10 @@ export function useSystemData(id: string) {
 		}
 
 		Promise.allSettled([
-			getStats<SystemStatsRecord>("system_stats", systemId, chartTime),
-			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime),
+			getStats<SystemStatsRecord>("system_stats", systemId, chartTime, cachedSystemStats),
+			getStats<ContainerStatsRecord>("container_stats", systemId, chartTime, cachedContainerData),
 		]).then(([systemStats, containerStats]) => {
-			// If another request has been made since this one, ignore the results
+			// Ignore responses for a previous system or chart time
 			if (requestId !== statsRequestId.current) {
 				return
 			}
@@ -293,7 +337,7 @@ export function useSystemData(id: string) {
 	// derived values
 	const isLongerChart = !["1m", "1h"].includes(chartTime)
 	const showMax = maxValues && isLongerChart
-	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
+	const dataEmpty = !chartLoading && chartData.systemStats?.length === 0
 	const lastGpus = systemStats.at(-1)?.stats?.g
 	const isPodman = details?.podman ?? system.info?.p ?? false
 

@@ -2,13 +2,14 @@
 
 package agent
 
+import "github.com/henrygd/beszel/internal/entities/smart"
+
 // Non-Linux builds: eMMC health via sysfs is not available.
 
-func scanEmmcDevices() []*DeviceInfo {
+func scanEmmcDevices() []string {
 	return nil
 }
 
-func (sm *SmartManager) collectEmmcHealth(deviceInfo *DeviceInfo) (bool, error) {
-	return false, nil
+func readEmmcSmartData(path string) (string, *smart.SmartData, bool) {
+	return "", nil, false
 }
-

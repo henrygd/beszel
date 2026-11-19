@@ -6,6 +6,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
 	type SortingState,
@@ -13,8 +14,8 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import { memo, type RefObject, useEffect, useRef, useState } from "react"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -32,11 +33,12 @@ import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
+import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
+import { getLogTimestampDecorations } from "@/lib/logs"
 
 const syntaxTheme = "github-dark-dimmed"
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
-	const loadTime = Date.now()
 	const [data, setData] = useState<ContainerRecord[] | undefined>(undefined)
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-c-${systemId ? 1 : 0}`,
@@ -61,13 +63,16 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	useEffect(() => {
 		function fetchData(systemId?: string) {
-			pb.collection<ContainerRecord>("containers")
+			return pb
+				.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					fields: "id,name,image,ports,cpu,memory,net,health,status,system,updated",
+					fields: "id,name,image,updatable,ports,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
+					requestKey: `containers-${systemId ?? "all"}`,
 				})
 				.then(({ items }) => {
 					if (items.length === 0) {
@@ -97,17 +102,21 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 						return newItems
 					})
 				})
+				.catch((e) => {
+					if (!e?.isAbort) console.error(e)
+				})
 		}
 
 		// initial load
-		fetchData(systemId)
+		const initialLoad = fetchData(systemId)
 
 		// if no systemId, pull system containers after every system update
 		if (!systemId) {
-			return $allSystemsById.listen((_value, _oldValue, systemId) => {
-				// exclude initial load of systems
-				if (Date.now() - loadTime > 500) {
-					fetchData(systemId)
+			return $allSystemsById.listen((_value, oldValue, systemId) => {
+				// skip newly added systems (initial population of the store)
+				if (oldValue[systemId]) {
+					// wait for initial load so its older snapshot can't overwrite newer data
+					initialLoad.then(() => fetchData(systemId))
 				}
 			})
 		}
@@ -124,7 +133,13 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
@@ -139,8 +154,12 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			columnVisibility,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const container = row.original
 			const systemName = $allSystemsById.get()[container.system]?.name ?? ""
@@ -178,7 +197,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 						<Input
 							placeholder={t`Filter...`}
 							value={globalFilter}
-							onChange={(e) => setGlobalFilter(e.target.value)}
+							onChange={(e) => table.setGlobalFilter(e.target.value)}
 							className="ps-4 pe-10 w-full"
 						/>
 						{globalFilter && (
@@ -188,7 +207,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 								size="icon"
 								aria-label={t`Clear`}
 								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-								onClick={() => setGlobalFilter("")}
+								onClick={() => table.setGlobalFilter("")}
 							>
 								<XIcon className="h-4 w-4" />
 							</Button>
@@ -199,6 +218,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			<div className="rounded-md">
 				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
 			</div>
+			<DataTablePagination table={table} showSelected={false} />
 		</Card>
 	)
 }
@@ -214,8 +234,6 @@ const AllContainersTable = memo(function AllContainersTable({
 	colLength: number
 	data: ContainerRecord[] | undefined
 }) {
-	// The virtualizer will need a reference to the scrollable container element
-	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeContainer = useRef<ContainerRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const openSheet = (container: ContainerRecord) => {
@@ -223,50 +241,26 @@ const AllContainersTable = memo(function AllContainersTable({
 		setSheetOpen(true)
 	}
 
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 54,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			{/* add header height to table size */}
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
-					<ContainersTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <ContainerTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-							})
-						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									{data ? (
-										<Trans>No results.</Trans>
-									) : (
-										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-									)}
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto border rounded-md">
+			<table className="text-sm w-full h-full text-nowrap">
+				<ContainersTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => <ContainerTableRow key={row.id} row={row} openSheet={openSheet} />)
+					) : (
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								{data ? (
+									<Trans>No results.</Trans>
+								) : (
+									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+								)}
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</table>
 			<ContainerSheet sheetOpen={sheetOpen} setSheetOpen={setSheetOpen} activeContainer={activeContainer} />
 		</div>
 	)
@@ -281,7 +275,13 @@ async function getLogsHtml(container: ContainerRecord): Promise<string> {
 				container: container.id,
 			}),
 		])
-		return logsHtml.logs ? highlighter.codeToHtml(logsHtml.logs, { lang: "log", theme: syntaxTheme }) : t`No results.`
+		return logsHtml.logs
+			? highlighter.codeToHtml(logsHtml.logs, {
+					lang: "log",
+					theme: syntaxTheme,
+					decorations: getLogTimestampDecorations(logsHtml.logs),
+				})
+			: t`No results.`
 	} catch (error) {
 		console.error(error)
 		return ""
@@ -372,7 +372,7 @@ function ContainerSheet({
 				open={logsFullscreenOpen}
 				onOpenChange={setLogsFullscreenOpen}
 				logsDisplay={logsDisplay}
-				containerName={container.name}
+				name={container.name}
 				onRefresh={refreshLogs}
 				isRefreshing={isRefreshingLogs}
 			/>
@@ -409,30 +409,17 @@ function ContainerSheet({
 					<div className="px-3 pb-3 -mt-4 flex flex-col gap-3 h-full items-start">
 						<div className="flex items-center w-full">
 							<h3>{t`Logs`}</h3>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={refreshLogs}
-								className="h-8 w-8 p-0 ms-auto"
-								disabled={isRefreshingLogs}
-							>
+							<LogsTimestampToggle className="ms-auto" />
+							<LogsIconButton label={t`Refresh`} onClick={refreshLogs} disabled={isRefreshingLogs}>
 								<RefreshCwIcon
 									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
 								/>
-							</Button>
-							<Button variant="ghost" size="sm" onClick={() => setLogsFullscreenOpen(true)} className="h-8 w-8 p-0">
+							</LogsIconButton>
+							<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)}>
 								<MaximizeIcon className="size-4" />
-							</Button>
+							</LogsIconButton>
 						</div>
-						<div
-							ref={logsContainerRef}
-							className={cn(
-								"max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
-								!logsDisplay && ["animate-pulse", "h-full"]
-							)}
-						>
-							<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
-						</div>
+						<LogsDisplay logsDisplay={logsDisplay} containerRef={logsContainerRef} />
 						<div className="flex items-center w-full">
 							<h3>{t`Detail`}</h3>
 							<Button
@@ -479,11 +466,9 @@ function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 
 const ContainerTableRow = memo(function ContainerTableRow({
 	row,
-	virtualRow,
 	openSheet,
 }: {
 	row: Row<ContainerRecord>
-	virtualRow: VirtualItem
 	openSheet: (container: ContainerRecord) => void
 }) {
 	return (
@@ -497,7 +482,7 @@ const ContainerTableRow = memo(function ContainerTableRow({
 					key={cell.id}
 					className="py-0 ps-4.5"
 					style={{
-						height: virtualRow.size,
+						height: 54,
 						width: cell.column.getSize(),
 					}}
 				>
@@ -507,58 +492,6 @@ const ContainerTableRow = memo(function ContainerTableRow({
 		</TableRow>
 	)
 })
-
-function LogsFullscreenDialog({
-	open,
-	onOpenChange,
-	logsDisplay,
-	containerName,
-	onRefresh,
-	isRefreshing,
-}: {
-	open: boolean
-	onOpenChange: (open: boolean) => void
-	logsDisplay: string
-	containerName: string
-	onRefresh: () => void | Promise<void>
-	isRefreshing: boolean
-}) {
-	const outerContainerRef = useRef<HTMLDivElement>(null)
-
-	useEffect(() => {
-		if (open && logsDisplay) {
-			// Scroll the outer container to bottom
-			const scrollToBottom = () => {
-				if (outerContainerRef.current) {
-					outerContainerRef.current.scrollTop = outerContainerRef.current.scrollHeight
-				}
-			}
-			setTimeout(scrollToBottom, 50)
-		}
-	}, [open, logsDisplay])
-
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="w-[calc(100vw-20px)] h-[calc(100dvh-20px)] max-w-none p-0 bg-gh-dark border-0 text-white">
-				<DialogTitle className="sr-only">{containerName} logs</DialogTitle>
-				<div ref={outerContainerRef} className="h-full overflow-auto">
-					<div className="h-full w-full px-3 leading-relaxed rounded-md bg-gh-dark text-sm">
-						<div className="py-3" dangerouslySetInnerHTML={{ __html: logsDisplay }} />
-					</div>
-				</div>
-				<button
-					onClick={onRefresh}
-					className="absolute top-3 right-11 opacity-60 hover:opacity-100 p-1"
-					disabled={isRefreshing}
-					title={t`Refresh`}
-					aria-label={t`Refresh`}
-				>
-					<RefreshCwIcon className={`size-4 transition-transform duration-300 ${isRefreshing ? "animate-spin" : ""}`} />
-				</button>
-			</DialogContent>
-		</Dialog>
-	)
-}
 
 function InfoFullscreenDialog({
 	open,

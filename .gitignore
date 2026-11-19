@@ -49,4 +49,5 @@ graphify-out/*
 !graphify-out/*.svg
 !graphify-out/*.json
 !graphify-out/*.md
-!graphify-out/*.html
+!graphify-out/*.html.cr-release-packages
+.tmp

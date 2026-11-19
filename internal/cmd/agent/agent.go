@@ -1,18 +1,48 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent"
 	"github.com/henrygd/beszel/agent/health"
 	"github.com/henrygd/beszel/agent/utils"
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 )
+
+type noKeyProvidedError struct{}
+
+func (noKeyProvidedError) Error() string {
+	return "no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage"
+}
+
+// parseKeyOrFile parses inline SSH public key material, falling back to
+// reading it as a file when inline parsing fails.
+func parseKeyOrFile(value string) ([]ssh.PublicKey, error) {
+	keys, parseErr := agent.ParseKeys(value)
+	if parseErr == nil {
+		return keys, nil
+	}
+
+	data, readErr := os.ReadFile(value)
+	if readErr != nil {
+		return nil, fmt.Errorf("invalid inline key or unreadable key file: %w", errors.Join(parseErr, readErr))
+	}
+
+	keys, err := agent.ParseKeys(string(data))
+	if err != nil {
+		return nil, fmt.Errorf("invalid key file %q: %w", value, err)
+	}
+	return keys, nil
+}
 
 // cli options
 type cmdOptions struct {
@@ -45,11 +75,14 @@ func (opts *cmdOptions) parse() bool {
 	}
 
 	// pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
-	pflag.StringVarP(&opts.key, "key", "k", "", "Public key(s) for SSH authentication")
+	pflag.StringVarP(&opts.key, "key", "k", "", "Public key(s) for SSH authentication: inline key material or path to a key file")
 	pflag.StringVarP(&opts.listen, "listen", "l", "", "Address or port to listen on")
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
+	if ghupdate.SelfUpdateDisabled {
+		_ = pflag.CommandLine.MarkHidden("china-mirrors")
+	}
 	version := pflag.BoolP("version", "v", false, "Show version information")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
 
@@ -77,7 +110,9 @@ func (opts *cmdOptions) parse() bool {
 		builder.WriteString("\nCommands:\n")
 		builder.WriteString("  fingerprint  View or reset the agent fingerprint\n")
 		builder.WriteString("  health       Check if the agent is running\n")
-		builder.WriteString("  update       Update to the latest version\n")
+		if !ghupdate.SelfUpdateDisabled {
+			builder.WriteString("  update       Update to the latest version\n")
+		}
 		builder.WriteString("\nFlags:\n")
 		fmt.Print(builder.String())
 		pflag.PrintDefaults()
@@ -113,7 +148,7 @@ func (opts *cmdOptions) parse() bool {
 func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	// Try command line flag first
 	if opts.key != "" {
-		return agent.ParseKeys(opts.key)
+		return parseKeyOrFile(opts.key)
 	}
 
 	// Try environment variable
@@ -124,7 +159,7 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	// Try key file
 	keyFile, ok := utils.GetEnv("KEY_FILE")
 	if !ok {
-		return nil, fmt.Errorf("no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage")
+		return nil, noKeyProvidedError{}
 	}
 
 	pubKey, err := os.ReadFile(keyFile)
@@ -136,6 +171,14 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 
 func (opts *cmdOptions) getAddress() string {
 	return agent.GetAddress(opts.listen)
+}
+
+func isBenignStartupError(err error, goos string) bool {
+	if goos != "windows" {
+		return false
+	}
+	var noKeyErr noKeyProvidedError
+	return errors.As(err, &noKeyErr)
 }
 
 // handleFingerprint handles the "fingerprint" command with subcommands "view" and "reset".
@@ -182,6 +225,12 @@ func main() {
 	var err error
 	serverConfig.Keys, err = opts.loadPublicKeys()
 	if err != nil {
+		if isBenignStartupError(err, runtime.GOOS) {
+			// WinGet launches the executable without configuration during validation.
+			// Exit successfully in that case while retaining the error on other platforms.
+			log.Print("Failed to load public keys:", err)
+			return
+		}
 		log.Fatal("Failed to load public keys:", err)
 	}
 
@@ -194,7 +243,7 @@ func main() {
 		log.Fatal("Failed to create agent: ", err)
 	}
 
-	if err := a.Start(serverConfig); err != nil {
+	if err := a.Start(context.Background(), serverConfig); err != nil {
 		log.Fatal("Failed to start: ", err)
 	}
 }

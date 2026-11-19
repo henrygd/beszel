@@ -59,16 +59,22 @@ type dockerManager struct {
 	sem                  chan struct{}               // Semaphore to limit concurrent container requests
 	containerStatsMutex  sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
 	apiContainerList     []*container.ApiInfo        // List of containers from Docker API
+	labeledList          []*labeledContainer         // Reused container list that also carries labels (name template only)
 	containerStatsMap    map[string]*container.Stats // Keeps track of container stats
 	validIds             map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion    bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 	dockerVersionChecked bool                        // Whether a version probe has completed successfully
 	isWindows            bool                        // Whether the Docker Engine API is running on Windows
 	buf                  *bytes.Buffer               // Buffer to store and read response bodies
-	decoder              *json.Decoder               // Reusable JSON decoder that reads from buf
-	apiStats             *container.ApiStats         // Reusable API stats object
 	excludeContainers    []string                    // Patterns to exclude containers by name
+	nameTemplate         *containerNameTemplate      // Optional template to build container names from labels
 	usingPodman          bool                        // Whether the Docker Engine API is running on Podman
+
+	registryClient       *http.Client                  // Client for registry requests; nil uses a client with a 10-second timeout
+	imageUpdatesDisabled bool                          // Whether image update checks are disabled by configuration
+	imageUpdatesMutex    sync.RWMutex                  // Protects imageUpdates, its entries, and imageUpdatesRunning
+	imageUpdates         map[string]*imageUpdateStatus // Shared update status keyed by normalized image reference
+	imageUpdatesRunning  bool                          // Whether a background image-update batch is in progress
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -139,8 +145,7 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		return nil, err
 	}
 
-	dm.apiContainerList = dm.apiContainerList[:0]
-	if err := dm.decode(resp, &dm.apiContainerList); err != nil {
+	if err := dm.decodeContainerList(resp); err != nil {
 		return nil, err
 	}
 
@@ -162,7 +167,14 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 		clear(dm.validIds)
 	}
 
+	// Only schedule auxiliary work here; metrics never wait for image discovery.
+	dm.refreshImageUpdates(dm.apiContainerList, time.Now())
+
 	var failedContainers []*container.ApiInfo
+
+	if dm.nameTemplate != nil {
+		resolveContainerNames(dm.apiContainerList, dm.nameTemplate, dm.shouldExcludeContainer)
+	}
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
@@ -319,8 +331,8 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 	recvTracker.Set(ctr.IdShort, total_recv)
 
 	// Get deltas (bytes since last measurement)
-	sent_delta_raw := sentTracker.Delta(ctr.IdShort)
-	recv_delta_raw := recvTracker.Delta(ctr.IdShort)
+	sent_delta_raw := counterDelta(sentTracker, ctr.IdShort, total_sent)
+	recv_delta_raw := counterDelta(recvTracker, ctr.IdShort, total_recv)
 
 	// Calculate bytes per second using per-cache-time read time to avoid
 	// interference between different cache intervals (e.g. 1000ms vs 60000ms)
@@ -348,6 +360,18 @@ func (dm *dockerManager) calculateNetworkStats(ctr *container.ApiInfo, apiStats 
 	return sent_delta, recv_delta
 }
 
+// counterDelta returns the increase of a cumulative counter since the previous cycle.
+// If the counter went down, 0 is returned for this cycle. The counter is summed across
+// the container's interfaces, so a decrease may be a restart (all counters reset) or a
+// removed interface (others keep their totals), and the current value isn't a safe delta.
+func counterDelta(tracker *deltatracker.DeltaTracker[string, uint64], id string, current uint64) uint64 {
+	prev, ok := tracker.Previous(id)
+	if !ok || current < prev {
+		return 0
+	}
+	return current - prev
+}
+
 // validateCpuPercentage checks if CPU percentage is within valid range
 func validateCpuPercentage(cpuPct float64, containerName string) error {
 	if cpuPct > 100 {
@@ -361,9 +385,6 @@ func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemo
 	stats.Cpu = utils.TwoDecimals(cpuPct)
 	stats.Mem = utils.BytesToMegabytes(float64(usedMemory))
 	stats.Bandwidth = [2]uint64{sent_delta, recv_delta}
-	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
-	stats.NetworkSent = utils.BytesToMegabytes(float64(sent_delta))
-	stats.NetworkRecv = utils.BytesToMegabytes(float64(recv_delta))
 	stats.PrevReadTime = readTime
 }
 
@@ -374,16 +395,26 @@ func convertContainerPortsToString(ctr *container.ApiInfo) string {
 		return ""
 	}
 	sort.Slice(ctr.Ports, func(i, j int) bool {
-		return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		if ctr.Ports[i].PublicPort != ctr.Ports[j].PublicPort {
+			return ctr.Ports[i].PublicPort < ctr.Ports[j].PublicPort
+		}
+		return ctr.Ports[i].IP < ctr.Ports[j].IP
 	})
 	var builder strings.Builder
-	seenPorts := make(map[uint16]struct{})
+	seen := make(map[string]struct{})
 	for _, p := range ctr.Ports {
-		_, ok := seenPorts[p.PublicPort]
-		if p.PublicPort == 0 || ok {
+		if p.PublicPort == 0 {
 			continue
 		}
-		seenPorts[p.PublicPort] = struct{}{}
+		keyIP := p.IP
+		if keyIP == "0.0.0.0" || keyIP == "::" {
+			keyIP = ""
+		}
+		key := keyIP + ":" + strconv.Itoa(int(p.PublicPort))
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
 		if builder.Len() > 0 {
 			builder.WriteString(", ")
 		}
@@ -475,7 +506,11 @@ func (dm *dockerManager) getPodmanContainerHealth(containerID string) (container
 
 // Updates stats for individual container with cache-time-aware delta tracking
 func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
-	name := ctr.Names[0][1:]
+	// DisplayName is only set when CONTAINER_NAME_LABEL is configured, so this fallback is required
+	name := ctr.DisplayName
+	if name == "" {
+		name = ctr.Names[0][1:]
+	}
 
 	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
 	if err != nil {
@@ -497,6 +532,17 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		}
 	}
 
+	// Read and decode the response before locking shared stats to avoid blocking
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("container stats request failed: %s", resp.Status)
+	}
+	res := &container.ApiStats{}
+	if err := json.NewDecoder(resp.Body).Decode(res); err != nil {
+		return err
+	}
+	updateAvailable := dm.cachedImageUpdate(ctr.Image)
+
 	dm.containerStatsMutex.Lock()
 	defer dm.containerStatsMutex.Unlock()
 
@@ -508,8 +554,12 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	}
 
 	stats.Id = ctr.IdShort
+	stats.Name = name
 	stats.Status = statusText
 	stats.Health = health
+
+	stats.Image = ctr.Image
+	stats.UpdateAvailable = updateAvailable
 
 	if len(ctr.Ports) > 0 {
 		stats.Ports = convertContainerPortsToString(ctr)
@@ -519,15 +569,6 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	stats.Cpu = 0
 	stats.Mem = 0
 	stats.Bandwidth = [2]uint64{0, 0}
-	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
-	stats.NetworkSent = 0
-	stats.NetworkRecv = 0
-
-	res := dm.apiStats
-	res.Networks = nil
-	if err := dm.decode(resp, res); err != nil {
-		return err
-	}
 
 	// Initialize CPU tracking for this cache time interval
 	dm.initializeCpuTracking(cacheTimeMs)
@@ -535,11 +576,18 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// Get previous CPU values
 	prevCpuContainer, prevCpuSystem := dm.getCpuPreviousValues(cacheTimeMs, ctr.IdShort)
 
-	// Calculate CPU percentage based on platform
+	// Calculate CPU percentage based on platform.
+	// Podman reports system_cpu_usage from cgroup cpu.stat (not /proc/stat), so it reflects
+	// only cgroup-tracked activity rather than total host capacity. Use a time-based method
+	// instead so the result is comparable to host CPU utilization. See:
+	// https://github.com/henrygd/beszel/issues/2049
 	var cpuPct float64
 	if dm.isWindows {
 		prevRead := dm.lastCpuReadTime[cacheTimeMs][ctr.IdShort]
 		cpuPct = res.CalculateCpuPercentWindows(prevCpuContainer, prevRead)
+	} else if dm.usingPodman && res.CPUStats.OnlineCPUs > 0 {
+		prevRead := dm.lastCpuReadTime[cacheTimeMs][ctr.IdShort]
+		cpuPct = res.CalculateCpuPercentPodman(prevCpuContainer, prevRead)
 	} else {
 		cpuPct = res.CalculateCpuPercentLinux(prevCpuContainer, prevCpuSystem)
 	}
@@ -657,6 +705,8 @@ func newDockerManager(agent *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
+	dockerImageCheck, _ := utils.GetEnv("DOCKER_IMAGE_CHECK")
+
 	// Read container exclusion patterns from environment variable
 	var excludeContainers []string
 	if excludeStr, set := utils.GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
@@ -670,17 +720,28 @@ func newDockerManager(agent *Agent) *dockerManager {
 		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
 	}
 
+	var nameTemplate *containerNameTemplate
+	if value, _ := utils.GetEnv("CONTAINER_NAME_LABEL"); strings.TrimSpace(value) != "" {
+		var err error
+		if nameTemplate, err = parseContainerNameTemplate(value); err != nil {
+			slog.Error("Ignoring invalid CONTAINER_NAME_LABEL", "value", value, "err", err)
+		} else {
+			slog.Info("CONTAINER_NAME_LABEL", "template", value)
+		}
+	}
+
 	manager := &dockerManager{
 		agent: agent,
 		client: &http.Client{
 			Timeout:   timeout,
 			Transport: userAgentTransport,
 		},
-		containerStatsMap: make(map[string]*container.Stats),
-		sem:               make(chan struct{}, 5),
-		apiContainerList:  []*container.ApiInfo{},
-		apiStats:          &container.ApiStats{},
-		excludeContainers: excludeContainers,
+		containerStatsMap:    make(map[string]*container.Stats),
+		sem:                  make(chan struct{}, 5),
+		apiContainerList:     []*container.ApiInfo{},
+		excludeContainers:    excludeContainers,
+		nameTemplate:         nameTemplate,
+		imageUpdatesDisabled: dockerImageCheck == "false",
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
@@ -747,20 +808,60 @@ func (dm *dockerManager) applyDockerVersionInfo(serverHeader string, versionInfo
 	}
 }
 
-// Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
+// Decodes a Docker API JSON response using a reusable buffer. Not thread safe.
 func (dm *dockerManager) decode(resp *http.Response, d any) error {
 	if dm.buf == nil {
 		// initialize buffer with 256kb starting size
 		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
-		dm.decoder = json.NewDecoder(dm.buf)
 	}
 	defer resp.Body.Close()
 	defer dm.buf.Reset()
-	_, err := dm.buf.ReadFrom(resp.Body)
-	if err != nil {
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
 		return err
 	}
-	return dm.decoder.Decode(d)
+	return json.Unmarshal(dm.buf.Bytes(), d)
+}
+
+// labeledContainer is a /containers/json entry decoded together with its labels. Only used when
+// a CONTAINER_NAME_LABEL template is set. Shadows ApiInfo.Labels, which is skipped by the decoder.
+type labeledContainer struct {
+	container.ApiInfo
+	Labels map[string]string
+}
+
+// Decodes a /containers/json response into apiContainerList using the reusable buffer.
+// Without a template, labels are not read at all. With a template, labels are read in the same
+// pass as the rest of the entry, into a reused list whose label maps are dropped each poll.
+func (dm *dockerManager) decodeContainerList(resp *http.Response) error {
+	if dm.buf == nil {
+		// initialize buffer with 256kb starting size
+		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
+	}
+	defer resp.Body.Close()
+	defer dm.buf.Reset()
+	if _, err := dm.buf.ReadFrom(resp.Body); err != nil {
+		return err
+	}
+	if dm.nameTemplate == nil {
+		dm.apiContainerList = dm.apiContainerList[:0]
+		return json.Unmarshal(dm.buf.Bytes(), &dm.apiContainerList)
+	}
+	// Drop last poll's label maps first, so labels can't carry over into this response
+	for _, ctr := range dm.labeledList[:cap(dm.labeledList)] {
+		if ctr != nil {
+			ctr.Labels = nil
+		}
+	}
+	dm.labeledList = dm.labeledList[:0]
+	if err := json.Unmarshal(dm.buf.Bytes(), &dm.labeledList); err != nil {
+		return err
+	}
+	dm.apiContainerList = dm.apiContainerList[:0]
+	for _, ctr := range dm.labeledList {
+		ctr.ApiInfo.Labels = ctr.Labels
+		dm.apiContainerList = append(dm.apiContainerList, &ctr.ApiInfo)
+	}
+	return nil
 }
 
 // Test docker / podman sockets and return if one exists
@@ -834,9 +935,10 @@ func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID strin
 // getLogs fetches the logs for a container
 func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (string, error) {
 	query := url.Values{
-		"stdout": []string{"1"},
-		"stderr": []string{"1"},
-		"tail":   []string{fmt.Sprintf("%d", dockerLogsTail)},
+		"timestamps": []string{"1"},
+		"stdout":     []string{"1"},
+		"stderr":     []string{"1"},
+		"tail":       []string{fmt.Sprintf("%d", dockerLogsTail)},
 	}
 	endpoint, err := buildDockerContainerEndpoint(containerID, "logs", query)
 	if err != nil {

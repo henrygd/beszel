@@ -6,11 +6,13 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
+	fixedDomainTicks,
 	xAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
-import { useYAxisWidth } from "./hooks"
+import { hasChartValues, useYAxisWidth } from "./hooks"
+import { ChartNoValues } from "./chart-no-values"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
@@ -66,7 +68,7 @@ export default function AreaChartDefault({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
-	const sourceData = customData ?? chartData.systemStats
+	const sourceData = customData ?? chartData.systemStats ?? []
 	const [displayData, setDisplayData] = useState(sourceData)
 	const [displayMaxToggled, setDisplayMaxToggled] = useState(maxToggled)
 
@@ -111,9 +113,14 @@ export default function AreaChartDefault({
 		})
 	}, [areasKey, displayMaxToggled])
 
+	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
+		}
+		if (!hasChartValues(displayData, dataPoints)) {
+			return <ChartNoValues ref={ref} />
 		}
 		// if (logRender) {
 		// console.log("Rendered", dataPoints?.map((d) => d.label).join(", "), new Date())
@@ -141,12 +148,13 @@ export default function AreaChartDefault({
 							className="tracking-tighter"
 							width={yAxisWidth}
 							domain={domain ?? [0, max ?? "auto"]}
+							ticks={fixedDomainTicks(domain ?? [0, max ?? "auto"])}
 							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
 							tickLine={false}
 							axisLine={false}
 						/>
 					)}
-					{xAxis(chartData)}
+					{XAxis}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
@@ -167,5 +175,5 @@ export default function AreaChartDefault({
 				</AreaChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, filter, Areas])
+	}, [displayData, yAxisWidth, filter, Areas, XAxis])
 }

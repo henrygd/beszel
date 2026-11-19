@@ -31,6 +31,7 @@ const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
 const Smart = lazy(() => import("@/components/routes/smart.tsx"))
+const Monitors = lazy(() => import("@/components/routes/monitors.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const DomainDetail = lazy(() => import("@/components/routes/domain.tsx"))
 const MonitorDetail = lazy(() => import("@/components/routes/monitor.tsx"))
@@ -40,6 +41,7 @@ const Incidents = lazy(() => import("@/components/routes/incidents.tsx"))
 const Calendar = lazy(() => import("@/components/routes/calendar.tsx"))
 const Monitoring = lazy(() => import("@/components/routes/monitoring.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
+const ActiveAlerts = lazy(() => import("@/components/active-alerts.tsx").then((m) => ({ default: m.ActiveAlerts })))
 
 const App = memo(() => {
 	const page = useStore($router)
@@ -91,6 +93,8 @@ const App = memo(() => {
 		return <Containers />
 	} else if (page.route === "smart") {
 		return <Smart />
+	} else if (page.route === "monitors") {
+		return <Monitors />
 	} else if (page.route === "settings") {
 		return <Settings />
 	} else if (page.route === "status_pages") {
@@ -137,6 +141,9 @@ const Layout = () => {
 						<Navbar />
 					</div>
 					<div className="container relative">
+						<Suspense>
+							<ActiveAlerts className="mb-4" />
+						</Suspense>
 						<App />
 						{copyContent && (
 							<Suspense>
@@ -162,6 +169,7 @@ const queryClient = new QueryClient({
 
 const I18nApp = () => {
 	useEffect(() => {
+		// Activate a locale so I18nProvider can mount App and load the account settings.
 		dynamicActivate(getLocale())
 	}, [])
 

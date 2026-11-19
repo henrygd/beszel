@@ -4,7 +4,6 @@ import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { ChartCard, SelectAvgMax } from "../chart-card"
 import { Unit } from "@/lib/enums"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 import DiskIoSheet from "../disk-io-sheet"
 import type { SystemData } from "../use-system-data"
 import { useStore } from "@nanostores/react"
@@ -36,27 +35,38 @@ export const diskDataFns = {
 		({ stats }: SystemStatsRecord) =>
 			stats?.efs?.[name]?.du ?? 0,
 	// throughput
-	read: ({ stats }: SystemStatsRecord) => stats?.dio?.[0] ?? (stats?.dr ?? 0) * 1024 * 1024,
-	readMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[0] ?? (stats?.drm ?? 0) * 1024 * 1024,
-	write: ({ stats }: SystemStatsRecord) => stats?.dio?.[1] ?? (stats?.dw ?? 0) * 1024 * 1024,
-	writeMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[1] ?? (stats?.dwm ?? 0) * 1024 * 1024,
+	read: ({ stats }: SystemStatsRecord) => stats?.dio?.[0] ?? 0,
+	readMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[0] ?? 0,
+	write: ({ stats }: SystemStatsRecord) => stats?.dio?.[1] ?? 0,
+	writeMax: ({ stats }: SystemStatsRecord) => stats?.diom?.[1] ?? 0,
 	// extra fs throughput
 	extraRead:
 		(name: string) =>
 		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.rb ?? (stats?.efs?.[name]?.r ?? 0) * 1024 * 1024,
+			stats?.efs?.[name]?.rb ?? 0,
 	extraReadMax:
 		(name: string) =>
 		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.rbm ?? (stats?.efs?.[name]?.rm ?? 0) * 1024 * 1024,
+			stats?.efs?.[name]?.rbm ?? 0,
 	extraWrite:
 		(name: string) =>
 		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.wb ?? (stats?.efs?.[name]?.w ?? 0) * 1024 * 1024,
+			stats?.efs?.[name]?.wb ?? 0,
 	extraWriteMax:
 		(name: string) =>
 		({ stats }: SystemStatsRecord) =>
-			stats?.efs?.[name]?.wbm ?? (stats?.efs?.[name]?.wm ?? 0) * 1024 * 1024,
+			stats?.efs?.[name]?.wbm ?? 0,
+	// cumulative totals
+	totalRead: ({ stats }: SystemStatsRecord) => stats?.diot?.[0] ?? 0,
+	totalWrite: ({ stats }: SystemStatsRecord) => stats?.diot?.[1] ?? 0,
+	extraTotalRead:
+		(name: string) =>
+		({ stats }: SystemStatsRecord) =>
+			stats?.efs?.[name]?.tr ?? 0,
+	extraTotalWrite:
+		(name: string) =>
+		({ stats }: SystemStatsRecord) =>
+			stats?.efs?.[name]?.tw ?? 0,
 	// read/write time
 	readTime: dios(0),
 	readTimeMax: diosMax(0),
@@ -114,8 +124,10 @@ export function DiskUsageChart({ systemData, extraFsName }: { systemData: System
 		diskSize = Math.round(diskSize)
 	}
 
-	const title = extraFsName ? `${extraFsName} ${t`Usage`}` : t`Disk Usage`
-	const description = extraFsName ? t`Disk usage of ${extraFsName}` : t`Usage of root partition`
+	const rootName = systemData.system?.info?.rdn
+	const rootLabel = rootName ?? t({ message: `Root`, context: "Root disk label" })
+	const title = extraFsName ? `${extraFsName} ${t`Usage`}` : `${rootLabel} ${t`Usage`}`
+	const description = t`Disk usage of ${{extraFsName: extraFsName ?? rootLabel.toLowerCase()}}`
 
 	return (
 		<ChartCard empty={dataEmpty} grid={grid} title={title} description={description}>
@@ -152,8 +164,10 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 		return null
 	}
 
-	const title = extraFsName ? `${extraFsName} I/O` : t`Disk I/O`
-	const description = extraFsName ? t`Throughput of ${extraFsName}` : t`Throughput of root filesystem`
+	const rootName = systemData.system?.info?.rdn
+	const rootLabel = rootName ?? t({ message: `Root`, context: "Root disk label" })
+	const title = t`${{diskName: extraFsName ?? rootLabel}} I/O`
+	const description = t`Throughput of ${{extraFsName: extraFsName ?? rootLabel.toLowerCase()}}`
 
 	const hasMoreIOMetrics = chartData.systemStats?.some((record) => record.stats?.dios?.at(0))
 
@@ -179,7 +193,6 @@ export function DiskIOChart({ systemData, extraFsName }: { systemData: SystemDat
 			<AreaChartDefault
 				chartData={chartData}
 				maxToggled={showMax}
-				// domain={pinnedAxisDomain(true)}
 				showTotal={true}
 				dataPoints={[
 					{
@@ -235,7 +248,6 @@ export function DiskUtilizationChart({ systemData, extraFsName }: { systemData: 
 		>
 			<AreaChartDefault
 				chartData={chartData}
-				domain={pinnedAxisDomain()}
 				tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 				contentFormatter={({ value }) => `${decimalString(value)}%`}
 				maxToggled={showMax}
@@ -264,7 +276,7 @@ export function ExtraFsCharts({ systemData }: { systemData: SystemData }) {
 
 	return (
 		<div className="grid xl:grid-cols-2 gap-4">
-			{Object.keys(extraFs).map((extraFsName) => {
+			{Object.keys(extraFs).sort((a, b) => a.localeCompare(b)).map((extraFsName) => {
 				let diskSize = systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN
 				// round to nearest GB
 				if (diskSize >= 100) {

@@ -9,10 +9,10 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import {
 	Activity,
 	Box,
@@ -32,6 +32,7 @@ import {
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -43,10 +44,10 @@ import {
 	toFixedFloat,
 	formatTemperature,
 	cn,
-	getVisualStringWidth,
 	secondsToString,
 	hourWithSeconds,
 	formatShortDate,
+	formatNumber,
 } from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -61,7 +62,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { memo, useCallback, useMemo, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useMemo, useEffect, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Column definition for S.M.A.R.T. attributes table
@@ -75,7 +76,12 @@ export const smartColumns: ColumnDef<SmartAttribute>[] = [
 		header: "Name",
 	},
 	{
-		accessorFn: (row) => row.rs || row.rv?.toString(),
+		accessorFn: (row) => {
+			if (!row.rs && (row.n === "DataUnitsWritten" || row.n === "DataUnitsRead")) {
+				return formatDataUnits(Number(row.rv ?? 0))
+			}
+			return row.rs || row.rv?.toString()
+		},
 		header: "Value",
 	},
 	{
@@ -103,13 +109,15 @@ function formatCapacity(bytes: number): string {
 	return `${toFixedFloat(value, value >= 10 ? 1 : 2)} ${unit}`
 }
 
+// Function to format NVMe data units
+// (1 unit = 1000 * 512 bytes) as a human-readable size
+function formatDataUnits(units: number): string {
+	return formatCapacity(units * 1000 * 512)
+}
+
 const SMART_DEVICE_FIELDS = "id,system,name,model,state,capacity,temp,type,hours,cycles,updated"
 
-export const createColumns = (
-	longestName: number,
-	longestModel: number,
-	longestDevice: number
-): ColumnDef<SmartDeviceRecord>[] => [
+export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	{
 		id: "system",
 		accessorFn: (record) => record.system,
@@ -122,11 +130,7 @@ export const createColumns = (
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			return (
-				<div className="ms-1.5 max-w-40 block truncate" style={{ width: `${longestName / 1.05}ch` }}>
-					{allSystems[getValue() as string]?.name ?? ""}
-				</div>
-			)
+			return <div className="ms-1.5 max-w-44 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
 		},
 	},
 	{
@@ -134,11 +138,7 @@ export const createColumns = (
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		header: ({ column }) => <HeaderButton column={column} name={t`Device`} Icon={HardDrive} />,
 		cell: ({ getValue }) => (
-			<div
-				className="font-medium max-w-40 truncate ms-1"
-				title={getValue() as string}
-				style={{ width: `${longestDevice / 1.05}ch` }}
-			>
+			<div className="font-medium ms-1 max-w-44 truncate" title={getValue() as string}>
 				{getValue() as string}
 			</div>
 		),
@@ -150,11 +150,7 @@ export const createColumns = (
 			<HeaderButton column={column} name={t({ message: "Model", comment: "Device model" })} Icon={Box} />
 		),
 		cell: ({ getValue }) => (
-			<div
-				className="max-w-48 truncate ms-1"
-				title={getValue() as string}
-				style={{ width: `${longestModel / 1.05}ch` }}
-			>
+			<div className="ms-1 max-w-44 truncate" title={getValue() as string}>
 				{getValue() as string}
 			</div>
 		),
@@ -195,7 +191,8 @@ export const createColumns = (
 		),
 		cell: ({ getValue }) => {
 			const hours = getValue() as number | undefined
-			if (hours == null) {
+			// hours is stored as 0 when the device doesn't report it (e.g. eMMC, mdraid)
+			if (!hours) {
 				return <div className="text-sm text-muted-foreground ms-1">N/A</div>
 			}
 			const seconds = hours * 3600
@@ -215,10 +212,10 @@ export const createColumns = (
 		),
 		cell: ({ getValue }) => {
 			const cycles = getValue() as number | undefined
-			if (cycles == null) {
+			if (!cycles) {
 				return <div className="text-muted-foreground ms-1">N/A</div>
 			}
-			return <span className="ms-1">{cycles.toLocaleString()}</span>
+			return <span className="ms-1">{formatNumber(cycles)}</span>
 		},
 	},
 	{
@@ -295,7 +292,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [rowActionState, setRowActionState] = useState<{ type: "refresh" | "delete"; id: string } | null>(null)
 	const [globalFilter, setGlobalFilter] = useState("")
-	const allSystems = useStore($allSystemsById)
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	// duplicate the devices to test with more rows
 	// if (
@@ -306,25 +303,6 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 	// ) {
 	// 	setSmartDevices([...smartDevices, ...smartDevices, ...smartDevices])
 	// }
-
-	// Calculate the right width for the columns based on the longest strings among the displayed devices
-	const { longestName, longestModel, longestDevice } = useMemo(() => {
-		const result = { longestName: 0, longestModel: 0, longestDevice: 0 }
-		if (!smartDevices || Object.keys(allSystems).length === 0) {
-			return result
-		}
-		const seenSystems = new Set<string>()
-		for (const device of smartDevices) {
-			if (!systemId && !seenSystems.has(device.system)) {
-				seenSystems.add(device.system)
-				const name = allSystems[device.system]?.name ?? ""
-				result.longestName = Math.max(result.longestName, getVisualStringWidth(name))
-			}
-			result.longestModel = Math.max(result.longestModel, getVisualStringWidth(device.model ?? ""))
-			result.longestDevice = Math.max(result.longestDevice, getVisualStringWidth(device.name ?? ""))
-		}
-		return result
-	}, [smartDevices, systemId, allSystems])
 
 	const openSheet = (disk: SmartDeviceRecord) => {
 		setActiveDiskId(disk.id)
@@ -490,27 +468,37 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 
 	// Filter columns based on whether systemId is provided
 	const tableColumns = useMemo(() => {
-		const columns = createColumns(longestName, longestModel, longestDevice)
+		const columns = createColumns()
 		const baseColumns = systemId ? columns.filter((col) => col.id !== "system") : columns
 		return isReadOnlyUser() ? baseColumns : [...baseColumns, actionColumn]
-	}, [systemId, actionColumn, longestName, longestModel, longestDevice])
+	}, [systemId, actionColumn])
 
 	const table = useReactTable({
 		data: smartDevices || ([] as SmartDeviceRecord[]),
 		columns: tableColumns,
-		onSortingChange: setSorting,
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
 		onRowSelectionChange: setRowSelection,
 		state: {
 			sorting,
 			columnFilters,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const disk = row.original
 			const systemName = $allSystemsById.get()[disk.system]?.name ?? ""
@@ -547,7 +535,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 							<Input
 								placeholder={t`Filter...`}
 								value={globalFilter}
-								onChange={(event) => setGlobalFilter(event.target.value)}
+								onChange={(event) => table.setGlobalFilter(event.target.value)}
 								className="px-4 w-full max-w-full md:w-64"
 							/>
 							{globalFilter && (
@@ -557,7 +545,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 									size="icon"
 									aria-label={t`Clear`}
 									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => setGlobalFilter("")}
+									onClick={() => table.setGlobalFilter("")}
 								>
 									<XIcon className="h-4 w-4" />
 								</Button>
@@ -572,6 +560,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 					data={smartDevices}
 					openSheet={openSheet}
 				/>
+				<DataTablePagination table={table} showSelected={false} />
 			</Card>
 			<DiskSheet diskId={activeDiskId} open={sheetOpen} onOpenChange={setSheetOpen} />
 		</div>
@@ -591,48 +580,24 @@ const SmartDevicesTable = memo(function SmartDevicesTable({
 	data: SmartDeviceRecord[] | undefined
 	openSheet: (disk: SmartDeviceRecord) => void
 }) {
-	const scrollRef = useRef<HTMLDivElement>(null)
-
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 65,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto rounded-md border",
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="w-full text-sm text-nowrap">
-					<SmartTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <SmartDeviceTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-							})
-						) : (
-							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-								{data ? (
-									<Trans>No results.</Trans>
-								) : (
-									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-								)}
-							</TableCell>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto rounded-md border">
+			<table className="w-full text-sm text-nowrap">
+				<SmartTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => <SmartDeviceTableRow key={row.id} row={row} openSheet={openSheet} />)
+					) : (
+						<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+							{data ? (
+								<Trans>No results.</Trans>
+							) : (
+								<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+							)}
+						</TableCell>
+					)}
+				</TableBody>
+			</table>
 		</div>
 	)
 })
@@ -655,11 +620,9 @@ function SmartTableHead({ table }: { table: TableType<SmartDeviceRecord> }) {
 
 const SmartDeviceTableRow = memo(function SmartDeviceTableRow({
 	row,
-	virtualRow,
 	openSheet,
 }: {
 	row: Row<SmartDeviceRecord>
-	virtualRow: VirtualItem
 	openSheet: (disk: SmartDeviceRecord) => void
 }) {
 	return (
@@ -673,7 +636,7 @@ const SmartDeviceTableRow = memo(function SmartDeviceTableRow({
 					key={cell.id}
 					className="md:ps-5 py-0"
 					style={{
-						height: virtualRow.size,
+						height: 65,
 					}}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}
