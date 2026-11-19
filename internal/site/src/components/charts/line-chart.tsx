@@ -13,6 +13,7 @@ import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartOptions, SystemStatsRecord } from "@/types"
 import { hasChartValues, useYAxisWidth } from "./hooks"
 import { ChartNoValues } from "./chart-no-values"
+import { useChartSync } from "./sync"
 import type { AxisDomain } from "recharts/types/util/types"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 
@@ -102,6 +103,7 @@ export default function LineChartDefault({
 	connectNulls?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const chartSync = useChartSync()
 	const hasRightAxis = !!dataPoints?.some((dp) => dp.yAxisId === "right")
 	// fixed width for the secondary axis rather than measured, since its labels (e.g. loss %) are short
 	// and predictable, and this avoids depending on a second async width-measurement pass to settle
@@ -170,7 +172,7 @@ export default function LineChartDefault({
 		return (
 			<ChartContainer
 				ref={ref}
-				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", chartSync.className, {
 					"opacity-100": yAxisWidth || hideYAxis,
 					"ps-4": hideYAxis,
 				})}
@@ -180,6 +182,7 @@ export default function LineChartDefault({
 					accessibilityLayer
 					data={displayData}
 					margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					{...chartSync.syncProps}
 					{...chartProps}
 				>
 					<CartesianGrid vertical={false} />
@@ -232,5 +235,5 @@ export default function LineChartDefault({
 				</LineChart>
 			</ChartContainer>
 		)
-	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis])
+	}, [displayData, yAxisWidth, hasRightAxis, filter, Lines, XAxis, chartSync])
 }
