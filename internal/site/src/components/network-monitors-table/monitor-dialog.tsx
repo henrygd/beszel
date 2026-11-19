@@ -34,6 +34,21 @@ import * as v from "valibot"
 
 type MonitorProtocol = "icmp" | "tcp" | "http" | "dns"
 
+type MonitorRecordType = NetworkMonitorRecord["recordType"]
+
+const monitorRecordTypes = ["A", "AAAA", "CNAME", "MX", "NS", "TXT"] as const
+
+// Select items need a non-empty value, so this stands in for the default lookup.
+const defaultRecordType = "default"
+
+// Example expected values for DNS monitors; other record types hold host names.
+const dnsKeywordPlaceholders: Partial<Record<MonitorRecordType, string>> = {
+	"": "192.0.2.10",
+	A: "192.0.2.10",
+	AAAA: "2001:db8::10",
+	TXT: "v=spf1",
+}
+
 type MonitorValues = {
 	system: string
 	target: string
@@ -42,6 +57,9 @@ type MonitorValues = {
 	server: string
 	interval: string
 	skipTlsVerify: boolean
+	keyword: string
+	jsonPath: string
+	recordType: MonitorRecordType
 }
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
@@ -66,6 +84,9 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
 		skipTlsVerify: v.boolean(),
+		keyword: v.pipe(v.string(), v.trim(), v.maxLength(500, "Keyword must be 500 characters or fewer")),
+		jsonPath: v.pipe(v.string(), v.trim(), v.maxLength(200, "JSON path must be 200 characters or fewer")),
+		recordType: v.picklist(["", ...monitorRecordTypes]),
 	}),
 	v.transform((input): NormalizedMonitorValues => {
 		let { protocol, port } = input
@@ -89,6 +110,10 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			interval: input.interval,
 			// Only HTTPS targets use TLS; clear it for everything else.
 			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
+			// Only HTTP and DNS monitors check the response content.
+			keyword: protocol === "http" || protocol === "dns" ? input.keyword : "",
+			jsonPath: protocol === "http" ? input.jsonPath : "",
+			recordType: protocol === "dns" ? input.recordType : "",
 		}
 	}),
 	v.forward(
@@ -176,9 +201,9 @@ function buildMonitorPayload(values: MonitorValues, enabled = true) {
 	return payload
 }
 
-type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port" | "server">
-function getMonitorIdentityKey({ system, target, protocol, port, server }: MonitorIdentity) {
-	return `${system}${target}${protocol}${port}${protocol === "dns" ? server : ""}`
+type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port" | "server" | "recordType">
+function getMonitorIdentityKey({ system, target, protocol, port, server, recordType }: MonitorIdentity) {
+	return `${system}${target}${protocol}${port}${protocol === "dns" ? `${server}${recordType}` : ""}`
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
@@ -210,6 +235,9 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
 		skipTlsVerify: false,
+		keyword: "",
+		jsonPath: "",
+		recordType: "",
 	})
 }
 
@@ -743,6 +771,9 @@ function MonitorDialogContent({
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
 	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
+	const [keyword, setKeyword] = useState(monitor?.keyword ?? "")
+	const [jsonPath, setJsonPath] = useState(monitor?.jsonPath ?? "")
+	const [recordType, setRecordType] = useState<MonitorRecordType>(monitor?.recordType ?? "")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
 	const [selectedSystemIds, setSelectedSystemIds] = useState<Set<string>>(new Set())
@@ -766,6 +797,9 @@ function MonitorDialogContent({
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
 		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
+		setKeyword(monitor?.keyword ?? "")
+		setJsonPath(monitor?.jsonPath ?? "")
+		setRecordType(monitor?.recordType ?? "")
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
 		setLoading(false)
@@ -788,6 +822,9 @@ function MonitorDialogContent({
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
 					skipTlsVerify,
+					keyword,
+					jsonPath,
+					recordType,
 				},
 				monitor ? monitor.enabled : true
 			)
@@ -812,7 +849,7 @@ function MonitorDialogContent({
 	}
 
 	return (
-		<DialogContent className="max-w-md">
+		<DialogContent className="max-w-md max-h-[calc(100dvh-20px)] overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>
 					{isEditing ? (
@@ -921,6 +958,80 @@ function MonitorDialogContent({
 						/>
 						<p className="text-xs text-muted-foreground">
 							<Trans>Optional. Defaults to the agent's system resolver.</Trans>
+						</p>
+					</div>
+				)}
+				{protocol === "dns" && (
+					<div className="grid gap-2">
+						<Label>
+							<Trans>Record type</Trans>
+						</Label>
+						<Select
+							value={recordType || defaultRecordType}
+							onValueChange={(value) => setRecordType(value === defaultRecordType ? "" : (value as MonitorRecordType))}
+						>
+							<SelectTrigger>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value={defaultRecordType}>A / AAAA</SelectItem>
+								{monitorRecordTypes.map((type) => (
+									<SelectItem key={type} value={type}>
+										{type}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				)}
+				{protocol === "dns" && (
+					<div className="grid gap-2">
+						<Label htmlFor="monitor-keyword">
+							<Trans>Expected value</Trans>
+						</Label>
+						<Input
+							id="monitor-keyword"
+							value={keyword}
+							onChange={(e) => setKeyword(e.target.value)}
+							placeholder={dnsKeywordPlaceholders[recordType] ?? "host.example.com"}
+						/>
+						<p className="text-xs text-muted-foreground">
+							{recordType === "TXT" ? (
+								<Trans>Optional. A record must contain this text.</Trans>
+							) : (
+								<Trans>Optional. A record must match this value.</Trans>
+							)}
+						</p>
+					</div>
+				)}
+				{protocol === "http" && (
+					<div className="grid gap-2">
+						<Label htmlFor="monitor-keyword">
+							<Trans>Keyword</Trans>
+						</Label>
+						<Input id="monitor-keyword" value={keyword} onChange={(e) => setKeyword(e.target.value)} />
+						<p className="text-xs text-muted-foreground">
+							{jsonPath.trim() ? (
+								<Trans>Optional. The value at the JSON path must equal this text.</Trans>
+							) : (
+								<Trans>Optional. The response body must contain this text.</Trans>
+							)}
+						</p>
+					</div>
+				)}
+				{protocol === "http" && (
+					<div className="grid gap-2">
+						<Label htmlFor="monitor-json-path">
+							<Trans>JSON path</Trans>
+						</Label>
+						<Input
+							id="monitor-json-path"
+							value={jsonPath}
+							onChange={(e) => setJsonPath(e.target.value)}
+							placeholder="services.0.status"
+						/>
+						<p className="text-xs text-muted-foreground">
+							<Trans>Optional. Checks a value in a JSON response instead of the whole body.</Trans>
 						</p>
 					</div>
 				)}

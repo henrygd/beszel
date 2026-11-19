@@ -30,8 +30,10 @@ export function getMonitorIdentityKey({
 	target,
 	port,
 	server,
-}: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server">) {
-	return JSON.stringify([protocol, target, port, server])
+	recordType,
+}: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server"> &
+	Partial<Pick<NetworkMonitorRecord, "recordType">>) {
+	return JSON.stringify([protocol, target, port, server, recordType || ""])
 }
 
 interface MonitorCompareInput {
