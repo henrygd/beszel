@@ -42,10 +42,10 @@ func TestZfsPoolAlertOnlineToDegraded(t *testing.T) {
 
 	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after pool became DEGRADED")
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "Storage pool DEGRADED on test-system")
+	assert.Contains(t, lastMessage.Subject, "test-system 上的存储池状态为 DEGRADED")
 	assert.Contains(t, lastMessage.Subject, "tank")
-	assert.Contains(t, lastMessage.Text, "ONLINE to DEGRADED")
-	assert.Contains(t, lastMessage.HTML, "ONLINE to DEGRADED", "email should include an HTML part")
+	assert.Contains(t, lastMessage.Text, "从 ONLINE 变为 DEGRADED")
+	assert.Contains(t, lastMessage.HTML, "从 ONLINE 变为 DEGRADED", "email should include an HTML part")
 }
 
 func TestZfsPoolAlertDegradedToFaulted(t *testing.T) {
@@ -77,7 +77,7 @@ func TestZfsPoolAlertDegradedToFaulted(t *testing.T) {
 
 	assert.EqualValues(t, 2, hub.TestMailer.TotalSend(), "should alert on initial DEGRADED state and later FAULTED transition")
 	lastMessage := hub.TestMailer.LastMessage()
-	assert.Contains(t, lastMessage.Subject, "Storage pool FAULTED on test-system")
+	assert.Contains(t, lastMessage.Subject, "test-system 上的存储池状态为 FAULTED")
 }
 
 func TestZfsPoolAlertNoAlertOnRecovery(t *testing.T) {
@@ -202,7 +202,7 @@ func TestZfsPoolAlertOnInitialUnhealthyState(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 
 	require.EqualValues(t, 1, hub.TestMailer.TotalSend())
-	assert.Contains(t, hub.TestMailer.LastMessage().Text, "first observed as DEGRADED")
+	assert.Contains(t, hub.TestMailer.LastMessage().Text, "首次观测状态为 DEGRADED")
 
 	pool, err = hub.FindRecordById("zfs_pools", pool.Id)
 	require.NoError(t, err)

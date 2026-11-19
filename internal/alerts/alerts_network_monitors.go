@@ -259,7 +259,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 					messages = append(messages, AlertMessageData{
 						UserID: alert.GetString("user"), SystemID: systemID,
 						Title: title, Message: message,
-						Link: am.hub.MakeLink("system", systemID), LinkText: "View " + system.GetString("name"),
+						Link: am.hub.MakeLink("system", systemID), LinkText: "查看 " + system.GetString("name"),
 					})
 				}
 			}
@@ -324,29 +324,29 @@ func networkMonitorAlertMessage(name string, obs monitorObservation, label, syst
 		date := time.UnixMilli(obs.certExpires).UTC().Format(time.DateOnly)
 		switch {
 		case days < 0:
-			return fmt.Sprintf("Certificate expired on %s: %s", systemName, label),
-				fmt.Sprintf("%s on %s: certificate expired on %s.", label, systemName, date)
+			return fmt.Sprintf("%s 的证书已过期：%s", systemName, label),
+				fmt.Sprintf("%s（%s）的证书已于 %s 过期。", label, systemName, date)
 		case obs.triggered:
-			return fmt.Sprintf("Certificate expiring on %s: %s", systemName, label),
-				fmt.Sprintf("%s on %s: certificate expires in %s (%s), which is within the %d-day threshold.", label, systemName, pluralDays(days), date, int(threshold))
+			return fmt.Sprintf("%s 的证书即将过期：%s", systemName, label),
+				fmt.Sprintf("%s（%s）的证书将在 %s后过期（%s），未超过 %d 天阈值。", label, systemName, pluralDays(days), date, int(threshold))
 		default:
-			return fmt.Sprintf("Certificate expiry recovered on %s: %s", systemName, label),
-				fmt.Sprintf("%s on %s: certificate expires in %s (%s), which is beyond the %d-day threshold.", label, systemName, pluralDays(days), date, int(threshold))
+			return fmt.Sprintf("%s 的证书到期告警已恢复：%s", systemName, label),
+				fmt.Sprintf("%s（%s）的证书将在 %s后过期（%s），已超过 %d 天阈值。", label, systemName, pluralDays(days), date, int(threshold))
 		}
 	}
-	state, comparison := "loss", "exceeds"
+	state, comparison := "丢包", "超过"
 	if !obs.triggered {
-		state, comparison = "recovered", "is at or below"
+		state, comparison = "已恢复", "未超过"
 	}
-	return fmt.Sprintf("Network monitor %s on %s: %s", state, systemName, label),
-		fmt.Sprintf("%s on %s: loss over the past hour is %.2f%%, which %s the %.2f%% threshold.", label, systemName, obs.value, comparison, threshold)
+	return fmt.Sprintf("%s 的网络监控%s：%s", systemName, state, label),
+		fmt.Sprintf("%s（%s）过去一小时丢包率为 %.2f%%，%s %.2f%% 阈值。", label, systemName, obs.value, comparison, threshold)
 }
 
 func pluralDays(days int) string {
 	if days == 1 {
-		return "1 day"
+		return "1 天"
 	}
-	return fmt.Sprintf("%d days", days)
+	return fmt.Sprintf("%d 天", days)
 }
 
 func monitorResultReady(result monitor.Result, interval int, now time.Time) bool {

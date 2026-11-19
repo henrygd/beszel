@@ -212,7 +212,7 @@ func TestAlertRecordForeignSystemDelivery(t *testing.T) {
 		assert.Len(t, messages, 1, "only the authorised subscriber should receive telemetry")
 		for _, message := range messages {
 			assert.Equal(t, "owner@example.com", message.To[0].Address)
-			assert.Contains(t, message.Subject, "private-system CPU above threshold")
+			assert.Contains(t, message.Subject, "private-system CPU 高于阈值")
 			assert.Contains(t, message.Text, "91.00%")
 			t.Logf("captured synthetic email: recipient=%s subject=%q body=%q", message.To[0].Address, message.Subject, message.Text)
 		}

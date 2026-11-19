@@ -40,7 +40,7 @@ type block struct {
 // RenderAlert renders the HTML body of an alert email.
 func RenderAlert(a Alert) (string, error) {
 	if a.LinkText == "" {
-		a.LinkText = "Open Beszel"
+		a.LinkText = "打开 Beszel"
 	}
 	var sb strings.Builder
 	err := alertTemplate.Execute(&sb, struct {

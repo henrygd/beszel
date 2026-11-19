@@ -50,8 +50,8 @@ func TestRenderAlertEscapesContent(t *testing.T) {
 	assert.NotContains(t, html, "<b>title</b>")
 	assert.Contains(t, html, "&lt;script&gt;")
 	assert.NotContains(t, html, `href="javascript:`)
-	assert.Contains(t, html, ">Open Beszel</a>", "empty link text falls back")
-	assert.NotContains(t, html, "Manage notifications", "no settings link when empty")
+	assert.Contains(t, html, ">打开 Beszel</a>", "empty link text falls back")
+	assert.NotContains(t, html, "管理通知", "no settings link when empty")
 }
 
 func TestMessageBlocks(t *testing.T) {

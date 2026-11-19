@@ -157,7 +157,7 @@ func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	if restricted {
 		send = sendPublicNotification
 	}
-	err = am.sendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel", send, restricted)
+	err = am.sendShoutrrrAlert(data.URL, "测试告警", "这是来自 Beszel 的通知。", am.hub.Settings().Meta.AppURL, "查看 Beszel", send, restricted)
 	if errors.Is(err, errInternalDestination) || errors.Is(err, errUnrestrictedService) {
 		return e.ForbiddenError(err.Error(), nil)
 	}
