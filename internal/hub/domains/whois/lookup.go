@@ -1173,26 +1173,30 @@ func (s *LookupService) getRDAPBaseURL(ctx context.Context, tld string) (string,
 	return "", fmt.Errorf("no RDAP server found for TLD .%s", tld)
 }
 
+// dnsResolver uses the pure-Go resolver so lookups honor context cancellation
+// (the cgo resolver ignores ctx and can hang indefinitely on broken DNS).
+var dnsResolver = &net.Resolver{PreferGo: true}
+
 // lookupDNS performs DNS lookups
 func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *domain.Domain) {
 	// NS records
-	nsRecords, _ := net.LookupNS(domainName)
+	nsRecords, _ := dnsResolver.LookupNS(ctx, domainName)
 	for _, ns := range nsRecords {
 		d.NameServers = append(d.NameServers, ns.Host)
 	}
 
 	// MX records
-	mxRecords, _ := net.LookupMX(domainName)
+	mxRecords, _ := dnsResolver.LookupMX(ctx, domainName)
 	for _, mx := range mxRecords {
 		d.MXRecords = append(d.MXRecords, fmt.Sprintf("%s (priority: %d)", mx.Host, mx.Pref))
 	}
 
 	// TXT records
-	txtRecords, _ := net.LookupTXT(domainName)
+	txtRecords, _ := dnsResolver.LookupTXT(ctx, domainName)
 	d.TXTRecords = txtRecords
 
 	// CNAME record
-	cname, err := net.LookupCNAME(domainName)
+	cname, err := dnsResolver.LookupCNAME(ctx, domainName)
 	if err == nil && cname != domainName && cname != "" {
 		d.CNAMERecord = cname
 	}
@@ -1202,7 +1206,7 @@ func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *dom
 	srvProtos := []string{"tcp", "udp", "tls"}
 	for _, service := range srvServices {
 		for _, proto := range srvProtos {
-			_, addrs, err := net.LookupSRV(service, proto, domainName)
+			_, addrs, err := dnsResolver.LookupSRV(ctx, service, proto, domainName)
 			if err == nil {
 				for _, addr := range addrs {
 					d.SRVRecords = append(d.SRVRecords, fmt.Sprintf("_%s._%s %s:%d (priority: %d, weight: %d)", service, proto, addr.Target, addr.Port, addr.Priority, addr.Weight))
@@ -1212,7 +1216,7 @@ func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *dom
 	}
 
 	// IPv4
-	ipv4Addrs, _ := net.LookupHost(domainName)
+	ipv4Addrs, _ := dnsResolver.LookupHost(ctx, domainName)
 	for _, ip := range ipv4Addrs {
 		if strings.Contains(ip, ".") {
 			d.IPv4Addresses = append(d.IPv4Addresses, ip)
@@ -1220,7 +1224,7 @@ func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *dom
 	}
 
 	// IPv6
-	ipv6Addrs, _ := net.LookupIP(domainName)
+	ipv6Addrs, _ := dnsResolver.LookupIP(ctx, "ip6", domainName)
 	for _, ip := range ipv6Addrs {
 		if ip.To4() == nil {
 			d.IPv6Addresses = append(d.IPv6Addresses, ip.String())
@@ -1749,3 +1753,6 @@ func hasValidData(data *domain.WHOISData) bool {
 	}
 	return false
 }
+
+// Resolver returns the package's context-aware DNS resolver.
+func Resolver() *net.Resolver { return dnsResolver }

@@ -381,12 +381,7 @@ func (h *APIHandler) refreshDomain(e *core.RequestEvent) error {
 		}
 	}
 
-	updatedRecord, err := h.app.FindRecordById("domains", id)
-	if err != nil {
-		return e.InternalServerError("failed to fetch refreshed domain", err)
-	}
-
-	return e.JSON(http.StatusOK, h.recordToResponse(updatedRecord))
+	return e.JSON(http.StatusAccepted, h.recordToResponse(record))
 }
 
 // getDomainHistory gets the change history for a domain

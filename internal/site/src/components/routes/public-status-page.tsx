@@ -303,7 +303,7 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 	// Update document title
 	useEffect(() => {
 		if (data?.title) {
-			document.title = `${data.title} / Status Page`
+			document.title = `${data.title} / Beszel`
 		} else {
 			document.title = "Status Page / Beszel"
 		}
@@ -314,18 +314,10 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 		document.documentElement.setAttribute("data-sp-theme", theme)
 	}, [theme])
 
-	if (isLoading) {
-		return <StatusPageSkeleton />
-	}
-
-	if (error || !data) {
-		return <StatusPageError slug={slug} />
-	}
-
 	// Group monitors by group name
 	const groupedMonitors = useMemo(() => {
 		const groups: Record<string, PublicMonitorStatus[]> = {}
-		data.monitors.forEach((monitor) => {
+		data?.monitors.forEach((monitor) => {
 			const group = monitor.group || "Services"
 			if (!groups[group]) {
 				groups[group] = []
@@ -333,9 +325,7 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 			groups[group].push(monitor)
 		})
 		return groups
-	}, [data.monitors])
-
-	const groupNames = Object.keys(groupedMonitors).sort()
+	}, [data?.monitors])
 
 	// Set favicon if provided
 	useEffect(() => {
@@ -353,6 +343,16 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 			setTheme(data.theme as 'light' | 'dark')
 		}
 	}, [data?.theme])
+
+	if (isLoading) {
+		return <StatusPageSkeleton />
+	}
+
+	if (error || !data) {
+		return <StatusPageError slug={slug} />
+	}
+
+	const groupNames = Object.keys(groupedMonitors).sort()
 
 	return (
 		<div className="sp-page" data-theme={theme}>

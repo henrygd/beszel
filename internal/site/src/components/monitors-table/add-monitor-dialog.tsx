@@ -65,12 +65,16 @@ export function AddMonitorDialog({ open, onOpenChange, monitor, isEdit = false }
 		queryKey: ["notifications"],
 		queryFn: getNotifications,
 	})
-	useQuery({
+	const { data: linkedNotificationIds } = useQuery({
 		queryKey: ["monitor-notifications", monitor?.id],
 		queryFn: () => getMonitorNotifications(monitor!.id),
-		enabled: Boolean(monitor?.id),
-		select: (ids) => setSelectedNotificationIds(ids),
+		enabled: Boolean(monitor?.id && open),
 	})
+	useEffect(() => {
+		if (linkedNotificationIds) {
+			setSelectedNotificationIds(linkedNotificationIds)
+		}
+	}, [linkedNotificationIds])
 	const [activeTab, setActiveTab] = useState("basic")
 
 	// Form state

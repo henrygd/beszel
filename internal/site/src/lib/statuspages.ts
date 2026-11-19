@@ -220,7 +220,7 @@ export async function removeMonitorFromStatusPage(
 }
 
 export async function getPublicStatusPage(slug: string): Promise<PublicStatusPage> {
-	const response = await fetch(`/status/${slug}`)
+	const response = await fetch(`/api/beszel/public/status-page/${slug}`)
 	if (!response.ok) {
 		throw new Error(`Status page not found: ${response.statusText}`)
 	}

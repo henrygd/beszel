@@ -52,15 +52,17 @@ const App = memo(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
 		// get general info for authenticated users, such as public key and version
-		pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
-			$publicKey.set(data.key)
-			// check for updates if enabled
-			if (data.cu) {
-				pb.send<UpdateInfo>("/api/beszel/update", {}).then($newVersion.set)
-			}
-		})
-		// get user settings
-		updateUserSettings()
+		if (pb.authStore.isValid) {
+			pb.send<BeszelInfo>("/api/beszel/info", {}).then((data) => {
+				$publicKey.set(data.key)
+				// check for updates if enabled
+				if (data.cu) {
+					pb.send<UpdateInfo>("/api/beszel/update", {}).then($newVersion.set)
+				}
+			})
+			// get user settings
+			updateUserSettings()
+		}
 		// need to get system list before alerts
 		systemsManager.init()
 		systemsManager

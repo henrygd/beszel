@@ -25,7 +25,7 @@ func NewAPIHandler(app core.App) *APIHandler {
 // RegisterRoutes registers status page API routes
 func (h *APIHandler) RegisterRoutes(se *core.ServeEvent) {
 	// Public status page (no auth required)
-	se.Router.GET("/status/:slug", h.getPublicStatusPage)
+	se.Router.GET("/api/beszel/public/status-page/{slug}", h.getPublicStatusPage)
 
 	// Protected routes
 	api := se.Router.Group("/api/beszel/status-pages")
@@ -389,9 +389,9 @@ func (h *APIHandler) buildPublicStatusPage(record *core.Record) *statuspage.Publ
 			Group:       link.GetString("group"),
 			Status:      status,
 			LastError:   lastError,
-			Uptime24h:   uptimeStats["24h"],
-			Uptime7d:    uptimeStats["7d"],
-			Uptime30d:   uptimeStats["30d"],
+			Uptime24h:   uptimeStats["uptime_24h"],
+			Uptime7d:    uptimeStats["uptime_7d"],
+			Uptime30d:   uptimeStats["uptime_30d"],
 			LastCheck:   monitorRecord.GetDateTime("last_check").Time(),
 			Heartbeats:  heartbeats,
 		})
@@ -433,12 +433,14 @@ func (h *APIHandler) buildPublicStatusPage(record *core.Record) *statuspage.Publ
 // recentHeartbeats returns the newest `limit` heartbeats for a monitor
 // (oldest-first for rendering) plus the latest non-empty error message.
 func (h *APIHandler) recentHeartbeats(monitorID string, limit int) ([]statuspage.PublicHeartbeat, string) {
-	var records []*core.Record
-	err := h.app.RecordQuery("monitor_heartbeats").
-		AndWhere(dbx.NewExp("monitor = {:monitor}", dbx.Params{"monitor": monitorID})).
-		OrderBy("-time").
-		Limit(int64(limit)).
-		All(&records)
+	records, err := h.app.FindRecordsByFilter(
+		"monitor_heartbeats",
+		"monitor = {:monitor}",
+		"-time",
+		limit,
+		0,
+		map[string]any{"monitor": monitorID},
+	)
 	if err != nil || len(records) == 0 {
 		return nil, ""
 	}

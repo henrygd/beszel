@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"strings"
 	"sync"
 	"time"
@@ -123,7 +122,7 @@ func (s *Scheduler) checkDomain(record *core.Record) error {
 	// Always perform independent DNS resolution to verify domain is alive.
 	// This is critical when WHOIS succeeds but returns partial data (e.g. no expiry for some TLDs),
 	// or when WHOIS fails completely. DNS resolution proves the domain exists and is active.
-	ips, lookupErr := net.LookupHost(domainName)
+	ips, lookupErr := whois.Resolver().LookupHost(ctx, domainName)
 	if lookupErr == nil && len(ips) > 0 {
 		newData.IPv4Addresses = []string{}
 		newData.IPv6Addresses = []string{}
@@ -139,7 +138,7 @@ func (s *Scheduler) checkDomain(record *core.Record) error {
 
 	// Also try to get nameservers independently if WHOIS didn't provide them
 	if len(newData.NameServers) == 0 {
-		nsRecords, nsErr := net.LookupNS(domainName)
+		nsRecords, nsErr := whois.Resolver().LookupNS(ctx, domainName)
 		if nsErr == nil && len(nsRecords) > 0 {
 			for _, ns := range nsRecords {
 				newData.NameServers = append(newData.NameServers, ns.Host)
@@ -568,16 +567,23 @@ func (s *Scheduler) triggerSSLNotification(record *core.Record, daysUntil int) {
 	}
 }
 
-// RefreshDomain manually refreshes a single domain
+// RefreshDomain queues a manual refresh of a single domain. The check runs
+// asynchronously — WHOIS + DNS + enrichment can take tens of seconds, far
+// longer than a reasonable request timeout.
 func (s *Scheduler) RefreshDomain(domainID string) error {
 	record, err := s.app.FindRecordById("domains", domainID)
 	if err != nil {
 		return err
 	}
 
-	s.limit <- struct{}{}
-	defer func() { <-s.limit }()
-	return s.checkDomain(record)
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		s.limit <- struct{}{}
+		defer func() { <-s.limit }()
+		s.checkDomain(record)
+	}()
+	return nil
 }
 
 // CheckAllDomains manually triggers a check of all active domains
