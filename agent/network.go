@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"fmt"
 	"log/slog"
 	"path"
 	"strings"
@@ -138,6 +137,9 @@ func (a *Agent) ensureNetworkInterfacesMap(systemStats *system.Stats) {
 	if systemStats.NetworkInterfaces == nil {
 		systemStats.NetworkInterfaces = make(map[string][4]uint64, 0)
 	}
+	if systemStats.NetworkInterfacePackets == nil {
+		systemStats.NetworkInterfacePackets = make(map[string][6]float64, 0)
+	}
 }
 
 // loadAndTickNetBaseline returns the NetIoStats baseline and milliseconds elapsed, updating time
@@ -172,36 +174,45 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 		if useMacCounters {
 			correctNvethernetCounters(&v)
 		}
-		var upDelta, downDelta uint64
-		upKey, downKey := fmt.Sprintf("%sup", v.Name), fmt.Sprintf("%sdown", v.Name)
-		tracker.Set(upKey, v.BytesSent)
-		tracker.Set(downKey, v.BytesRecv)
-		if msElapsed > 0 {
-			if prevVal, ok := tracker.Previous(upKey); ok {
-				var deltaBytes uint64
-				if v.BytesSent >= prevVal {
-					deltaBytes = v.BytesSent - prevVal
-				} else {
-					deltaBytes = v.BytesSent
-				}
-				upDelta = deltaBytes * 1000 / msElapsed
-			}
-			if prevVal, ok := tracker.Previous(downKey); ok {
-				var deltaBytes uint64
-				if v.BytesRecv >= prevVal {
-					deltaBytes = v.BytesRecv - prevVal
-				} else {
-					deltaBytes = v.BytesRecv
-				}
-				downDelta = deltaBytes * 1000 / msElapsed
-			}
-		}
+		upDelta := trackCounterDelta(tracker, v.Name+"up", v.BytesSent, msElapsed) * 1000 / max(msElapsed, 1)
+		downDelta := trackCounterDelta(tracker, v.Name+"down", v.BytesRecv, msElapsed) * 1000 / max(msElapsed, 1)
 		systemStats.NetworkInterfaces[v.Name] = [4]uint64{upDelta, downDelta, v.BytesSent, v.BytesRecv}
 		bytesSentPerSecond += upDelta
 		bytesRecvPerSecond += downDelta
+
+		counters := [6]uint64{v.PacketsSent, v.PacketsRecv, v.Errout, v.Errin, v.Dropout, v.Dropin}
+		var packetRates [6]float64
+		for i, counter := range counters {
+			delta := trackCounterDelta(tracker, v.Name+packetCounterKeys[i], counter, msElapsed)
+			if msElapsed > 0 {
+				packetRates[i] = utils.TwoDecimals(float64(delta) * 1000 / float64(msElapsed))
+			}
+		}
+		systemStats.NetworkInterfacePackets[v.Name] = packetRates
 	}
 
 	return bytesSentPerSecond, bytesRecvPerSecond
+}
+
+// packetCounterKeys are delta tracker key suffixes, in NetworkInterfacePackets order
+var packetCounterKeys = [6]string{"pktup", "pktdown", "errup", "errdown", "dropup", "dropdown"}
+
+// trackCounterDelta records a cumulative counter value and returns its increase
+// since the previous cycle. Returns 0 if there is no previous value or no time
+// has elapsed. If the counter was reset, the new value is used as the delta.
+func trackCounterDelta(tracker *deltatracker.DeltaTracker[string, uint64], key string, value, msElapsed uint64) uint64 {
+	tracker.Set(key, value)
+	if msElapsed == 0 {
+		return 0
+	}
+	prevVal, ok := tracker.Previous(key)
+	if !ok {
+		return 0
+	}
+	if value >= prevVal {
+		return value - prevVal
+	}
+	return value
 }
 
 // applyNetworkTotals validates and writes computed network stats, or resets on anomaly
