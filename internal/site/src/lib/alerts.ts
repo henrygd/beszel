@@ -5,6 +5,7 @@ import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
 import type { AlertInfo, AlertRecord } from "@/types"
 import { pb } from "./api"
+import { updateFavicon } from "./utils"
 import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/ui/icons"
 
 /** Alert info for each alert type */
@@ -161,6 +162,19 @@ export const alertManager = (() => {
 
   /** Fields to fetch from alerts collection */
   const fields = "id,name,system,value,min,triggered"
+
+  // show the number of active alerts on the favicon (same rule as the active alerts banner)
+  $alerts.listen((alerts) => {
+    let count = 0
+    for (const systemAlerts of Object.values(alerts)) {
+      for (const alert of systemAlerts.values()) {
+        if (alert.triggered && alert.name in alertInfo) {
+          count++
+        }
+      }
+    }
+    updateFavicon(count)
+  })
 
   /** Fetch alerts from collection */
   async function fetchAlerts(): Promise<AlertRecord[]> {
