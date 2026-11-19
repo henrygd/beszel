@@ -67,7 +67,7 @@ import {
 	getStatusPageUrl,
 	removeMonitorFromStatusPage,
 } from "@/lib/statuspages"
-import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, LineChart } from "recharts"
+import { XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer, Line, LineChart } from "recharts"
 import { Link, navigate } from "@/components/router"
 import { AddMonitorDialog } from "@/components/monitors-table/add-monitor-dialog"
 import { cn } from "@/lib/utils"
@@ -867,7 +867,7 @@ export default memo(function MonitorDetail({ id }: { id: string }) {
 										<CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
 										<XAxis dataKey="time" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
 										<YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} unit="ms" />
-										<Tooltip
+										<ChartTooltip
 											contentStyle={{
 												backgroundColor: "hsl(var(--card))",
 												border: "1px solid hsl(var(--border))",
