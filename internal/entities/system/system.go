@@ -62,6 +62,7 @@ type Stats struct {
 	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
 	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
 	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
+	Uptime            uint64               `json:"u,omitzero" cbor:"43,keyasint,omitzero"`
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
