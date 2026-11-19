@@ -35,7 +35,6 @@ import {
 import { isAdmin, isReadOnlyUser, logOut, pb } from "@/lib/api"
 import { $newVersion } from "@/lib/stores"
 import { cn, runOnce } from "@/lib/utils"
-import { LangToggle } from "./lang-toggle"
 import { AddSystemDialog } from "./add-system"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
@@ -47,6 +46,7 @@ const CommandPalette = lazy(() => import("./command-palette"))
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 export default function Navbar() {
+	const [addSystemDialogOpen, setAddSystemDialogOpen] = useState(false)
 	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 	const updateInfo = useStore($newVersion)
 	const updateAvailable = Boolean(updateInfo?.updateAvailable)
@@ -58,6 +58,7 @@ export default function Navbar() {
 			<Suspense>
 				<CommandPalette open={commandPaletteOpen} setOpen={setCommandPaletteOpen} />
 			</Suspense>
+			<AddSystemDialog open={addSystemDialogOpen} setOpen={setAddSystemDialogOpen} />
 
 			<Link
 				href={basePath}
@@ -117,6 +118,8 @@ export default function Navbar() {
 							>
 								<MonitorIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
 								<Trans>Monitoring</Trans>
+							</DropdownMenuItem>
+							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "monitors"))}
 								className="flex items-center"
 							>

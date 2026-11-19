@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link } from "@/components/router"
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertCircle, Globe, Shield, Filter, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, AlertCircle, Globe, Shield, Filter } from "lucide-react"
 import { getCalendarEvents, type CalendarEvent } from "@/lib/incidents"
 import {
 	DropdownMenu,

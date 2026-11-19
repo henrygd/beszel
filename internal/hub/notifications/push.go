@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	webpush "github.com/SherClockHolmes/webpush-go"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // PushNotification represents a push notification message

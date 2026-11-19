@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getPublicStatusPage, type PublicStatusPage, type PublicMonitorStatus, type PublicIncident } from "@/lib/statuspages"
+import { getPublicStatusPage, type PublicStatusPage, type PublicMonitorStatus, } from "@/lib/statuspages"
 import { Activity, CheckCircle2, XCircle, AlertTriangle, Clock, Shield, RefreshCw } from "lucide-react"
 
 // Status configurations with colors matching github-statuses design

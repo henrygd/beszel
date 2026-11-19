@@ -98,8 +98,8 @@ msgid "{value, plural, one {# day} other {# days}}"
 msgstr "{value, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}"
 
 #: src/lib/utils.ts
-msgid "1 hour"
-msgstr "1 godzina"
+#~ msgid "1 hour"
+#~ msgstr "1 godzina"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -107,16 +107,16 @@ msgid "1 min"
 msgstr "1 min"
 
 #: src/lib/utils.ts
-msgid "1 minute"
-msgstr "1 minuta"
+#~ msgid "1 minute"
+#~ msgstr "1 minuta"
 
 #: src/lib/utils.ts
-msgid "1 week"
-msgstr "1 tydzień"
+#~ msgid "1 week"
+#~ msgstr "1 tydzień"
 
 #: src/lib/utils.ts
-msgid "12 hours"
-msgstr "12 godzin"
+#~ msgid "12 hours"
+#~ msgstr "12 godzin"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -124,19 +124,32 @@ msgid "15 min"
 msgstr "15 min"
 
 #: src/lib/utils.ts
-msgid "24 hours"
-msgstr "24 godziny"
+#~ msgid "24 hours"
+#~ msgstr "24 godziny"
 
 #: src/lib/utils.ts
-msgid "30 days"
-msgstr "30 dni"
+#~ msgid "30 days"
+#~ msgstr "30 dni"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "443"
+msgstr ""
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 min"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "8.8.8.8"
+msgstr ""
+
+#: src/components/routes/incidents.tsx
+msgid "Acknowledge"
+msgstr ""
+
 #. Table column
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -145,12 +158,21 @@ msgstr "5 min"
 msgid "Actions"
 msgstr "Akcje"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "active"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktywny"
+
+#. placeholder {0}: statusCounts.active
+#: src/components/domains-table/domains-table.tsx
+msgid "Active ({0})"
+msgstr ""
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
@@ -161,6 +183,7 @@ msgid "Active state"
 msgstr "Status aktywny"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/routes/incidents.tsx
 msgid "Add"
 msgstr "Dodaj"
 
@@ -173,6 +196,15 @@ msgstr "Dodaj"
 msgid "Add {foo}"
 msgstr "Dodaj {foo}"
 
+#: src/components/domains-table/domains-table.tsx
+msgid "Add Domain"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Add Monitor"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/add-system.tsx
 #: src/components/navbar.tsx
@@ -183,6 +215,10 @@ msgstr "Dodaj System"
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Dodaj URL"
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Add your first monitor"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -197,6 +233,10 @@ msgstr "Dostosuj szerokość widoku"
 #: src/components/navbar.tsx
 msgid "Admin"
 msgstr "Admin"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Advanced"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -222,6 +262,13 @@ msgstr "Historia alertów"
 msgid "Alerts"
 msgstr "Alerty"
 
+#. placeholder {0}: stats.total
+#. placeholder {0}: statusCounts.total
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All ({0})"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -232,16 +279,45 @@ msgstr "Wszystkie kontenery"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Wszystkie systemy"
 
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All Tags"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "All Types"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "App update"
+msgstr ""
+
 #: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Czy na pewno chcesz usunąć {name}?"
+
+#: src/components/domains-table/domains-table.tsx
+msgid "Are you sure you want to delete this domain? This action cannot be undone."
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -252,13 +328,13 @@ msgstr "Czy jesteś pewien?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatyczne kopiowanie wymaga bezpiecznego kontekstu."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Dostępne"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Dostępne"
 
@@ -327,6 +403,10 @@ msgstr "Kopie zapasowe"
 msgid "Bandwidth"
 msgstr "Przepustowość"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Basic"
+msgstr ""
+
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
@@ -365,6 +445,10 @@ msgstr "Beszel obsługuje OpenID Connect i wielu dostawców uwierzytelniania OAu
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel używa <0>Shoutrrr</0> do integracji z popularnymi serwisami powiadomień."
 
+#: src/components/routes/settings/general.tsx
+msgid "Beszel will pull ghcr.io/dvorinka/beszel:latest, recreate the running container, and restart the app. All signed-in users can start this action."
+msgstr ""
+
 #: src/components/add-system.tsx
 msgid "Binary"
 msgstr "Plik binarny"
@@ -373,6 +457,10 @@ msgstr "Plik binarny"
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bity (Kbps, Mbps, Gbps)"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Body"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -396,6 +484,12 @@ msgstr "Bajty (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Pamięć podręczna / Bufory"
 
+#: src/components/command-palette.tsx
+#: src/components/routes/calendar.tsx
+#: src/components/routes/home.tsx
+msgid "Calendar"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
 msgstr "Może przeładować"
@@ -408,8 +502,12 @@ msgstr "Może uruchomić"
 msgid "Can stop"
 msgstr "Może zatrzymać"
 
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/add-monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/system-actions-button.tsx
 msgid "Cancel"
@@ -487,6 +585,10 @@ msgstr "Sprawdź {email}, aby uzyskać link do resetowania."
 msgid "Check logs for more details."
 msgstr "Sprawdź logi, aby uzyskać więcej informacji."
 
+#: src/components/routes/settings/general.tsx
+msgid "Check now"
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Check your monitoring service"
 msgstr "Sprawdź usługę monitorowania"
@@ -542,6 +644,10 @@ msgstr "Wybierz system, aby wyświetlić więcej informacji."
 msgid "Click to copy"
 msgstr "Kliknij, aby skopiować"
 
+#: src/components/routes/incidents.tsx
+msgid "Close"
+msgstr ""
+
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
@@ -554,6 +660,10 @@ msgstr "Porównaj z innymi systemami"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Compare with other targets"
 msgstr "Porównaj z innymi celami"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Configure a monitor to track website or service availability."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
@@ -653,6 +763,10 @@ msgstr "Skopiuj poniżej polecenie instalacji agenta albo zarejestruj agentów a
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Skopiuj poniżej zawartość pliku <0>docker-compose.yml</0> dla agenta lub zarejestruj agentów automatycznie przy użyciu <1>uniwersalnego tokenu</1>."
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
 msgid "Copy token"
@@ -704,6 +818,7 @@ msgstr "Podział czasu CPU"
 msgid "CPU Usage"
 msgstr "Użycie procesora"
 
+#: src/components/routes/incidents.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Create"
 msgstr "Utwórz"
@@ -712,10 +827,31 @@ msgstr "Utwórz"
 msgid "Create account"
 msgstr "Utwórz konto"
 
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
+
+#: src/components/routes/incidents.tsx
+msgid "Create Incident"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Create Monitor"
+msgstr ""
+
+#: src/components/routes/incidents.tsx
+msgid "Create New Incident"
+msgstr ""
+
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
 msgstr "Utworzono"
+
+#: src/components/routes/incidents.tsx
+msgid "Creating..."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -767,6 +903,22 @@ msgstr "Cykle"
 msgid "Daily"
 msgstr "Codziennie"
 
+#: src/components/routes/home.tsx
+msgid "Dashboard"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "data.status"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Database Connection"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Database Name"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Default system layout option"
 msgid "Default"
@@ -776,7 +928,10 @@ msgstr "Domyślne"
 msgid "Default time period"
 msgstr "Domyślny przedział czasu"
 
+#: src/components/domains-table/domains-table.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/domain.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -784,10 +939,15 @@ msgstr "Domyślny przedział czasu"
 msgid "Delete"
 msgstr "Usuń"
 
+#: src/components/domains-table/domains-table.tsx
+msgid "Delete Domain"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Usuń odcisk palca"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
 msgstr "Opis"
@@ -795,6 +955,10 @@ msgstr "Opis"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Szczegół"
+
+#: src/components/routes/incidents.tsx
+msgid "Details"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -828,14 +992,26 @@ msgstr "Wykorzystanie dysku {extraFsName}"
 msgid "Dismiss"
 msgstr "Odrzuć"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Display"
+msgstr ""
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "Widok"
 
+#: src/components/domains-table/domains-table.tsx
+msgid "Display Columns"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "DNS Server"
 msgstr "Serwer DNS"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "DNS Server (optional)"
+msgstr ""
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -854,6 +1030,23 @@ msgstr "Sieć Docker I/O"
 msgid "Documentation"
 msgstr "Dokumentacja"
 
+#: src/components/routes/home.tsx
+msgid "Domain and SSL expiry calendar"
+msgstr ""
+
+#: src/components/domains-table/domains-table.tsx
+#: src/components/routes/monitoring.tsx
+msgid "Domain Monitoring"
+msgstr ""
+
+#: src/components/command-palette.tsx
+msgid "Domains"
+msgstr ""
+
+#: src/components/routes/incidents.tsx
+msgid "Done"
+msgstr ""
+
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system/info-bar.tsx
@@ -861,6 +1054,11 @@ msgstr "Dokumentacja"
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Nie działa"
+
+#. placeholder {0}: stats.down
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Down ({0})"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
@@ -874,7 +1072,13 @@ msgstr "Pobieranie"
 msgid "Duration"
 msgstr "Czas trwania"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "e.g., My Website"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/domain.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/system-actions-button.tsx
 msgid "Edit"
@@ -884,6 +1088,10 @@ msgstr "Edytuj"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "Edytuj {foo}"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Edit Monitor"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Edit System"
@@ -942,6 +1150,7 @@ msgstr "Tymczasowy"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -954,9 +1163,17 @@ msgstr "Tymczasowy"
 msgid "Error"
 msgstr "Błąd"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
 msgstr "Przykład:"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "example.com"
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -977,10 +1194,27 @@ msgstr "Istniejące systemy, które nie są zdefiniowane w <0>config.yml</0>, zo
 msgid "Exited active"
 msgstr "Zakończono aktywnie"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Expected Value"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Wygasły"
+
+#. placeholder {0}: statusCounts.expired
+#: src/components/domains-table/domains-table.tsx
+msgid "Expired ({0})"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -989,6 +1223,11 @@ msgstr "Wygasa po godzinie lub przy ponownym uruchomieniu huba."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
 msgstr "Wygasa w ciągu <0>{value, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}</0>"
+
+#. placeholder {0}: statusCounts.expiring
+#: src/components/domains-table/domains-table.tsx
+msgid "Expiring ({0})"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1017,6 +1256,10 @@ msgstr "Usługi zakończone niepowodzeniem"
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Błąd autoryzacji"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Failed to create monitor"
+msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to delete monitors."
@@ -1049,6 +1292,10 @@ msgstr "Nie udało się wysłać powiadomienia testowego"
 msgid "Failed to update alert"
 msgstr "Nie udało się zaktualizować powiadomienia"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Failed to update monitor"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Failed to update monitors."
 msgstr "Nie udało się zaktualizować monitorów."
@@ -1061,6 +1308,14 @@ msgstr "Nieudane: {0}"
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Fans"
 msgstr "Wentylatory"
+
+#: src/components/domains-table/domains-table.tsx
+msgid "Filter domains..."
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Filter monitors..."
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
@@ -1140,10 +1395,24 @@ msgstr "Moc GPU"
 msgid "GPU Usage"
 msgstr "Użycie GPU"
 
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Siatka"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "gRPC Keyword"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Headers (JSON)"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "health"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -1177,10 +1446,19 @@ msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Polecenie Homebrew"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Host / Connection String"
+msgstr ""
+
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Host / adres IP"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Hostname"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP Method"
 msgstr "Metoda HTTP"
@@ -1188,6 +1466,10 @@ msgstr "Metoda HTTP"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "HTTP method: POST, GET, or HEAD (default: POST)"
 msgstr "Metoda HTTP: POST, GET lub HEAD (domyślnie: POST)"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "https://example.com"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -1217,6 +1499,10 @@ msgstr "Jeśli utraciłeś hasło do swojego konta administratora, możesz je zr
 msgid "Ignore TLS certificate errors"
 msgstr "Ignoruj błędy certyfikatu TLS"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Ignore TLS/SSL errors"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
@@ -1232,12 +1518,20 @@ msgstr "Dostępna aktualizacja obrazu"
 msgid "Inactive"
 msgstr "Nieaktywny"
 
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
+#: src/components/routes/incidents.tsx
+#: src/components/routes/incidents.tsx
+msgid "Incidents"
+msgstr ""
+
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval"
 msgstr "Interwał"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Interval (seconds)"
 msgstr "Interwał (sekundy)"
@@ -1246,10 +1540,25 @@ msgstr "Interwał (sekundy)"
 msgid "Invalid email address."
 msgstr "Nieprawidłowy adres e-mail."
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Invert match (alert if keyword found)"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "JSON Path"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Keyword to Search"
+msgstr ""
+
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Język"
 
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Układ"
@@ -1292,10 +1601,15 @@ msgstr "Śr. obciążenie"
 msgid "Load state"
 msgstr "Stan obciążenia"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Ładowanie..."
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "localhost:3306"
+msgstr ""
 
 #: src/components/navbar.tsx
 #: src/components/navbar.tsx
@@ -1337,6 +1651,11 @@ msgstr "Strata 1 h"
 msgid "Main PID"
 msgstr "Główny PID"
 
+#. placeholder {0}: stats.maintenance
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Maintenance ({0})"
+msgstr ""
+
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Major"
@@ -1346,10 +1665,18 @@ msgstr "Główna"
 msgid "Manage display and notification preferences."
 msgstr "Zarządzaj preferencjami wyświetlania i powiadomień."
 
+#: src/components/routes/home.tsx
+msgid "Manage public status pages"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Instrukcja ręcznej konfiguracji"
+
+#: src/components/routes/incidents.tsx
+msgid "Manually create an incident for tracking"
+msgstr ""
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system/chart-card.tsx
@@ -1408,6 +1735,37 @@ msgstr "Model"
 msgid "Monitor"
 msgstr "Monitor"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Monitor created successfully"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Monitor Name"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Monitor Type"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Monitor updated successfully"
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Monitor websites, APIs, and services"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/routes/monitoring.tsx
+msgid "Monitoring"
+msgstr ""
+
+#: src/components/command-palette.tsx
+msgid "Monitors"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Monitors created"
 msgstr "Utworzono monitory"
@@ -1416,13 +1774,26 @@ msgstr "Utworzono monitory"
 msgid "Mountpoint"
 msgstr "Punkt montowania"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "MQTT Topic"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "mydb"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Nazwa"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Name is required"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1468,6 +1839,10 @@ msgstr "Ruch sieciowy interfejsów publicznych"
 msgid "Network unit"
 msgstr "Jednostka sieciowa"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Never"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1478,9 +1853,21 @@ msgstr "Nie"
 msgid "No detail data for this pool."
 msgstr "Brak szczegółowych danych dla tej puli."
 
+#: src/components/routes/incidents.tsx
+msgid "No incidents found."
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No logs found."
 msgstr "Nie znaleziono logów."
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "No monitors configured yet."
+msgstr ""
+
+#: src/components/monitors-table/monitors-table.tsx
+msgid "No monitors match your filters."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1517,6 +1904,7 @@ msgid "None"
 msgstr "Brak"
 
 #: src/components/command-palette.tsx
+#: src/components/monitors-table/add-monitor-dialog.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
@@ -1571,9 +1959,18 @@ msgstr "Hasło jednorazowe"
 msgid "Open menu"
 msgstr "Otwórz menu"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Optional description for this monitor"
+msgstr ""
+
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Optional. Defaults to the agent's system resolver."
 msgstr "Opcjonalne. Domyślnie używany jest systemowy resolver agenta."
+
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Options"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
@@ -1606,6 +2003,10 @@ msgstr "Utrata pakietów (%)"
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Strona"
 
@@ -1619,8 +2020,13 @@ msgstr "Strona {0} z {1}"
 msgid "Pages / Settings"
 msgstr "Strony / Ustawienia"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "password"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/monitors-table/add-monitor-dialog.tsx
 msgid "Password"
 msgstr "Hasło"
 
@@ -1650,6 +2056,7 @@ msgid "Patch"
 msgstr "Poprawka"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Pauza"
@@ -1658,6 +2065,13 @@ msgstr "Pauza"
 msgid "Paused"
 msgstr "Wstrzymane"
 
+#. placeholder {0}: stats.paused
+#. placeholder {0}: statusCounts.paused
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Paused ({0})"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Wstrzymane ({pausedSystemsLength})"
@@ -1665,6 +2079,11 @@ msgstr "Wstrzymane ({pausedSystemsLength})"
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
 msgstr "Format payload'u"
+
+#. placeholder {0}: stats.pending
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Pending ({0})"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1737,6 +2156,7 @@ msgid "Pool Usage"
 msgstr "Użycie puli"
 
 #: src/components/add-system.tsx
+#: src/components/monitors-table/add-monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Port"
 msgstr "Port"
@@ -1819,9 +2239,14 @@ msgstr "Błędy odczytu"
 msgid "Received"
 msgstr "Otrzymane"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Record Type"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/logs-display.tsx
 #: src/components/logs-display.tsx
+#: src/components/routes/domain.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1835,6 +2260,10 @@ msgstr "Relacje"
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Zażądaj jednorazowego hasła"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Request body for POST/PUT requests"
+msgstr ""
 
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
@@ -1852,12 +2281,17 @@ msgstr "Wymaga"
 msgid "Reset Password"
 msgstr "Resetuj hasło"
 
+#: src/components/routes/incidents.tsx
+msgid "Resolve"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
 msgstr "Rozwiązany"
 
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/charts/monitors-charts.tsx
@@ -1869,14 +2303,27 @@ msgstr "Odpowiedź"
 msgid "Response time monitoring from agents."
 msgstr "Monitorowanie czasu odpowiedzi przez agentów."
 
+#: src/components/routes/monitor.tsx
+msgid "Response time over the selected period"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Restarting"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
 msgstr "Uruchamia ponownie"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/monitor.tsx
 #: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Wznów"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Retries"
+msgstr ""
 
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
@@ -1887,6 +2334,30 @@ msgstr "Pokaż token"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
 msgstr "Rewizja"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "root"
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -1936,6 +2407,10 @@ msgstr "Zapisz System"
 msgid "Saved in the database and does not expire until you disable it."
 msgstr "Zapisany w bazie danych. Nie wygasa, dopóki go nie wyłączysz."
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Saving..."
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
 msgstr "Harmonogram"
@@ -1953,8 +2428,12 @@ msgid "Search"
 msgstr "Szukaj"
 
 #: src/components/command-palette.tsx
-msgid "Search for systems or settings..."
-msgstr "Szukaj systemów lub ustawień..."
+#~ msgid "Search for systems or settings..."
+#~ msgstr "Szukaj systemów lub ustawień..."
+
+#: src/components/command-palette.tsx
+msgid "Search for systems, monitors, domains or settings..."
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Search systems"
@@ -2023,6 +2502,14 @@ msgstr "Wysyłaj cyklicznie pingi wychodzące do zewnętrznej usługi monitorowa
 msgid "Send test heartbeat"
 msgstr "Wyślij testowy heartbeat"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "sensor/temperature"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Wysłane"
@@ -2088,6 +2575,10 @@ msgstr "Sortuj według"
 msgid "Start Time"
 msgstr "Czas rozpoczęcia"
 
+#: src/components/routes/settings/general.tsx
+msgid "Start update"
+msgstr ""
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2097,6 +2588,10 @@ msgid "State"
 msgstr "Stan"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -2104,9 +2599,22 @@ msgstr "Stan"
 msgid "Status"
 msgstr "Status"
 
+#: src/components/routes/status-pages.tsx
+msgid "Status Page Manager"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
+msgid "Status Pages"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
 msgstr "Stan podrzędny"
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Success"
+msgstr ""
 
 #: src/components/routes/system/charts/memory-charts.tsx
 msgid "Swap space used by the system"
@@ -2159,6 +2667,8 @@ msgstr "Systemy"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systemy mogą być zarządzane w pliku <0>config.yml</0> znajdującym się w Twoim katalogu danych."
 
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabela"
@@ -2167,6 +2677,12 @@ msgstr "Tabela"
 msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "Karty"
+
+#: src/components/domains-table/domains-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Tags"
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -2243,6 +2759,10 @@ msgstr "Przepustowość puli magazynu {displayName}"
 msgid "Time format"
 msgstr "Format czasu"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Timeout (seconds)"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Do e-mail(ów)"
@@ -2303,6 +2823,18 @@ msgstr "Łączny czas operacji odczytu/zapisu (może przekraczać 100%)"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
 msgstr "Łącznie: {0}"
+
+#: src/components/routes/monitoring.tsx
+msgid "Track domain expiry dates and DNS status"
+msgstr ""
+
+#: src/components/domains-table/domains-table.tsx
+msgid "Track domain expiry dates and watch domains for purchase"
+msgstr ""
+
+#: src/components/routes/monitoring.tsx
+msgid "Track uptime, response times, and service health"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -2380,6 +2912,8 @@ msgstr "Wyzwalane, gdy status przełącza się między stanem aktywnym a nieakty
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Wyzwalane, gdy wykorzystanie któregokolwiek dysku przekroczy ustalony próg"
 
+#: src/components/monitors-table/monitors-table.tsx
+#: src/components/monitors-table/monitors-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -2413,6 +2947,11 @@ msgstr "Uniwersalny token"
 msgid "Unknown"
 msgstr "Nieznana"
 
+#. placeholder {0}: statusCounts.unknown
+#: src/components/domains-table/domains-table.tsx
+msgid "Unknown ({0})"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unlimited"
@@ -2423,6 +2962,11 @@ msgstr "Bez limitu"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Działa"
+
+#. placeholder {0}: stats.up
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Up ({0})"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
@@ -2436,6 +2980,23 @@ msgstr "Aktualne"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr "Aktualizuj"
+
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Update available"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Update Beszel now?"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Update Monitor"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Update now"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
@@ -2464,6 +3025,14 @@ msgstr "Wysyłanie"
 msgid "Uptime"
 msgstr "Czas pracy"
 
+#: src/components/monitors-table/monitors-table.tsx
+msgid "Uptime (24h)"
+msgstr ""
+
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "URL"
+msgstr ""
+
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
@@ -2490,6 +3059,10 @@ msgstr "Użyj dla certyfikatów z podpisem własnym."
 msgid "Used"
 msgstr "Używane"
 
+#: src/components/monitors-table/add-monitor-dialog.tsx
+msgid "Username"
+msgstr ""
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -2514,6 +3087,10 @@ msgstr "Widok"
 msgid "View alerts"
 msgstr "Wyświetl alerty"
 
+#: src/components/routes/home.tsx
+msgid "View and manage incidents"
+msgstr ""
+
 #: src/components/alert-banner-sheet.tsx
 msgid "View details"
 msgstr "Wyświetl szczegóły"
@@ -2532,6 +3109,11 @@ msgstr "Wyświetl 200 ostatnich alertów."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Widoczne kolumny"
+
+#: src/components/routes/domain.tsx
+#: src/components/routes/monitor.tsx
+msgid "Visit"
+msgstr ""
 
 #: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
@@ -2557,6 +3139,10 @@ msgstr "Progi ostrzegawcze"
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Powiadomienia push"
+
+#: src/components/routes/monitoring.tsx
+msgid "Website & Service Monitoring"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."

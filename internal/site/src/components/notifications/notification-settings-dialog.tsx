@@ -40,8 +40,8 @@ import {
 	getDefaultSettings,
 	getProviderLabel,
 	type Notification,
+	type NotificationSettings,
 	type NotificationType,
-	type CreateNotificationRequest,
 	type UpdateNotificationRequest,
 } from "@/lib/notifications"
 
@@ -127,7 +127,7 @@ export function NotificationSettingsDialog({
 				id: notification.id,
 				data: {
 					name: data.name,
-					settings: data.settings,
+					settings: data.settings as unknown as NotificationSettings,
 					is_default: data.is_default,
 				},
 			})
@@ -135,7 +135,7 @@ export function NotificationSettingsDialog({
 			createMutation.mutate({
 				name: data.name,
 				type: selectedType,
-				settings: data.settings,
+				settings: data.settings as unknown as NotificationSettings,
 				is_default: data.is_default,
 			})
 		}
@@ -216,7 +216,6 @@ interface FormData {
 
 function ProviderForm({
 	type,
-	isEdit,
 	notification,
 	onSubmit,
 	isPending,
@@ -227,7 +226,7 @@ function ProviderForm({
 	const defaultValues: FormData = {
 		name: notification?.name || "",
 		is_default: notification?.is_default || false,
-		settings: notification?.settings || getDefaultSettings(type),
+		settings: (notification?.settings || getDefaultSettings(type)) as Record<string, unknown>,
 	}
 
 	switch (type) {
@@ -338,7 +337,7 @@ function EmailForm({
 	onTest,
 	testPending,
 }: FormComponentProps<EmailFormData>) {
-	const form = useForm<EmailFormData>({
+	const form = useForm<z.input<typeof emailSchema>, any, z.output<typeof emailSchema>>({
 		resolver: zodResolver(emailSchema),
 		defaultValues,
 	})
@@ -381,7 +380,7 @@ function EmailForm({
 							<FormItem>
 								<FormLabel>SMTP Port</FormLabel>
 								<FormControl>
-									<Input type="number" {...field} />
+									<Input type="number" {...field} value={field.value as string | number | undefined} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -521,7 +520,7 @@ const webhookSchema = z.object({
 type WebhookFormData = z.infer<typeof webhookSchema>
 
 function WebhookForm({ defaultValues, onSubmit, isPending, onCancel, onTest, testPending }: FormComponentProps<WebhookFormData>) {
-	const form = useForm<WebhookFormData>({ resolver: zodResolver(webhookSchema), defaultValues })
+	const form = useForm<z.input<typeof webhookSchema>, any, z.output<typeof webhookSchema>>({ resolver: zodResolver(webhookSchema), defaultValues })
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -558,7 +557,7 @@ const discordSchema = z.object({
 type DiscordFormData = z.infer<typeof discordSchema>
 
 function DiscordForm({ defaultValues, onSubmit, isPending, onCancel, onTest, testPending }: FormComponentProps<DiscordFormData>) {
-	const form = useForm<DiscordFormData>({ resolver: zodResolver(discordSchema), defaultValues })
+	const form = useForm<z.input<typeof discordSchema>, any, z.output<typeof discordSchema>>({ resolver: zodResolver(discordSchema), defaultValues })
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -595,7 +594,7 @@ const slackSchema = z.object({
 type SlackFormData = z.infer<typeof slackSchema>
 
 function SlackForm({ defaultValues, onSubmit, isPending, onCancel, onTest, testPending }: FormComponentProps<SlackFormData>) {
-	const form = useForm<SlackFormData>({ resolver: zodResolver(slackSchema), defaultValues })
+	const form = useForm<z.input<typeof slackSchema>, any, z.output<typeof slackSchema>>({ resolver: zodResolver(slackSchema), defaultValues })
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -633,7 +632,7 @@ const telegramSchema = z.object({
 type TelegramFormData = z.infer<typeof telegramSchema>
 
 function TelegramForm({ defaultValues, onSubmit, isPending, onCancel, onTest, testPending }: FormComponentProps<TelegramFormData>) {
-	const form = useForm<TelegramFormData>({ resolver: zodResolver(telegramSchema), defaultValues })
+	const form = useForm<z.input<typeof telegramSchema>, any, z.output<typeof telegramSchema>>({ resolver: zodResolver(telegramSchema), defaultValues })
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -676,7 +675,7 @@ const gotifySchema = z.object({
 type GotifyFormData = z.infer<typeof gotifySchema>
 
 function GotifyForm({ defaultValues, onSubmit, isPending, onCancel, onTest, testPending }: FormComponentProps<GotifyFormData>) {
-	const form = useForm<GotifyFormData>({ resolver: zodResolver(gotifySchema), defaultValues })
+	const form = useForm<z.input<typeof gotifySchema>, any, z.output<typeof gotifySchema>>({ resolver: zodResolver(gotifySchema), defaultValues })
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -719,7 +718,7 @@ const pushoverSchema = z.object({
 type PushoverFormData = z.infer<typeof pushoverSchema>
 
 function PushoverForm({ defaultValues, onSubmit, isPending, onCancel, onTest, testPending }: FormComponentProps<PushoverFormData>) {
-	const form = useForm<PushoverFormData>({ resolver: zodResolver(pushoverSchema), defaultValues })
+	const form = useForm<z.input<typeof pushoverSchema>, any, z.output<typeof pushoverSchema>>({ resolver: zodResolver(pushoverSchema), defaultValues })
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

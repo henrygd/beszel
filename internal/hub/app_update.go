@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/spf13/cobra"
 )
 

@@ -87,7 +87,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 	const [manualRegPeriod, setManualRegPeriod] = useState<number>(1)
 	const [manualPurchasePrice, setManualPurchasePrice] = useState<number>(0)
 
-	const form = useForm<FormData>({
+	const form = useForm<z.input<typeof formSchema>, any, z.output<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			domain_name: "",
@@ -355,7 +355,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 											<FormItem className="flex-1">
 												<FormLabel>Domain Name</FormLabel>
 												<FormControl>
-													<Input placeholder="example.com" autoFocus tabIndex={0} {...field} />
+													<Input placeholder="example.com" autoFocus tabIndex={0} {...field} value={field.value as string | number | undefined} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -388,7 +388,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 											<FormItem>
 												<FormLabel>Domain Name</FormLabel>
 												<FormControl>
-													<Input disabled {...field} />
+													<Input disabled {...field} value={field.value as string | number | undefined} />
 												</FormControl>
 											</FormItem>
 										)}
@@ -402,7 +402,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 										<FormItem>
 											<FormLabel>Tags (comma separated)</FormLabel>
 											<FormControl>
-												<Input placeholder="portfolio, client, investment" {...field} />
+												<Input placeholder="portfolio, client, investment" {...field} value={field.value as string | number | undefined} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -416,7 +416,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 										<FormItem>
 											<FormLabel>Notes</FormLabel>
 											<FormControl>
-												<Input placeholder="Any additional information..." {...field} />
+												<Input placeholder="Any additional information..." {...field} value={field.value as string | number | undefined} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -534,7 +534,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 										<FormItem>
 											<FormLabel>Purchase Price</FormLabel>
 											<FormControl>
-												<Input type="number" {...field} />
+												<Input type="number" {...field} value={field.value as string | number | undefined} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -548,7 +548,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 										<FormItem>
 											<FormLabel>Current Value</FormLabel>
 											<FormControl>
-												<Input type="number" {...field} />
+												<Input type="number" {...field} value={field.value as string | number | undefined} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -562,7 +562,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 										<FormItem>
 											<FormLabel>Renewal Cost</FormLabel>
 											<FormControl>
-												<Input type="number" {...field} />
+												<Input type="number" {...field} value={field.value as string | number | undefined} />
 											</FormControl>
 											<FormMessage />
 										</FormItem>
@@ -663,7 +663,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 												<FormItem className="pl-4 border-l-2">
 													<FormLabel>Days before expiry</FormLabel>
 													<FormControl>
-														<Input type="number" min={1} max={365} className="w-32" {...field} />
+														<Input type="number" min={1} max={365} className="w-32" {...field} value={field.value as string | number | undefined} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -703,7 +703,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 												<FormItem className="pl-4 border-l-2">
 													<FormLabel>Days before SSL expiry</FormLabel>
 													<FormControl>
-														<Input type="number" min={1} max={90} className="w-32" {...field} />
+														<Input type="number" min={1} max={90} className="w-32" {...field} value={field.value as string | number | undefined} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -781,7 +781,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 												<FormItem className="pl-4 border-l-2">
 													<FormLabel>Change threshold (%)</FormLabel>
 													<FormControl>
-														<Input type="number" min={1} max={100} className="w-32" {...field} />
+														<Input type="number" min={1} max={100} className="w-32" {...field} value={field.value as string | number | undefined} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -822,7 +822,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 													<FormItem>
 														<FormLabel>Start time</FormLabel>
 														<FormControl>
-															<Input type="time" {...field} />
+															<Input type="time" {...field} value={field.value as string | number | undefined} />
 														</FormControl>
 													</FormItem>
 												)}
@@ -834,7 +834,7 @@ export function DomainDialog({ open, onOpenChange, domain, isEdit = false }: Dom
 													<FormItem>
 														<FormLabel>End time</FormLabel>
 														<FormControl>
-															<Input type="time" {...field} />
+															<Input type="time" {...field} value={field.value as string | number | undefined} />
 														</FormControl>
 													</FormItem>
 												)}

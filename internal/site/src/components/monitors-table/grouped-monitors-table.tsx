@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible } from "@/components/ui/collapsible"
 import {
@@ -24,10 +24,6 @@ import {
 } from "@/lib/monitors"
 import { Link } from "@/components/router"
 import { cn } from "@/lib/utils"
-
-interface GroupedMonitorsTableProps {
-	view?: "grid" | "list"
-}
 
 function DomainGroupHeader({
 	domain,
@@ -120,23 +116,6 @@ function SubdomainSection({
 	subdomain: string
 	monitors: Monitor[]
 }) {
-	const downCount = monitors.filter((m) => m.status === "down").length
-
-	const header = (
-		<div className="flex items-center gap-2 py-1.5">
-			<Server className="h-3.5 w-3.5 text-muted-foreground" />
-			<span className="text-sm font-medium">{subdomain}</span>
-			<Badge variant="outline" className="text-[10px] h-5 px-1">
-				{monitors.length}
-			</Badge>
-			{downCount > 0 && (
-				<Badge variant="destructive" className="text-[10px] h-5 px-1">
-					{downCount} down
-				</Badge>
-			)}
-		</div>
-	)
-
 	return (
 		<Collapsible
 			title={`${subdomain} (${monitors.length})`}

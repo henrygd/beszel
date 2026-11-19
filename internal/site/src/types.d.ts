@@ -1,5 +1,4 @@
 import type { RecordModel } from "pocketbase"
-import type { LucideIcon } from "lucide-react"
 import type { Unit, Os, BatteryState, HourFormat, ConnectionType, ServiceStatus, ServiceSubState } from "@/lib/enums"
 
 // global window properties
@@ -436,7 +435,7 @@ export interface ChartData extends ChartOptions {
 export interface AlertInfo {
 	name: () => string
 	unit: string
-	icon: LucideIcon
+	icon: any
 	desc: () => string
 	max?: number
 	min?: number

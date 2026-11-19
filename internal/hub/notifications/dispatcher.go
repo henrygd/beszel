@@ -6,11 +6,11 @@ import (
 	"log"
 	"sync"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/notification"
 	"github.com/henrygd/beszel/internal/hub/notifications/providers"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // Dispatcher manages notification sending for monitor events
