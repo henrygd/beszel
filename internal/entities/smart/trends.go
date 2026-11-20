@@ -24,12 +24,12 @@ type TrendSample struct {
 type SmartTrendState struct {
 	Serial                string          `json:"serial,omitempty"`
 	Samples               []TrendSample   `json:"samples,omitempty"`
-	LastSampleAt          int64           `json:"last_sample_at,omitempty"`
+	LastSampleAt          int64           `json:"last_sample_at,omitzero"`
 	ConsecutiveIncreasing map[uint16]uint `json:"consecutive_increasing,omitempty"`
 	ConsecutiveNonzero    map[uint16]uint `json:"consecutive_nonzero,omitempty"`
-	PendingSeenNonzero    bool            `json:"pending_seen_nonzero,omitempty"`
-	PendingCleared        bool            `json:"pending_cleared,omitempty"`
-	PendingReappeared     bool            `json:"pending_reappeared,omitempty"`
+	PendingSeenNonzero    bool            `json:"pending_seen_nonzero,omitzero"`
+	PendingCleared        bool            `json:"pending_cleared,omitzero"`
+	PendingReappeared     bool            `json:"pending_reappeared,omitzero"`
 	Warned                map[uint16]bool `json:"warned,omitempty"`
 	Status                string          `json:"status,omitempty"`
 }
@@ -46,8 +46,8 @@ type SmartTrendMetric struct {
 	PreviousDelta30d      *uint64 `json:"previous_delta_30d,omitempty"`
 	ConsecutiveIncreasing uint    `json:"consecutive_increasing"`
 	ConsecutiveNonzero    uint    `json:"consecutive_nonzero"`
-	PersistedHours        uint64  `json:"persisted_hours,omitempty"`
-	RemainedZeroHours     uint64  `json:"remained_zero_hours,omitempty"`
+	PersistedHours        uint64  `json:"persisted_hours,omitzero"`
+	RemainedZeroHours     uint64  `json:"remained_zero_hours,omitzero"`
 }
 
 // SmartHealthAnalysis explains the hub-derived state shown to users.
@@ -57,8 +57,8 @@ type SmartHealthAnalysis struct {
 	WarningReasons             []string                    `json:"warning_reasons,omitempty"`
 	CriticalReasons            []string                    `json:"critical_reasons,omitempty"`
 	Metrics                    map[uint16]SmartTrendMetric `json:"metrics,omitempty"`
-	AcceleratingFor3Windows    bool                        `json:"accelerating_for_3_windows,omitempty"`
-	PendingClearedThenReturned bool                        `json:"pending_cleared_then_returned,omitempty"`
+	AcceleratingFor3Windows    bool                        `json:"accelerating_for_3_windows,omitzero"`
+	PendingClearedThenReturned bool                        `json:"pending_cleared_then_returned,omitzero"`
 }
 
 // EvaluateSmartHealth records a sample and applies trend-aware ATA health rules.
