@@ -2,6 +2,7 @@ import { lazy } from "react"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
 import { useNetworkMonitors } from "@/lib/use-network-monitors"
+import { useSpeedtests } from "@/lib/use-speedtests"
 
 const ContainersTable = lazy(() => import("../../containers-table/containers-table"))
 
@@ -72,4 +73,20 @@ export function LazyNetworkMonitorsTable({ systemId }: { systemId: string }) {
 function SystemNetworkMonitorsTable({ systemId }: { systemId: string }) {
 	const { monitors, isLoading } = useNetworkMonitors({ systemId })
 	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} isLoading={isLoading} />
+}
+
+const SpeedtestsTable = lazy(() => import("../../speedtests-table/speedtests-table"))
+
+export function LazySpeedtestsTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <SystemSpeedtestsTable systemId={systemId} />}
+		</div>
+	)
+}
+
+function SystemSpeedtestsTable({ systemId }: { systemId: string }) {
+	const { speedtests, isLoading } = useSpeedtests({ systemId })
+	return <SpeedtestsTable systemId={systemId} speedtests={speedtests} isLoading={isLoading} />
 }

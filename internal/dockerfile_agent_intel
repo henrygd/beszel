@@ -13,12 +13,31 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 # --------------------------
+# Ookla speedtest CLI for speedtest monitoring (static binary, works in scratch)
+# --------------------------
+FROM --platform=$BUILDPLATFORM alpine:3.24 AS speedtest
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG SPEEDTEST_VERSION=1.2.0
+RUN set -eux; \
+  case "${TARGETARCH}${TARGETVARIANT}" in \
+    amd64*) arch=x86_64 ;; \
+    arm64*) arch=aarch64 ;; \
+    armv7) arch=armhf ;; \
+    armv6) arch=armel ;; \
+    *) echo "no Ookla speedtest CLI build for ${TARGETARCH}${TARGETVARIANT}" >&2; exit 1 ;; \
+  esac; \
+  wget -qO- "https://install.speedtest.net/app/cli/ookla-speedtest-${SPEEDTEST_VERSION}-linux-${arch}.tgz" \
+    | tar xz -C /usr/local/bin speedtest
+
+# --------------------------
 # Final image
 # Note: must cap_add: [CAP_PERFMON] and mount /dev/dri/ as volume
 # --------------------------
 FROM alpine:3.24
 
 COPY --from=builder /agent /agent
+COPY --from=speedtest /usr/local/bin/speedtest /usr/bin/speedtest
 
 RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools nvtop smartmontools zfs
 

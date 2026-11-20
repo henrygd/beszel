@@ -5,6 +5,7 @@ const routes = {
 	containers: "/containers",
 	smart: "/smart",
 	monitors: "/monitors",
+	speedtests: "/speedtests",
 	system: `/system/:id`,
 	settings: `/settings/:name?`,
 	forgot_password: `/forgot-password`,
