@@ -207,6 +207,23 @@ func TestGetMonitorConfigsForSystemIncludesProbeOptions(t *testing.T) {
 	require.Equal(t, monitor.IPVersion6, configs[0].IPVersion, "full sync must keep the IP version")
 }
 
+func TestGetMonitorConfigsForSystemIncludesStatusCodes(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
+	require.NoError(t, err)
+	record := core.NewRecord(collection)
+	record.Load(map[string]any{
+		"system": sys.Id, "target": "https://auth.example", "protocol": "http",
+		"interval": 60, "enabled": true, "statusCodes": "200-299,401",
+	})
+	require.NoError(t, app.SaveNoValidate(record))
+
+	configs, err := sys.manager.GetMonitorConfigsForSystem(sys.Id)
+	require.NoError(t, err)
+	require.Len(t, configs, 1)
+	require.Equal(t, "200-299,401", configs[0].StatusCodes, "full sync must keep the accepted status codes")
+}
+
 func TestGetMonitorConfigsForSystemQueryError(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	_, err := app.DB().NewQuery("DROP TABLE network_monitors").Execute()
