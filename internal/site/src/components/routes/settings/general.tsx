@@ -12,7 +12,7 @@ import Slider from "@/components/ui/slider"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
-import { $chartTime, $userSettings, defaultLayoutWidth, getUserChartTime } from "@/lib/stores"
+import { $chartTime, $maxValues, $userSettings, defaultLayoutWidth, getUserChartTime } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
@@ -34,6 +34,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 		await saveSettings(data)
 		// apply the saved default time period to the active charts
 		$chartTime.set(getUserChartTime())
+		$maxValues.set(data.chartValue === "max")
 		setIsLoading(false)
 	}
 
@@ -137,6 +138,24 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 											{label()}
 										</SelectItem>
 									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="chartValue">
+								<Trans>Default chart value</Trans>
+							</Label>
+							<Select name="chartValue" key={userSettings.chartValue} defaultValue={userSettings.chartValue ?? "avg"}>
+								<SelectTrigger id="chartValue">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="avg">
+										<Trans>Average</Trans>
+									</SelectItem>
+									<SelectItem value="max">
+										<Trans comment="Chart select field. Please try to keep this short.">Max 1 min</Trans>
+									</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
