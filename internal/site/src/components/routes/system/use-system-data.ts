@@ -16,7 +16,7 @@ import {
 	$userSettings,
 	getUserChartTime,
 } from "@/lib/stores"
-import { chartTimeData, listen, parseSemVer } from "@/lib/utils"
+import { chartTimeData, getChartTimePointLimit, listen, parseSemVer } from "@/lib/utils"
 import type {
 	ChartData,
 	ContainerStatsRecord,
@@ -222,6 +222,7 @@ export function useSystemData(id: string) {
 
 		const systemId = system.id
 		const { expectedInterval } = chartTimeData[chartTime]
+		const maxPoints = getChartTimePointLimit(chartTime)
 		const ss_cache_key = `${systemId}_${chartTime}_system_stats`
 		const cs_cache_key = `${systemId}_${chartTime}_container_stats`
 
@@ -257,14 +258,14 @@ export function useSystemData(id: string) {
 			// make new system stats
 			let systemData = (cache.get(ss_cache_key) || []) as SystemStatsRecord[]
 			if (systemStats.status === "fulfilled" && systemStats.value.length) {
-				systemData = appendData(systemData, systemStats.value, expectedInterval, 100)
+				systemData = appendData(systemData, systemStats.value, expectedInterval, maxPoints)
 				cache.set(ss_cache_key, systemData)
 			}
 			setSystemStats(systemData)
 			// make new container stats
 			let containerData = (cache.get(cs_cache_key) || []) as ChartData["containerData"]
 			if (containerStats.status === "fulfilled" && containerStats.value.length) {
-				containerData = appendData(containerData, makeContainerData(containerStats.value), expectedInterval, 100)
+				containerData = appendData(containerData, makeContainerData(containerStats.value), expectedInterval, maxPoints)
 				cache.set(cs_cache_key, containerData)
 			}
 			setContainerData(containerData)
