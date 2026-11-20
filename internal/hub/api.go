@@ -2,6 +2,8 @@ package hub
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -13,17 +15,17 @@ import (
 	"time"
 	"uuid"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
-	systementity "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/mcp"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // UpdateInfo holds information about the latest update check
@@ -68,6 +70,11 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 		}
 		isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
 		e.Auth, err = e.App.FindAuthRecordByEmail("users", email)
+		// log on the auth refresh only: the login page sends one per attempt,
+		// while this middleware runs on every request
+		if isAuthRefresh && errors.Is(err, sql.ErrNoRows) {
+			slog.Warn("No user matches the automatic login email, showing the login form", "email", email)
+		}
 		if err != nil || !isAuthRefresh {
 			return e.Next()
 		}
@@ -86,6 +93,9 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
 		// only honor the header from these peers, if set
 		trustedProxies, restricted := parseTrustedProxies()
+		if !restricted {
+			slog.Warn("TRUSTED_AUTH_HEADER is set without TRUSTED_PROXY_IPS: the header is trusted from any client that can reach the hub", "header", trustedHeader)
+		}
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
 			if restricted && !isTrustedProxy(trustedProxies, e.Request.RemoteAddr) {
 				return e.Next()
@@ -196,6 +206,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// get, create, or delete universal tokens (POST keeps tokens out of URLs; GET is kept for legacy clients)
 	apiAuth.GET("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
 	apiAuth.POST("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
+	// create static API keys for the current user, or revoke all of them
+	apiAuth.POST("/api-keys", createApiKey).BindFunc(requireSessionToken)
+	apiAuth.POST("/api-keys/revoke", revokeApiKeys).BindFunc(requireSessionToken)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
@@ -215,6 +228,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		apiAuth.GET("/containers/logs", h.getContainerLogs)
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
+	}
+	// model context protocol (MCP) server for AI agents, enabled with MCP=true
+	if err := mcp.RegisterRoutes(h, se); err != nil {
+		return err
 	}
 	return nil
 }
@@ -502,8 +519,14 @@ func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
 	if err != nil {
 		return e.NotFoundError("", err)
 	}
-	var info systementity.Info
-	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil || !info.SystemdLogs {
+	var info struct {
+		SystemdLogs bool `json:"jl"`
+	}
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil {
+		e.App.Logger().Error("failed to unmarshal system info for systemd logs", "system", systemID, "err", err)
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+	}
+	if !info.SystemdLogs {
 		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
 	}
 

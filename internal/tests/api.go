@@ -13,13 +13,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
-	pbtests "github.com/pocketbase/pocketbase/tests"
-	"github.com/pocketbase/pocketbase/tools/hook"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	pbtests "ganigeorgiev.com/pocketbase/pocketbase/tests"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/hook"
 )
 
-// NOTE: This is a copy of https://github.com/pocketbase/pocketbase/blob/master/tests/api.go
+// NOTE: This is a copy of https://ganigeorgiev.com/pocketbase/pocketbase/blob/master/tests/api.go
 // with the following changes:
 // - Removed automatic cleanup of the test app in ApiScenario.Test (Aug 17 2025)
 

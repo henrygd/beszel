@@ -268,6 +268,86 @@ func TestParseSmartctlNvmeLargeCounters(t *testing.T) {
 	assertAttrValue(t, deviceData.Attributes, "PercentageUsed", 300)
 }
 
+// NVMe health counters are 128-bit, so smartctl can print values past uint64.
+// They are reported as invalid instead of failing json.Unmarshal and dropping the device (#2731).
+func TestParseSmartctlNvmeCounterBeyondUint64(t *testing.T) {
+	deviceData := parseSmart(t, []byte(`{
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"serial_number": "NVME-OVERFLOW",
+		"smart_status": {"passed": true},
+		"nvme_smart_health_information_log": {
+			"temperature": 35,
+			"data_units_written": 340282366920938463463374607431768211455,
+			"power_on_hours": 1234,
+			"media_errors": 557325022338560884631142400
+		}
+	}`), "")
+	// An overflowed counter is reported as invalid, not as a made-up number.
+	for _, name := range []string{"MediaErrors", "DataUnitsWritten"} {
+		attr := findAttr(deviceData.Attributes, name)
+		require.NotNil(t, attr, name)
+		assert.Zero(t, attr.RawValue, name)
+		assert.Equal(t, smart.NVMeCounterInvalid, attr.RawString, name)
+	}
+	assertAttrValue(t, deviceData.Attributes, "PowerOnHours", 1234)
+	assert.Empty(t, findAttr(deviceData.Attributes, "PowerOnHours").RawString)
+	assert.Equal(t, uint8(35), deviceData.Temperature)
+}
+
+// Every 128-bit counter is reported as invalid when it overflows.
+func TestParseSmartctlNvmeEveryCounterOverflow(t *testing.T) {
+	fields := map[string]string{
+		"data_units_read":      "DataUnitsRead",
+		"data_units_written":   "DataUnitsWritten",
+		"host_reads":           "HostReads",
+		"host_writes":          "HostWrites",
+		"controller_busy_time": "ControllerBusyTime",
+		"power_cycles":         "PowerCycles",
+		"power_on_hours":       "PowerOnHours",
+		"unsafe_shutdowns":     "UnsafeShutdowns",
+		"media_errors":         "MediaErrors",
+		"num_err_log_entries":  "NumErrLogEntries",
+	}
+	for field, name := range fields {
+		deviceData := parseSmart(t, []byte(`{
+			"device": {"name": "/dev/nvme0", "type": "nvme"},
+			"serial_number": "NVME-`+name+`",
+			"nvme_smart_health_information_log": {"temperature": 35, "`+field+`": 18446744073709551616}
+		}`), "")
+		attr := findAttr(deviceData.Attributes, name)
+		require.NotNil(t, attr, name)
+		assert.Zero(t, attr.RawValue, name)
+		assert.Equal(t, smart.NVMeCounterInvalid, attr.RawString, name)
+	}
+}
+
+// An overflowed TNVMCAP still parses the device; the capacity is left unknown
+// (0) rather than made up.
+func TestParseSmartctlNvmeCapacity(t *testing.T) {
+	deviceData := parseSmart(t, []byte(`{
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"serial_number": "NVME-OVERFLOW-CAP",
+		"smart_status": {"passed": true},
+		"nvme_total_capacity": 18446744073709551616,
+		"nvme_smart_health_information_log": {
+			"temperature": 35,
+			"power_cycles": 120,
+			"media_errors": null
+		}
+	}`), "")
+	assert.Zero(t, deviceData.Capacity)
+	assertAttrValue(t, deviceData.Attributes, "PowerCycles", 120)
+	assertAttrValue(t, deviceData.Attributes, "MediaErrors", 0)
+
+	deviceData = parseSmart(t, []byte(`{
+		"device": {"name": "/dev/nvme0", "type": "nvme"},
+		"serial_number": "NVME-CAP",
+		"nvme_total_capacity": 1000204886016,
+		"nvme_smart_health_information_log": {"temperature": 35}
+	}`), "")
+	assert.Equal(t, uint64(1000204886016), deviceData.Capacity)
+}
+
 // Out-of-range temperatures are clamped instead of failing the whole parse.
 func TestParseSmartctlTemperatureOutOfRange(t *testing.T) {
 	sata := parseSmart(t, []byte(`{

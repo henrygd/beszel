@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
@@ -17,7 +18,6 @@ import (
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 )
 

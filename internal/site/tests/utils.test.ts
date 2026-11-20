@@ -5,7 +5,7 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (count: number, forms: any) => forms.other ?? "",
 }))
 
-const { formatMicroseconds } = await import("../src/lib/utils")
+const { debounceByKey, formatMicroseconds } = await import("../src/lib/utils")
 
 describe("formatMicroseconds", () => {
 	test("formats with fixedDigits = true (default)", () => {
@@ -17,6 +17,20 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(1_000_000)).toBe("1.00s")
 		expect(formatMicroseconds(1_500_000)).toBe("1.50s")
 		expect(formatMicroseconds(12_000_000)).toBe("12.0s")
+	})
+
+	test("moves to the next unit when rounding reaches it", () => {
+		expect(formatMicroseconds(999_960)).toBe("1.00s")
+		expect(formatMicroseconds(999_999)).toBe("1.00s")
+		expect(formatMicroseconds(999_940)).toBe("999.9ms")
+		expect(formatMicroseconds(9_996)).toBe("10.0ms")
+		expect(formatMicroseconds(9_990)).toBe("9.99ms")
+		expect(formatMicroseconds(9_996_000)).toBe("10.0s")
+		expect(formatMicroseconds(999_999, false)).toBe("1s")
+		expect(formatMicroseconds(9_996, false)).toBe("10ms")
+		expect(formatMicroseconds(9_995)).toBe("10.0ms")
+		expect(formatMicroseconds(999_950)).toBe("1.00s")
+		expect(formatMicroseconds(9_995_000)).toBe("10.0s")
 	})
 
 	test("formats with fixedDigits = false (used for chart y-axis ticks)", () => {
@@ -47,5 +61,27 @@ describe("formatMicroseconds", () => {
 		expect(formatMicroseconds(Number.NaN)).toBe("-")
 		expect(formatMicroseconds(Number.POSITIVE_INFINITY)).toBe("-")
 		expect(formatMicroseconds(Number.NEGATIVE_INFINITY)).toBe("-")
+	})
+})
+
+describe("debounceByKey", () => {
+	const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+	test("calls for different keys within the wait are all delivered", async () => {
+		const calls: string[] = []
+		const send = debounceByKey((name: string) => calls.push(name), 20)
+		send("CPU", "CPU")
+		send("Memory", "Memory")
+		await wait(60)
+		expect(calls).toEqual(["CPU", "Memory"])
+	})
+
+	test("repeated calls for the same key keep only the last", async () => {
+		const calls: number[] = []
+		const send = debounceByKey((value: number) => calls.push(value), 20)
+		send("CPU", 80)
+		send("CPU", 90)
+		await wait(60)
+		expect(calls).toEqual([90])
 	})
 })
