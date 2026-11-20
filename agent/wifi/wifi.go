@@ -1,5 +1,6 @@
-// Package wifi collects only currently associated station interfaces. Collection
-// failures are empty snapshots, never cached connected state.
+// Package wifi collects currently associated station interfaces and, on OpenWrt,
+// access point interfaces. Collection failures are empty snapshots, never cached
+// connected state.
 package wifi
 
 import (

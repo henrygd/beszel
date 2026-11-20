@@ -868,6 +868,7 @@ func TestMcpGetSystemUpdatesAndCurrent(t *testing.T) {
 		"wf": map[string]any{
 			"wlan0": map[string]any{"s": "home", "r": -52},
 			"wlan1": map[string]any{"s": "guest"}, // associated, no RSSI
+			"ap0":   map[string]any{"s": "router", "r": -40, "a": true},
 		},
 	})
 	require.NoError(t, hub.Save(reloadSystem))
@@ -878,6 +879,7 @@ func TestMcpGetSystemUpdatesAndCurrent(t *testing.T) {
 	wifi := map[string]any{
 		"wlan0": map[string]any{"ssid": "home", "signal_dbm": float64(-52)},
 		"wlan1": map[string]any{"ssid": "guest"},
+		"ap0":   map[string]any{"ssid": "router", "signal_dbm": float64(-40), "access_point": true},
 	}
 	require.Equal(t, wifi, data["wifi"])
 	// list_systems carries the same summary fields
