@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react"
-import pb from "@/lib/pocketbase"
+import { useState, useEffect } from "react"
+import { pb } from "@/lib/api"
 
 export interface PushNotificationState {
 	isSupported: boolean
@@ -91,7 +91,7 @@ export function usePushNotifications() {
 			// Subscribe to push notifications
 			const subscription = await registration.pushManager.subscribe({
 				userVisibleOnly: true,
-				applicationServerKey: urlBase64ToUint8Array(publicKey),
+				applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource,
 			})
 
 			// Send subscription to server

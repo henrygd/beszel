@@ -13,10 +13,10 @@ import (
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // agentConnectRequest holds information related to an agent's connection attempt.
@@ -315,6 +315,9 @@ func (h *Hub) SetFingerprint(fpRecord *ws.FingerprintRecord, fingerprint string)
 // checking common proxy headers before falling back to the remote address.
 func getRealIP(r *http.Request) string {
 	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
+		return ip
+	}
+	if ip := r.Header.Get("X-Real-IP"); ip != "" {
 		return ip
 	}
 	if ip := r.Header.Get("X-Forwarded-For"); ip != "" {

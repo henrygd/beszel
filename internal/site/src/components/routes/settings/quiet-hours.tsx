@@ -1,5 +1,4 @@
-import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import {
 	MoreHorizontalIcon,
@@ -42,9 +41,9 @@ import { $systems } from "@/lib/stores"
 import { formatShortDate } from "@/lib/utils"
 import type { QuietHoursRecord, SystemRecord } from "@/types"
 
-const quietHoursTranslation = t`Quiet Hours`
-
 export function QuietHours() {
+	const { t } = useLingui()
+	const quietHoursTranslation = t`Quiet Hours`
 	const [data, setData] = useState<QuietHoursRecord[]>([])
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [editingRecord, setEditingRecord] = useState<QuietHoursRecord | null>(null)
@@ -293,6 +292,8 @@ function QuietHoursDialog({
 	onClose: () => void
 	toast: ReturnType<typeof useToast>["toast"]
 }) {
+	const { t } = useLingui()
+	const quietHoursTranslation = t`Quiet Hours`
 	const [selectedSystem, setSelectedSystem] = useState(editingRecord?.system || "")
 	const [isGlobal, setIsGlobal] = useState(!editingRecord?.system)
 	const [windowType, setWindowType] = useState<"one-time" | "daily">(editingRecord?.type || "one-time")

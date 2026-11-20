@@ -1,26 +1,38 @@
+# Docs: https://beszel.dev/guide/getting-started
+# Env vars: https://beszel.dev/guide/environment-variables
+
 services:
   beszel:
-    image: 'henrygd/beszel'
-    container_name: 'beszel'
+    image: henrygd/beszel:latest
+    container_name: beszel
     restart: unless-stopped
+    environment:
+      APP_URL: http://localhost:8090
     ports:
-      - '8090:8090'
+      - 8090:8090
     volumes:
       - ./beszel_data:/beszel_data
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - ./beszel_socket:/beszel_socket
+    # healthcheck:
+    #   test: ['CMD', '/beszel', 'health', '--url', 'http://localhost:8090']
+    #   interval: 120s
+    #   start_period: 10s
+    #   timeout: 5s
 
   beszel-agent:
-    image: 'henrygd/beszel-agent' #Add -nvidia for nvidia gpus
-    container_name: 'beszel-agent'
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
     restart: unless-stopped
     network_mode: host
-    # runtime: nvidia # when using beszel-agent-nvidia
     volumes:
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      - ./beszel_socket:/beszel_socket
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      PORT: 45876
-      KEY: '...'
-      # FILESYSTEM: /dev/sda1 # set to the correct filesystem for disk I/O stats
-      # NVIDIA_VISIBLE_DEVICES: all # when using beszel-agent-nvidia
-      # NVIDIA_DRIVER_CAPABILITIES: utility # when using beszel-agent-nvidia
+      LISTEN: /beszel_socket/beszel.sock
+      HUB_URL: http://localhost:8090
+      TOKEN: <token>
+      KEY: "<key>"
+    # healthcheck:
+    #   test: ['CMD', '/agent', 'health']
+    #   interval: 120s

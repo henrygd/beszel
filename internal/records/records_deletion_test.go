@@ -10,9 +10,9 @@ import (
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/tests"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -318,6 +318,7 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 			"status": "up",
 			"users":  []string{user.Id},
 		})
+		require.NoError(t, err)
 
 		// Create only 5 alerts (well below threshold)
 		for i := range 5 {

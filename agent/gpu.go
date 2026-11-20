@@ -31,6 +31,7 @@ const (
 
 	// Command retry and timeout constants
 	retryWaitTime     time.Duration = 5 * time.Second
+	maxRetryBackoff   time.Duration = 5 * time.Minute
 	maxFailureRetries int           = 5
 
 	// Unit Conversions
@@ -48,6 +49,8 @@ type GPUManager struct {
 	// Per-cache-key tracking for delta calculations
 	// cacheKey -> gpuId -> snapshot of last count/usage/power values
 	lastSnapshots map[uint16]map[string]*gpuSnapshot
+	// Per-card energy snapshots for Intel sysfs power calculation.
+	intelSysfsEnergySnapshots map[string]intelSysfsEnergySnapshot
 }
 
 // gpuSnapshot stores the last observed incremental values for delta tracking
@@ -78,6 +81,7 @@ type gpuCollector struct {
 	parse   func([]byte) bool // returns true if valid data was found
 	buf     []byte
 	bufSize uint16
+	sleep   func(time.Duration) // waits between runs; time.Sleep if nil
 }
 
 var errNoValidData = fmt.Errorf("no valid GPU data found") // Error for missing data
@@ -90,6 +94,7 @@ const (
 	collectorSourceNVML         collectorSource = "nvml"
 	collectorSourceNvidiaSMI    collectorSource = collectorSource(nvidiaSmiCmd)
 	collectorSourceIntelGpuTop  collectorSource = collectorSource(intelGpuStatsCmd)
+	collectorSourceIntelSysfs   collectorSource = "intel_sysfs"
 	collectorSourceAmdSysfs     collectorSource = "amd_sysfs"
 	collectorSourceRocmSMI      collectorSource = collectorSource(rocmSmiCmd)
 	collectorSourceMacmon       collectorSource = collectorSource(macmonCmd)
@@ -106,6 +111,7 @@ func isValidCollectorSource(source collectorSource) bool {
 		collectorSourceNVML,
 		collectorSourceNvidiaSMI,
 		collectorSourceIntelGpuTop,
+		collectorSourceIntelSysfs,
 		collectorSourceAmdSysfs,
 		collectorSourceRocmSMI,
 		collectorSourceMacmon,
@@ -122,6 +128,8 @@ type gpuCapabilities struct {
 	hasAmdSysfs     bool
 	hasTegrastats   bool
 	hasIntelGpuTop  bool
+	hasXe           bool
+	hasIntelSysfs   bool
 	hasNvtop        bool
 	hasMacmon       bool
 	hasPowermetrics bool
@@ -134,31 +142,60 @@ type collectorDefinition struct {
 	deprecationWarning string
 }
 
-// starts and manages the ongoing collection of GPU data for the specified GPU management utility
+// starts and manages the ongoing collection of GPU data for the specified GPU management utility.
+// The tool is restarted whenever it exits. A run without valid data counts as a failure, since the
+// tool may have started before the GPU driver was ready (e.g. right after boot) or may be broken,
+// and each consecutive failure doubles the delay up to maxRetryBackoff. A run that produces valid
+// data resets the count whatever its exit status, because tools started with -l or --interval
+// normally only exit when something ends them. Collection never stops for good, so it recovers
+// without an agent restart.
 func (c *gpuCollector) start() {
+	sleep := c.sleep
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	consecutiveFailures := 0
 	for {
-		err := c.collect()
-		if err != nil {
-			if err == errNoValidData {
-				slog.Warn(c.name + " found no valid GPU data, stopping")
-				break
-			}
-			slog.Warn(c.name+" failed, restarting", "err", err)
-			time.Sleep(retryWaitTime)
-			continue
+		hasValidData, err := c.collect()
+		if hasValidData {
+			consecutiveFailures = 0
+		} else {
+			consecutiveFailures++
 		}
+		wait := retryDelay(retryWaitTime, consecutiveFailures)
+		slog.Warn(c.name+" stopped, restarting", "err", err, "failures", consecutiveFailures, "wait", wait.String())
+		sleep(wait)
 	}
 }
 
+// retryDelay doubles the base wait after each consecutive failure, capping at maxRetryBackoff
+func retryDelay(base time.Duration, consecutiveFailures int) time.Duration {
+	backoff := base
+	for range consecutiveFailures - 1 {
+		backoff *= 2
+		if backoff >= maxRetryBackoff {
+			return maxRetryBackoff
+		}
+	}
+	return backoff
+}
+
+// maxLoggedLineLen limits how much of an unparseable output line is included in errors
+const maxLoggedLineLen = 200
+
 // collect executes the command, parses output with the assigned parser function
-func (c *gpuCollector) collect() error {
+// and reports whether any valid data was found. Blank lines are ignored. Lines the parser
+// rejects are skipped, and the first one is logged at WARN if valid data came before it or
+// more output after it. If the command printed output but none of it was valid, collect
+// returns errNoValidData with the first rejected line.
+func (c *gpuCollector) collect() (hasValidData bool, err error) {
 	cmd := exec.Command(c.name, c.cmdArgs...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return err
+		return false, err
 	}
 	if err := cmd.Start(); err != nil {
-		return err
+		return false, err
 	}
 
 	scanner := bufio.NewScanner(stdout)
@@ -167,17 +204,59 @@ func (c *gpuCollector) collect() error {
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
+	var (
+		invalidLine       string // first line of this run the parser rejected
+		hasInvalidLine    bool
+		warnedInvalidLine bool
+	)
+	// warnInvalidLine logs the run's first rejected line at WARN, once per run. It is only
+	// called once the run is more than a tool that printed an error and exited, which start()
+	// reports when the run ends: valid data came before the rejected line, or more output
+	// followed it. With -l the tool may never exit, so this is how a stream that stops
+	// producing valid data mid-run shows up above debug level.
+	warnInvalidLine := func() {
+		if hasInvalidLine && !warnedInvalidLine {
+			warnedInvalidLine = true
+			slog.Warn(c.name+" skipping unparseable output", "line", invalidLine)
+		}
+	}
 	for scanner.Scan() {
-		hasValidData := c.parse(scanner.Bytes())
-		if !hasValidData {
-			return errNoValidData
+		if len(bytes.TrimSpace(scanner.Bytes())) == 0 {
+			// a separator, not output to parse or report; nvidia-smi -l has been seen
+			// printing these between samples (#1803)
+			continue
+		}
+		warnInvalidLine() // output kept coming after a rejected line
+		if c.parse(scanner.Bytes()) {
+			hasValidData = true
+			continue
+		}
+		if hasInvalidLine {
+			slog.Debug(c.name+" skipping unparseable output", "line", scanner.Text())
+			continue
+		}
+		hasInvalidLine = true
+		invalidLine = scanner.Text()
+		if len(invalidLine) > maxLoggedLineLen {
+			invalidLine = invalidLine[:maxLoggedLineLen] + "..."
+		}
+		if hasValidData {
+			warnInvalidLine() // valid data came before it
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("scanner error: %w", err)
+		// we stopped reading, so the command may never exit on its own
+		_ = cmd.Process.Kill()
+		_ = cmd.Wait()
+		return hasValidData, fmt.Errorf("scanner error: %w", err)
 	}
-	return cmd.Wait()
+	// always wait so the process is reaped, even if its output was unusable
+	waitErr := cmd.Wait()
+	if !hasValidData && hasInvalidLine {
+		return false, fmt.Errorf("%w: %q", errNoValidData, invalidLine)
+	}
+	return hasValidData, waitErr
 }
 
 // getJetsonParser returns a function to parse the output of tegrastats and update the GPUData map
@@ -355,12 +434,16 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	// If no new data arrived
 	if deltaCount == 0 {
-		// If GPU appears suspended (instantaneous values are 0), return zero values
-		// Otherwise return last known average for temporary collection gaps
-		if gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
+		// Only discrete GPUs report temp/memory, so treat all-zero as suspended (return zeros).
+		// Engine-based (Intel) GPUs don't, so carry the last average forward across sample gaps.
+		if gpu.Engines == nil && gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
 			return system.GPUData{Name: gpu.Name}
 		}
-		return gm.lastAvgData[id] // zero value if not found
+		lastAvg := gm.lastAvgData[id] // zero value if not found
+		if lastAvg.Name == "" {
+			lastAvg.Name = gpu.Name
+		}
+		return lastAvg
 	}
 
 	// Calculate new average
@@ -369,12 +452,14 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	gpuAvg.Power = utils.TwoDecimals(deltaPower / float64(deltaCount))
 
+	gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
+
 	if gpu.Engines != nil {
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
 		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
-		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
-		gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
+		// Usage is the busiest of overall utilization and any engine (e.g. nvtop media engines).
+		gpuAvg.Usage = max(utils.TwoDecimals(deltaUsage/float64(deltaCount)), gm.calculateEngineUsage(&gpuAvg, gpu, lastSnapshot, deltaCount))
 	} else {
 		gpuAvg.Usage = utils.TwoDecimals(deltaUsage / float64(deltaCount))
 	}
@@ -401,8 +486,8 @@ func (gm *GPUManager) calculateDeltas(gpu *system.GPUData, lastSnapshot *gpuSnap
 	return gpu.Usage, gpu.Power, gpu.PowerPkg
 }
 
-// calculateIntelGPUUsage computes Intel GPU usage from engine metrics and returns max engine usage
-func (gm *GPUManager) calculateIntelGPUUsage(gpuAvg, gpu *system.GPUData, lastSnapshot *gpuSnapshot, deltaCount uint32) float64 {
+// calculateEngineUsage averages per-engine metrics into gpuAvg and returns the max engine usage
+func (gm *GPUManager) calculateEngineUsage(gpuAvg, gpu *system.GPUData, lastSnapshot *gpuSnapshot, deltaCount uint32) float64 {
 	maxEngineUsage := 0.0
 	for name, engine := range gpu.Engines {
 		var deltaEngine float64
@@ -443,7 +528,9 @@ func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uin
 // It only reports capability presence and does not apply policy decisions.
 func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 	caps := gpuCapabilities{
-		hasAmdSysfs: gm.hasAmdSysfs(),
+		hasAmdSysfs:   gm.hasAmdSysfs(),
+		hasXe:         gm.hasXe(),
+		hasIntelSysfs: gm.hasIntelSysfs(),
 	}
 	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
 		caps.hasNvidiaSmi = true
@@ -472,7 +559,7 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 }
 
 func hasAnyGpuCollector(caps gpuCapabilities) bool {
-	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasNvtop || caps.hasMacmon || caps.hasPowermetrics
+	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasIntelSysfs || caps.hasNvtop || caps.hasMacmon || caps.hasPowermetrics
 }
 
 func (gm *GPUManager) startIntelCollector() {
@@ -526,7 +613,7 @@ func (gm *GPUManager) startRocmSmiCollector(pollInterval time.Duration) {
 	go func() {
 		failures := 0
 		for {
-			if err := collector.collect(); err != nil {
+			if _, err := collector.collect(); err != nil {
 				failures++
 				if failures > maxFailureRetries {
 					break
@@ -561,6 +648,13 @@ func (gm *GPUManager) collectorDefinitions(caps gpuCapabilities) map[collectorSo
 			start: func(_ func()) bool {
 				gm.startIntelCollector()
 				return true
+			},
+		},
+		collectorSourceIntelSysfs: {
+			group:     collectorGroupIntel,
+			available: caps.hasIntelSysfs,
+			start: func(_ func()) bool {
+				return gm.startIntelSysfsCollector()
 			},
 		},
 		collectorSourceAmdSysfs: {
@@ -705,8 +799,11 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 		priorities = append(priorities, collectorSourceAmdSysfs)
 	}
 
-	if caps.hasIntelGpuTop {
+	if caps.hasIntelGpuTop && !caps.hasXe {
 		priorities = append(priorities, collectorSourceIntelGpuTop)
+	}
+	if caps.hasIntelSysfs {
+		priorities = append(priorities, collectorSourceIntelSysfs)
 	}
 
 	// Apple collectors are currently opt-in only for testing.
@@ -727,9 +824,36 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 	return priorities
 }
 
+// gpuHwmonChips are hwmon chip names belonging to GPUs. Sensor reads on some
+// of these drivers (notably Intel Xe, where each read is a runtime PM resume)
+// wake the card, so SKIP_GPU must avoid touching them, not just hide them.
+var gpuHwmonChips = []string{"xe", "i915", "amdgpu", "radeon", "nvidia", "nouveau"}
+
+func isGpuChipName(name string) bool {
+	name = strings.ToLower(strings.TrimSpace(name))
+	for _, chip := range gpuHwmonChips {
+		if name == chip {
+			return true
+		}
+	}
+	return false
+}
+
+// SensorKeys are "<chip>" or "<chip>_<label>".
+func isGpuSensorKey(key string) bool {
+	key = strings.ToLower(strings.TrimSpace(key))
+	for _, chip := range gpuHwmonChips {
+		if key == chip || strings.HasPrefix(key, chip+"_") {
+			return true
+		}
+	}
+	return false
+}
+
 // NewGPUManager creates and initializes a new GPUManager
 func NewGPUManager() (*GPUManager, error) {
 	if skipGPU, _ := utils.GetEnv("SKIP_GPU"); skipGPU == "true" {
+		slog.Info("SKIP_GPU enabled, skipping GPU monitoring (collectors, temperatures, and fans)")
 		return nil, nil
 	}
 	var gm GPUManager

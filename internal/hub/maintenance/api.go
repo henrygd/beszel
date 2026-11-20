@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 )
 
 // APIHandler handles maintenance window API requests
@@ -35,15 +35,15 @@ func (h *APIHandler) RegisterRoutes(se *core.ServeEvent) {
 
 // MaintenanceWindowRequest for create/update
 type MaintenanceWindowRequest struct {
-	Name              string     `json:"name"`
-	Description       string     `json:"description"`
-	MonitorID         string     `json:"monitor_id"`
-	DomainID          string     `json:"domain_id"`
-	StartTime         time.Time  `json:"start_time"`
-	EndTime           time.Time  `json:"end_time"`
-	Recurring         bool       `json:"recurring"`
-	RecurrencePattern string     `json:"recurrence_pattern"`
-	SuppressAlerts    bool       `json:"suppress_alerts"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	MonitorID         string    `json:"monitor_id"`
+	DomainID          string    `json:"domain_id"`
+	StartTime         time.Time `json:"start_time"`
+	EndTime           time.Time `json:"end_time"`
+	Recurring         bool      `json:"recurring"`
+	RecurrencePattern string    `json:"recurrence_pattern"`
+	SuppressAlerts    bool      `json:"suppress_alerts"`
 }
 
 // listMaintenanceWindows lists all maintenance windows for the authenticated user

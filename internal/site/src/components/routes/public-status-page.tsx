@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getPublicStatusPage, type PublicStatusPage, type PublicMonitorStatus, type PublicIncident } from "@/lib/statuspages"
+import { getPublicStatusPage, type PublicStatusPage, type PublicMonitorStatus, } from "@/lib/statuspages"
 import { Activity, CheckCircle2, XCircle, AlertTriangle, Clock, Shield, RefreshCw } from "lucide-react"
 
 // Status configurations with colors matching github-statuses design
@@ -98,7 +98,18 @@ function generateUptimeBars(uptimePercent: number, seed: string): { day: number;
 function MonitorCard({ monitor }: { monitor: PublicMonitorStatus }) {
 	const config = getStatusConfig(monitor.status)
 	const Icon = config.icon
-	const uptimeBars = useMemo(() => generateUptimeBars(monitor.uptime_30d || 99, monitor.id), [monitor.uptime_30d, monitor.id])
+	const uptimeBars = useMemo(() => {
+		if (monitor.heartbeats && monitor.heartbeats.length > 0) {
+			return monitor.heartbeats.map((hb) => ({
+				status: hb.status === "up" ? ("operational" as const) : ("major" as const),
+				title: `${new Date(hb.time).toLocaleString()}: ${hb.status}${hb.msg ? ` — ${hb.msg}` : ""}`,
+			}))
+		}
+		return generateUptimeBars(monitor.uptime_30d || 99, monitor.id).map((b) => ({
+			status: b.status,
+			title: `Day ${b.day + 1}: ${b.status}`,
+		}))
+	}, [monitor.heartbeats, monitor.uptime_30d, monitor.id])
 
 	return (
 		<div className="sp-monitor-card">
@@ -120,7 +131,13 @@ function MonitorCard({ monitor }: { monitor: PublicMonitorStatus }) {
 					</span>
 				</div>
 			</div>
-			
+
+			{monitor.last_error && monitor.status !== "up" && (
+				<div className="sp-monitor-error" style={{ color: config.color, fontSize: "0.85em", margin: "0.5em 0" }}>
+					{monitor.last_error}
+				</div>
+			)}
+
 			<div className="sp-uptime-section">
 				<div className="sp-uptime-header">
 					<span className="sp-uptime-label">30-day uptime</span>
@@ -133,7 +150,7 @@ function MonitorCard({ monitor }: { monitor: PublicMonitorStatus }) {
 						<div
 							key={i}
 							className={`sp-uptime-bar sp-uptime-bar--${bar.status}`}
-							title={`Day ${bar.day + 1}: ${bar.status}`}
+							title={bar.title}
 						/>
 					))}
 				</div>
@@ -286,7 +303,7 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 	// Update document title
 	useEffect(() => {
 		if (data?.title) {
-			document.title = `${data.title} / Status Page`
+			document.title = `${data.title} / Beszel`
 		} else {
 			document.title = "Status Page / Beszel"
 		}
@@ -297,18 +314,10 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 		document.documentElement.setAttribute("data-sp-theme", theme)
 	}, [theme])
 
-	if (isLoading) {
-		return <StatusPageSkeleton />
-	}
-
-	if (error || !data) {
-		return <StatusPageError slug={slug} />
-	}
-
 	// Group monitors by group name
 	const groupedMonitors = useMemo(() => {
 		const groups: Record<string, PublicMonitorStatus[]> = {}
-		data.monitors.forEach((monitor) => {
+		data?.monitors.forEach((monitor) => {
 			const group = monitor.group || "Services"
 			if (!groups[group]) {
 				groups[group] = []
@@ -316,9 +325,7 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 			groups[group].push(monitor)
 		})
 		return groups
-	}, [data.monitors])
-
-	const groupNames = Object.keys(groupedMonitors).sort()
+	}, [data?.monitors])
 
 	// Set favicon if provided
 	useEffect(() => {
@@ -336,6 +343,16 @@ export default function PublicStatusPage({ slug }: { slug: string }) {
 			setTheme(data.theme as 'light' | 'dark')
 		}
 	}, [data?.theme])
+
+	if (isLoading) {
+		return <StatusPageSkeleton />
+	}
+
+	if (error || !data) {
+		return <StatusPageError slug={slug} />
+	}
+
+	const groupNames = Object.keys(groupedMonitors).sort()
 
 	return (
 		<div className="sp-page" data-theme={theme}>

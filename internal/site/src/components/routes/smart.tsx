@@ -1,6 +1,5 @@
 import { useEffect } from "react"
 import SmartTable from "@/components/routes/system/smart-table"
-import { ActiveAlerts } from "@/components/active-alerts"
 import { FooterRepoLink } from "@/components/footer-repo-link"
 
 export default function Smart() {
@@ -10,10 +9,7 @@ export default function Smart() {
 
 	return (
 		<>
-			<div className="grid gap-4">
-				<ActiveAlerts />
-				<SmartTable />
-			</div>
+			<SmartTable />
 			<FooterRepoLink />
 		</>
 	)

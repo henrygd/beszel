@@ -10,6 +10,8 @@ import {
 	LogsIcon,
 	MenuIcon,
 	MonitorIcon,
+	NetworkIcon,
+	PlusIcon,
 	SearchIcon,
 	ServerIcon,
 	SettingsIcon,
@@ -33,7 +35,7 @@ import {
 import { isAdmin, isReadOnlyUser, logOut, pb } from "@/lib/api"
 import { $newVersion } from "@/lib/stores"
 import { cn, runOnce } from "@/lib/utils"
-import { LangToggle } from "./lang-toggle"
+import { AddSystemDialog } from "./add-system"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
 import { $router, basePath, Link, navigate, prependBasePath } from "./router"
@@ -44,6 +46,7 @@ const CommandPalette = lazy(() => import("./command-palette"))
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 export default function Navbar() {
+	const [addSystemDialogOpen, setAddSystemDialogOpen] = useState(false)
 	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 	const updateInfo = useStore($newVersion)
 	const updateAvailable = Boolean(updateInfo?.updateAvailable)
@@ -55,6 +58,7 @@ export default function Navbar() {
 			<Suspense>
 				<CommandPalette open={commandPaletteOpen} setOpen={setCommandPaletteOpen} />
 			</Suspense>
+			<AddSystemDialog open={addSystemDialogOpen} setOpen={setAddSystemDialogOpen} />
 
 			<Link
 				href={basePath}
@@ -116,6 +120,13 @@ export default function Navbar() {
 								<Trans>Monitoring</Trans>
 							</DropdownMenuItem>
 							<DropdownMenuItem
+								onClick={() => navigate(getPagePath($router, "monitors"))}
+								className="flex items-center"
+							>
+								<NetworkIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+								<Trans>Network Monitors</Trans>
+							</DropdownMenuItem>
+							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "settings", { name: "general" }))}
 								className="flex items-center"
 							>
@@ -139,6 +150,17 @@ export default function Navbar() {
 									</DropdownMenuSubTrigger>
 									<DropdownMenuSubContent>{AdminLinks}</DropdownMenuSubContent>
 								</DropdownMenuSub>
+							)}
+							{!isReadOnlyUser() && (
+								<DropdownMenuItem
+									className="flex items-center"
+									onSelect={() => {
+										setAddSystemDialogOpen(true)
+									}}
+								>
+									<PlusIcon className="h-4 w-4 me-2.5" />
+									<Trans>Add System</Trans>
+								</DropdownMenuItem>
 							)}
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
@@ -200,7 +222,21 @@ export default function Navbar() {
 						<Trans>Monitoring</Trans>
 					</TooltipContent>
 				</Tooltip>
-				<LangToggle />
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "monitors")}
+							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="Network Monitors"
+							onMouseEnter={() => import("@/components/routes/monitors")}
+						>
+							<NetworkIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Network Monitors</Trans>
+					</TooltipContent>
+				</Tooltip>
 				<ModeToggle />
 				{updateAvailable && (
 					<Tooltip>
@@ -255,6 +291,12 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
+				{!isReadOnlyUser() && (
+					<Button variant="outline" className="flex gap-1 ms-2" onClick={() => setAddSystemDialogOpen(true)}>
+						<PlusIcon className="h-4 w-4 -ms-1" />
+						<Trans>Add System</Trans>
+					</Button>
+				)}
 			</div>
 		</div>
 	)
@@ -270,7 +312,7 @@ function AdminDropdownGroup() {
 	return (
 		<DropdownMenuGroup>
 			<DropdownMenuItem asChild>
-				<a href={prependBasePath("/_/")} target="_blank">
+				<a href={prependBasePath("/_/#/collections?collection=users")} target="_blank">
 					<UsersIcon className="me-2.5 h-4 w-4" />
 					<span>
 						<Trans>Users</Trans>

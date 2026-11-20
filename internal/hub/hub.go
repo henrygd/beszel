@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/email"
 	"github.com/henrygd/beszel/internal/hub/badges"
 	"github.com/henrygd/beszel/internal/hub/bulk"
 	"github.com/henrygd/beszel/internal/hub/config"
@@ -21,6 +22,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/incidents"
 	"github.com/henrygd/beszel/internal/hub/maintenance"
 	"github.com/henrygd/beszel/internal/hub/monitors"
+	"github.com/henrygd/beszel/internal/hub/notifications"
 	"github.com/henrygd/beszel/internal/hub/settings"
 	"github.com/henrygd/beszel/internal/hub/statuspages"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -28,8 +30,8 @@ import (
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -150,6 +152,10 @@ func (h *Hub) StartHub() error {
 			if err := h.sm.Initialize(); err != nil {
 				return err
 			}
+			// start agent-only server if configured (after system manager is ready)
+			if err := h.startAgentServer(e); err != nil {
+				return err
+			}
 			// start heartbeat if configured
 			if h.hb != nil {
 				go h.hb.Start(h.hbStop)
@@ -183,13 +189,19 @@ func (h *Hub) StartHub() error {
 		h.settingsAPI.RegisterRoutes(e)
 		// register export API routes
 		h.exportAPI.RegisterRoutes(e)
+		// register notification API routes
+		notifications.RegisterRoutes(h.App, e)
 		return e.Next()
 	})
 
 	// NOTE: consider moving user initialization into users package
 	// handle default values for user / user_settings creation
+	h.App.OnRecordAuthWithOAuth2Request("users").BindFunc(h.um.InitializeOAuthUserRole)
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
+
+	bindNetworkMonitorsEvents(h)
+	email.BindAuthEmails(h.App)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
@@ -204,6 +216,8 @@ func (h *Hub) initialize(app core.App) error {
 	settings := app.Settings()
 	// batch requests (for alerts)
 	settings.Batch.Enabled = true
+	settings.Batch.MaxRequests = 100
+	settings.Batch.MaxBodySize = 1 << 20 // 1 MiB
 	// set URL if APP_URL env is set
 	if appURL, isSet := utils.GetEnv("APP_URL"); isSet {
 		h.appURL = appURL

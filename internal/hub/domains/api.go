@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/domain"
 	"github.com/henrygd/beszel/internal/hub/domains/whois"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // APIHandler handles domain API requests
@@ -191,7 +191,7 @@ func (h *APIHandler) createDomain(e *core.RequestEvent) error {
 			h.applyLookupData(record, domainData)
 			// Calculate status based on lookup results
 			status := domain.DomainStatusUnknown
-			if domainData.ExpiryDate != nil {
+			if domainData.ExpiryDate != nil && !domainData.ExpiryDate.IsZero() {
 				lookupHadExpiry = true
 				daysUntil := int(time.Until(*domainData.ExpiryDate).Hours() / 24)
 				if daysUntil < 0 {
@@ -381,12 +381,7 @@ func (h *APIHandler) refreshDomain(e *core.RequestEvent) error {
 		}
 	}
 
-	updatedRecord, err := h.app.FindRecordById("domains", id)
-	if err != nil {
-		return e.InternalServerError("failed to fetch refreshed domain", err)
-	}
-
-	return e.JSON(http.StatusOK, h.recordToResponse(updatedRecord))
+	return e.JSON(http.StatusAccepted, h.recordToResponse(record))
 }
 
 // getDomainHistory gets the change history for a domain
@@ -682,13 +677,13 @@ func (h *APIHandler) recordToResponse(record *core.Record) map[string]interface{
 }
 
 func (h *APIHandler) applyLookupData(record *core.Record, domainData *domain.Domain) {
-	if domainData.ExpiryDate != nil {
+	if domainData.ExpiryDate != nil && !domainData.ExpiryDate.IsZero() {
 		record.Set("expiry_date", *domainData.ExpiryDate)
 	}
-	if domainData.CreationDate != nil {
+	if domainData.CreationDate != nil && !domainData.CreationDate.IsZero() {
 		record.Set("creation_date", *domainData.CreationDate)
 	}
-	if domainData.UpdatedDate != nil {
+	if domainData.UpdatedDate != nil && !domainData.UpdatedDate.IsZero() {
 		record.Set("updated_date", *domainData.UpdatedDate)
 	}
 	record.Set("registrar_name", domainData.RegistrarName)

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 )
 
 // APIHandler handles badge generation requests
@@ -36,15 +36,15 @@ func (h *APIHandler) RegisterRoutes(se *core.ServeEvent) {
 
 // BadgeRequest for creating a badge
 type BadgeRequest struct {
-	Name        string `json:"name"`
-	MonitorID   string `json:"monitor_id,omitempty"`
-	DomainID    string `json:"domain_id,omitempty"`
-	SystemID    string `json:"system_id,omitempty"`
+	Name         string `json:"name"`
+	MonitorID    string `json:"monitor_id,omitempty"`
+	DomainID     string `json:"domain_id,omitempty"`
+	SystemID     string `json:"system_id,omitempty"`
 	StatusPageID string `json:"status_page_id,omitempty"`
-	Type        string `json:"type"` // uptime, status, response, cert
-	Label       string `json:"label,omitempty"`
-	Color       string `json:"color,omitempty"`
-	Style       string `json:"style,omitempty"` // flat, flat-square, plastic, for-the-badge
+	Type         string `json:"type"` // uptime, status, response, cert
+	Label        string `json:"label,omitempty"`
+	Color        string `json:"color,omitempty"`
+	Style        string `json:"style,omitempty"` // flat, flat-square, plastic, for-the-badge
 }
 
 // listBadges lists all badges for the authenticated user
@@ -122,12 +122,12 @@ func (h *APIHandler) createBadge(e *core.RequestEvent) error {
 	badgeURL := fmt.Sprintf("/badge/%s/%s.svg", req.Type, record.Id)
 
 	return e.JSON(http.StatusCreated, map[string]interface{}{
-		"id":       record.Id,
-		"name":     req.Name,
-		"type":     req.Type,
-		"url":      badgeURL,
+		"id":         record.Id,
+		"name":       req.Name,
+		"type":       req.Type,
+		"url":        badgeURL,
 		"embed_code": fmt.Sprintf(`<img src="%s" alt="status">`, badgeURL),
-		"markdown": fmt.Sprintf(`![Status](%s)`, badgeURL),
+		"markdown":   fmt.Sprintf(`![Status](%s)`, badgeURL),
 	})
 }
 
@@ -281,8 +281,8 @@ func (h *APIHandler) generateBadge(e *core.RequestEvent) error {
 
 // generateSVGBadge creates an SVG badge
 func generateSVGBadge(label, message, color, style string) string {
-	labelWidth := len(label) * 6 + 10
-	messageWidth := len(message) * 6 + 10
+	labelWidth := len(label)*6 + 10
+	messageWidth := len(message)*6 + 10
 	totalWidth := labelWidth + messageWidth
 
 	// Colors

@@ -59,7 +59,7 @@ func (c *PortChecker) Check(ctx context.Context, m *monitor.Monitor) *monitor.Ch
 	if port == 0 {
 		port = c.DefaultPort
 	}
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr, time.Duration(m.Timeout)*time.Second)
 	if err != nil {
@@ -82,7 +82,7 @@ func (c *MySQLChecker) Check(ctx context.Context, m *monitor.Monitor) *monitor.C
 	if port == 0 {
 		port = 3306
 	}
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr, time.Duration(m.Timeout)*time.Second)
 	if err != nil {
@@ -124,7 +124,7 @@ func (c *SMTPChecker) Check(ctx context.Context, m *monitor.Monitor) *monitor.Ch
 	if port == 0 {
 		port = 587
 	}
-	addr := fmt.Sprintf("%s:%d", host, port)
+	addr := net.JoinHostPort(host, strconv.Itoa(port))
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr, time.Duration(m.Timeout)*time.Second)
 	if err != nil {

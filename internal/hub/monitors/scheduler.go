@@ -8,12 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/store"
 	"github.com/henrygd/beszel/internal/entities/incident"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/hub/monitors/checks"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/store"
+	"github.com/henrygd/beszel/internal/hub/notifications"
 )
 
 // AlertCallback is a function that sends alerts
@@ -30,6 +31,7 @@ type Scheduler struct {
 	mu            sync.RWMutex
 	running       bool
 	alertCallback AlertCallback
+	dispatcher    *notifications.Dispatcher
 }
 
 // ScheduledMonitor wraps a monitor with scheduling info
@@ -42,10 +44,11 @@ type ScheduledMonitor struct {
 // NewScheduler creates a new monitor scheduler
 func NewScheduler(app core.App) *Scheduler {
 	return &Scheduler{
-		app:      app,
-		registry: checks.NewCheckerRegistry(),
-		monitors: store.New(map[string]*ScheduledMonitor{}),
-		stopChan: make(chan struct{}),
+		app:        app,
+		registry:   checks.NewCheckerRegistry(),
+		monitors:   store.New(map[string]*ScheduledMonitor{}),
+		dispatcher: notifications.NewDispatcher(app),
+		stopChan:   make(chan struct{}),
 	}
 }
 
@@ -246,6 +249,20 @@ func (s *Scheduler) saveResult(m *monitor.Monitor, result *monitor.CheckResult) 
 		s.handleStatusChange(m, record, prevStatus, newStatus, result)
 	}
 
+	// Per-check performance thresholds (response time, uptime drop)
+	if s.dispatcher != nil {
+		hb := &monitor.Heartbeat{
+			MonitorID:  m.ID,
+			Status:     newStatus,
+			Ping:       result.Ping,
+			Msg:        result.Msg,
+			CertExpiry: result.CertExpiry,
+			CertValid:  result.CertValid,
+			Time:       now,
+		}
+		s.dispatcher.EvaluateThresholds(m, hb, stats["uptime_24h"])
+	}
+
 	return nil
 }
 
@@ -272,6 +289,19 @@ func (s *Scheduler) handleStatusChange(m *monitor.Monitor, record *core.Record, 
 	}
 
 	s.createIncident(m, prevStatus, newStatus, result, isRecovery)
+
+	// Notify per-monitor providers (Discord, Slack, Telegram, email, etc.)
+	if s.dispatcher != nil {
+		s.dispatcher.SendNotification(m, &monitor.Heartbeat{
+			MonitorID:  m.ID,
+			Status:     newStatus,
+			Ping:       result.Ping,
+			Msg:        result.Msg,
+			CertExpiry: result.CertExpiry,
+			CertValid:  result.CertValid,
+			Time:       time.Now(),
+		}, isRecovery)
+	}
 
 	// Send notification via AlertManager if available
 	if s.alertCallback != nil {
@@ -579,7 +609,19 @@ func recordToMonitor(record *core.Record) *monitor.Monitor {
 		Description:            record.GetString("description"),
 		CertExpiryNotification: record.GetBool("cert_expiry_notification"),
 		CertExpiryDays:         record.GetInt("cert_expiry_days"),
-		IgnoreTLSError:         record.GetBool("ignore_tls_error"),
+		NotifyOnDown:           record.GetBool("notify_on_down"),
+		NotifyOnRecover:        record.GetBool("notify_on_recover"),
+		NotifyOnResponseTime:   record.GetBool("notify_on_response_time"),
+		ResponseTimeThreshold:  record.GetInt("response_time_threshold"),
+		NotifyOnUptimeDrop:     record.GetBool("notify_on_uptime_drop"),
+		UptimeThreshold:        record.GetFloat("uptime_threshold"),
+		NotifyRepeatedFailures: record.GetBool("notify_repeated_failures"),
+		ConsecutiveFailures:    record.GetInt("consecutive_failures"),
+		QuietHoursEnabled:      record.GetBool("quiet_hours_enabled"),
+		QuietHoursStart:        record.GetString("quiet_hours_start"),
+		QuietHoursEnd:          record.GetString("quiet_hours_end"),
+
+		IgnoreTLSError: record.GetBool("ignore_tls_error"),
 	}
 
 	// Parse JSON fields

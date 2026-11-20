@@ -1,3 +1,4 @@
+import { i18n } from "@lingui/core"
 import { plural, t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
 import { listenKeys } from "nanostores"
@@ -72,7 +73,7 @@ export const formatShortDate = (timestamp: string) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
 
-export const hourWithSeconds = (timestamp: string) => {
+export const hourWithSeconds = (timestamp: string | number) => {
 	return hourWithSecondsFormatter.format(new Date(timestamp))
 }
 
@@ -129,7 +130,7 @@ export const chartTimeData: ChartTimeData = {
 	"1m": {
 		type: "1m",
 		expectedInterval: 2000, // allow a bit of latency for one second updates (#1247)
-		label: () => t`1 minute`,
+		label: () => formatTimeUnit(1, "minute"),
 		format: (timestamp: string) => hourWithSeconds(timestamp),
 		ticks: 3,
 		getOffset: (endTime: Date) => timeMinute.offset(endTime, -1),
@@ -138,7 +139,7 @@ export const chartTimeData: ChartTimeData = {
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
-		label: () => t`1 hour`,
+		label: () => formatTimeUnit(1, "hour"),
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
@@ -146,7 +147,7 @@ export const chartTimeData: ChartTimeData = {
 	"12h": {
 		type: "10m",
 		expectedInterval: 60_000 * 10,
-		label: () => t`12 hours`,
+		label: () => formatTimeUnit(12, "hour"),
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
@@ -154,14 +155,14 @@ export const chartTimeData: ChartTimeData = {
 	"24h": {
 		type: "20m",
 		expectedInterval: 60_000 * 20,
-		label: () => t`24 hours`,
+		label: () => formatTimeUnit(24, "hour"),
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	"1w": {
 		type: "120m",
 		expectedInterval: 60_000 * 120,
-		label: () => t`1 week`,
+		label: () => formatTimeUnit(1, "week"),
 		ticks: 7,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
@@ -169,7 +170,7 @@ export const chartTimeData: ChartTimeData = {
 	"30d": {
 		type: "480m",
 		expectedInterval: 60_000 * 480,
-		label: () => t`30 days`,
+		label: () => formatTimeUnit(30, "day"),
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
@@ -181,21 +182,66 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
-const decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
+/** Locale used for number formatting: the app's selected language, not the browser's */
+function numberLocale() {
+	return i18n.locale || undefined
+}
+
+/** Format number using the app's selected language (e.g. decimal and grouping separators) */
+export function formatNumber(num: number) {
+	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
+}
+
+/** Format an amount of a time unit in the app's selected language (e.g. "7 days", "7 Tage") */
+export function formatTimeUnit(num: number, unit: "minute" | "hour" | "day" | "week" | "month" | "year") {
+	return new Intl.NumberFormat(numberLocale(), {
+		style: "unit",
+		unit,
+		unitDisplay: "long",
+		numberingSystem: "latn",
+	}).format(num)
+}
+
+const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()
 /** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
 	if (digits === 0) {
 		return Math.ceil(num).toString()
 	}
-	let formatter = decimalFormatters.get(digits)
+	const locale = numberLocale()
+	const key = `${locale}:${digits}`
+	let formatter = decimalFormatters.get(key)
 	if (!formatter) {
-		formatter = new Intl.NumberFormat(undefined, {
+		formatter = new Intl.NumberFormat(locale, {
 			minimumFractionDigits: digits,
 			maximumFractionDigits: digits,
+			numberingSystem: "latn",
 		})
-		decimalFormatters.set(digits, formatter)
+		decimalFormatters.set(key, formatter)
 	}
 	return formatter.format(num)
+}
+
+export function formatMicroseconds(microseconds: number, fixedDigits = true): string {
+	if (!Number.isFinite(microseconds)) {
+		return "-"
+	}
+
+	if (microseconds < 1000) {
+		return `${microseconds}μs`
+	}
+
+	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
+
+	// Thresholds are where the printed value rounds up to the next unit or
+	// digit count (999.95ms -> 1.00s, 9.995ms -> 10.0ms, 9.995s -> 10.0s)
+	if (microseconds < 999_950) {
+		const digits = microseconds >= 9_995 ? 1 : 2
+		return `${digitFormatter(microseconds / 1000, digits)}ms`
+	}
+
+	const digits = microseconds >= 9_995_000 ? 1 : 2
+	return `${digitFormatter(microseconds / 1_000_000, digits)}s`
 }
 
 /** Get value from local or session storage */
@@ -207,14 +253,14 @@ function getStorageValue(key: string, defaultValue: unknown, storageInterface: S
 /** Hook to sync value in local or session storage */
 export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterface: Storage = localStorage) {
 	key = `besz-${key}`
-	const [value, setValue] = useState(() => {
+	const [value, setValue] = useState<T>(() => {
 		return getStorageValue(key, defaultValue, storageInterface)
 	})
 	useEffect(() => {
 		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
 
-	return [value, setValue]
+	return [value, setValue] as const
 }
 
 /** Format temperature to user's preferred unit */
@@ -365,12 +411,12 @@ export function formatDuration(
 		.join(" ")
 }
 
-/** Parse semver string into major, minor, and patch numbers 
+/** Parse semver string into major, minor, and patch numbers
  * @example
  * const semVer = "1.2.3"
  * const { major, minor, patch } = parseSemVer(semVer)
  * console.log(major, minor, patch) // 1, 2, 3
-*/
+ */
 export const parseSemVer = (semVer = ""): SemVer => {
 	// if (semVer.startsWith("v")) {
 	// 	semVer = semVer.slice(1)
@@ -393,12 +439,37 @@ export function compareSemVer(a: SemVer, b: SemVer) {
 	return a.patch - b.patch
 }
 
+const MIN_NETWORK_MONITOR_AGENT_VERSION = parseSemVer("0.20.0")
+
+export function supportsNetworkMonitors(system: Pick<SystemRecord, "info">) {
+	return compareSemVer(parseSemVer(system.info?.v), MIN_NETWORK_MONITOR_AGENT_VERSION) >= 0
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
 	let timeout: ReturnType<typeof setTimeout>
 	return (...args: Parameters<T>) => {
 		clearTimeout(timeout)
 		timeout = setTimeout(() => func(...args), wait)
+	}
+}
+
+/** Debounce separately per key, so a pending call for one key is never replaced by a call for another */
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
+export function debounceByKey<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number
+): (key: string, ...args: Parameters<T>) => void {
+	const timeouts = new Map<string, ReturnType<typeof setTimeout>>()
+	return (key: string, ...args: Parameters<T>) => {
+		clearTimeout(timeouts.get(key))
+		timeouts.set(
+			key,
+			setTimeout(() => {
+				timeouts.delete(key)
+				func(...args)
+			}, wait)
+		)
 	}
 }
 
@@ -422,37 +493,32 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	}) as T
 }
 
-/** Get the visual width of a string, accounting for full-width characters */
-export function getVisualStringWidth(str: string): number {
-	let width = 0
-	for (const char of str) {
-		const code = char.codePointAt(0) || 0
-		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
-		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
-			width += 1.8
-			continue
-		}
-		// Count CJK and other full-width characters as 2 units, others as 1
-		// Arabic and Cyrillic are counted as 1
-		const isFullWidth =
-			(code >= 0x2e80 && code <= 0x9fff) || // CJK Radicals, Symbols, and Ideographs
-			(code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
-			(code >= 0xfe30 && code <= 0xfe6f) || // CJK Compatibility Forms
-			(code >= 0xff00 && code <= 0xff60) || // Fullwidth Forms
-			(code >= 0xffe0 && code <= 0xffe6) || // Fullwidth Symbols
-			code > 0xffff // Emojis and other supplementary plane characters
-		width += isFullWidth ? 2 : 1
-	}
-	return width
+/** Parses a filter string into OR'd groups of AND'd terms: "a b, c" -> [["a","b"], ["c"]] */
+export function parseFilterGroups(value: string): string[][] {
+	return value
+		.toLowerCase()
+		.split(",")
+		.map((group) => group.trim().split(" ").filter((term) => term.length > 0))
+		.filter((terms) => terms.length > 0)
+}
+
+/** True if every term in at least one OR'd group is found in searchString. */
+export function matchesFilterGroups(searchString: string, groups: string[][]): boolean {
+	return groups.some((terms) => terms.every((term) => searchString.includes(term)))
 }
 
 /** Format seconds to hours, minutes, or seconds */
 export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
 	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))
-	const countString = count.toLocaleString()
+	const countString = formatNumber(count)
 	switch (unit) {
 		case "minute":
-			return plural(count, { one: `${countString} minute`, few: `${countString} minutes`, many: `${countString} minutes`, other: `${countString} minutes` })
+			return plural(count, {
+				one: `${countString} minute`,
+				few: `${countString} minutes`,
+				many: `${countString} minutes`,
+				other: `${countString} minutes`,
+			})
 		case "hour":
 			return plural(count, { one: `${countString} hour`, other: `${countString} hours` })
 		case "day":

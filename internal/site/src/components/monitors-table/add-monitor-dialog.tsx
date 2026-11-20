@@ -1,5 +1,5 @@
 import { Trans, useLingui } from "@lingui/react/macro"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +33,7 @@ import {
 	type CreateMonitorRequest,
 	type UpdateMonitorRequest,
 } from "@/lib/monitors"
+import { getNotifications, getMonitorNotifications, setMonitorNotifications } from "@/lib/notifications"
 
 const MONITOR_TYPES: { value: MonitorType; label: string; group: string }[] = [
 	{ value: "http", label: "HTTP", group: "General" },
@@ -59,6 +60,21 @@ export function AddMonitorDialog({ open, onOpenChange, monitor, isEdit = false }
 	const { t } = useLingui()
 	const { toast } = useToast()
 	const queryClient = useQueryClient()
+	const [selectedNotificationIds, setSelectedNotificationIds] = useState<string[]>([])
+	const { data: notificationProviders } = useQuery({
+		queryKey: ["notifications"],
+		queryFn: getNotifications,
+	})
+	const { data: linkedNotificationIds } = useQuery({
+		queryKey: ["monitor-notifications", monitor?.id],
+		queryFn: () => getMonitorNotifications(monitor!.id),
+		enabled: Boolean(monitor?.id && open),
+	})
+	useEffect(() => {
+		if (linkedNotificationIds) {
+			setSelectedNotificationIds(linkedNotificationIds)
+		}
+	}, [linkedNotificationIds])
 	const [activeTab, setActiveTab] = useState("basic")
 
 	// Form state
@@ -185,9 +201,13 @@ export function AddMonitorDialog({ open, onOpenChange, monitor, isEdit = false }
 		}
 	}, [open, isEdit, monitor])
 
+	const linkNotifications = (monitorId: string) => {
+		setMonitorNotifications(monitorId, selectedNotificationIds).catch(() => {})
+	}
 	const createMutation = useMutation({
 		mutationFn: createMonitor,
-		onSuccess: () => {
+		onSuccess: (created) => {
+			if (created?.id) linkNotifications(created.id)
 			toast({ title: t`Monitor created successfully` })
 			queryClient.invalidateQueries({ queryKey: ["monitors"] })
 			onOpenChange(false)
@@ -203,7 +223,8 @@ export function AddMonitorDialog({ open, onOpenChange, monitor, isEdit = false }
 
 	const updateMutation = useMutation({
 		mutationFn: ({ id, data }: { id: string; data: UpdateMonitorRequest }) => updateMonitor(id, data),
-		onSuccess: () => {
+		onSuccess: (_res, vars) => {
+			linkNotifications(vars.id)
 			toast({ title: t`Monitor updated successfully` })
 			queryClient.invalidateQueries({ queryKey: ["monitors"] })
 			onOpenChange(false)
@@ -908,6 +929,34 @@ export function AddMonitorDialog({ open, onOpenChange, monitor, isEdit = false }
 											/>
 										</div>
 									)}
+								</div>
+							)}
+
+							{/* Provider Selection */}
+							{notificationProviders && notificationProviders.length > 0 && (
+								<div className="space-y-3 border rounded-lg p-4">
+									<h4 className="font-medium text-sm">Notification Providers</h4>
+									<p className="text-xs text-muted-foreground">
+										Choose providers for this monitor, or leave empty to use your default providers.
+									</p>
+									<div className="space-y-2">
+										{notificationProviders.map((n) => (
+											<label key={n.id} className="flex items-center gap-2 text-sm cursor-pointer">
+												<input
+													type="checkbox"
+													className="h-4 w-4"
+													checked={selectedNotificationIds.includes(n.id)}
+													onChange={(e) =>
+														setSelectedNotificationIds((prev) =>
+															e.target.checked ? [...prev, n.id] : prev.filter((id) => id !== n.id)
+														)
+													}
+												/>
+												{n.name}
+												<span className="text-xs text-muted-foreground">({n.type})</span>
+											</label>
+										))}
+									</div>
 								</div>
 							)}
 

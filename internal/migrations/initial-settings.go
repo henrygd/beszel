@@ -3,8 +3,8 @@ package migrations
 import (
 	"os"
 
-	"github.com/pocketbase/pocketbase/core"
-	m "github.com/pocketbase/pocketbase/migrations"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	m "ganigeorgiev.com/pocketbase/pocketbase/migrations"
 )
 
 const (
@@ -44,13 +44,14 @@ func init() {
 			superUser.SetRandomPassword()
 		}
 
-		// if user details are provided, we create a regular user as well
+		// if user details are provided, we create an admin user as well
 		if didProvideUserDetails {
 			usersCollection, _ := app.FindCollectionByNameOrId("users")
 			user := core.NewRecord(usersCollection)
 			user.SetEmail(email)
 			user.SetPassword(password)
 			user.SetVerified(true)
+			user.Set("role", "admin")
 			err := app.Save(user)
 			if err != nil {
 				return err

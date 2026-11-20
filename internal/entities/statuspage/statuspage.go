@@ -60,15 +60,25 @@ type PublicStatusPage struct {
 
 // PublicMonitorStatus represents a monitor's status for public display
 type PublicMonitorStatus struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	DisplayName string    `json:"display_name"`
-	Group       string    `json:"group"`
-	Status      string    `json:"status"`
-	Uptime24h   float64   `json:"uptime_24h"`
-	Uptime7d    float64   `json:"uptime_7d"`
-	Uptime30d   float64   `json:"uptime_30d"`
-	LastCheck   time.Time `json:"last_check"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	DisplayName string            `json:"display_name"`
+	Group       string            `json:"group"`
+	Status      string            `json:"status"`
+	LastError   string            `json:"last_error,omitempty"`
+	Uptime24h   float64           `json:"uptime_24h"`
+	Uptime7d    float64           `json:"uptime_7d"`
+	Uptime30d   float64           `json:"uptime_30d"`
+	LastCheck   time.Time         `json:"last_check"`
+	Heartbeats  []PublicHeartbeat `json:"heartbeats,omitempty"`
+}
+
+// PublicHeartbeat is a recent check result for status-page bars
+type PublicHeartbeat struct {
+	Status string    `json:"status"`
+	Ping   int       `json:"ping"`
+	Msg    string    `json:"msg,omitempty"`
+	Time   time.Time `json:"time"`
 }
 
 // CreateStatusPageRequest represents a status page creation request

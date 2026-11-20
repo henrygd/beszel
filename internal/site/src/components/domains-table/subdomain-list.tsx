@@ -35,7 +35,6 @@ import {
 	getDomainSubdomains,
 	refreshSubdomainDiscovery,
 	deleteSubdomain,
-	type Subdomain,
 } from "@/lib/domains"
 import { useState } from "react"
 

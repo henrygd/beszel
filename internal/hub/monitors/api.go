@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/hub/pagespeed"
 	"github.com/henrygd/beszel/internal/hub/utils"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // APIHandler handles monitor API endpoints
@@ -53,6 +53,8 @@ func (h *APIHandler) RegisterRoutes(se *core.ServeEvent) {
 	api.GET("/{id}/stats", h.getStats)
 	api.GET("/{id}/heartbeats", h.getHeartbeats)
 	api.POST("/{id}/pagespeed", h.runPageSpeedCheck)
+	api.GET("/{id}/notifications", h.listMonitorNotifications)
+	api.PUT("/{id}/notifications", h.setMonitorNotifications)
 }
 
 // HeartbeatSummary represents a minimal heartbeat for the monitor list
@@ -90,11 +92,88 @@ type MonitorResponse struct {
 	CertExpiryNotification bool               `json:"cert_expiry_notification"`
 	CertExpiryDays         int                `json:"cert_expiry_days,omitempty"`
 	IgnoreTLSError         bool               `json:"ignore_tls_error"`
+	NotifyOnDown           bool               `json:"notify_on_down"`
+	NotifyOnRecover        bool               `json:"notify_on_recover"`
+	NotifyOnResponseTime   bool               `json:"notify_on_response_time"`
+	ResponseTimeThreshold  int                `json:"response_time_threshold"`
+	NotifyOnUptimeDrop     bool               `json:"notify_on_uptime_drop"`
+	UptimeThreshold        float64            `json:"uptime_threshold"`
+	NotifyRepeatedFailures bool               `json:"notify_repeated_failures"`
+	ConsecutiveFailures    int                `json:"consecutive_failures"`
+	QuietHoursEnabled      bool               `json:"quiet_hours_enabled"`
+	QuietHoursStart        string             `json:"quiet_hours_start"`
+	QuietHoursEnd          string             `json:"quiet_hours_end"`
 	Created                time.Time          `json:"created"`
 	Updated                time.Time          `json:"updated"`
 }
 
 // CreateMonitorRequest represents a request to create a monitor
+// MonitorNotificationFields holds optional notification/extra fields shared
+// by create and update requests; nil pointers leave existing values alone.
+type MonitorNotificationFields struct {
+	NotifyOnDown           *bool    `json:"notify_on_down,omitempty"`
+	NotifyOnRecover        *bool    `json:"notify_on_recover,omitempty"`
+	NotifyOnResponseTime   *bool    `json:"notify_on_response_time,omitempty"`
+	ResponseTimeThreshold  *int     `json:"response_time_threshold,omitempty"`
+	NotifyOnUptimeDrop     *bool    `json:"notify_on_uptime_drop,omitempty"`
+	UptimeThreshold        *float64 `json:"uptime_threshold,omitempty"`
+	NotifyRepeatedFailures *bool    `json:"notify_repeated_failures,omitempty"`
+	ConsecutiveFailures    *int     `json:"consecutive_failures,omitempty"`
+	QuietHoursEnabled      *bool    `json:"quiet_hours_enabled,omitempty"`
+	QuietHoursStart        *string  `json:"quiet_hours_start,omitempty"`
+	QuietHoursEnd          *string  `json:"quiet_hours_end,omitempty"`
+	DbUsername             *string  `json:"db_username,omitempty"`
+	DbPassword             *string  `json:"db_password,omitempty"`
+	DbName                 *string  `json:"db_name,omitempty"`
+	MqttTopic              *string  `json:"mqtt_topic,omitempty"`
+	GrpcKeyword            *string  `json:"grpc_keyword,omitempty"`
+}
+
+// applyToRecord writes only the non-nil fields onto the record
+func (n *MonitorNotificationFields) applyToRecord(record *core.Record) {
+	fields := []struct {
+		name string
+		val  interface{}
+	}{
+		{"notify_on_down", n.NotifyOnDown},
+		{"notify_on_recover", n.NotifyOnRecover},
+		{"notify_on_response_time", n.NotifyOnResponseTime},
+		{"response_time_threshold", n.ResponseTimeThreshold},
+		{"notify_on_uptime_drop", n.NotifyOnUptimeDrop},
+		{"uptime_threshold", n.UptimeThreshold},
+		{"notify_repeated_failures", n.NotifyRepeatedFailures},
+		{"consecutive_failures", n.ConsecutiveFailures},
+		{"quiet_hours_enabled", n.QuietHoursEnabled},
+		{"quiet_hours_start", n.QuietHoursStart},
+		{"quiet_hours_end", n.QuietHoursEnd},
+		{"db_username", n.DbUsername},
+		{"db_password", n.DbPassword},
+		{"db_name", n.DbName},
+		{"mqtt_topic", n.MqttTopic},
+		{"grpc_keyword", n.GrpcKeyword},
+	}
+	for _, f := range fields {
+		switch v := f.val.(type) {
+		case *bool:
+			if v != nil {
+				record.Set(f.name, *v)
+			}
+		case *int:
+			if v != nil {
+				record.Set(f.name, *v)
+			}
+		case *float64:
+			if v != nil {
+				record.Set(f.name, *v)
+			}
+		case *string:
+			if v != nil {
+				record.Set(f.name, *v)
+			}
+		}
+	}
+}
+
 type CreateMonitorRequest struct {
 	Name                   string   `json:"name"`
 	Type                   string   `json:"type"`
@@ -120,6 +199,7 @@ type CreateMonitorRequest struct {
 	CertExpiryNotification bool     `json:"cert_expiry_notification,omitempty"`
 	CertExpiryDays         int      `json:"cert_expiry_days,omitempty"`
 	IgnoreTLSError         bool     `json:"ignore_tls_error,omitempty"`
+	MonitorNotificationFields
 }
 
 // UpdateMonitorRequest represents a request to update a monitor
@@ -148,6 +228,7 @@ type UpdateMonitorRequest struct {
 	CertExpiryNotification *bool    `json:"cert_expiry_notification,omitempty"`
 	CertExpiryDays         *int     `json:"cert_expiry_days,omitempty"`
 	IgnoreTLSError         *bool    `json:"ignore_tls_error,omitempty"`
+	MonitorNotificationFields
 }
 
 // listMonitors returns all monitors for the authenticated user
@@ -286,6 +367,13 @@ func (h *APIHandler) createMonitor(e *core.RequestEvent) error {
 	record.Set("cert_expiry_notification", req.CertExpiryNotification)
 	record.Set("cert_expiry_days", req.CertExpiryDays)
 	record.Set("ignore_tls_error", req.IgnoreTLSError)
+	if req.NotifyOnDown == nil {
+		record.Set("notify_on_down", true)
+	}
+	if req.NotifyOnRecover == nil {
+		record.Set("notify_on_recover", true)
+	}
+	req.MonitorNotificationFields.applyToRecord(record)
 	record.Set("uptime_stats", map[string]float64{})
 
 	if err := h.app.Save(record); err != nil {
@@ -408,6 +496,7 @@ func (h *APIHandler) updateMonitor(e *core.RequestEvent) error {
 	if req.IgnoreTLSError != nil {
 		record.Set("ignore_tls_error", *req.IgnoreTLSError)
 	}
+	req.MonitorNotificationFields.applyToRecord(record)
 
 	if err := h.app.Save(record); err != nil {
 		return e.InternalServerError("Failed to update monitor", err)
@@ -747,9 +836,21 @@ func recordToResponse(record *core.Record) MonitorResponse {
 		DNSResolverMode:        record.GetString("dns_resolver_mode"),
 		CertExpiryNotification: record.GetBool("cert_expiry_notification"),
 		CertExpiryDays:         record.GetInt("cert_expiry_days"),
-		IgnoreTLSError:         record.GetBool("ignore_tls_error"),
-		Created:                record.GetDateTime("created").Time(),
-		Updated:                record.GetDateTime("updated").Time(),
+		NotifyOnDown:           record.GetBool("notify_on_down"),
+		NotifyOnRecover:        record.GetBool("notify_on_recover"),
+		NotifyOnResponseTime:   record.GetBool("notify_on_response_time"),
+		ResponseTimeThreshold:  record.GetInt("response_time_threshold"),
+		NotifyOnUptimeDrop:     record.GetBool("notify_on_uptime_drop"),
+		UptimeThreshold:        record.GetFloat("uptime_threshold"),
+		NotifyRepeatedFailures: record.GetBool("notify_repeated_failures"),
+		ConsecutiveFailures:    record.GetInt("consecutive_failures"),
+		QuietHoursEnabled:      record.GetBool("quiet_hours_enabled"),
+		QuietHoursStart:        record.GetString("quiet_hours_start"),
+		QuietHoursEnd:          record.GetString("quiet_hours_end"),
+
+		IgnoreTLSError: record.GetBool("ignore_tls_error"),
+		Created:        record.GetDateTime("created").Time(),
+		Updated:        record.GetDateTime("updated").Time(),
 	}
 
 	if lc := record.GetDateTime("last_check"); !lc.IsZero() {
@@ -779,4 +880,86 @@ func percent(stats *monitor.UptimeStats) float64 {
 		return 0
 	}
 	return float64(stats.Up) / float64(stats.Total) * 100
+}
+
+// listMonitorNotifications returns the notification ids linked to a monitor
+func (h *APIHandler) listMonitorNotifications(e *core.RequestEvent) error {
+	record, err := h.ownedMonitor(e)
+	if err != nil {
+		return err
+	}
+	links, err := h.app.FindAllRecords("monitor_notifications",
+		dbx.HashExp{"monitor": record.Id})
+	if err != nil {
+		return e.InternalServerError("Failed to fetch notification links", err)
+	}
+	ids := make([]string, 0, len(links))
+	for _, l := range links {
+		ids = append(ids, l.GetString("notification"))
+	}
+	return e.JSON(http.StatusOK, map[string]any{"notification_ids": ids})
+}
+
+// setMonitorNotifications replaces the monitor's linked notifications
+func (h *APIHandler) setMonitorNotifications(e *core.RequestEvent) error {
+	record, err := h.ownedMonitor(e)
+	if err != nil {
+		return err
+	}
+	var req struct {
+		NotificationIDs []string `json:"notification_ids"`
+	}
+	if err := e.BindBody(&req); err != nil {
+		return e.BadRequestError("Invalid request body", err)
+	}
+
+	collection, err := h.app.FindCollectionByNameOrId("monitor_notifications")
+	if err != nil {
+		return e.InternalServerError("monitor_notifications collection missing", err)
+	}
+	existing, err := h.app.FindAllRecords("monitor_notifications",
+		dbx.HashExp{"monitor": record.Id})
+	if err != nil {
+		return e.InternalServerError("Failed to fetch notification links", err)
+	}
+
+	wanted := map[string]bool{}
+	for _, id := range req.NotificationIDs {
+		wanted[id] = true
+	}
+	for _, link := range existing {
+		if !wanted[link.GetString("notification")] {
+			if err := h.app.Delete(link); err != nil {
+				return e.InternalServerError("Failed to remove notification link", err)
+			}
+		} else {
+			delete(wanted, link.GetString("notification"))
+		}
+	}
+	for id := range wanted {
+		link := core.NewRecord(collection)
+		link.Set("monitor", record.Id)
+		link.Set("notification", id)
+		link.Set("user", record.GetString("user"))
+		if err := h.app.Save(link); err != nil {
+			return e.InternalServerError("Failed to link notification", err)
+		}
+	}
+	return e.JSON(http.StatusOK, map[string]any{"notification_ids": req.NotificationIDs})
+}
+
+// ownedMonitor fetches a monitor by path id and verifies ownership
+func (h *APIHandler) ownedMonitor(e *core.RequestEvent) (*core.Record, error) {
+	id := e.Request.PathValue("id")
+	if id == "" {
+		return nil, e.BadRequestError("Monitor ID is required", nil)
+	}
+	record, err := h.app.FindRecordById("monitors", id)
+	if err != nil {
+		return nil, e.NotFoundError("Monitor not found", err)
+	}
+	if record.GetString("user") != e.Auth.Id {
+		return nil, e.ForbiddenError("Access denied", nil)
+	}
+	return record, nil
 }

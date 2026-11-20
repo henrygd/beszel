@@ -287,23 +287,23 @@ function MonitorCard({
 
 // Uptime pill badge component - styled like domainstack.io status badges
 function UptimePill({ uptime, label = "24h" }: { uptime: number; label?: string }) {
-	let colorClass = "bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400"
-	let icon = <CheckCircleIcon className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-	let ringClass = "ring-green-500/20"
+	let colorClass = "bg-green-500 text-white border-green-600"
+	let icon = <CheckCircleIcon className="h-3.5 w-3.5 text-white" />
+	let ringClass = "ring-green-500/30"
 
 	if (uptime < 99.9) {
-		colorClass = "bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400"
-		ringClass = "ring-green-500/20"
+		colorClass = "bg-green-500 text-white border-green-600"
+		ringClass = "ring-green-500/30"
 	}
 	if (uptime < 95) {
-		colorClass = "bg-yellow-500/10 text-yellow-700 border-yellow-500/20 dark:text-yellow-400"
-		icon = <AlertTriangle className="h-3.5 w-3.5 text-yellow-600 dark:text-yellow-400" />
-		ringClass = "ring-yellow-500/20"
+		colorClass = "bg-yellow-500 text-white border-yellow-600"
+		icon = <AlertTriangle className="h-3.5 w-3.5 text-white" />
+		ringClass = "ring-yellow-500/30"
 	}
 	if (uptime < 90) {
-		colorClass = "bg-red-500/10 text-red-700 border-red-500/20 dark:text-red-400"
-		icon = <XCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-		ringClass = "ring-red-500/20"
+		colorClass = "bg-red-500 text-white border-red-600"
+		icon = <XCircle className="h-3.5 w-3.5 text-white" />
+		ringClass = "ring-red-500/30"
 	}
 
 	return (
@@ -318,7 +318,7 @@ function UptimePill({ uptime, label = "24h" }: { uptime: number; label?: string 
 		>
 			{icon}
 			<span>{formatUptime(uptime)}</span>
-			<span className="text-[10px] font-medium uppercase opacity-60 border-l border-current/20 pl-1.5 ml-0.5">
+			<span className="text-[10px] font-medium uppercase opacity-80 border-l border-white/30 pl-1.5 ml-0.5">
 				{label}
 			</span>
 		</div>
@@ -353,26 +353,26 @@ function UptimeDots({ heartbeats }: { heartbeats?: Array<{ status: string; time:
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case "up":
-				return "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]"
+				return "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] dark:shadow-[0_0_10px_rgba(34,197,94,0.8)]"
 			case "down":
-				return "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]"
+				return "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)] dark:shadow-[0_0_10px_rgba(239,68,68,0.8)]"
 			case "paused":
 				return "bg-gray-400"
 			default:
-				return "bg-yellow-500"
+				return "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)] dark:shadow-[0_0_10px_rgba(234,179,8,0.8)]"
 		}
 	}
 
 	return (
 		<TooltipProvider>
 			<div className="flex items-center gap-1">
-				<div className="flex gap-[3px] p-1 rounded-md bg-muted/50">
+				<div className="flex gap-[3px] p-1.5 rounded-lg bg-muted/50 border border-border/50">
 					{recent.map((hb, i) => (
 						<Tooltip key={i}>
 							<TooltipTrigger asChild>
 								<div
 									className={cn(
-										"h-4 w-[6px] rounded-full transition-all cursor-pointer hover:scale-125",
+										"h-5 w-[7px] rounded-full transition-all cursor-pointer hover:scale-125",
 										getStatusColor(hb.status)
 									)}
 								/>
@@ -385,7 +385,7 @@ function UptimeDots({ heartbeats }: { heartbeats?: Array<{ status: string; time:
 					))}
 					{emptySlots > 0 &&
 						Array.from({ length: emptySlots }).map((_, i) => (
-							<div key={`empty-${i}`} className="h-4 w-[6px] rounded-full bg-muted" />
+							<div key={`empty-${i}`} className="h-5 w-[7px] rounded-full bg-muted/80" />
 						))}
 				</div>
 			</div>

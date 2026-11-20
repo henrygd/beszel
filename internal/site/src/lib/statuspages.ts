@@ -32,10 +32,19 @@ export interface PublicMonitorStatus {
 	display_name?: string
 	group?: string
 	status: string
+	last_error?: string
 	uptime_24h: number
 	uptime_7d: number
 	uptime_30d: number
 	last_check: string
+	heartbeats?: PublicHeartbeat[]
+}
+
+export interface PublicHeartbeat {
+	status: string
+	ping: number
+	msg?: string
+	time: string
 }
 
 export interface PublicIncident {
@@ -211,7 +220,7 @@ export async function removeMonitorFromStatusPage(
 }
 
 export async function getPublicStatusPage(slug: string): Promise<PublicStatusPage> {
-	const response = await fetch(`/status/${slug}`)
+	const response = await fetch(`/api/beszel/public/status-page/${slug}`)
 	if (!response.ok) {
 		throw new Error(`Status page not found: ${response.statusText}`)
 	}

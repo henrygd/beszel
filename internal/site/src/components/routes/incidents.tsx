@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -107,7 +107,7 @@ export default memo(() => {
 	})
 
 	const resolveMutation = useMutation({
-		mutationFn: resolveIncident,
+		mutationFn: (id: string) => resolveIncident(id),
 		onSuccess: () => {
 			toast({ title: "Incident resolved" })
 			queryClient.invalidateQueries({ queryKey: ["incidents"] })
@@ -264,7 +264,7 @@ export default memo(() => {
 											<Button
 												variant="outline"
 												size="sm"
-												onClick={() => resolveMutation.mutate({ id: incident.id })}
+												onClick={() => resolveMutation.mutate(incident.id)}
 												disabled={resolveMutation.isPending}
 											>
 												<Check className="h-3 w-3 mr-1" />
@@ -404,7 +404,7 @@ function CreateIncidentDialog({
 	const [title, setTitle] = useState("")
 	const [description, setDescription] = useState("")
 	const [severity, setSeverity] = useState("medium")
-	const [type, setType] = useState("manual")
+	const [type] = useState("manual")
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()

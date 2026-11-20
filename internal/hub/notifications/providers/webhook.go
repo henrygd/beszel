@@ -68,14 +68,14 @@ func (p *WebhookProvider) formatBody(msg *notification.NotificationMessage) stri
 	}
 
 	data := map[string]interface{}{
-		"title":       msg.Title,
-		"body":        msg.Body,
-		"monitor":     msg.MonitorName,
-		"url":         msg.MonitorURL,
-		"status":      msg.Status,
-		"timestamp":   msg.Timestamp,
-		"ping":        msg.Ping,
-		"message":     msg.Message,
+		"title":     msg.Title,
+		"body":      msg.Body,
+		"monitor":   msg.MonitorName,
+		"url":       msg.MonitorURL,
+		"status":    msg.Status,
+		"timestamp": msg.Timestamp,
+		"ping":      msg.Ping,
+		"message":   msg.Message,
 	}
 
 	b, _ := json.Marshal(data)

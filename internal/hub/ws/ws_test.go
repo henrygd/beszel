@@ -39,7 +39,7 @@ func TestNewWsConnection(t *testing.T) {
 	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 
 	assert.NotNil(t, wsConn, "WebSocket connection should not be nil")
-	assert.Nil(t, wsConn.conn, "Connection should be nil as passed")
+	assert.Nil(t, wsConn.conn.Load(), "Connection should be nil as passed")
 	assert.NotNil(t, wsConn.requestManager, "Request manager should be initialized")
 	assert.NotNil(t, wsConn.DownChan, "Down channel should be initialized")
 	assert.Equal(t, 1, cap(wsConn.DownChan), "Down channel should have capacity of 1")
@@ -170,9 +170,15 @@ func TestFingerprintRecord(t *testing.T) {
 	assert.Equal(t, "test-token", record.Token)
 }
 
-// TestDeadlineConstant tests that the deadline constant is reasonable
+// TestDeadlineConstant tests that the deadline is reasonable.
+//
+// It has to stay above the 90s a failed poll takes in the systems package (a
+// 60s poll interval plus a 30s request timeout), because the keepalive ping
+// only goes out once that fetch gives up. Lowering this reopens the reconnect
+// loop from #2294; TestSlowAgentKeepsConnectionAcrossPolls covers the effect.
 func TestDeadlineConstant(t *testing.T) {
-	assert.Equal(t, 70*time.Second, deadline, "Deadline should be 70 seconds")
+	assert.Equal(t, 100*time.Second, deadline, "Deadline should be 100 seconds")
+	assert.Greater(t, deadline, 90*time.Second, "Deadline must outlast a failed poll")
 }
 
 // TestCommonActions tests that the common actions are properly defined

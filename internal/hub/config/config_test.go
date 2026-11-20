@@ -11,7 +11,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/hub/config"
 
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
@@ -64,7 +64,7 @@ func createConfigTestFingerprint(app core.App, systemID, token, fingerprint stri
 
 // TestConfigSyncWithTokens tests the config.SyncSystems function with various token scenarios
 func TestConfigSyncWithTokens(t *testing.T) {
-	testHub, err := tests.NewTestHub()
+	testHub, err := tests.NewTestHub(t.TempDir())
 	require.NoError(t, err)
 	defer testHub.Cleanup()
 

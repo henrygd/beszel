@@ -154,12 +154,13 @@ function useDomainInfo(monitor: Monitor | undefined, heartbeats: Heartbeat[] | u
 			setInfo((prev) => ({ ...prev, loading: false }))
 			return
 		}
+		const host = hostname
 
 		let cancelled = false
 
 		async function fetchData() {
 			// DNS via Cloudflare DoH
-			const dnsPromise = fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(hostname)}&type=A`, {
+			const dnsPromise = fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host)}&type=A`, {
 				headers: { Accept: "application/dns-json" },
 			})
 				.then((r) => r.json())
@@ -175,7 +176,7 @@ function useDomainInfo(monitor: Monitor | undefined, heartbeats: Heartbeat[] | u
 				.catch(() => [] as DnsRecord[])
 
 			// Geolocation via ipapi.co (free, no key needed for basic)
-			const geoPromise = fetch(`https://ipapi.co/${encodeURIComponent(hostname)}/json/`, {
+			const geoPromise = fetch(`https://ipapi.co/${encodeURIComponent(host)}/json/`, {
 				headers: { Accept: "application/json" },
 			})
 				.then((r) => {

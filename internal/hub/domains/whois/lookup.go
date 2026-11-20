@@ -98,66 +98,76 @@ func (s *LookupService) LookupDomain(ctx context.Context, domainName string) (*d
 	return d, nil
 }
 
-// LookupWHOIS performs WHOIS lookup with multiple fallback methods
+// LookupWHOIS performs WHOIS lookup with multiple fallback methods.
+// Expiry-bearing data wins; the first partially valid result is kept as
+// last resort so GDPR-redacted responses (e.g. .eu) still return something.
 func (s *LookupService) LookupWHOIS(ctx context.Context, domainName string) (*domain.WHOISData, string, error) {
 	var lastErr error
+	var partial *domain.WHOISData
+	var partialRaw string
+
+	consider := func(data *domain.WHOISData, raw string, err error) bool {
+		if err != nil {
+			lastErr = err
+			return false
+		}
+		if data == nil {
+			return false
+		}
+		if hasExpiry(data) {
+			partial, partialRaw = data, raw
+			return true
+		}
+		if partial == nil && hasValidData(data) {
+			partial, partialRaw = data, raw
+		}
+		return false
+	}
 
 	// Try RDAP first
 	data, err := s.tryRDAP(ctx, domainName)
-	if err == nil && data != nil && hasValidData(data) {
-		return data, "", nil
-	}
-	if err != nil {
-		lastErr = err
+	if consider(data, "", err) {
+		return partial, partialRaw, nil
 	}
 
 	// Try TCP WHOIS (this should work for .eu domains)
 	data, raw, err := s.tryTCPWHOIS(ctx, domainName)
-	if err == nil && data != nil && hasValidData(data) {
-		return data, raw, nil
-	}
-	if err != nil {
-		lastErr = err
+	if consider(data, raw, err) {
+		return partial, partialRaw, nil
 	}
 
 	// Try native whois command (often works when TCP fails)
 	data, raw, err = s.tryNativeWHOIS(ctx, domainName)
-	if err == nil && data != nil && hasValidData(data) {
-		return data, raw, nil
-	}
-	if err != nil {
-		lastErr = err
+	if consider(data, raw, err) {
+		return partial, partialRaw, nil
 	}
 
 	// Try EURid web scraping for .eu domains to get expiry dates
 	parts := strings.Split(domainName, ".")
 	if len(parts) >= 2 && strings.ToLower(parts[len(parts)-1]) == "eu" {
 		data, err = s.tryEURidWebScraping(ctx, domainName)
-		if err == nil && data != nil && hasValidData(data) {
-			return data, "", nil
-		}
-		if err != nil {
-			lastErr = err
+		if consider(data, "", err) {
+			return partial, partialRaw, nil
 		}
 
 		// Try alternative WHOIS services for .eu domains
 		data, err = s.tryAlternativeWHOIS(ctx, domainName)
-		if err == nil && data != nil && hasValidData(data) {
-			return data, "", nil
-		}
-		if err != nil {
-			lastErr = err
+		if consider(data, "", err) {
+			return partial, partialRaw, nil
 		}
 	}
 
 	// Try WhoisXML API if key is configured (this can provide expiry dates for .eu domains)
 	if s.whoisXMLAPIKey != "" {
 		data, err = s.tryWhoisXML(ctx, domainName)
-		if err == nil && data != nil {
-			return data, "", nil
+		if consider(data, "", err) {
+			return partial, partialRaw, nil
 		}
 	}
 
+	if partial != nil {
+		return partial, partialRaw, nil
+	}
 	return nil, "", fmt.Errorf("all WHOIS lookup methods failed for %s: %w", domainName, lastErr)
 }
 
@@ -456,17 +466,13 @@ func (s *LookupService) tryWhoisXML(ctx context.Context, domainName string) (*do
 	record := result.WhoisRecord
 	registry := record.RegistryData
 
-	creationDate, _ := time.Parse("2006-01-02", registry.CreatedDateNormalized)
-	expiryDate, _ := time.Parse("2006-01-02", registry.ExpiresDateNormalized)
-	updatedDate, _ := time.Parse("2006-01-02", registry.UpdatedDateNormalized)
-
 	return &domain.WHOISData{
 		DomainName: record.DomainName,
 		Status:     strings.Split(registry.Status, ", "),
 		Dates: domain.WHOISDates{
-			ExpiryDate:   &expiryDate,
-			CreationDate: &creationDate,
-			UpdatedDate:  &updatedDate,
+			ExpiryDate:   parseDatePtr(registry.ExpiresDateNormalized),
+			CreationDate: parseDatePtr(registry.CreatedDateNormalized),
+			UpdatedDate:  parseDatePtr(registry.UpdatedDateNormalized),
 		},
 		Registrar: domain.WHOISRegistrar{
 			Name: record.RegistrarName,
@@ -1167,26 +1173,30 @@ func (s *LookupService) getRDAPBaseURL(ctx context.Context, tld string) (string,
 	return "", fmt.Errorf("no RDAP server found for TLD .%s", tld)
 }
 
+// dnsResolver uses the pure-Go resolver so lookups honor context cancellation
+// (the cgo resolver ignores ctx and can hang indefinitely on broken DNS).
+var dnsResolver = &net.Resolver{PreferGo: true}
+
 // lookupDNS performs DNS lookups
 func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *domain.Domain) {
 	// NS records
-	nsRecords, _ := net.LookupNS(domainName)
+	nsRecords, _ := dnsResolver.LookupNS(ctx, domainName)
 	for _, ns := range nsRecords {
 		d.NameServers = append(d.NameServers, ns.Host)
 	}
 
 	// MX records
-	mxRecords, _ := net.LookupMX(domainName)
+	mxRecords, _ := dnsResolver.LookupMX(ctx, domainName)
 	for _, mx := range mxRecords {
 		d.MXRecords = append(d.MXRecords, fmt.Sprintf("%s (priority: %d)", mx.Host, mx.Pref))
 	}
 
 	// TXT records
-	txtRecords, _ := net.LookupTXT(domainName)
+	txtRecords, _ := dnsResolver.LookupTXT(ctx, domainName)
 	d.TXTRecords = txtRecords
 
 	// CNAME record
-	cname, err := net.LookupCNAME(domainName)
+	cname, err := dnsResolver.LookupCNAME(ctx, domainName)
 	if err == nil && cname != domainName && cname != "" {
 		d.CNAMERecord = cname
 	}
@@ -1196,7 +1206,7 @@ func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *dom
 	srvProtos := []string{"tcp", "udp", "tls"}
 	for _, service := range srvServices {
 		for _, proto := range srvProtos {
-			_, addrs, err := net.LookupSRV(service, proto, domainName)
+			_, addrs, err := dnsResolver.LookupSRV(ctx, service, proto, domainName)
 			if err == nil {
 				for _, addr := range addrs {
 					d.SRVRecords = append(d.SRVRecords, fmt.Sprintf("_%s._%s %s:%d (priority: %d, weight: %d)", service, proto, addr.Target, addr.Port, addr.Priority, addr.Weight))
@@ -1206,7 +1216,7 @@ func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *dom
 	}
 
 	// IPv4
-	ipv4Addrs, _ := net.LookupHost(domainName)
+	ipv4Addrs, _ := dnsResolver.LookupHost(ctx, domainName)
 	for _, ip := range ipv4Addrs {
 		if strings.Contains(ip, ".") {
 			d.IPv4Addresses = append(d.IPv4Addresses, ip)
@@ -1214,7 +1224,7 @@ func (s *LookupService) lookupDNS(ctx context.Context, domainName string, d *dom
 	}
 
 	// IPv6
-	ipv6Addrs, _ := net.LookupIP(domainName)
+	ipv6Addrs, _ := dnsResolver.LookupIP(ctx, "ip6", domainName)
 	for _, ip := range ipv6Addrs {
 		if ip.To4() == nil {
 			d.IPv6Addresses = append(d.IPv6Addresses, ip.String())
@@ -1709,6 +1719,20 @@ func (s *LookupService) detectProviders(d *domain.Domain) {
 	}
 }
 
+// parseDatePtr parses "2006-01-02" into a *time.Time, nil on failure or empty
+func parseDatePtr(s string) *time.Time {
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil || t.IsZero() {
+		return nil
+	}
+	return &t
+}
+
+// hasExpiry checks if WHOIS data contains a non-zero expiry date
+func hasExpiry(data *domain.WHOISData) bool {
+	return data.Dates.ExpiryDate != nil && !data.Dates.ExpiryDate.IsZero()
+}
+
 // hasValidData checks if WHOIS data has useful parsed fields
 func hasValidData(data *domain.WHOISData) bool {
 	if data == nil {
@@ -1729,3 +1753,6 @@ func hasValidData(data *domain.WHOISData) bool {
 	}
 	return false
 }
+
+// Resolver returns the package's context-aware DNS resolver.
+func Resolver() *net.Resolver { return dnsResolver }

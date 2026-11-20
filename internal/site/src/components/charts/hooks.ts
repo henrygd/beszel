@@ -85,6 +85,14 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 	}, [containerData])
 }
 
+/**
+ * Whether any series has a numeric value in the data. Without one, recharts renders no y-axis
+ * ticks, so the y-axis width is never measured and the chart would stay hidden.
+ */
+export function hasChartValues<T>(data: T[], dataPoints?: { dataKey: (data: T) => unknown }[]) {
+	return !!dataPoints?.some(({ dataKey }) => data.some((record) => typeof dataKey(record) === "number"))
+}
+
 /** Sets the correct width of the y axis in recharts based on the longest label */
 export function useYAxisWidth() {
 	const [yAxisWidth, setYAxisWidth] = useState(0)
@@ -95,7 +103,7 @@ export function useYAxisWidth() {
 			maxChars = str.length
 			const div = document.createElement("div")
 			div.className = "text-xs tabular-nums tracking-tighter table sr-only"
-			div.innerHTML = str
+			div.textContent = str
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				document.body.appendChild(div)

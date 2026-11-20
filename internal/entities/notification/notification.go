@@ -15,15 +15,15 @@ const (
 
 // Notification represents a notification provider configuration
 type Notification struct {
-	ID          string                 `json:"id" db:"id"`
-	Name        string                 `json:"name" db:"name"`
-	Type        string                 `json:"type" db:"type"`
-	IsDefault   bool                   `json:"is_default" db:"is_default"`
-	Settings    map[string]interface{} `json:"settings" db:"settings"`
-	UserID      string                 `json:"user" db:"user"`
-	Active      bool                   `json:"active" db:"active"`
-	Created     time.Time              `json:"created" db:"created"`
-	Updated     time.Time              `json:"updated" db:"updated"`
+	ID        string                 `json:"id" db:"id"`
+	Name      string                 `json:"name" db:"name"`
+	Type      string                 `json:"type" db:"type"`
+	IsDefault bool                   `json:"is_default" db:"is_default"`
+	Settings  map[string]interface{} `json:"settings" db:"settings"`
+	UserID    string                 `json:"user" db:"user"`
+	Active    bool                   `json:"active" db:"active"`
+	Created   time.Time              `json:"created" db:"created"`
+	Updated   time.Time              `json:"updated" db:"updated"`
 }
 
 // MonitorNotification links monitors to notifications
@@ -60,10 +60,10 @@ type EmailSettings struct {
 
 // WebhookSettings for webhook notifications
 type WebhookSettings struct {
-	URL         string            `json:"url"`
-	Method      string            `json:"method"`
-	Headers     map[string]string `json:"headers"`
-	BodyTemplate string           `json:"body_template"`
+	URL          string            `json:"url"`
+	Method       string            `json:"method"`
+	Headers      map[string]string `json:"headers"`
+	BodyTemplate string            `json:"body_template"`
 }
 
 // DiscordSettings for Discord webhook notifications

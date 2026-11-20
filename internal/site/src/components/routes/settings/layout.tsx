@@ -8,13 +8,14 @@ import {
 	FileSlidersIcon,
 	FingerprintIcon,
 	HeartPulseIcon,
+	KeyRoundIcon,
 	SettingsIcon,
 } from "lucide-react"
 import { lazy, useEffect } from "react"
 import { $router } from "@/components/router.tsx"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
 import { toast } from "@/components/ui/use-toast.ts"
-import { pb } from "@/lib/api"
+import { saveUserSettings } from "@/lib/api"
 import { $userSettings } from "@/lib/stores.ts"
 import type { UserSettings } from "@/types"
 import { Separator } from "../../ui/separator"
@@ -26,6 +27,7 @@ const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
 const heartbeatSettingsImport = () => import("./heartbeat.tsx")
+const apiKeysSettingsImport = () => import("./api-keys.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
 const NotificationsSettings = lazy(notificationsSettingsImport)
@@ -33,27 +35,17 @@ const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
+const ApiKeysSettings = lazy(apiKeysSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
-		// get fresh copy of settings
-		const req = await pb.collection("user_settings").getFirstListItem("", {
-			fields: "id,settings",
-		})
-		// update user settings
-		const updatedSettings = await pb.collection("user_settings").update(req.id, {
-			settings: {
-				...req.settings,
-				...newSettings,
-			},
-		})
-		$userSettings.set(updatedSettings.settings)
+		await saveUserSettings(newSettings)
 		toast({
 			title: t`Settings saved`,
 			description: t`Your user settings have been updated.`,
 		})
 	} catch (e) {
-		// console.error('update settings', e)
+		console.error("save settings", e)
 		toast({
 			title: t`Failed to save settings`,
 			description: t`Check logs for more details.`,
@@ -83,6 +75,12 @@ export default function SettingsLayout() {
 			icon: FingerprintIcon,
 			noReadOnly: true,
 			preload: fingerprintsSettingsImport,
+		},
+		{
+			title: t`API Keys`,
+			href: getPagePath($router, "settings", { name: "api-keys" }),
+			icon: KeyRoundIcon,
+			preload: apiKeysSettingsImport,
 		},
 		{
 			title: t`Alert History`,
@@ -159,5 +157,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <AlertsHistoryDataTableSettings />
 		case "heartbeat":
 			return <HeartbeatSettings />
+		case "api-keys":
+			return <ApiKeysSettings />
 	}
 }

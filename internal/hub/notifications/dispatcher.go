@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/notification"
 	"github.com/henrygd/beszel/internal/hub/notifications/providers"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // Dispatcher manages notification sending for monitor events
@@ -30,6 +31,18 @@ func NewDispatcher(app core.App) *Dispatcher {
 
 // SendNotification sends a notification for a monitor event
 func (d *Dispatcher) SendNotification(monitorRecord *monitor.Monitor, heartbeat *monitor.Heartbeat, isRecovery bool) {
+	// Honor per-monitor toggles
+	if isRecovery && !monitorRecord.NotifyOnRecover {
+		return
+	}
+	if !isRecovery && !monitorRecord.NotifyOnDown {
+		return
+	}
+	if d.inQuietHours(monitorRecord) {
+		d.logNotificationEvent("", monitorRecord.ID, "skipped", "quiet hours", "")
+		return
+	}
+
 	// Get linked notifications for this monitor
 	notifications, err := d.getMonitorNotifications(monitorRecord.ID)
 	if err != nil {
@@ -78,7 +91,7 @@ func (d *Dispatcher) getMonitorNotifications(monitorID string) ([]*notification.
 	}
 
 	if len(records) == 0 {
-		return nil, nil
+		return d.getDefaultNotifications(monitorID)
 	}
 
 	var notifications []*notification.Notification
@@ -233,4 +246,127 @@ func (d *Dispatcher) ShouldNotify(m *monitor.Monitor, heartbeat *monitor.Heartbe
 
 	// Only notify on down (after retries) or recovery
 	return isDown && m.Status == monitor.StatusDown, isRecovery
+}
+
+// getDefaultNotifications returns the user's is_default providers when the
+// monitor has no explicit links.
+func (d *Dispatcher) getDefaultNotifications(monitorID string) ([]*notification.Notification, error) {
+	monitorRecord, err := d.app.FindRecordById("monitors", monitorID)
+	if err != nil {
+		return nil, err
+	}
+	records, err := d.app.FindAllRecords("notifications",
+		dbx.HashExp{"user": monitorRecord.GetString("user"), "is_default": true, "active": true},
+	)
+	if err != nil {
+		return nil, err
+	}
+	var notifications []*notification.Notification
+	for _, r := range records {
+		n := &notification.Notification{
+			ID:        r.Id,
+			Name:      r.GetString("name"),
+			Type:      r.GetString("type"),
+			IsDefault: true,
+			Active:    true,
+		}
+		if settingsJSON := r.GetString("settings"); settingsJSON != "" {
+			var settings map[string]interface{}
+			if err := json.Unmarshal([]byte(settingsJSON), &settings); err == nil {
+				n.Settings = settings
+			}
+		}
+		notifications = append(notifications, n)
+	}
+	return notifications, nil
+}
+
+// inQuietHours reports whether the current local time falls inside the
+// monitor's configured quiet window (supports overnight ranges).
+func (d *Dispatcher) inQuietHours(m *monitor.Monitor) bool {
+	if !m.QuietHoursEnabled || m.QuietHoursStart == "" || m.QuietHoursEnd == "" {
+		return false
+	}
+	start, err1 := time.Parse("15:04", m.QuietHoursStart)
+	end, err2 := time.Parse("15:04", m.QuietHoursEnd)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	now, _ := time.Parse("15:04", time.Now().Format("15:04"))
+	if start.Before(end) {
+		return !now.Before(start) && now.Before(end)
+	}
+	// overnight window, e.g. 22:00-06:00
+	return !now.Before(start) || now.Before(end)
+}
+
+// EvaluateThresholds fires performance notifications on every heartbeat when
+// the monitor opts in. Cooldown: one notification per monitor+kind per hour.
+func (d *Dispatcher) EvaluateThresholds(m *monitor.Monitor, heartbeat *monitor.Heartbeat, uptime24h float64) {
+	if d.inQuietHours(m) {
+		return
+	}
+	if m.NotifyOnResponseTime && m.ResponseTimeThreshold > 0 && heartbeat.Ping > m.ResponseTimeThreshold {
+		if d.cooledDown(m.ID, "response_time") {
+			msg := &notification.NotificationMessage{
+				Title:       fmt.Sprintf("Slow response: %s", m.Name),
+				Body:        fmt.Sprintf("Response time %dms exceeds threshold %dms", heartbeat.Ping, m.ResponseTimeThreshold),
+				MonitorName: m.Name,
+				MonitorURL:  d.getMonitorURL(m),
+				Status:      string(heartbeat.Status),
+				Ping:        heartbeat.Ping,
+				Timestamp:   heartbeat.Time,
+			}
+			d.dispatchToDefaults(m, msg, "response_time")
+		}
+	}
+	if m.NotifyOnUptimeDrop && m.UptimeThreshold > 0 && uptime24h < m.UptimeThreshold {
+		if d.cooledDown(m.ID, "uptime_drop") {
+			msg := &notification.NotificationMessage{
+				Title:       fmt.Sprintf("Uptime dropped: %s", m.Name),
+				Body:        fmt.Sprintf("24h uptime %.2f%% is below threshold %.2f%%", uptime24h, m.UptimeThreshold),
+				MonitorName: m.Name,
+				MonitorURL:  d.getMonitorURL(m),
+				Status:      string(heartbeat.Status),
+				Ping:        heartbeat.Ping,
+				Timestamp:   heartbeat.Time,
+			}
+			d.dispatchToDefaults(m, msg, "uptime_drop")
+		}
+	}
+}
+
+// cooledDown returns true if no notification event of this kind fired in the
+// last hour for the monitor.
+func (d *Dispatcher) cooledDown(monitorID, kind string) bool {
+	cutoff := time.Now().Add(-time.Hour).UTC().Format("2006-01-02 15:04:05.000Z")
+	recs, err := d.app.FindAllRecords("notification_events",
+		dbx.NewExp("monitor = {:monitor} && message = {:kind} && created >= {:cutoff}",
+			dbx.Params{"monitor": monitorID, "kind": kind, "cutoff": cutoff}),
+	)
+	return err != nil || len(recs) == 0
+}
+
+// dispatchToDefaults sends a message through linked+default providers.
+func (d *Dispatcher) dispatchToDefaults(m *monitor.Monitor, msg *notification.NotificationMessage, kind string) {
+	notifications, err := d.getMonitorNotifications(m.ID)
+	if err != nil || len(notifications) == 0 {
+		return
+	}
+	for _, n := range notifications {
+		if !n.Active {
+			continue
+		}
+		provider, err := d.getProvider(n)
+		if err != nil {
+			d.logNotificationEvent(n.ID, m.ID, "failed", kind, err.Error())
+			continue
+		}
+		if err := provider.Send(msg); err != nil {
+			d.logNotificationEvent(n.ID, m.ID, "failed", kind, err.Error())
+		} else {
+			d.logNotificationEvent(n.ID, m.ID, "sent", kind, "")
+		}
+	}
+
 }

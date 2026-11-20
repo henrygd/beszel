@@ -80,7 +80,8 @@ type DisplayOptions = {
 
 // Days left badge component - big and visible
 function DaysLeftBadge({ days, label = "days" }: { days: number | undefined; label?: string }) {
-	if (days === undefined || days === null) return <span className="text-muted-foreground">-</span>
+	// -1 is the API sentinel for "no expiry data" (e.g. GDPR-redacted .eu WHOIS)
+	if (days === undefined || days === null || days === -1) return <span className="text-muted-foreground">-</span>
 	
 	const isCritical = days >= 0 && days <= 7
 	const isWarning = days >= 0 && days <= 30

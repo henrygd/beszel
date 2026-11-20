@@ -3,15 +3,16 @@ package records
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
@@ -25,6 +26,21 @@ type LongerRecordData struct {
 	minShorterRecords  int
 }
 
+// shorterRecordCutoff returns the time after which shorter records are included in a longer record.
+//
+// 1m records are samples created independently of this job, so the window is the full longer period.
+// Other types are created by this job, a few ms after it starts. The record created one full period
+// ago covers the previous period but lands right on the window boundary. Records created by this job
+// are always a multiple of the job interval (10 minutes) apart, so moving the cutoff forward by half
+// that interval excludes it without ever landing on another record.
+func (d *LongerRecordData) shorterRecordCutoff(now time.Time) time.Time {
+	cutoff := now.Add(d.longerTimeDuration)
+	if d.shorterType != "1m" {
+		cutoff = cutoff.Add(5 * time.Minute)
+	}
+	return cutoff
+}
+
 type RecordIds []struct {
 	Id string `db:"id"`
 }
@@ -33,13 +49,14 @@ func NewRecordManager(app core.App) *RecordManager {
 	return &RecordManager{app}
 }
 
+// StatsRecord holds the raw stats blob of a shorter record.
 type StatsRecord struct {
 	Stats []byte `db:"stats"`
 }
 
 // Create longer records by averaging shorter records
 func (rm *RecordManager) CreateLongerRecords() {
-	// start := time.Now()
+	now := time.Now().UTC()
 	longerRecordData := []LongerRecordData{
 		{
 			shorterType: "1m",
@@ -68,8 +85,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 		},
 	}
 	// wrap the operations in a transaction
-	rm.app.RunInTransaction(func(txApp core.App) error {
+	// Pocketbase cron does not handle errors, log them here.
+	err := rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
+
 		collections := [2]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
@@ -79,10 +98,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 		if err != nil {
 			return err
 		}
+		monitorStatsColl, err := txApp.FindCachedCollectionByNameOrId("network_monitor_stats")
+		if err != nil {
+			return err
+		}
 		var systems RecordIds
 		db := txApp.DB()
 
-		db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems)
+		if err := db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems); err != nil {
+			return err
+		}
 
 		// loop through all active systems, time periods, and collections
 		for _, system := range systems {
@@ -91,43 +116,53 @@ func (rm *RecordManager) CreateLongerRecords() {
 				recordData := longerRecordData[i]
 				// log.Println("processing longer record type", recordData.longerType)
 				// add one minute padding for longer records because they are created slightly later than the job start time
-				longerRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration + time.Minute)
-				// shorter records are created independently of longer records, so we shouldn't need to add padding
-				shorterRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration)
-				// loop through both collections
+				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
+				shorterRecordPeriod := recordData.shorterRecordCutoff(now)
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
-						count, err := txApp.CountRecords(
-							collection.Id,
-							dbx.NewExp(
-								"system = {:system} AND type = {:type} AND created > {:created}",
-								dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
-							),
-						)
+						count, err := txApp.CountRecords(collection.Id, dbx.NewExp(
+							"system = {:system} AND type = {:type} AND created > {:created}",
+							dbx.Params{
+								"type":    recordData.longerType,
+								"system":  system.Id,
+								"created": longerRecordPeriod.Format(types.DefaultDateLayout),
+							},
+						))
+						if err != nil {
+							return err
+						}
 						// continue if longer record exists
-						if err != nil || count > 0 {
+						if count > 0 {
 							continue
 						}
 					}
-					// get shorter records from the past x minutes
-					var recordIds RecordIds
+					// get shorter records from the past x minutes, oldest first
+					// since averaging keeps the last value of some fields
+					var shorterRecords []StatsRecord
 
-					err := txApp.DB().
-						Select("id").
+					params := dbx.Params{
+						"type":    recordData.shorterType,
+						"system":  system.Id,
+						"created": shorterRecordPeriod.Format(types.DefaultDateLayout),
+					}
+
+					err := db.
+						Select("stats").
 						From(collection.Name).
-						AndWhere(dbx.NewExp(
+						Where(dbx.NewExp(
 							"system={:system} AND type={:type} AND created > {:created}",
-							dbx.Params{
-								"type":    recordData.shorterType,
-								"system":  system.Id,
-								"created": shorterRecordPeriod,
-							},
+							params,
 						)).
-						All(&recordIds)
+						OrderBy("created").
+						All(&shorterRecords)
+					if err != nil {
+						rm.app.Logger().Error("failed to fetch shorter records", "collection", collection.Name, "system", system.Id, "err", err)
+						continue
+					}
 
 					// continue if not enough shorter records
-					if err != nil || len(recordIds) < recordData.minShorterRecords {
+					if len(shorterRecords) < recordData.minShorterRecords {
 						continue
 					}
 					// average the shorter records and create longer record
@@ -136,41 +171,104 @@ func (rm *RecordManager) CreateLongerRecords() {
 					longerRecord.Set("type", recordData.longerType)
 					switch collection.Name {
 					case "system_stats":
-						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
+						longerRecord.Set("stats", AverageSystemStats(shorterRecords))
 					case "container_stats":
-
-						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+						longerRecord.Set("stats", AverageContainerStats(shorterRecords))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
-						log.Println("failed to save longer record", "err", err)
+						txApp.Logger().Error("failed to save longer record", "err", err)
 					}
+				}
+			}
+		}
+
+		// network_monitor_stats is aggregated per monitor (not per system)
+		var monitors []struct {
+			Id     string `db:"id"`
+			System string `db:"system"`
+		}
+		// Disabled monitors still have history that must advance through retention tiers.
+		if err := db.NewQuery("SELECT id, system FROM network_monitors").All(&monitors); err != nil {
+			return err
+		}
+
+		for _, monitorRec := range monitors {
+			for i := range longerRecordData {
+				recordData := longerRecordData[i]
+				longerRecordPeriod := now.Add(recordData.longerTimeDuration + time.Minute)
+				shorterRecordPeriod := recordData.shorterRecordCutoff(now)
+
+				if recordData.longerType != "10m" {
+					count, err := txApp.CountRecords(monitorStatsColl.Id, dbx.NewExp(
+						"monitor={:monitor} AND type={:type} AND created>{:created}",
+						dbx.Params{
+							"monitor": monitorRec.Id,
+							"type":    recordData.longerType,
+							"created": longerRecordPeriod.UnixMilli(),
+						},
+					))
+					if err != nil {
+						return err
+					}
+					if count > 0 {
+						continue
+					}
+				}
+
+				stats, count, err := rm.AverageMonitorStats(db, monitorRec.Id, recordData.shorterType, shorterRecordPeriod.UnixMilli())
+				if err != nil {
+					txApp.Logger().Error("failed to average monitor stats", "monitor", monitorRec.Id, "err", err)
+					continue
+				}
+				// Monitor intervals can exceed the aggregation window, so average
+				// any available records at every level and skip only empty windows.
+				if count == 0 {
+					continue
+				}
+
+				longerRecord := core.NewRecord(monitorStatsColl)
+				longerRecord.Set("system", monitorRec.System)
+				longerRecord.Set("monitor", monitorRec.Id)
+				longerRecord.Set("type", recordData.longerType)
+				longerRecord.Set("created", now.UnixMilli())
+				longerRecord.Set("res_min", stats.ResMin)
+				longerRecord.Set("res_max", stats.ResMax)
+				longerRecord.Set("total_count", stats.TotalCount)
+				longerRecord.Set("success_count", stats.SuccessCount)
+				longerRecord.Set("res_sum", stats.ResponseSum)
+				if err := txApp.SaveNoValidate(longerRecord); err != nil {
+					txApp.Logger().Error("failed to save monitor longer record", "err", err)
 				}
 			}
 		}
 
 		return nil
 	})
-
-	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
+	if err != nil {
+		rm.app.Logger().Error("failed to create longer records", "err", err)
+	}
 }
 
-// Calculate the average stats of a list of system_stats records without reflect
-func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *system.Stats {
+func getCreatedTimeField(collectionName string, period time.Time) any {
+	// network_monitor_stats stores created as unix timestamp in ms, not as a date string
+	if collectionName == "network_monitor_stats" {
+		return period.UnixMilli()
+	}
+	return period.Format(types.DefaultDateLayout)
+}
+
+// AverageSystemStats calculates the average stats of system_stats records.
+// Records must be in creation order: some fields keep the value of the last record.
+func AverageSystemStats(records []StatsRecord) system.Stats {
 	stats := make([]system.Stats, 0, len(records))
-	var row StatsRecord
-	params := make(dbx.Params, 1)
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(params).One(&row)
+	for _, record := range records {
 		var s system.Stats
-		if err := json.Unmarshal(row.Stats, &s); err != nil {
+		if err := json.Unmarshal(record.Stats, &s); err != nil {
 			continue
 		}
 		stats = append(stats, s)
 	}
-	result := AverageSystemStatsSlice(stats)
-	return &result
+	return AverageSystemStatsSlice(stats)
 }
 
 // AverageSystemStatsSlice computes the average of a slice of system stats.
@@ -181,17 +279,30 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		return sum
 	}
 
+	wifiSums := make(map[string]int)
+	wifiCounts := make(map[string]int)
 	// necessary because uint8 is not big enough for the sum
 	batterySum := 0
+	batteryCount := 0
+	batterySums := make(map[string]uint64)
+	batteryCounts := make(map[string]uint64)
 	// accumulate per-core usage across records
 	var cpuCoresSums []uint64
 	// accumulate cpu breakdown [user, system, iowait, steal, idle]
 	var cpuBreakdownSums []float64
 	tempCount := float64(0)
+	var fanSums map[string]uint64
+	fanCount := uint64(0)
+	zfsPoolCounts := make(map[string]uint64)
+	zfsCapacityCounts := make(map[string]uint64)
 
 	// Accumulate totals
 	for i := range records {
 		stats := &records[i]
+		for id, signal := range stats.WiFi {
+			wifiSums[id] += int(signal)
+			wifiCounts[id]++
+		}
 
 		sum.Cpu += stats.Cpu
 		// accumulate cpu time breakdowns if present
@@ -203,18 +314,16 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				cpuBreakdownSums[j] += v
 			}
 		}
-		sum.Mem += stats.Mem
-		sum.MemUsed += stats.MemUsed
+		memBytes, swapBytes, maxMemBytes := memoryBytes(stats)
+		for j, v := range memBytes {
+			sum.MemBytes[j] += v
+		}
+		sum.SwapBytes[0] += swapBytes[0]
+		sum.SwapBytes[1] += swapBytes[1]
 		sum.MemPct += stats.MemPct
-		sum.MemBuffCache += stats.MemBuffCache
-		sum.MemZfsArc += stats.MemZfsArc
-		sum.Swap += stats.Swap
-		sum.SwapUsed += stats.SwapUsed
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
-		sum.DiskReadPs += stats.DiskReadPs
-		sum.DiskWritePs += stats.DiskWritePs
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
 		sum.LoadAvg[0] += stats.LoadAvg[0]
@@ -227,8 +336,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		for i := range stats.DiskIoStats {
 			sum.DiskIoStats[i] += stats.DiskIoStats[i]
 		}
-		batterySum += int(stats.Battery[0])
-		sum.Battery[1] = stats.Battery[1]
+		if hasBattery(stats.Battery, stats.Batteries) {
+			batterySum += int(stats.Battery[0])
+			batteryCount++
+			sum.Battery[1] = stats.Battery[1]
+		}
+		for name, percent := range stats.Batteries {
+			batterySums[name] += uint64(percent)
+			batteryCounts[name]++
+		}
 
 		// accumulate per-core usage if present
 		if stats.CpuCoresUsage != nil {
@@ -242,15 +358,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		}
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
-		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)
+		sum.MaxMemBytes = max(sum.MaxMemBytes, maxMemBytes, memBytes[1])
 		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
 		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
-		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
-		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
 		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 		sum.MaxDiskIO[0] = max(sum.MaxDiskIO[0], stats.MaxDiskIO[0], stats.DiskIO[0])
 		sum.MaxDiskIO[1] = max(sum.MaxDiskIO[1], stats.MaxDiskIO[1], stats.DiskIO[1])
+		sum.DiskIOTotal[0] = max(sum.DiskIOTotal[0], stats.DiskIOTotal[0])
+		sum.DiskIOTotal[1] = max(sum.DiskIOTotal[1], stats.DiskIOTotal[1])
 		for i := range stats.DiskIoStats {
 			sum.MaxDiskIoStats[i] = max(sum.MaxDiskIoStats[i], stats.MaxDiskIoStats[i], stats.DiskIoStats[i])
 		}
@@ -279,26 +395,38 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 		}
 
+		// Accumulate fan speeds
+		if stats.Fans != nil {
+			if fanSums == nil {
+				fanSums = make(map[string]uint64, len(stats.Fans))
+			}
+			fanCount++
+			for key, value := range stats.Fans {
+				fanSums[key] += uint64(value)
+			}
+		}
+
 		// Accumulate extra filesystem stats
 		if stats.ExtraFs != nil {
 			if sum.ExtraFs == nil {
 				sum.ExtraFs = make(map[string]*system.FsStats, len(stats.ExtraFs))
 			}
 			for key, value := range stats.ExtraFs {
+				if value == nil {
+					continue
+				}
 				if _, ok := sum.ExtraFs[key]; !ok {
 					sum.ExtraFs[key] = &system.FsStats{}
 				}
 				fs := sum.ExtraFs[key]
 				fs.DiskTotal += value.DiskTotal
 				fs.DiskUsed += value.DiskUsed
-				fs.DiskWritePs += value.DiskWritePs
-				fs.DiskReadPs += value.DiskReadPs
-				fs.MaxDiskReadPS = max(fs.MaxDiskReadPS, value.MaxDiskReadPS, value.DiskReadPs)
-				fs.MaxDiskWritePS = max(fs.MaxDiskWritePS, value.MaxDiskWritePS, value.DiskWritePs)
 				fs.DiskReadBytes += value.DiskReadBytes
 				fs.DiskWriteBytes += value.DiskWriteBytes
 				fs.MaxDiskReadBytes = max(fs.MaxDiskReadBytes, value.MaxDiskReadBytes, value.DiskReadBytes)
 				fs.MaxDiskWriteBytes = max(fs.MaxDiskWriteBytes, value.MaxDiskWriteBytes, value.DiskWriteBytes)
+				fs.TotalRead = max(fs.TotalRead, value.TotalRead)
+				fs.TotalWrite = max(fs.TotalWrite, value.TotalWrite)
 				for i := range value.DiskIoStats {
 					fs.DiskIoStats[i] += value.DiskIoStats[i]
 					fs.MaxDiskIoStats[i] = max(fs.MaxDiskIoStats[i], value.MaxDiskIoStats[i], value.DiskIoStats[i])
@@ -306,6 +434,41 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			}
 		}
 
+		// Accumulate ZFS pool stats. Counts are tracked per entry so a pool
+		// missing from some samples is not averaged as zero.
+		if stats.ZfsPools != nil {
+			if sum.ZfsPools == nil {
+				sum.ZfsPools = make(map[string]*system.ZfsPool, len(stats.ZfsPools))
+			}
+			for name, value := range stats.ZfsPools {
+				if value == nil {
+					continue
+				}
+				pool := sum.ZfsPools[name]
+				if pool == nil {
+					pool = &system.ZfsPool{HideUsage: value.HideUsage, HideIO: value.HideIO}
+					sum.ZfsPools[name] = pool
+				}
+				// Never average physical and usable capacity into the same value.
+				if pool.Raw != value.Raw {
+					pool.Total, pool.Used = 0, 0
+					zfsCapacityCounts[name] = 0
+				}
+				pool.HideUsage = pool.HideUsage && value.HideUsage
+				pool.HideIO = pool.HideIO && value.HideIO
+				pool.DisplayName = value.DisplayName
+				pool.Raw = value.Raw
+				zfsCapacityCounts[name]++
+				pool.Total += value.Total
+				pool.Used += value.Used
+				pool.ReadBytes += value.ReadBytes
+				pool.WriteBytes += value.WriteBytes
+				if value.Health != "" {
+					pool.Health = value.Health
+				}
+				zfsPoolCounts[name]++
+			}
+		}
 		// Accumulate GPU data
 		if stats.GPUData != nil {
 			if sum.GPUData == nil {
@@ -339,18 +502,23 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 
 	// Compute averages
 	sum.Cpu = twoDecimals(sum.Cpu / count)
-	sum.Mem = twoDecimals(sum.Mem / count)
-	sum.MemUsed = twoDecimals(sum.MemUsed / count)
+	for i := range sum.MemBytes {
+		sum.MemBytes[i] = sum.MemBytes[i] / uint64(count)
+	}
 	sum.MemPct = twoDecimals(sum.MemPct / count)
-	sum.MemBuffCache = twoDecimals(sum.MemBuffCache / count)
-	sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
-	sum.Swap = twoDecimals(sum.Swap / count)
-	sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
+	sum.SwapBytes[0] = sum.SwapBytes[0] / uint64(count)
+	sum.SwapBytes[1] = sum.SwapBytes[1] / uint64(count)
+	// TODO: stop populating deprecated GB fields when they are removed from the agent
+	sum.Mem = bytesToGigabytes(sum.MemBytes[0])
+	sum.MemUsed = bytesToGigabytes(sum.MemBytes[1])
+	sum.MemBuffCache = bytesToGigabytes(sum.MemBytes[2])
+	sum.MemZfsArc = bytesToGigabytes(sum.MemBytes[3])
+	sum.MaxMem = bytesToGigabytes(sum.MaxMemBytes)
+	sum.Swap = bytesToGigabytes(sum.SwapBytes[0])
+	sum.SwapUsed = bytesToGigabytes(sum.SwapBytes[1])
 	sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 	sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
 	sum.DiskPct = twoDecimals(sum.DiskPct / count)
-	sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
-	sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
 	sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
 	sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
 	for i := range sum.DiskIoStats {
@@ -363,7 +531,15 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
 	sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
 	sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
-	sum.Battery[0] = uint8(batterySum / int(count))
+	if batteryCount > 0 {
+		sum.Battery[0] = uint8(batterySum / batteryCount)
+	}
+	if len(batterySums) > 0 {
+		sum.Batteries = make(map[string]uint8, len(batterySums))
+		for name, total := range batterySums {
+			sum.Batteries[name] = uint8(total / batteryCounts[name])
+		}
+	}
 
 	// Average network interfaces
 	if sum.NetworkInterfaces != nil {
@@ -384,14 +560,20 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		}
 	}
 
+	// Average fan speeds
+	if fanSums != nil && fanCount > 0 {
+		sum.Fans = make(map[string]uint16, len(fanSums))
+		for key, value := range fanSums {
+			sum.Fans[key] = uint16(value / fanCount)
+		}
+	}
+
 	// Average extra filesystem stats
 	if sum.ExtraFs != nil {
 		for key := range sum.ExtraFs {
 			fs := sum.ExtraFs[key]
 			fs.DiskTotal = twoDecimals(fs.DiskTotal / count)
 			fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
-			fs.DiskWritePs = twoDecimals(fs.DiskWritePs / count)
-			fs.DiskReadPs = twoDecimals(fs.DiskReadPs / count)
 			fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
 			fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
 			for i := range fs.DiskIoStats {
@@ -400,6 +582,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		}
 	}
 
+	// Average ZFS pool stats.
+	for name, pool := range sum.ZfsPools {
+		entryCount := zfsPoolCounts[name]
+		pool.Total = twoDecimals(pool.Total / float64(zfsCapacityCounts[name]))
+		pool.Used = twoDecimals(pool.Used / float64(zfsCapacityCounts[name]))
+		pool.ReadBytes /= entryCount
+		pool.WriteBytes /= entryCount
+	}
 	// Average GPU data
 	if sum.GPUData != nil {
 		for id := range sum.GPUData {
@@ -440,20 +630,28 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.CpuBreakdown = avg
 	}
 
+	// RSSI averages exclude records where the interface was absent.
+	if len(wifiSums) > 0 {
+		sum.WiFi = make(map[string]int8, len(wifiSums))
+		for id, total := range wifiSums {
+			sum.WiFi[id] = int8(math.Round(float64(total) / float64(wifiCounts[id])))
+		}
+	}
+
 	return sum
 }
 
-// Calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds) []container.Stats {
+func hasBattery(legacy [2]uint8, batteries map[string]uint8) bool {
+	return legacy != [2]uint8{} || len(batteries) > 0
+}
+
+// AverageContainerStats calculates the average stats of container_stats records.
+// Records must be in creation order, matching the averaging of system stats.
+func AverageContainerStats(records []StatsRecord) []container.Stats {
 	allStats := make([][]container.Stats, 0, len(records))
-	var row StatsRecord
-	params := make(dbx.Params, 1)
-	for _, rec := range records {
-		row.Stats = row.Stats[:0]
-		params["id"] = rec.Id
-		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(params).One(&row)
+	for _, record := range records {
 		var cs []container.Stats
-		if err := json.Unmarshal(row.Stats, &cs); err != nil {
+		if err := json.Unmarshal(record.Stats, &cs); err != nil {
 			return []container.Stats{}
 		}
 		allStats = append(allStats, cs)
@@ -500,7 +698,67 @@ func AverageContainerStatsSlice(records [][]container.Stats) []container.Stats {
 	return result
 }
 
+// AverageMonitorStats merges probe counts and response sums, preserving their
+// weights through every retention tier. Failed probes do not contribute latency.
+func (rm *RecordManager) AverageMonitorStats(db dbx.Builder, monitorID, recordType string, createdAfter int64) (monitor.Stats, int, error) {
+	var result struct {
+		monitor.Stats
+		Count int `db:"count"`
+	}
+	err := db.Select(
+		"COUNT(*) AS count",
+		"COALESCE(SUM(total_count), 0) AS total_count",
+		"COALESCE(SUM(success_count), 0) AS success_count",
+		"COALESCE(SUM(res_sum), 0) AS res_sum",
+		"COALESCE(MIN(CASE WHEN success_count > 0 THEN res_min END), 0) AS res_min",
+		"COALESCE(MAX(CASE WHEN success_count > 0 THEN res_max END), 0) AS res_max",
+	).From("network_monitor_stats").Where(dbx.NewExp(
+		"monitor={:monitor} AND type={:type} AND created>{:created}",
+		dbx.Params{"monitor": monitorID, "type": recordType, "created": createdAfter},
+	)).One(&result)
+	if err != nil {
+		return monitor.Stats{}, 0, err
+	}
+	if result.SuccessCount > 0 {
+		result.ResAvg = twoDecimals(float64(result.ResponseSum) / float64(result.SuccessCount))
+	}
+	if result.TotalCount > 0 {
+		result.Loss = twoDecimals(float64(result.TotalCount-result.SuccessCount) * 100 / float64(result.TotalCount))
+	}
+	return result.Stats, result.Count, nil
+}
+
 /* Round float to two decimals */
+const gb = 1024 * 1024 * 1024
+
+// memoryBytes returns memory bytes, swap bytes, and max used memory bytes for a record,
+// converting the deprecated GB fields of records created before 0.21.1.
+//
+// TODO: remove the GB conversion when the deprecated fields are removed. Hubs upgraded from
+// versions before 0.21.1 average pre-upgrade records only in the first few hours after upgrade.
+func memoryBytes(stats *system.Stats) (mem [4]uint64, swap [2]uint64, maxUsed uint64) {
+	mem, swap, maxUsed = stats.MemBytes, stats.SwapBytes, stats.MaxMemBytes
+	if mem == [4]uint64{} {
+		mem = [4]uint64{
+			uint64(stats.Mem * gb),
+			uint64(stats.MemUsed * gb),
+			uint64(stats.MemBuffCache * gb),
+			uint64(stats.MemZfsArc * gb),
+		}
+	}
+	if swap == [2]uint64{} {
+		swap = [2]uint64{uint64(stats.Swap * gb), uint64(stats.SwapUsed * gb)}
+	}
+	if maxUsed == 0 {
+		maxUsed = uint64(stats.MaxMem * gb)
+	}
+	return mem, swap, maxUsed
+}
+
+func bytesToGigabytes(b uint64) float64 {
+	return twoDecimals(float64(b) / gb)
+}
+
 func twoDecimals(value float64) float64 {
 	return math.Round(value*100) / 100
 }

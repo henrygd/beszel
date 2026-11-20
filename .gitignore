@@ -10,6 +10,7 @@ dist/
 beszel-agent
 beszel-server
 beszel-test
+hub
 internal/cmd/hub/hub
 internal/cmd/agent/agent
 agent.test
@@ -49,4 +50,5 @@ graphify-out/*
 !graphify-out/*.svg
 !graphify-out/*.json
 !graphify-out/*.md
-!graphify-out/*.html
+!graphify-out/*.html.cr-release-packages
+.tmp

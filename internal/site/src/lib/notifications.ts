@@ -237,3 +237,30 @@ export function getDefaultSettings(type: NotificationType): NotificationSettings
 			return {} as NotificationSettings
 	}
 }
+
+const MONITORS_API_BASE = "/api/beszel/monitors"
+
+export async function getMonitorNotifications(monitorId: string): Promise<string[]> {
+	const response = await fetch(`${MONITORS_API_BASE}/${monitorId}/notifications`, {
+		headers: { Authorization: `Bearer ${pb.authStore.token}` },
+	})
+	if (!response.ok) {
+		throw new Error(`Failed to fetch monitor notifications: ${response.statusText}`)
+	}
+	const data = await response.json()
+	return data.notification_ids ?? []
+}
+
+export async function setMonitorNotifications(monitorId: string, notificationIds: string[]): Promise<void> {
+	const response = await fetch(`${MONITORS_API_BASE}/${monitorId}/notifications`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: `Bearer ${pb.authStore.token}`,
+		},
+		body: JSON.stringify({ notification_ids: notificationIds }),
+	})
+	if (!response.ok) {
+		throw new Error(`Failed to set monitor notifications: ${response.statusText}`)
+	}
+}
