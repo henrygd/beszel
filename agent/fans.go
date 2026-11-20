@@ -3,6 +3,7 @@ package agent
 import (
 	"errors"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,10 +27,19 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 	})
 }
 
-// updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
-// No-op on platforms where hwmon isn't available (see fans_other.go).
+// updateFans populates systemStats.Fans from the host's hwmon sysfs tree, or on
+// Windows from the LHM helper (see fans_windows.go). No-op on other platforms.
 func (a *Agent) updateFans(systemStats *system.Stats) {
-	if hwmonRoot == "" || (a.sensorConfig != nil && a.sensorConfig.skipFans) {
+	if a.sensorConfig != nil && a.sensorConfig.skipFans {
+		return
+	}
+	if platformFans != nil {
+		if fans := a.sensorConfig.filterFanKeys(platformFans()); len(fans) > 0 {
+			systemStats.Fans = fans
+		}
+		return
+	}
+	if hwmonRoot == "" {
 		return
 	}
 	fans, err := a.readFansWithTimeout(getFanSensors)
@@ -140,6 +150,18 @@ func readFanSensors(sensors []fanSensor) map[string]uint16 {
 			fans[sensor.key] = uint16(rpm)
 		}
 	}
+	return fans
+}
+
+// filterFanKeys drops fans excluded by FAN_SENSORS from readings that don't
+// come from hwmon, such as Windows LHM fans.
+func (config *SensorConfig) filterFanKeys(fans map[string]uint16) map[string]uint16 {
+	if config == nil {
+		return fans
+	}
+	maps.DeleteFunc(fans, func(key string, _ uint16) bool {
+		return !config.fanSensors.allows(key)
+	})
 	return fans
 }
 
