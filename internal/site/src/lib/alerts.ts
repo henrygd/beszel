@@ -1,10 +1,12 @@
 import { t } from "@lingui/core/macro"
 import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon } from "lucide-react"
+import { computed } from "nanostores"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
 import type { AlertInfo, AlertRecord } from "@/types"
 import { pb } from "./api"
+import { updateFavicon } from "./utils"
 import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/ui/icons"
 
 /** Alert info for each alert type */
@@ -154,6 +156,19 @@ export const alertInfo: Record<string, AlertInfo> = {
   },
 } as const
 
+/** Triggered alerts of a known type, shared by the active alerts banner and the favicon */
+export const $activeAlerts = computed($alerts, (alerts) => {
+  const activeAlerts: AlertRecord[] = []
+  for (const systemAlerts of Object.values(alerts)) {
+    for (const alert of systemAlerts.values()) {
+      if (alert.triggered && alert.name in alertInfo) {
+        activeAlerts.push(alert)
+      }
+    }
+  }
+  return activeAlerts
+})
+
 /** Helper to manage user alerts */
 export const alertManager = (() => {
   const collection = pb.collection<AlertRecord>("alerts")
@@ -161,6 +176,9 @@ export const alertManager = (() => {
 
   /** Fields to fetch from alerts collection */
   const fields = "id,name,system,value,min,triggered"
+
+  // show the number of active alerts on the favicon
+  $activeAlerts.listen((activeAlerts) => updateFavicon(activeAlerts.length))
 
   /** Fetch alerts from collection */
   async function fetchAlerts(): Promise<AlertRecord[]> {
