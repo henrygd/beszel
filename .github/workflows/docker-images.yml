@@ -27,6 +27,10 @@ jobs:
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
+              # Fork tags carry a prerelease suffix (v0.21.2-fork.1), so
+              # metadata-action's latest=auto never applies. The in-app
+              # updater and README pull :latest, so publish it on every tag.
+              type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
               type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
           # beszel-agent
@@ -37,6 +41,7 @@ jobs:
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
+              type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
               type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
           # beszel-agent:alpine
