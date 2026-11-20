@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
@@ -17,7 +18,6 @@ import (
 	esystem "github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/ws"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 )
 
@@ -71,6 +71,18 @@ func TestNetworkMonitorSyncSkipsOlderAgents(t *testing.T) {
 			require.NoError(t, sys.DeleteNetworkMonitor("test"))
 		})
 	}
+}
+
+func TestNetworkMonitorSyncIPVersionOlderAgent(t *testing.T) {
+	// No transport: a request that is not rejected first would fail with a different error.
+	sys := &System{}
+	sys.setAgentVersion(semver.MustParse("0.21.1"))
+	_, err := sys.UpsertNetworkMonitor(monitor.Config{ID: "v6", IPVersion: monitor.IPVersion6}, true)
+	require.ErrorContains(t, err, "does not support IP version")
+
+	configs := []monitor.Config{{ID: "auto"}, {ID: "v4", IPVersion: monitor.IPVersion4}, {ID: "v6", IPVersion: monitor.IPVersion6}}
+	require.Equal(t, []monitor.Config{{ID: "auto"}}, withoutIPVersionConfigs(configs))
+	require.Len(t, configs, 3, "input must not be modified")
 }
 
 func TestNetworkMonitorReconnectSync(t *testing.T) {
@@ -177,14 +189,14 @@ func TestNetworkMonitorReconnectSync(t *testing.T) {
 	}
 }
 
-func TestGetMonitorConfigsForSystemIncludesSkipTLSVerify(t *testing.T) {
+func TestGetMonitorConfigsForSystemIncludesProbeOptions(t *testing.T) {
 	sys, app := newTestSystemWithHub(t)
 	collection, err := app.FindCachedCollectionByNameOrId("network_monitors")
 	require.NoError(t, err)
 	record := core.NewRecord(collection)
 	record.Load(map[string]any{
 		"system": sys.Id, "target": "https://self-signed.example", "protocol": "http",
-		"interval": 60, "enabled": true, "skipTlsVerify": true,
+		"interval": 60, "enabled": true, "skipTlsVerify": true, "ipVersion": 6,
 	})
 	require.NoError(t, app.SaveNoValidate(record))
 
@@ -192,6 +204,7 @@ func TestGetMonitorConfigsForSystemIncludesSkipTLSVerify(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, configs, 1)
 	require.True(t, configs[0].SkipTLSVerify, "full sync must keep the skip TLS verify option")
+	require.Equal(t, monitor.IPVersion6, configs[0].IPVersion, "full sync must keep the IP version")
 }
 
 func TestGetMonitorConfigsForSystemIncludesStatusCodes(t *testing.T) {

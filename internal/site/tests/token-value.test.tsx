@@ -2,10 +2,6 @@ import { describe, expect, mock, test } from "bun:test"
 import { renderToStaticMarkup } from "react-dom/server"
 
 mock.module("@lingui/core/macro", () => ({ t: (strings: TemplateStringsArray) => strings[0] }))
-mock.module("../src/lib/utils", () => ({
-	cn: (...values: unknown[]) => values.filter(Boolean).join(" "),
-	copyToClipboard: async () => {},
-}))
 
 const { TokenValue } = await import("../src/components/token-value")
 const token = "dummy-agent-token-not-a-real-credential"

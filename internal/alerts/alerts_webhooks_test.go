@@ -8,9 +8,9 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/dbx"
 	"github.com/henrygd/beszel/internal/alerts"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/dbx"
 	"github.com/stretchr/testify/require"
 )
 

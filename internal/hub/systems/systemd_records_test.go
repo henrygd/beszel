@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/dbx"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/tests"
-	"github.com/pocketbase/dbx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

@@ -1,8 +1,8 @@
 package hub
 
 import (
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/hub/utils"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 type collectionRules struct {

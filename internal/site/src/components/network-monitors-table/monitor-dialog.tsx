@@ -28,7 +28,7 @@ import { ChevronDownIcon, GlobeIcon, ListIcon, type LucideIcon, PlusIcon, Search
 import { useToast } from "@/components/ui/use-toast"
 import { $systems } from "@/lib/stores"
 import { cn, supportsNetworkMonitors } from "@/lib/utils"
-import { getMonitorTarget, isHttpsTarget } from "@/lib/network-monitor-utils"
+import { formatMonitorFields, getMonitorTarget, isHttpsTarget, parseMonitorFields } from "@/lib/network-monitor-utils"
 import type { NetworkMonitorRecord } from "@/types"
 import * as v from "valibot"
 
@@ -42,14 +42,18 @@ type MonitorValues = {
 	server: string
 	interval: string
 	skipTlsVerify: boolean
+	ipVersion: MonitorIPVersion
 	statusCodes: string
 }
+
+type MonitorIPVersion = NetworkMonitorRecord["ipVersion"]
 
 type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
 	interval: number
 }
 
-type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "server">
+type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "server"> &
+	Partial<Pick<NetworkMonitorRecord, "ipVersion">>
 
 const defaultInterval = 30
 
@@ -77,6 +81,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 		server: v.pipe(v.string(), v.trim()),
 		interval: MonitorIntervalSchema,
 		skipTlsVerify: v.boolean(),
+		ipVersion: v.picklist([0, 4, 6]),
 		statusCodes: MonitorStatusCodesSchema,
 	}),
 	v.transform((input): NormalizedMonitorValues => {
@@ -101,6 +106,7 @@ const NormalizedMonitorValuesSchema = v.pipe(
 			interval: input.interval,
 			// Only HTTPS targets use TLS; clear it for everything else.
 			skipTlsVerify: protocol === "http" && isHttpsTarget(httpTarget) && input.skipTlsVerify,
+			ipVersion: input.ipVersion,
 			// Only HTTP monitors check status codes; clear them for other protocols.
 			statusCodes: protocol === "http" ? input.statusCodes : "",
 		}
@@ -138,6 +144,14 @@ const BulkMonitorSchema = v.object({
 	port: v.optional(v.pipe(v.string(), v.trim())),
 	interval: v.optional(v.pipe(v.string(), v.trim())),
 	server: v.optional(v.pipe(v.string(), v.trim())),
+	ipVersion: v.optional(
+		v.pipe(
+			v.string(),
+			v.trim(),
+			v.toLowerCase(),
+			v.picklist(["", "auto", "4", "6", "ipv4", "ipv6"], "IP version must be ipv4, ipv6 or auto")
+		)
+	),
 })
 
 function normalizeHttpTarget(target: string, port = 0) {
@@ -190,19 +204,26 @@ function buildMonitorPayload(values: MonitorValues, enabled = true) {
 	return payload
 }
 
-type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port" | "server">
-function getMonitorIdentityKey({ system, target, protocol, port, server }: MonitorIdentity) {
-	return `${system}${target}${protocol}${port}${protocol === "dns" ? server : ""}`
+type MonitorIdentity = Pick<MonitorValues, "system" | "target" | "protocol" | "port" | "server" | "ipVersion">
+function getMonitorIdentityKey({ system, target, protocol, port, server, ipVersion }: MonitorIdentity) {
+	return `${system}${target}${protocol}${port}${protocol === "dns" ? server : ""}${ipVersion ? `/v${ipVersion}` : ""}`
 }
 
 function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = ""] = line.split(",")
+	let fields: string[]
+	try {
+		fields = parseMonitorFields(line)
+	} catch (err) {
+		throw new Error(`Line ${lineNumber}: ${err instanceof Error ? err.message : "invalid monitor entry"}`)
+	}
+	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", rawIpVersion = ""] = fields
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
 		port: rawPort,
 		interval: rawInterval,
 		server: rawServer,
+		ipVersion: rawIpVersion,
 	})
 	if (!parsed.success) {
 		throw new Error(`Line ${lineNumber}: ${parsed.issues[0]?.message || "invalid monitor entry"}`)
@@ -218,15 +239,25 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		server: parsed.output.server || "",
 		interval: parsed.output.interval || `${defaultInterval}`,
 		skipTlsVerify: false,
+		ipVersion: parseBulkIpVersion(parsed.output.ipVersion),
 		statusCodes: "",
 	})
+}
+
+// Accepts ipv4/ipv6 as well as 4/6, so lines copied from the table round-trip.
+function parseBulkIpVersion(value = ""): MonitorIPVersion {
+	const version = value.replace("ipv", "")
+	return version === "4" ? 4 : version === "6" ? 6 : 0
 }
 
 export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const port = monitor.protocol !== "tcp" || monitor.port === 443 ? "" : `${monitor.port}`
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
-	return trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server]).join(",")
+	const ipVersion = monitor.ipVersion ? `ipv${monitor.ipVersion}` : ""
+	return formatMonitorFields(
+		trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, ipVersion])
+	)
 }
 
 export function SystemMultiSelect({
@@ -651,7 +682,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
 						<SheetDescription>
-							<Trans>target[,protocol[,port[,interval[,server]]]]</Trans>
+							<Trans>target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]</Trans>
 						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
@@ -690,11 +721,12 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 										"example.com,tcp",
 										"https://example.com,http,,60",
 										"example.com,dns,,,1.1.1.1",
+										"example.com,icmp,,,,ipv6",
 									].join("\n")}
 									required
 								/>
 								<p className="text-xs text-muted-foreground">
-									<Trans>target[,protocol[,port[,interval[,server]]]]</Trans>
+									<Trans>target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]</Trans>
 								</p>
 							</div>
 						</div>
@@ -752,6 +784,7 @@ function MonitorDialogContent({
 	const [server, setServer] = useState(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 	const [monitorInterval, setMonitorInterval] = useState(String(monitor?.interval ?? defaultInterval))
 	const [skipTlsVerify, setSkipTlsVerify] = useState(monitor?.skipTlsVerify ?? false)
+	const [ipVersion, setIpVersion] = useState<MonitorIPVersion>(monitor?.ipVersion ?? 0)
 	const [statusCodes, setStatusCodes] = useState(monitor?.statusCodes ?? "")
 	const [loading, setLoading] = useState(false)
 	const [selectedSystemId, setSelectedSystemId] = useState(monitor?.system ?? "")
@@ -776,6 +809,7 @@ function MonitorDialogContent({
 		setServer(monitor?.protocol === "dns" ? (monitor.server ?? "") : "")
 		setMonitorInterval(String(monitor?.interval ?? defaultInterval))
 		setSkipTlsVerify(monitor?.skipTlsVerify ?? false)
+		setIpVersion(monitor?.ipVersion ?? 0)
 		setStatusCodes(monitor?.statusCodes ?? "")
 		setSelectedSystemId(monitor?.system ?? "")
 		setSelectedSystemIds(new Set())
@@ -799,6 +833,7 @@ function MonitorDialogContent({
 					server: protocol === "dns" ? server.trim() : "",
 					interval: monitorInterval,
 					skipTlsVerify,
+					ipVersion,
 					statusCodes,
 				},
 				monitor ? monitor.enabled : true
@@ -936,6 +971,32 @@ function MonitorDialogContent({
 						</p>
 					</div>
 				)}
+				<div className="grid gap-2">
+					<Label>
+						<Trans>IP Version</Trans>
+					</Label>
+					<Select value={String(ipVersion)} onValueChange={(value) => setIpVersion(Number(value) as MonitorIPVersion)}>
+						<SelectTrigger>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="0">
+								<Trans>Auto</Trans>
+							</SelectItem>
+							<SelectItem value="4">IPv4</SelectItem>
+							<SelectItem value="6">IPv6</SelectItem>
+						</SelectContent>
+					</Select>
+					{protocol === "dns" && ipVersion !== 0 && (
+						<p className="text-xs text-muted-foreground">
+							{ipVersion === 4 ? (
+								<Trans>Checks that an A record exists.</Trans>
+							) : (
+								<Trans>Checks that an AAAA record exists.</Trans>
+							)}
+						</p>
+					)}
+				</div>
 				<div className="grid gap-2">
 					<Label>
 						<Trans>Interval (seconds)</Trans>
