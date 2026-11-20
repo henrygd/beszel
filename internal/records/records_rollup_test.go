@@ -10,6 +10,7 @@ import (
 
 	"ganigeorgiev.com/pocketbase/dbx"
 	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/tests"
 	"github.com/stretchr/testify/assert"
@@ -234,4 +235,52 @@ func TestLongerRecordsKeepValidInputs(t *testing.T) {
 			})
 		}
 	}
+}
+
+// TestLongerRecordsPreserveCreationOrder verifies that averaging sees the
+// shorter records oldest to newest. Some fields keep the value of the last
+// record (Battery[1], ZFS DisplayName/Health, the ZFS raw reset), so a query
+// that returns rows in any other order silently breaks the rollup.
+func TestLongerRecordsPreserveCreationOrder(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	user, err := tests.CreateUser(hub, "order@example.com", "testtesttest")
+	require.NoError(t, err)
+	sys, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name": "order-system", "host": "localhost", "port": "45876",
+		"status": "up", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	now := time.Now().UTC()
+	const count = 10
+	for i := range count {
+		// only the newest record reports the charging state
+		chargeState := 0
+		if i == count-1 {
+			chargeState = 1
+		}
+		rec, err := tests.CreateRecord(hub, "system_stats", map[string]any{
+			"system": sys.Id, "type": "10m",
+			"stats": fmt.Sprintf(`{"cpu":10,"bat":[80,%d]}`, chargeState),
+		})
+		require.NoError(t, err)
+		// created is an autodate field, so we need to set it manually
+		created := now.Add(-15*time.Minute + time.Duration(i+1)*time.Minute)
+		rec.SetRaw("created", created.Format(types.DefaultDateLayout))
+		require.NoError(t, hub.SaveNoValidate(rec))
+	}
+
+	records.NewRecordManager(hub).CreateLongerRecords()
+	rollups, err := hub.FindAllRecords("system_stats", dbx.HashExp{"system": sys.Id, "type": "20m"})
+	require.NoError(t, err)
+	require.Len(t, rollups, 1)
+
+	var stats struct {
+		Battery system.Battery `json:"bat"`
+	}
+	require.NoError(t, rollups[0].UnmarshalJSONField("stats", &stats))
+	assert.Equal(t, uint8(1), stats.Battery[1], "charge state must come from the newest record")
 }
