@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 )
 
