@@ -9,9 +9,12 @@ RUN go mod download
 # Copy source files
 COPY . ./
 
+# hwdata-*: pci.ids and usb.ids, so the hub can name devices in the hardware inventory
 RUN apk add --no-cache \
     unzip \
-    ca-certificates
+    ca-certificates \
+    hwdata-pci \
+    hwdata-usb
 
 RUN update-ca-certificates
 
@@ -27,6 +30,7 @@ FROM scratch
 
 COPY --from=builder /beszel /
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/share/hwdata/pci.ids /usr/share/hwdata/usb.ids /usr/share/hwdata/
 
 # Ensure data persistence across container recreations
 VOLUME ["/beszel_data"]

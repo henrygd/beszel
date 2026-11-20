@@ -60,6 +60,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
+	registry.Register(common.GetHardwareInventory, &GetHardwareInventoryHandler{})
 
 	return registry
 }

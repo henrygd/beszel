@@ -17,6 +17,7 @@ import { GpuPowerChart, GpuCharts } from "./system/charts/gpu-charts"
 import {
 	LazyContainersTable,
 	LazyNetworkMonitorsTable,
+	LazyHardwareInventory,
 	LazyPackageUpdatesTable,
 	LazySmartTable,
 	LazySystemdTable,
@@ -24,7 +25,15 @@ import {
 	SystemdTable,
 } from "./system/lazy-tables"
 import { LoadAverageChart } from "./system/charts/load-average-chart"
-import { ContainerIcon, CpuIcon, HardDriveIcon, NetworkIcon, PackageIcon, TerminalSquareIcon } from "lucide-react"
+import {
+	CircuitBoardIcon,
+	ContainerIcon,
+	CpuIcon,
+	HardDriveIcon,
+	NetworkIcon,
+	PackageIcon,
+	TerminalSquareIcon,
+} from "lucide-react"
 import { GpuIcon } from "../ui/icons"
 import ContainersTable from "../containers-table/containers-table"
 
@@ -75,6 +84,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpu = hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
+	const hasHardware = system.status === SystemStatus.Up && !!system.info.hw
 	// counts key the table so it refetches the list only after a new check
 	const packageUpdates = system.status === SystemStatus.Up && system.info.pu?.[0] ? system.info.pu.join(",") : ""
 
@@ -84,6 +94,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	if (hasContainers) tabs.push("containers")
 	if (hasSystemd) tabs.push("services")
 	if (packageUpdates) tabs.push("updates")
+	if (hasHardware) tabs.push("hardware")
 	tabsRef.current = tabs
 
 	// shared chart props
@@ -171,6 +182,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{packageUpdates && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
 
 				{hasNetworkMonitors && <LazyNetworkMonitorsTable systemId={system.id} />}
+
+				{hasHardware && <LazyHardwareInventory systemId={system.id} />}
 			</>
 		)
 	}
@@ -213,6 +226,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<TabsTrigger value="updates" className="w-full flex items-center gap-2">
 							<PackageIcon className="size-3.5" />
 							<Trans>Updates</Trans>
+						</TabsTrigger>
+					)}
+					{hasHardware && (
+						<TabsTrigger value="hardware" className="w-full flex items-center gap-2">
+							<CircuitBoardIcon className="size-3.5" />
+							<Trans>Hardware</Trans>
 						</TabsTrigger>
 					)}
 				</TabsList>
@@ -312,6 +331,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{packageUpdates && (
 					<TabsContent value="updates" forceMount className={activeTab === "updates" ? "contents" : "hidden"}>
 						{mountedTabs.has("updates") && <LazyPackageUpdatesTable systemId={system.id} counts={packageUpdates} />}
+					</TabsContent>
+				)}
+
+				{hasHardware && (
+					<TabsContent value="hardware" forceMount className={activeTab === "hardware" ? "contents" : "hidden"}>
+						{mountedTabs.has("hardware") && <LazyHardwareInventory systemId={system.id} />}
 					</TabsContent>
 				)}
 			</Tabs>

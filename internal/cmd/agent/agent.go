@@ -72,6 +72,9 @@ func (opts *cmdOptions) parse() bool {
 	case "fingerprint":
 		handleFingerprint()
 		return true
+	case "inventory":
+		handleInventory(os.Args[2:])
+		return true
 	}
 
 	// pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true

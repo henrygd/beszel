@@ -73,3 +73,14 @@ function SystemNetworkMonitorsTable({ systemId }: { systemId: string }) {
 	const { monitors, isLoading } = useNetworkMonitors({ systemId })
 	return <NetworkMonitorsTable systemId={systemId} monitors={monitors} isLoading={isLoading} />
 }
+
+const HardwareInventoryCard = lazy(() => import("./hardware-inventory"))
+
+export function LazyHardwareInventory({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <HardwareInventoryCard systemId={systemId} />}
+		</div>
+	)
+}

@@ -30,6 +30,8 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Request the hardware inventory from the agent
+	GetHardwareInventory
 	// Add new actions here...
 )
 

@@ -21,6 +21,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/hardware"
 	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -900,6 +901,15 @@ func (sys *System) FetchSmartDataFromAgent() (smart.SmartDataResponse, error) {
 	}
 	var result smart.SmartDataResponse
 	err := sys.request(ctx, common.GetSmartData, nil, &result)
+	return result, err
+}
+
+// FetchHardwareInventoryFromAgent fetches the hardware inventory from the agent.
+func (sys *System) FetchHardwareInventoryFromAgent() (hardware.Inventory, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	var result hardware.Inventory
+	err := sys.request(ctx, common.GetHardwareInventory, nil, &result)
 	return result, err
 }
 
