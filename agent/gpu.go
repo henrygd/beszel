@@ -60,6 +60,9 @@ type gpuSnapshot struct {
 	power    float64
 	powerPkg float64
 	engines  map[string]float64
+	// accumulated memory bandwidth sum (GB/s) and sample count
+	memBw      float64
+	memBwCount float64
 }
 
 // RocmSmiJson represents the JSON structure of rocm-smi output
@@ -454,6 +457,8 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	gpuAvg.PowerPkg = utils.TwoDecimals(deltaPowerPkg / float64(deltaCount))
 
+	gm.averageMemBandwidth(&gpuAvg, gpu, lastSnapshot)
+
 	if gpu.Engines != nil {
 		// make fresh map for averaged engine metrics to avoid mutating
 		// the accumulator map stored in gm.GpuDataMap
@@ -466,6 +471,24 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 
 	gm.lastAvgData[id] = gpuAvg
 	return gpuAvg
+}
+
+// averageMemBandwidth sets the interval's average memory bandwidth. Bandwidth
+// has its own sample count because not every tick yields a sample (the first
+// GPM tick only primes a baseline). Without samples, bandwidth fields are
+// cleared so they are omitted rather than reported as zero.
+func (gm *GPUManager) averageMemBandwidth(gpuAvg, gpu *system.GPUData, lastSnapshot *gpuSnapshot) {
+	deltaBw, deltaCount := gpu.MemBandwidth, gpu.MemBandwidthCount
+	if lastSnapshot != nil {
+		deltaBw -= lastSnapshot.memBw
+		deltaCount -= lastSnapshot.memBwCount
+	}
+	gpuAvg.MemBandwidthCount = 0
+	if deltaCount <= 0 {
+		gpuAvg.MemBandwidth, gpuAvg.MemBandwidthPeak, gpuAvg.MemBandwidthApprox = 0, 0, false
+		return
+	}
+	gpuAvg.MemBandwidth = utils.TwoDecimals(max(deltaBw, 0) / deltaCount)
 }
 
 // calculateDeltaCount returns the change in count since the last snapshot
@@ -512,10 +535,12 @@ func (gm *GPUManager) updateInstantaneousValues(gpuAvg *system.GPUData, gpu *sys
 // storeSnapshot saves the current GPU state for this cache key
 func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uint16) {
 	snapshot := &gpuSnapshot{
-		count:    uint32(gpu.Count),
-		usage:    gpu.Usage,
-		power:    gpu.Power,
-		powerPkg: gpu.PowerPkg,
+		count:      uint32(gpu.Count),
+		usage:      gpu.Usage,
+		power:      gpu.Power,
+		powerPkg:   gpu.PowerPkg,
+		memBw:      gpu.MemBandwidth,
+		memBwCount: gpu.MemBandwidthCount,
 	}
 	if gpu.Engines != nil {
 		snapshot.engines = make(map[string]float64, len(gpu.Engines))

@@ -205,6 +205,14 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// memory
 	a.updateMemoryStats(&systemStats)
 
+	// memory bandwidth (memory controller PMU counters)
+	if a.memBandwidth != nil {
+		if bw, ok := a.memBandwidth.get(cacheTimeMs); ok {
+			systemStats.MemBandwidth = bw
+			systemStats.MemBandwidthTotalOnly = a.memBandwidth.totalOnly
+		}
+	}
+
 	// disk usage
 	a.updateDiskUsage(&systemStats)
 

@@ -175,6 +175,12 @@ export interface SystemStats {
 	bats?: Record<string, number>
 	/** Wi-Fi RSSI (dBm) by interface */
 	wf?: Record<string, number>
+	/** memory bandwidth [read, write] (GB/s) */
+	mbw?: [number, number]
+	/** max memory bandwidth [read, write] (GB/s) */
+	mbwm?: [number, number]
+	/** read/write split unavailable; sum mbw fields for total, including mixed-source rollups */
+	mbwt?: boolean
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -194,6 +200,12 @@ export interface GPUData {
 	pp?: number
 	/** engines */
 	e?: Record<string, number>
+	/** memory bandwidth (GB/s); omitted when 0 while bwp is present */
+	bw?: number
+	/** theoretical peak memory bandwidth (GB/s); present when bandwidth was sampled */
+	bwp?: number
+	/** bandwidth is estimated from memory busy time, not measured throughput */
+	bwa?: boolean
 }
 
 export interface ZfsPool {

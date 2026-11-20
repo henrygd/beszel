@@ -47,6 +47,7 @@ type Agent struct {
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	detailsDirty              bool                                                  // Whether system details have changed and need to be resent
 	gpuManager                *GPUManager                                           // Manages GPU data
+	memBandwidth              *memBandwidthManager                                  // System memory bandwidth counters (nil if unsupported)
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
@@ -177,6 +178,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	agent.packageUpdates = newPackageUpdatesManager(agent.dataDir)
+
+	// initialize memory bandwidth counters (Linux uncore PMUs; nil if unavailable)
+	agent.memBandwidth = newMemBandwidthManager()
 
 	// initialize GPU manager
 	agent.gpuManager, err = NewGPUManager()

@@ -8,6 +8,7 @@ import InfoBar from "./system/info-bar"
 import { useSystemData } from "./system/use-system-data"
 import { CpuChart, ContainerCpuChart } from "./system/charts/cpu-charts"
 import { MemoryChart, ContainerMemoryChart, SwapChart } from "./system/charts/memory-charts"
+import { MemoryBandwidthChart } from "./system/charts/memory-bandwidth-chart"
 import { RootDiskCharts, ExtraFsCharts } from "./system/charts/disk-charts"
 import { ZfsCharts } from "./system/charts/storage-pool-charts"
 import { BandwidthChart, ContainerNetworkChart } from "./system/charts/network-charts"
@@ -134,6 +135,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
 
+					<MemoryBandwidthChart {...coreProps} />
+
 					<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 
 					<TemperatureChart {...coreProps} />
@@ -223,6 +226,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<LoadAverageChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} />
 						<MemoryChart {...coreProps} />
 						<SwapChart chartData={chartData} grid={grid} dataEmpty={dataEmpty} systemStats={systemStats} />
+						<MemoryBandwidthChart {...coreProps} />
 						<TemperatureChart {...coreProps} setPageBottomExtraMargin={setPageBottomExtraMargin} />
 						<FanChart {...coreProps} />
 						<BatteryChart system={system} {...coreProps} />
