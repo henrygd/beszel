@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"os/exec"
 	"strconv"
 	"strings"
 
@@ -59,7 +58,7 @@ func (gm *GPUManager) collectIntelStats() (err error) {
 	if dev, ok := utils.GetEnv("INTEL_GPU_DEVICE"); ok && dev != "" {
 		args = append(args, "-d", dev)
 	}
-	cmd := exec.Command(intelGpuStatsCmd, args...)
+	cmd := safeCommand(intelGpuStatsCmd, args...)
 	// Avoid blocking if intel_gpu_top writes to stderr
 	cmd.Stderr = io.Discard
 	stdout, err := cmd.StdoutPipe()
