@@ -1,10 +1,10 @@
 import { useStore } from "@nanostores/react"
 import { HistoryIcon } from "lucide-react"
+import { memo, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { $chartTime } from "@/lib/stores"
-import { chartTimeData, cn, compareSemVer, parseSemVer } from "@/lib/utils"
+import { $chartTime, $userSettings } from "@/lib/stores"
+import { cn, compareSemVer, getAvailableChartTimeEntries, getNearestAvailableChartTime, parseSemVer } from "@/lib/utils"
 import type { ChartTimes, SemVer } from "@/types"
-import { memo } from "react"
 
 export default memo(function ChartTimeSelect({
 	className,
@@ -18,9 +18,11 @@ export default memo(function ChartTimeSelect({
 	allowRealtime?: boolean
 }) {
 	const chartTime = useStore(chartTimeStore)
+	const userSettings = useStore($userSettings)
+	const maxChartPeriod = userSettings.maxChartPeriod ?? "30d"
 
-	// remove chart times that are not supported by the system agent version
-	const availableChartTimes = Object.entries(chartTimeData).filter(([value, { minVersion }]) => {
+	// remove chart times that are not supported by the system agent version or current chart
+	const availableChartTimes = getAvailableChartTimeEntries(maxChartPeriod).filter(([value, { minVersion }]) => {
 		if (value === "1m" && !allowRealtime) {
 			return false
 		}
@@ -29,6 +31,14 @@ export default memo(function ChartTimeSelect({
 		}
 		return compareSemVer(agentVersion, parseSemVer(minVersion)) >= 0
 	})
+	const availableChartTimeValues = availableChartTimes.map(([value]) => value)
+
+	useEffect(() => {
+		const nextChartTime = getNearestAvailableChartTime(chartTime, availableChartTimeValues)
+		if (nextChartTime !== chartTime) {
+			chartTimeStore.set(nextChartTime)
+		}
+	}, [availableChartTimeValues, chartTime, chartTimeStore])
 
 	return (
 		<Select defaultValue="1h" value={chartTime} onValueChange={(value: ChartTimes) => chartTimeStore.set(value)}>

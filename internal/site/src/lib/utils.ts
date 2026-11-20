@@ -6,7 +6,7 @@ import { timeDay, timeHour, timeMinute } from "d3-time"
 import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
-import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
+import type { ChartMaxPeriod, ChartTimeData, ChartTimes, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
 import { $copyContent, $userSettings } from "./stores"
 
@@ -96,6 +96,13 @@ export const formatDay = (timestamp: string) => {
 	return dayFormatter.format(new Date(timestamp))
 }
 
+const monthFormatter = new Intl.DateTimeFormat(undefined, {
+	month: "short",
+})
+export const formatMonth = (timestamp: string) => {
+	return monthFormatter.format(new Date(timestamp))
+}
+
 export const updateFavicon = (() => {
 	let prevAlertCount = 0
 	return (alertCount = 0) => {
@@ -175,6 +182,83 @@ export const chartTimeData: ChartTimeData = {
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
 	},
+	"60d": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => formatTimeUnit(60, "day"),
+		ticks: 15,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeDay.offset(endTime, -60),
+	},
+	"90d": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => formatTimeUnit(90, "day"),
+		ticks: 12,
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeDay.offset(endTime, -90),
+	},
+	"1y": {
+		type: "480m",
+		expectedInterval: 60_000 * 480,
+		label: () => formatTimeUnit(1, "year"),
+		ticks: 12,
+		format: (timestamp: string) => formatMonth(timestamp),
+		getOffset: (endTime: Date) => timeDay.offset(endTime, -365),
+	},
+}
+
+export const chartTimes: ChartTimes[] = ["1m", "1h", "12h", "24h", "1w", "30d", "60d", "90d", "1y"]
+
+export const chartMaxPeriodData: Record<ChartMaxPeriod, { label: () => string }> = {
+	"30d": {
+		label: () => formatTimeUnit(30, "day"),
+	},
+	"60d": {
+		label: () => formatTimeUnit(60, "day"),
+	},
+	"90d": {
+		label: () => formatTimeUnit(90, "day"),
+	},
+	"1y": {
+		label: () => formatTimeUnit(1, "year"),
+	},
+	all: {
+		label: () => t`All`,
+	},
+}
+
+export function getAvailableChartTimeEntries(maxChartPeriod: ChartMaxPeriod = "all") {
+	const maxIndex =
+		maxChartPeriod === "all"
+			? chartTimes.length - 1
+			: Math.max(chartTimes.indexOf(maxChartPeriod), chartTimes.indexOf("30d"))
+	return chartTimes
+		.filter((_, index) => index <= maxIndex)
+		.map((chartTime) => [chartTime, chartTimeData[chartTime]] as const)
+}
+
+export function getNearestAvailableChartTime(chartTime: ChartTimes, availableChartTimes: ChartTimes[]) {
+	if (!availableChartTimes.length || availableChartTimes.includes(chartTime)) {
+		return chartTime
+	}
+
+	const currentIndex = chartTimes.indexOf(chartTime)
+	let fallback = availableChartTimes[0]
+
+	for (const availableChartTime of availableChartTimes) {
+		if (chartTimes.indexOf(availableChartTime) <= currentIndex) {
+			fallback = availableChartTime
+		}
+	}
+
+	return fallback
+}
+
+export function getChartTimePointLimit(chartTime: ChartTimes) {
+	const endTime = new Date()
+	const startTime = chartTimeData[chartTime].getOffset(endTime)
+	return Math.ceil((endTime.getTime() - startTime.getTime()) / chartTimeData[chartTime].expectedInterval) + 6
 }
 
 /** Format number to x decimal places, without trailing zeros */
