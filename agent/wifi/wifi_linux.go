@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -110,9 +111,23 @@ func collect(ctx context.Context) map[string]system.WiFi {
 			defer client.Close()
 		}
 	}
-	return collectLinuxWithAP(ctx, client, runIwinfo)
+	var iwinfo iwinfoCommand
+	if hasIwinfo() {
+		iwinfo = runIwinfo
+	}
+	return collectLinuxWithAP(ctx, client, iwinfo)
 }
 
+// hasIwinfo gates AP collection, so hosts without iwinfo (anything but
+// OpenWrt) skip a PATH lookup on every poll. Cached: OpenWrt ships iwinfo in
+// the base image, so it does not appear after the agent starts.
+var hasIwinfo = sync.OnceValue(func() bool {
+	_, err := exec.LookPath("iwinfo")
+	return err == nil
+})
+
+// iwinfoCommand runs iwinfo with the given arguments. A nil iwinfoCommand
+// disables AP collection.
 type iwinfoCommand func(context.Context, ...string) ([]byte, error)
 
 func runIwinfo(ctx context.Context, args ...string) ([]byte, error) {
@@ -189,7 +204,7 @@ func parseAssocRSSI(out string) (avg float64, ok bool) {
 // A nil aps requests discovery for drivers without a usable nl80211 inventory.
 // An empty, non-nil aps means enumeration succeeded and found no APs.
 func collectOpenWrtAP(ctx context.Context, aps []string, iwinfo iwinfoCommand) map[string]system.WiFi {
-	if ctx.Err() != nil || (aps != nil && len(aps) == 0) {
+	if iwinfo == nil || ctx.Err() != nil || (aps != nil && len(aps) == 0) {
 		return nil
 	}
 	results := make(map[string]system.WiFi)

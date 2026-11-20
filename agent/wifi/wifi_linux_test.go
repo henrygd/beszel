@@ -287,6 +287,13 @@ func TestLinuxIwinfoUnavailable(t *testing.T) {
 	if got := collectLinuxWithAP(context.Background(), nil, unavailable); got != nil {
 		t.Fatalf("expected empty snapshot without either backend: %v", got)
 	}
+	// Without iwinfo on PATH, collect passes no command at all.
+	if got := collectLinuxWithAP(context.Background(), f, nil); len(got) != 1 || got["wlan0"].Signal == nil {
+		t.Fatalf("lost station reading without an iwinfo command: %v", got)
+	}
+	if got := collectLinuxWithAP(context.Background(), nil, nil); got != nil {
+		t.Fatalf("expected empty snapshot without either backend: %v", got)
+	}
 }
 
 func TestLinuxAPCancellation(t *testing.T) {
