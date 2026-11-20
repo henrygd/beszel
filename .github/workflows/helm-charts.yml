@@ -15,7 +15,9 @@ permissions:
   packages: write
 
 env:
-  OCI_REGISTRY: ghcr.io/henrygd/beszel-charts
+  # Fork publishes charts under its own namespace; upstream registry already
+  # holds these versions, so the "unpublished" check would always fail here.
+  OCI_REGISTRY: ghcr.io/dvorinka/beszel-charts
 
 jobs:
   changes:
