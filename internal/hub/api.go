@@ -23,6 +23,7 @@ import (
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/mcp"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
 )
@@ -228,6 +229,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
+	// model context protocol (MCP) server for AI agents, enabled with MCP=true
+	if err := mcp.RegisterRoutes(h, se); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -238,8 +243,11 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 		Version     string `json:"v"`
 		CheckUpdate bool   `json:"cu"`
 	}
+	h.sshKeyMu.Lock()
+	pubKey := h.pubKey
+	h.sshKeyMu.Unlock()
 	info := infoResponse{
-		Key:     h.pubKey,
+		Key:     pubKey,
 		Version: beszel.Version,
 	}
 	if optIn, _ := utils.GetEnv("CHECK_UPDATES"); optIn == "true" {

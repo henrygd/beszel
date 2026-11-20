@@ -15,8 +15,22 @@ import (
 
 var (
 	procZfsPath = "/proc/spl/kstat/zfs"
-	devZfsPath  = "/dev/zfs"
+	// lplZfsPath is where QNAP QuTS hero exposes the same kstats.
+	lplZfsPath = "/proc/lpl/kstat/zfs"
+	devZfsPath = "/dev/zfs"
 )
+
+// kstatRoot returns the ZFS kstat directory, preferring the standard OpenZFS
+// location and falling back to the QNAP QuTS hero one.
+func kstatRoot() string {
+	if _, err := os.Stat(procZfsPath); err == nil {
+		return procZfsPath
+	}
+	if _, err := os.Stat(lplZfsPath); err == nil {
+		return lplZfsPath
+	}
+	return procZfsPath
+}
 
 // errNoPoolIOStats marks an "iostats" file that predates OpenZFS 2.3 and
 // reports no pool read/write counters (TRIM statistics only), so callers may
@@ -24,7 +38,7 @@ var (
 var errNoPoolIOStats = errors.New("no pool I/O counters")
 
 func ARCSize() (uint64, error) {
-	file, err := os.Open(filepath.Join(procZfsPath, "arcstats"))
+	file, err := os.Open(filepath.Join(kstatRoot(), "arcstats"))
 	if err != nil {
 		return 0, err
 	}
@@ -65,9 +79,10 @@ func checkZfsDevice() error {
 // procfs. These kstats are the same interfaces used by node_exporter's Linux
 // ZFS collector and avoid keeping a `zpool iostat` subprocess alive.
 func PoolKernelStats() ([]PoolKernelStat, error) {
+	root := kstatRoot()
 	poolDirs := make(map[string]struct{})
 	for _, filename := range []string{"state", "io", "iostats", "objset-*"} {
-		paths, err := filepath.Glob(filepath.Join(procZfsPath, "*", filename))
+		paths, err := filepath.Glob(filepath.Join(root, "*", filename))
 		if err != nil {
 			return nil, err
 		}
