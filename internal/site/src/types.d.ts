@@ -405,6 +405,7 @@ export interface UserSettings {
 	monitorCols?: Record<string, boolean>
 	monitorSortMode?: Array<{ id: string; desc: boolean }>
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
+	monitorView?: "table" | "charts"
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }

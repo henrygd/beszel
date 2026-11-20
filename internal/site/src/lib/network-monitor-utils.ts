@@ -63,6 +63,69 @@ export function withMonitorGaps(
 }
 
 /**
+ * Records for charting several monitors together without connectNulls, so lines break at real gaps.
+ *
+ * Keeps the records with stats for any of the monitors. Where a monitor has no sample in a record
+ * only because the record comes from another system, or falls between its long-interval probes, or
+ * 1m jitter moved its sample into the next bucket, the sample is interpolated from its neighbors so
+ * its line continues. Records where every probe failed keep no response time, so the response line
+ * breaks there, and records further apart than every monitor's gap limit get a gap marker.
+ */
+export function withMonitorsGaps(
+	records: NetworkMonitorStatsRecord[],
+	monitors: Pick<NetworkMonitorRecord, "id" | "interval">[],
+	expectedInterval: number
+): NetworkMonitorStatsRecord[] {
+	// long-interval monitors only get a record when a new probe completes
+	const maxGaps = new Map(monitors.map((m) => [m.id, Math.max(expectedInterval, m.interval * 1000) * 1.5]))
+	const rows = records.filter((record) => record.created != null && monitors.some((m) => record.stats?.[m.id] != null))
+	// Copy-on-write, since records are shared with the stats cache.
+	const filled = rows.slice()
+
+	for (const m of monitors) {
+		// Allow one missing bucket, which is what 1m jitter looks like.
+		const fillGap = (maxGaps.get(m.id) ?? 0) + expectedInterval
+		let prev = -1
+		for (let i = 0; i < rows.length; i++) {
+			const stats = rows[i].stats?.[m.id]
+			if (!stats) continue
+			const prevStats = prev >= 0 ? rows[prev].stats[m.id] : null
+			if (prevStats && i - prev > 1 && rows[i].created - rows[prev].created <= fillGap) {
+				const start = rows[prev].created
+				const span = rows[i].created - start
+				for (let k = prev + 1; k < i; k++) {
+					const ratio = (rows[k].created - start) / span
+					const lerp = (a: number | null, b: number | null) =>
+						a == null || b == null ? null : toFixedFloat(a + (b - a) * ratio, 2)
+					const sample: MonitorStats = {
+						res_avg: lerp(prevStats.res_avg, stats.res_avg),
+						res_min: lerp(prevStats.res_min, stats.res_min),
+						res_max: lerp(prevStats.res_max, stats.res_max),
+						loss: lerp(prevStats.loss, stats.loss) ?? 0,
+					}
+					filled[k] = { ...filled[k], stats: { ...filled[k].stats, [m.id]: sample } }
+				}
+			}
+			prev = i
+		}
+	}
+
+	const result: NetworkMonitorStatsRecord[] = []
+	for (let i = 0; i < filled.length; i++) {
+		if (i > 0) {
+			// Break when the time between records is too long for every monitor in both of them.
+			const gap = filled[i].created - filled[i - 1].created
+			const shared = monitors.filter((m) => filled[i].stats[m.id] && filled[i - 1].stats[m.id])
+			if (shared.length && shared.every((m) => gap > (maxGaps.get(m.id) ?? 0))) {
+				result.push(monitorGapRecord)
+			}
+		}
+		result.push(filled[i])
+	}
+	return result
+}
+
+/**
  * Fold new records into recent cached records with the same timestamp. Bucketed multi-monitor
  * stats arrive per system, so one bucket can be filled by several batches.
  * Updates matching cached records in place; returns the records that still need appending.
@@ -98,7 +161,17 @@ export function mergeMonitorStats(rawRecords: RawMonitorStatsRecord[], bucketMs 
 		.map(([created, stats]) => ({ created, stats }))
 }
 
-export { getMonitorProtocolLabel, getMonitorTarget, isHttpsTarget } from "./monitor-compare"
+export {
+	getMonitorLabels,
+	getMonitorProtocolLabel,
+	getMonitorStatus,
+	getMonitorTarget,
+	isHttpsTarget,
+	type MonitorProtocol,
+	type MonitorStatus,
+	PROTOCOL_LABELS,
+	PROTOCOLS,
+} from "./monitor-compare"
 
 /** Whole days until the certificate expires; negative once expired. */
 export function getCertDaysLeft(cert: Pick<MonitorCertInfo, "expires">, now = Date.now()) {

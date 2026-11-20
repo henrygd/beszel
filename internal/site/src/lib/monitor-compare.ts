@@ -5,7 +5,13 @@ import type { NetworkMonitorRecord } from "@/types"
 /** Most lines a comparison charts, to keep it readable and the stats request's filter short. */
 export const MAX_COMPARE_MONITORS = 24
 
-type MonitorTarget = Pick<NetworkMonitorRecord, "target" | "protocol" | "port">
+export type MonitorProtocol = NetworkMonitorRecord["protocol"]
+
+/** Protocols in display order. */
+export const PROTOCOLS: MonitorProtocol[] = ["icmp", "tcp", "http", "dns"]
+export const PROTOCOL_LABELS: Record<MonitorProtocol, string> = { icmp: "ICMP", tcp: "TCP", http: "HTTP(S)", dns: "DNS" }
+
+type MonitorTarget =Pick<NetworkMonitorRecord, "target" | "protocol" | "port">
 
 export function getMonitorTarget(monitor: MonitorTarget) {
 	// The protocol column already says http, so the URL scheme is redundant.
@@ -32,6 +38,50 @@ export function getMonitorIdentityKey({
 	server,
 }: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server">) {
 	return JSON.stringify([protocol, target, port, server])
+}
+
+type LabeledMonitor = Pick<NetworkMonitorRecord, "id" | "target" | "protocol" | "port" | "server">
+
+/**
+ * Chart series labels by monitor ID. `getSeriesLabel` gets the display target (see getMonitorTarget)
+ * and builds the label; monitors that would share one are told apart by DNS server or URL scheme.
+ */
+export function getMonitorLabels<T extends LabeledMonitor>(
+	monitors: T[],
+	getSeriesLabel: (monitor: T, target: string) => string
+) {
+	const labels = new Map<string, string>()
+	const counts = new Map<string, number>()
+	for (const m of monitors) {
+		const label = getSeriesLabel(m, getMonitorTarget(m))
+		labels.set(m.id, label)
+		counts.set(label, (counts.get(label) ?? 0) + 1)
+	}
+	// DNS lookups of the same name against different servers, and http and https URLs that are otherwise
+	// the same, would share a label.
+	for (const m of monitors) {
+		const label = labels.get(m.id) as string
+		if ((counts.get(label) ?? 0) < 2) continue
+		if (m.server) labels.set(m.id, `${label} (${m.server})`)
+		else if (m.protocol === "http") labels.set(m.id, getSeriesLabel(m, m.target))
+	}
+	return labels
+}
+
+export type MonitorStatus = "up" | "down" | "pending" | "paused"
+
+/**
+ * Status shown by the monitors table's status dot: paused when the monitor is disabled or its system
+ * is paused, pending while the system is down or pending, and down when the last probe got no response.
+ */
+export function getMonitorStatus(
+	monitor: Pick<NetworkMonitorRecord, "enabled" | "updated" | "res">,
+	systemStatus?: string
+): MonitorStatus {
+	if (!monitor.enabled || systemStatus === "paused") return "paused"
+	if (systemStatus === "down" || systemStatus === "pending") return "pending"
+	if (monitor.updated && !monitor.res) return "down"
+	return "up"
 }
 
 interface MonitorCompareInput {
@@ -107,25 +157,10 @@ export function getMonitorCompareState({
 	// Label series by whatever differs between them: system, target, or both.
 	const multiSystem = systemIds.length > 0
 	const multiTarget = targetIds.size > 0
-	const labels = new Map<string, string>()
-	const counts = new Map<string, number>()
-	const getSeriesLabel = (m: NetworkMonitorRecord, target: string) => {
+	const labels = getMonitorLabels(compareMonitors, (m, target) => {
 		const systemName = getSystemName(m.system)
 		return multiSystem && multiTarget ? `${systemName} · ${target}` : multiTarget ? target : systemName
-	}
-	for (const m of compareMonitors) {
-		const label = getSeriesLabel(m, getMonitorTarget(m))
-		labels.set(m.id, label)
-		counts.set(label, (counts.get(label) ?? 0) + 1)
-	}
-	// DNS lookups of the same name against different servers, and http and https URLs that are otherwise
-	// the same, would share a label.
-	for (const m of compareMonitors) {
-		const label = labels.get(m.id) as string
-		if ((counts.get(label) ?? 0) < 2) continue
-		if (m.server) labels.set(m.id, `${label} (${m.server})`)
-		else if (m.protocol === "http") labels.set(m.id, getSeriesLabel(m, m.target))
-	}
+	})
 
 	return {
 		/** Systems that can be selected to compare against. */

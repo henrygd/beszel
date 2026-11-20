@@ -28,6 +28,8 @@ export type DataPoint<T = SystemStatsRecord> = {
 	/** Which Y axis this series plots against. Defaults to "left". */
 	yAxisId?: "left" | "right"
 	strokeDasharray?: string
+	/** "none" leaves the series out of the legend. */
+	legendType?: "none"
 }
 
 type IsolatedDotProps = {
@@ -147,6 +149,7 @@ export default function LineChartDefault({
 					stroke={color}
 					strokeOpacity={dataPoint.strokeOpacity}
 					strokeDasharray={dataPoint.strokeDasharray}
+					legendType={dataPoint.legendType}
 					isAnimationActive={false}
 					// stackId={dataPoint.stackId}
 					order={dataPoint.order || i}
