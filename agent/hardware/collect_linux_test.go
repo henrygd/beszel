@@ -16,12 +16,12 @@ func fakeRoot(t *testing.T) (root, smbios string) {
 	root = t.TempDir()
 	write := func(name, content string) {
 		path := filepath.Join(root, name)
-		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
-		require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o750))
+		require.NoError(t, os.WriteFile(path, []byte(content), 0o600))
 	}
 	link := func(target, name string) {
 		path := filepath.Join(root, name)
-		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o750))
 		require.NoError(t, os.Symlink(target, path))
 	}
 
@@ -112,4 +112,24 @@ func TestCollectLinuxDefaults(t *testing.T) {
 	assert.Equal(t, "memory", inv.Unavailable[0].Section, "a missing SMBIOS table is reported, not fatal")
 	assert.Equal(t, "Gigabyte", inv.Board.Vendor, "DMI attributes fill in without SMBIOS")
 	assert.Empty(t, inv.System.Serial+inv.USB[0].Serial+inv.NICs[0].MAC, "identifiers are off by default")
+}
+
+func TestCollectLinuxWithoutEFI(t *testing.T) {
+	root := t.TempDir()
+	write := func(name, content string) {
+		path := filepath.Join(root, name)
+		require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o750))
+		require.NoError(t, os.WriteFile(path, []byte(content), 0o600))
+	}
+	// An ARM board: no per-package fields, and a trailing block that is not a processor.
+	write("proc/cpuinfo", "processor\t: 0\nBogoMIPS\t: 108.00\n\nprocessor\t: 1\nBogoMIPS\t: 108.00\n\n"+
+		"Revision\t: c03111\nModel\t\t: Raspberry Pi 4 Model B Rev 1.1\n")
+
+	inv := Collect(Options{Root: root})
+	require.Len(t, inv.CPUs, 1)
+	assert.Equal(t, 2, inv.CPUs[0].Threads)
+	assert.Empty(t, inv.Security.SecureBoot, "no EFI and no ACPI says nothing about the boot mode")
+
+	write("sys/firmware/acpi/pm_profile", "1\n")
+	assert.Equal(t, "legacy", Collect(Options{Root: root}).Security.SecureBoot)
 }

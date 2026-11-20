@@ -115,7 +115,9 @@ func cpuInfo(sys sysfs) []hardware.CPU {
 	var order []string
 	cur := map[string]string{}
 	flush := func() {
-		if len(cur) == 0 {
+		// ARM boards end the file with a block describing the board, not a processor.
+		if _, ok := cur["processor"]; !ok {
+			cur = map[string]string{}
 			return
 		}
 		id := cur["physical id"]

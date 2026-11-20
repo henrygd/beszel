@@ -16,7 +16,11 @@ func security(sys sysfs) hardware.Security {
 	var s hardware.Security
 	switch b, err := sys.bytes(secureBootVar, 5); {
 	case !sys.exists("sys/firmware/efi"):
-		s.SecureBoot = "legacy"
+		// Without EFI, only an ACPI machine booted through a legacy BIOS. Device-tree
+		// boards have neither, and containers usually hide /sys/firmware altogether.
+		if sys.exists("sys/firmware/acpi") {
+			s.SecureBoot = "legacy"
+		}
 	case err == nil && len(b) == 5 && b[4] == 1:
 		s.SecureBoot = "enabled"
 	case err == nil && len(b) == 5:
