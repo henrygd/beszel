@@ -3,6 +3,7 @@ package hub
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
@@ -38,6 +39,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		ipVersion := e.Record.GetInt("ipVersion")
 		if ipVersion < 0 || ipVersion > 255 || !monitor.ValidIPVersion(uint8(ipVersion)) {
 			return fmt.Errorf("invalid IP version: %d", ipVersion)
+		}
+		// the field pattern can't compare range bounds, and a reversed range would fail every probe
+		if err := validateStatusCodeRanges(e.Record.GetString("statusCodes")); err != nil {
+			return err
 		}
 		return e.Next()
 	})
@@ -140,6 +145,23 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		}
 		return e.Next()
 	})
+}
+
+// validateStatusCodeRanges rejects ranges whose start is greater than their end, such as
+// "299-200". The format itself is enforced by the statusCodes field pattern.
+func validateStatusCodeRanges(spec string) error {
+	for entry := range strings.SplitSeq(spec, ",") {
+		low, high, isRange := strings.Cut(entry, "-")
+		if !isRange {
+			continue
+		}
+		first, err1 := strconv.Atoi(low)
+		last, err2 := strconv.Atoi(high)
+		if err1 == nil && err2 == nil && first > last {
+			return fmt.Errorf("invalid status code range: %s", entry)
+		}
+	}
+	return nil
 }
 
 // monitorConfigFromRecord builds a monitor config from a network_monitors record.

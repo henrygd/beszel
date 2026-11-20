@@ -465,6 +465,7 @@ func TestNetworkMonitorStatusCodesValidation(t *testing.T) {
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
 	defer cleanupTestHub(hub, testApp)
+	bindNetworkMonitorsEvents(hub)
 
 	user, err := createTestUser(hub)
 	require.NoError(t, err)
@@ -491,6 +492,9 @@ func TestNetworkMonitorStatusCodesValidation(t *testing.T) {
 		"200-299;401":  false,
 		"200-299-401":  false,
 		"200,401,abcd": false,
+		"299-200":      false,
+		"200,401-400":  false,
+		"200-200":      true,
 	}
 	for statusCodes, valid := range tests {
 		record := core.NewRecord(collection)
