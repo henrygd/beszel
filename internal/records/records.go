@@ -295,6 +295,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	fanCount := uint64(0)
 	zfsPoolCounts := make(map[string]uint64)
 	zfsCapacityCounts := make(map[string]uint64)
+	// memory bandwidth is averaged only over records that reported it
+	memBwCount := 0
+	gpuMemBwCounts := make(map[string]int)
 
 	// Accumulate totals
 	for i := range records {
@@ -335,6 +338,14 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 		sum.DiskIO[1] += stats.DiskIO[1]
 		for i := range stats.DiskIoStats {
 			sum.DiskIoStats[i] += stats.DiskIoStats[i]
+		}
+		if stats.MemBandwidth != [2]float64{} {
+			memBwCount++
+			sum.MemBandwidthTotalOnly = sum.MemBandwidthTotalOnly || stats.MemBandwidthTotalOnly
+			for i := range stats.MemBandwidth {
+				sum.MemBandwidth[i] += stats.MemBandwidth[i]
+				sum.MaxMemBandwidth[i] = max(sum.MaxMemBandwidth[i], stats.MaxMemBandwidth[i], stats.MemBandwidth[i])
+			}
 		}
 		if hasBattery(stats.Battery, stats.Batteries) {
 			batterySum += int(stats.Battery[0])
@@ -485,6 +496,13 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 				gpu.Usage += value.Usage
 				gpu.Power += value.Power
 				gpu.Count += value.Count
+				// a present peak marks a bandwidth sample, even when the value is 0
+				if value.MemBandwidthPeak > 0 {
+					gpuMemBwCounts[id]++
+					gpu.MemBandwidth += value.MemBandwidth
+					gpu.MemBandwidthPeak = max(gpu.MemBandwidthPeak, value.MemBandwidthPeak)
+					gpu.MemBandwidthApprox = gpu.MemBandwidthApprox || value.MemBandwidthApprox
+				}
 
 				if value.Engines != nil {
 					if gpu.Engines == nil {
@@ -531,6 +549,11 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 	sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
 	sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
 	sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
+	if memBwCount > 0 {
+		for i := range sum.MemBandwidth {
+			sum.MemBandwidth[i] = twoDecimals(sum.MemBandwidth[i] / float64(memBwCount))
+		}
+	}
 	if batteryCount > 0 {
 		sum.Battery[0] = uint8(batterySum / batteryCount)
 	}
@@ -600,6 +623,9 @@ func AverageSystemStatsSlice(records []system.Stats) system.Stats {
 			gpu.Usage = twoDecimals(gpu.Usage / count)
 			gpu.Power = twoDecimals(gpu.Power / count)
 			gpu.Count = twoDecimals(gpu.Count / count)
+			if n := gpuMemBwCounts[id]; n > 0 {
+				gpu.MemBandwidth = twoDecimals(gpu.MemBandwidth / float64(n))
+			}
 
 			if gpu.Engines != nil {
 				for engineKey := range gpu.Engines {
