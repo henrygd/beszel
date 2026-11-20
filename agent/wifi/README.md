@@ -3,9 +3,10 @@
 Reports connected station interfaces (no scans), plus OpenWrt access points on
 Linux. `info.wf` holds the current snapshot keyed by interface (`s` SSID, `r`
 RSSI in dBm when available, `a` set for an access point, whose `r` is the
-average RSSI of associated clients); `stats.wf` stores available RSSI as integer
-dBm. The systems table shows the strongest station, falling back to the
-strongest access point. Collected on the default
+average RSSI of associated clients, `p` profile name on Windows when it differs
+from the SSID); `stats.wf` stores available RSSI as integer dBm. The systems
+table shows the strongest station, falling back to the strongest access point.
+Collected on the default
 interval only; real-time requests reuse the last snapshot. Set `SKIP_WIFI=true`
 on the agent to disable collection.
 

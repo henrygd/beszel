@@ -39,6 +39,8 @@ export interface WiFi {
 	r?: number
 	/** access point; r is the average RSSI of associated clients */
 	a?: boolean
+	/** connection profile name (Windows), only sent when it differs from the SSID */
+	p?: string
 }
 
 export interface SystemInfo {

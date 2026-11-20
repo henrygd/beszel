@@ -32,6 +32,11 @@ export function primaryWiFiSignal(system: Pick<SystemRecord, "status" | "info">)
 	return primaryWiFi(connectedWiFi(system))?.[1].r
 }
 
+/** Network name for display: the SSID, followed by the profile name when the agent reports a different one. */
+export function wifiNetworkName(wifi: WiFi): string {
+	return [wifi.s, wifi.p].filter(Boolean).join(" · ")
+}
+
 /** Signal quality for an RSSI reading: good at -65 dBm or stronger, warn down to -75 dBm, crit below. */
 export function wifiSignalState(rssi: number): MeterState {
 	return rssi >= -65 ? MeterState.Good : rssi >= -75 ? MeterState.Warn : MeterState.Crit
