@@ -61,6 +61,7 @@ type Agent struct {
 	storagePoolManager        *StoragePoolManager                                   // Manages storage pool and dataset data
 	packageUpdates            *packageUpdatesManager                                // Checks for pending package updates
 	lastHubRequest            atomic.Int64                                          // Wall clock Unix nanoseconds of the last hub stats request
+	lastNonFinite             string                                                // fields last replaced by dropNonFinite, to log only on change
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -285,6 +286,7 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 
 	a.cache.Set(data, cacheTimeMs)
 
+	a.dropNonFinite(data)
 	return a.attachSystemDetails(data, cacheTimeMs, options.IncludeDetails)
 }
 
