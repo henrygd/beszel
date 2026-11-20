@@ -1,5 +1,5 @@
 import { atom, computed, map, type ReadableAtom } from "nanostores"
-import type { AlertMap, ChartTimes, SystemRecord, UpdateInfo, UserSettings } from "@/types"
+import type { AlertMap, ChartTimes, SystemRecord, TagRecord, UpdateInfo, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
 
@@ -23,6 +23,13 @@ export const $pausedSystems = map<Record<string, SystemRecord>>({})
 export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, Object.values)
 /** Whether the initial systems list has been fetched */
 export const $systemsLoaded = atom(false)
+
+/** Map of tag records by id */
+export const $tagsById = map<Record<string, TagRecord>>({})
+/** List of all tag records, sorted by name */
+export const $tags: ReadableAtom<TagRecord[]> = computed($tagsById, (tagsById) =>
+	Object.values(tagsById).sort((a, b) => a.name.localeCompare(b.name))
+)
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})
