@@ -11,12 +11,17 @@ import (
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
-// WiFi describes a currently connected station interface. Keys in WiFi maps are
-// OS interface identities, not SSIDs. Signal is native dBm only; nil means the
-// OS confirmed association but could not supply RSSI (never convert quality %).
+// WiFi describes a currently connected station interface, or an access point
+// when AP is set. Keys in WiFi maps are OS interface identities, not SSIDs.
+// Signal is native dBm only; nil means the OS confirmed association but could
+// not supply RSSI (never convert quality %). For an AP, Signal is the average
+// RSSI of associated clients, and nil means no client reported one.
 type WiFi struct {
 	SSID   string   `json:"s,omitempty" cbor:"0,keyasint,omitempty"`
 	Signal *float64 `json:"r,omitempty" cbor:"1,keyasint,omitempty"`
+	AP     bool     `json:"a,omitzero" cbor:"2,keyasint,omitempty"`
+	// Profile is the connection profile name (Windows only), set when it differs from the SSID
+	Profile string `json:"p,omitempty" cbor:"3,keyasint,omitempty"`
 }
 
 type Stats struct {
@@ -92,6 +97,18 @@ func (s Uint8Slice) MarshalJSON() ([]byte, error) {
 		arr[i] = uint16(v)
 	}
 	return json.Marshal(arr)
+}
+
+// UnmarshalJSON accepts the numeric array written by MarshalJSON. Without it,
+// encoding/json/v2 (used by PocketBase to read record JSON fields) only accepts
+// base64 strings for byte slices and rejects the whole value.
+func (s *Uint8Slice) UnmarshalJSON(data []byte) error {
+	var arr []uint8
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	*s = arr
+	return nil
 }
 
 // Battery stores the representative battery's percent and charge state.

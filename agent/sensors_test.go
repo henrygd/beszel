@@ -875,6 +875,27 @@ func TestSkipGpuShadowUsesSysSensorsRoot(t *testing.T) {
 	assert.NoFileExists(t, filepath.Join(shadow, "class", "hwmon", "hwmon1"))
 }
 
+func TestUpdateTemperaturesSkipCollectionResetsDashboardTemp(t *testing.T) {
+	originalGetSensorTemps := getSensorTemps
+	t.Cleanup(func() {
+		getSensorTemps = originalGetSensorTemps
+	})
+	getSensorTemps = func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+		t.Fatal("sensors should not be read when collection is skipped")
+		return nil, nil
+	}
+
+	// DashboardTemp holds the previous GPU reading. GPU temperatures only set it
+	// when it is unset, so it must be reset even when sensors are skipped.
+	agent := &Agent{
+		systemInfo:   system.Info{DashboardTemp: 41},
+		sensorConfig: &SensorConfig{skipCollection: true},
+	}
+	agent.updateTemperatures(&system.Stats{})
+
+	assert.Equal(t, 0.0, agent.systemInfo.DashboardTemp)
+}
+
 func TestUpdateTemperaturesSkipGpu(t *testing.T) {
 	originalGetSensorTemps := getSensorTemps
 	t.Cleanup(func() {

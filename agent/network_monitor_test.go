@@ -3,10 +3,12 @@ package agent
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -145,7 +147,7 @@ func TestMonitorManagerApplySyncUpsertRunsImmediatelyAndReturnsResult(t *testing
 
 	pm := &MonitorManager{
 		monitors: make(map[string]*monitorTask),
-		probe:    networkMonitorProbe(server.Client(), nil),
+		probe:    networkMonitorProbe(staticMonitorHTTPClients(server.Client())),
 	}
 
 	resp, err := pm.HandleSyncRequest(monitor.SyncRequest{
@@ -297,7 +299,7 @@ func TestMonitorTCP(t *testing.T) {
 		}()
 
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
-		responseUs, err := monitorTCP(context.Background(), "127.0.0.1", port)
+		responseUs, err := monitorTCP(context.Background(), "127.0.0.1", port, monitor.IPVersionAuto)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 		<-accepted
@@ -310,10 +312,91 @@ func TestMonitorTCP(t *testing.T) {
 		port := uint16(listener.Addr().(*net.TCPAddr).Port)
 		require.NoError(t, listener.Close())
 
-		responseUs, err := monitorTCP(context.Background(), "127.0.0.1", port)
+		responseUs, err := monitorTCP(context.Background(), "127.0.0.1", port, monitor.IPVersionAuto)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
+}
+
+func TestMonitorTCPIPVersion(t *testing.T) {
+	listener, err := net.Listen("tcp4", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer listener.Close()
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				return
+			}
+			_ = conn.Close()
+		}
+	}()
+	port := uint16(listener.Addr().(*net.TCPAddr).Port)
+
+	for _, ipVersion := range []uint8{monitor.IPVersionAuto, monitor.IPVersion4} {
+		_, err := monitorTCP(t.Context(), "127.0.0.1", port, ipVersion)
+		require.NoError(t, err, "IP version %d", ipVersion)
+	}
+
+	responseUs, err := monitorTCP(t.Context(), "127.0.0.1", port, monitor.IPVersion6)
+	assert.Equal(t, int64(-1), responseUs)
+	require.EqualError(t, err, "no IPv6 address for 127.0.0.1")
+}
+
+func TestMonitorHTTPIPVersion(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer server.Close()
+	// A hostname with both families makes the dialer, not the URL, choose the family.
+	url := "http://localhost:" + server.URL[strings.LastIndex(server.URL, ":")+1:]
+	probe := newMonitorManager(nil).probe
+	config := monitor.Config{Protocol: "http", Target: url}
+
+	config.IPVersion = monitor.IPVersion4
+	_, err := probe(t.Context(), config)
+	require.NoError(t, err)
+
+	// The IPv6 client must not reuse the idle IPv4 connection from the previous request.
+	config.IPVersion = monitor.IPVersion6
+	responseUs, err := probe(t.Context(), config)
+	assert.Equal(t, int64(-1), responseUs)
+	require.Error(t, err)
+
+	config.IPVersion = 5
+	_, err = probe(t.Context(), config)
+	require.EqualError(t, err, "unknown monitor IP version: 5")
+}
+
+// staticMonitorHTTPClients uses client for every IP version and TLS mode.
+func staticMonitorHTTPClients(client *http.Client) monitorHTTPClients {
+	return func(uint8, bool) *http.Client { return client }
+}
+
+func TestLookupMonitorIPsIPVersion(t *testing.T) {
+	resolver := tcpMonitorTestResolver([]string{"192.0.2.10"})
+
+	ips, err := lookupMonitorIPs(t.Context(), resolver, "example.test.", monitor.IPVersion4)
+	require.NoError(t, err)
+	require.Len(t, ips, 1)
+	assert.Equal(t, "192.0.2.10", ips[0].String())
+
+	_, err = lookupMonitorIPs(t.Context(), resolver, "example.test.", monitor.IPVersion6)
+	require.EqualError(t, err, "no IPv6 address for example.test.")
+
+	_, err = lookupMonitorIPs(t.Context(), tcpMonitorTestResolver(nil), "example.test.", monitor.IPVersionAuto)
+	require.EqualError(t, err, "no address found for example.test.")
+}
+
+func TestLookupError(t *testing.T) {
+	timeout := &net.DNSError{Err: "i/o timeout", Name: "example.com", Server: "127.0.0.53:53", IsTimeout: true}
+	require.EqualError(t, lookupError(timeout, monitor.IPVersionAuto, "example.com"), "DNS lookup for example.com timed out")
+
+	failure := &net.DNSError{Err: "server misbehaving", Name: "example.com", Server: "127.0.0.53:53"}
+	require.EqualError(t, lookupError(failure, monitor.IPVersion4, "example.com"), "DNS lookup for example.com failed: server misbehaving")
+
+	other := errors.New("connection refused")
+	require.Same(t, other, lookupError(other, monitor.IPVersionAuto, "example.com"))
 }
 
 func TestMonitorTCPAddressFallback(t *testing.T) {
@@ -339,7 +422,7 @@ func TestMonitorTCPAddressFallback(t *testing.T) {
 			ips, err := net.DefaultResolver.LookupHost(t.Context(), "tcp-monitor.invalid.")
 			require.NoError(t, err)
 			require.Equal(t, tc.ips, ips)
-			responseUs, err := monitorTCP(t.Context(), "tcp-monitor.invalid.", uint16(listener.Addr().(*net.TCPAddr).Port))
+			responseUs, err := monitorTCP(t.Context(), "tcp-monitor.invalid.", uint16(listener.Addr().(*net.TCPAddr).Port), monitor.IPVersionAuto)
 			if tc.loss {
 				require.Error(t, err)
 				assert.Equal(t, int64(-1), responseUs)
@@ -439,20 +522,20 @@ func udpDNSTestServer(t *testing.T, ips []string) string {
 
 func TestMonitorDNS(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "localhost", "")
+		responseUs, err := monitorDNS(context.Background(), "localhost", "", monitor.IPVersionAuto)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
 
 	t.Run("lookup failure", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "", "")
+		responseUs, err := monitorDNS(context.Background(), "", "", monitor.IPVersionAuto)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
 
 	t.Run("custom server", func(t *testing.T) {
 		serverAddr := udpDNSTestServer(t, []string{"192.0.2.10"})
-		responseUs, err := monitorDNS(context.Background(), "example.test.", serverAddr)
+		responseUs, err := monitorDNS(context.Background(), "example.test.", serverAddr, monitor.IPVersionAuto)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, responseUs, int64(0))
 	})
@@ -466,7 +549,7 @@ func TestMonitorDNS(t *testing.T) {
 	})
 
 	t.Run("custom server unreachable", func(t *testing.T) {
-		responseUs, err := monitorDNS(context.Background(), "example.test.", "127.0.0.1:1")
+		responseUs, err := monitorDNS(context.Background(), "example.test.", "127.0.0.1:1", monitor.IPVersionAuto)
 		assert.Equal(t, int64(-1), responseUs)
 		require.Error(t, err)
 	})
@@ -559,11 +642,11 @@ func TestMonitorResolutionCancellation(t *testing.T) {
 				var err error
 				switch protocol {
 				case "tcp":
-					_, err = monitorTCP(ctx, "monitor-cancellation.invalid.", 80)
+					_, err = monitorTCP(ctx, "monitor-cancellation.invalid.", 80, monitor.IPVersionAuto)
 				case "dns":
-					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.", "")
+					_, err = monitorDNS(ctx, "monitor-cancellation.invalid.", "", monitor.IPVersionAuto)
 				case "icmp":
-					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.")
+					_, err = monitorICMP(ctx, "monitor-cancellation.invalid.", monitor.IPVersionAuto)
 				}
 				done <- err
 			}()
@@ -594,7 +677,7 @@ func TestMonitorProbeTimeoutRecordsLoss(t *testing.T) {
 	defer server.Close()
 	defer close(release)
 	pm := newMonitorManager(nil)
-	pm.probe = networkMonitorProbe(&http.Client{Timeout: 20 * time.Millisecond}, nil)
+	pm.probe = networkMonitorProbe(staticMonitorHTTPClients(&http.Client{Timeout: 20 * time.Millisecond}))
 	task := newMonitorTask(monitor.Config{ID: "timeout", Protocol: "http", Target: server.URL})
 	defer task.cancel()
 

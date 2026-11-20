@@ -1,36 +1,52 @@
 import { t } from "@lingui/core/macro"
 import { useStore } from "@nanostores/react"
-import type { AuthMethodsList } from "pocketbase"
 import { useEffect, useMemo, useState } from "react"
 import { UserAuthForm } from "@/components/login/auth-form"
 import { pb } from "@/lib/api"
+import { $authenticated } from "@/lib/stores"
 import { Logo } from "../logo"
 import { ModeToggle } from "../mode-toggle"
 import { $router } from "../router"
 import { useTheme } from "../theme-provider"
 import ForgotPassword from "./forgot-pass-form"
+import { loadLogin } from "./load-login"
 import { OtpRequestForm } from "./otp-forms"
 
 export default function () {
 	const page = useStore($router)
-	const [isFirstRun, setFirstRun] = useState(false)
-	const [authMethods, setAuthMethods] = useState<AuthMethodsList>()
+	const [login, setLogin] = useState<Awaited<ReturnType<typeof loadLogin>>>()
+	const isFirstRun = login?.firstRun ?? false
 	const { resolvedTheme } = useTheme()
 
+	// Load once on mount; switching between login routes reuses the result.
 	useEffect(() => {
-		document.title = `${t`Login`} / Beszel`
-
-		pb.send("/api/beszel/first-run", {}).then(({ firstRun }) => {
-			setFirstRun(firstRun)
-		})
-	}, [])
-
-	useEffect(() => {
-		pb.collection("users")
-			.listAuthMethods()
-			.then((methods) => {
-				setAuthMethods(methods)
+		const controller = new AbortController()
+		const autoLogin = !!globalThis.BESZEL.AUTO_LOGIN
+		// keep the title neutral while automatic authentication may still succeed
+		document.title = autoLogin ? "Beszel" : `${t`Login`} / Beszel`
+		loadLogin(
+			pb,
+			{
+				route: $router.get()?.route,
+				search: window.location.search,
+				loggedOut: !!sessionStorage.getItem("lo"),
+				autoLogin,
+			},
+			controller.signal
+		)
+			.then((result) => {
+				if (controller.signal.aborted) return
+				if (result.authenticated) {
+					$authenticated.set(true)
+					return
+				}
+				document.title = `${t`Login`} / Beszel`
+				setLogin(result)
 			})
+			.catch((error) => {
+				if (!controller.signal.aborted) console.error(error)
+			})
+		return () => controller.abort()
 	}, [])
 
 	const subtitle = useMemo(() => {
@@ -45,7 +61,7 @@ export default function () {
 		}
 	}, [isFirstRun, page])
 
-	if (!authMethods) {
+	if (!login) {
 		return null
 	}
 
@@ -71,7 +87,7 @@ export default function () {
 				) : page?.route === "request_otp" ? (
 					<OtpRequestForm />
 				) : (
-					<UserAuthForm isFirstRun={isFirstRun} authMethods={authMethods} />
+					<UserAuthForm isFirstRun={isFirstRun} authMethods={login.authMethods} />
 				)}
 			</div>
 		</div>

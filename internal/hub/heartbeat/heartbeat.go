@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel"
-	"github.com/pocketbase/pocketbase/core"
 )
 
 // Default values for heartbeat configuration.

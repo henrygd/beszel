@@ -9,9 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/entities/monitor"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -231,6 +231,45 @@ func TestGenerateMonitorID(t *testing.T) {
 	}
 }
 
+func TestGenerateMonitorIDIPVersion(t *testing.T) {
+	config := monitor.Config{Protocol: "http", Target: "https://example.com"}
+	auto := generateMonitorID("sys123", config)
+	config.IPVersion = monitor.IPVersion4
+	v4 := generateMonitorID("sys123", config)
+	config.IPVersion = monitor.IPVersion6
+	v6 := generateMonitorID("sys123", config)
+
+	assert.NotEqual(t, auto, v4)
+	assert.NotEqual(t, auto, v6)
+	assert.NotEqual(t, v4, v6)
+}
+
+func TestNetworkMonitorRejectsInvalidIPVersion(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+	bindNetworkMonitorsEvents(hub)
+	user, err := createTestUser(hub)
+	require.NoError(t, err)
+	system, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "Paused", "host": "localhost", "port": "45876", "status": "paused", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	for _, ipVersion := range []int{4, 6} {
+		_, err = createTestRecord(hub, "network_monitors", map[string]any{
+			"system": system.Id, "target": "example.com", "protocol": "icmp", "interval": 60, "ipVersion": ipVersion,
+		})
+		require.NoError(t, err, "IP version %d", ipVersion)
+	}
+	for _, ipVersion := range []int{5, 260, -1} {
+		_, err = createTestRecord(hub, "network_monitors", map[string]any{
+			"system": system.Id, "target": "example.com", "protocol": "icmp", "interval": 60, "ipVersion": ipVersion,
+		})
+		require.ErrorContains(t, err, "invalid IP version", "IP version %d", ipVersion)
+	}
+}
+
 func TestNetworkMonitorShortIDRequests(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
@@ -303,6 +342,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"interval":      60,
 		"enabled":       true,
 		"skipTlsVerify": true,
+		"ipVersion":     6,
 		"res":           1200,
 		"resAvg1h":      1300,
 		"resMin1h":      900,
@@ -321,6 +361,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
 	assert.True(t, newRecord.GetBool("skipTlsVerify"))
+	assert.Equal(t, 6, newRecord.GetInt("ipVersion"))
 	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
@@ -328,4 +369,92 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Zero(t, newRecord.GetFloat("resMax1h"))
 	assert.Zero(t, newRecord.GetFloat("loss1h"))
 	assert.Equal(t, "", newRecord.GetString("updated"))
+}
+
+func TestUpdateNetworkMonitorSystemAuthorization(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+	require.NoError(t, setCollectionAuthSettings(hub))
+	bindNetworkMonitorsEvents(hub)
+
+	alice, err := createTestUser(hub)
+	require.NoError(t, err)
+	bob, err := createTestRecord(hub, "users", map[string]any{
+		"email":    "bob@example.com",
+		"password": "password123",
+	})
+	require.NoError(t, err)
+
+	aliceSystemA, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "AliceSystemA", "host": "localhost", "port": "45876",
+		"status": "paused", "users": []string{alice.Id},
+	})
+	require.NoError(t, err)
+	aliceSystemC, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "AliceSystemC", "host": "localhost", "port": "45877",
+		"status": "paused", "users": []string{alice.Id},
+	})
+	require.NoError(t, err)
+	bobSystemB, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "BobSystemB", "host": "localhost", "port": "45878",
+		"status": "paused", "users": []string{bob.Id},
+	})
+	require.NoError(t, err)
+
+	monitorRecord, err := createTestRecord(hub, "network_monitors", map[string]any{
+		"system": aliceSystemA.Id, "target": "1.1.1.1", "protocol": "icmp",
+		"interval": 60, "enabled": true,
+	})
+	require.NoError(t, err)
+
+	aliceToken, err := alice.NewAuthToken()
+	require.NoError(t, err)
+	router, err := apis.NewRouter(hub)
+	require.NoError(t, err)
+	handler, err := router.BuildMux()
+	require.NoError(t, err)
+
+	// 1. Alice cannot move her monitor to Bob's system B
+	patchBobBody, err := json.Marshal(map[string]any{
+		"system":   bobSystemB.Id,
+		"target":   "http://127.0.0.1:12345/probe",
+		"protocol": "http",
+		"interval": 60,
+		"enabled":  true,
+	})
+	require.NoError(t, err)
+	req := httptest.NewRequest(http.MethodPatch, "/api/collections/network_monitors/records/"+monitorRecord.Id, bytes.NewReader(patchBobBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", aliceToken)
+	resp := httptest.NewRecorder()
+	handler.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusForbidden, resp.Code, resp.Body.String())
+
+	records, err := hub.FindAllRecords("network_monitors")
+	require.NoError(t, err)
+	require.Len(t, records, 1)
+	assert.Equal(t, monitorRecord.Id, records[0].Id)
+	assert.Equal(t, aliceSystemA.Id, records[0].GetString("system"))
+
+	// 2. Alice can move her monitor to her own system C
+	patchAliceBody, err := json.Marshal(map[string]any{
+		"system":   aliceSystemC.Id,
+		"target":   "1.1.1.1",
+		"protocol": "icmp",
+		"interval": 60,
+		"enabled":  true,
+	})
+	require.NoError(t, err)
+	req2 := httptest.NewRequest(http.MethodPatch, "/api/collections/network_monitors/records/"+monitorRecord.Id, bytes.NewReader(patchAliceBody))
+	req2.Header.Set("Content-Type", "application/json")
+	req2.Header.Set("Authorization", aliceToken)
+	resp2 := httptest.NewRecorder()
+	handler.ServeHTTP(resp2, req2)
+	assert.Equal(t, http.StatusOK, resp2.Code, resp2.Body.String())
+
+	records, err = hub.FindAllRecords("network_monitors")
+	require.NoError(t, err)
+	require.Len(t, records, 1)
+	assert.Equal(t, aliceSystemC.Id, records[0].GetString("system"))
 }

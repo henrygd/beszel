@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"maps"
 	"math/rand"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -27,13 +29,13 @@ import (
 
 	"github.com/henrygd/beszel"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/security"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/security"
-	"github.com/pocketbase/pocketbase/tools/types"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -184,6 +186,8 @@ func (sys *System) update() error {
 		return err
 	}
 
+	// Drop null entries
+	sanitizeNilEntries(data)
 	// ensure deprecated fields from older agents are migrated to current fields
 	migrateDeprecatedFields(data, !sys.detailsFetched.Load())
 	sys.data = data
@@ -372,6 +376,17 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	return systemRecord, err
 }
 
+// sanitizeNilEntries removes null elements from agent-supplied slices and maps
+// so later code can dereference them safely. Agent payloads can contain nulls.
+func sanitizeNilEntries(data *system.CombinedData) {
+	if data == nil {
+		return
+	}
+	data.Containers = slices.DeleteFunc(data.Containers, func(c *container.Stats) bool { return c == nil })
+	maps.DeleteFunc(data.Stats.ExtraFs, func(_ string, fs *system.FsStats) bool { return fs == nil })
+	maps.DeleteFunc(data.Stats.ZfsPools, func(_ string, p *system.ZfsPool) bool { return p == nil })
+}
+
 func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {
 	collectionName := "system_details"
 	params := dbx.Params{
@@ -430,7 +445,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 		params["memPeak"+suffix] = service.MemPeak
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated",
+		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated WHERE systemd_services.system = excluded.system",
 		strings.Join(valueStrings, ","),
 	)
 	if _, err := app.DB().NewQuery(queryString).Bind(params).Execute(); err != nil {
@@ -584,7 +599,8 @@ func (sys *System) updateNetworkMonitorsRecords(app core.App, monitorResults map
 	return nil
 }
 
-// createContainerRecords creates container records
+// createContainerRecords creates container records. Record IDs are agent-supplied,
+// so an ID owned by another system is left untouched rather than taken over.
 func createContainerRecords(app core.App, data []*container.Stats, systemId string) error {
 	if len(data) == 0 {
 		return nil
@@ -614,7 +630,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 		params["updateAvailable"+suffix] = container.UpdateAvailable
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updatable, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updatable = excluded.updatable, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, ports, status, health, cpu, memory, net, updatable, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET name = excluded.name, image = excluded.image, ports = excluded.ports, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updatable = excluded.updatable, updated = excluded.updated WHERE containers.system = excluded.system",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()

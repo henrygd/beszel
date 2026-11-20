@@ -3,6 +3,7 @@ package systems
 import (
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/henrygd/beszel"
@@ -64,8 +65,25 @@ func (sys *System) DeleteNetworkMonitor(id string) error {
 }
 
 func (sys *System) syncNetworkMonitors(req monitor.SyncRequest) (monitor.SyncResponse, error) {
-	if sys.getAgentVersion().LT(beszel.MinVersionNetworkMonitors) {
+	agentVersion := sys.getAgentVersion()
+	if agentVersion.LT(beszel.MinVersionNetworkMonitors) {
 		return monitor.SyncResponse{}, nil
+	}
+	// Older agents ignore the IP version and would probe with either family, so
+	// don't send them those monitors rather than report misleading results.
+	if agentVersion.LT(beszel.MinVersionMonitorIPVersion) {
+		switch req.Action {
+		case monitor.SyncActionUpsert:
+			if req.Config.IPVersion != monitor.IPVersionAuto {
+				return monitor.SyncResponse{}, fmt.Errorf("agent %s does not support IP version for monitors; requires %s", agentVersion, beszel.MinVersionMonitorIPVersion)
+			}
+		case monitor.SyncActionReplace:
+			configs := withoutIPVersionConfigs(req.Configs)
+			if skipped := len(req.Configs) - len(configs); skipped > 0 {
+				sys.manager.hub.Logger().Warn("skipping monitors with an IP version the agent does not support", "system", sys.Id, "count", skipped, "agent", agentVersion.String(), "requires", beszel.MinVersionMonitorIPVersion.String())
+			}
+			req.Configs = configs
+		}
 	}
 	timeout := 5 * time.Second
 	if req.Action == monitor.SyncActionUpsert && req.RunNow {
@@ -77,4 +95,12 @@ func (sys *System) syncNetworkMonitors(req monitor.SyncRequest) (monitor.SyncRes
 	defer cancel()
 	var result monitor.SyncResponse
 	return result, sys.request(ctx, common.SyncNetworkMonitors, req, &result)
+}
+
+// withoutIPVersionConfigs returns the configs that use monitor.IPVersionAuto,
+// leaving the input unchanged.
+func withoutIPVersionConfigs(configs []monitor.Config) []monitor.Config {
+	return slices.DeleteFunc(slices.Clone(configs), func(config monitor.Config) bool {
+		return config.IPVersion != monitor.IPVersionAuto
+	})
 }
