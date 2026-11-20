@@ -2,20 +2,22 @@ package agent
 
 import (
 	"errors"
+	"runtime"
 
 	"github.com/henrygd/beszel/agent/hardware"
 	"github.com/henrygd/beszel/agent/utils"
 )
 
-// hardwareInventoryOptions returns the collection options when the operator set
-// HARDWARE_INVENTORY=true, or nil (the default: no inventory is reported).
+// hardwareInventoryOptions returns the collection options, or nil when no
+// inventory is reported: the operator set HARDWARE_INVENTORY=false, or the
+// platform has no collector (only Linux has one).
 //
 //	HARDWARE_INVENTORY_IDENTIFIERS=true  also report serial numbers, UUIDs and MACs
 //	HARDWARE_INVENTORY_SMBIOS=<path>     read the SMBIOS table from this file, e.g. a
 //	                                     read-only bind mount in a container, where
 //	                                     /sys/firmware is hidden
 func hardwareInventoryOptions() *hardware.Options {
-	if enabled, _ := utils.GetEnv("HARDWARE_INVENTORY"); enabled != "true" {
+	if enabled, _ := utils.GetEnv("HARDWARE_INVENTORY"); enabled == "false" || runtime.GOOS != "linux" {
 		return nil
 	}
 	identifiers, _ := utils.GetEnv("HARDWARE_INVENTORY_IDENTIFIERS")
@@ -30,7 +32,7 @@ type GetHardwareInventoryHandler struct{}
 
 func (h *GetHardwareInventoryHandler) Handle(hctx *HandlerContext) error {
 	if hctx.Agent.hardwareInventory == nil {
-		return errors.New("hardware inventory is disabled on this agent (set HARDWARE_INVENTORY=true)")
+		return errors.New("hardware inventory is disabled on this agent")
 	}
 	return hctx.SendResponse(hardware.Collect(*hctx.Agent.hardwareInventory), hctx.RequestID)
 }
