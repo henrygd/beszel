@@ -57,3 +57,25 @@ func TestIsAppRoute(t *testing.T) {
 		assert.Equal(t, tt.want, isAppRoute(tt.path, tt.basePath), "path=%q basePath=%q", tt.path, tt.basePath)
 	}
 }
+
+func TestGetPublicAppInfoAutoLogin(t *testing.T) {
+	tests := []struct {
+		name          string
+		autoLogin     string
+		trustedHeader string
+		want          bool
+	}{
+		{"neither configured", "", "", false},
+		{"auto login", "user@example.com", "", true},
+		{"trusted header", "", "X-Email", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// prefixed vars take precedence, so an empty value overrides any ambient env
+			t.Setenv("BESZEL_HUB_AUTO_LOGIN", tt.autoLogin)
+			t.Setenv("BESZEL_HUB_TRUSTED_AUTH_HEADER", tt.trustedHeader)
+			info := getPublicAppInfo(&Hub{appURL: "http://localhost:8090"})
+			assert.Equal(t, tt.want, info.AUTO_LOGIN)
+		})
+	}
+}

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"os"
 	"os/exec"
 	"path"
@@ -21,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/henrygd/beszel"
 	"github.com/shirou/gopsutil/v4/sensors"
 )
 
@@ -51,21 +53,93 @@ var (
 
 var errNoSensors = errors.New("no sensors found (try running as admin with LHM=true)")
 
+// lhmFanReadings holds the fan speeds from the latest LHM sensor read. LHM reports
+// fans alongside temperatures, and a timed-out read may still finish in the background.
+type lhmFanReadings struct {
+	mu  sync.Mutex
+	rpm map[string]uint16
+}
+
+var lhmFans lhmFanReadings
+
+func (f *lhmFanReadings) set(rpm map[string]uint16) {
+	f.mu.Lock()
+	f.rpm = rpm
+	f.mu.Unlock()
+}
+
+// take returns the latest readings and clears them, so a failed or skipped
+// temperature read never reports the same fan speeds twice.
+func (f *lhmFanReadings) take() map[string]uint16 {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	rpm := f.rpm
+	f.rpm = nil
+	return rpm
+}
+
+// parseLHMFan parses the name and value of a "fan|<name>|<rpm>" line from the LHM helper.
+func parseLHMFan(name, value string) (string, uint16, bool) {
+	name = strings.TrimSpace(name)
+	rpm, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
+	if name == "" || err != nil || math.IsNaN(rpm) || rpm < 0 {
+		return "", 0, false
+	}
+	return name, uint16(min(math.Round(rpm), math.MaxUint16)), true
+}
+
+// lhmDirPrefix starts the name of the folder the LHM helper is extracted to.
+// The folder is named after the agent version, so each release extracts its own
+// helper and never overwrites one that may still be running or locked.
+const lhmDirPrefix = "lhm-"
+
+// helperExts are the file types extracted from the embedded LHM directory. Old
+// releases extracted these straight into the beszel temp directory.
+var helperExts = map[string]struct{}{
+	".exe": {}, ".dll": {}, ".config": {}, ".pdb": {}, ".xml": {}, ".sys": {},
+}
+
+// removeOutdatedLHM deletes LHM helpers left in baseDir by other agent versions:
+// other lhm-* folders, and the files older releases extracted directly into
+// baseDir. It's best effort, so errors (such as a helper that is still running
+// and locked) are ignored. Other folders, like smartmontools, are left alone.
+func removeOutdatedLHM(baseDir, keep string) {
+	entries, err := os.ReadDir(baseDir)
+	if err != nil {
+		return
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() {
+			if strings.HasPrefix(name, lhmDirPrefix) && name != keep {
+				os.RemoveAll(filepath.Join(baseDir, name))
+			}
+			continue
+		}
+		if _, ok := helperExts[strings.ToLower(filepath.Ext(name))]; ok && entry.Type().IsRegular() {
+			os.Remove(filepath.Join(baseDir, name))
+		}
+	}
+}
+
 // newlhmProcess copies the embedded LHM executable to a temporary directory and starts it.
 func newlhmProcess() (*lhmProcess, error) {
-	destDir := filepath.Join(os.TempDir(), "beszel")
+	baseDir := filepath.Join(os.TempDir(), "beszel")
+	destDir := filepath.Join(baseDir, lhmDirPrefix+beszel.Version)
 	execPath := filepath.Join(destDir, "beszel_lhm.exe")
 
 	if err := os.MkdirAll(destDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %w", err)
 	}
 
-	// Only copy if executable doesn't exist
+	// Only copy if executable doesn't exist. The folder name includes the agent
+	// version, so this is true on the first start of each release.
 	if _, err := os.Stat(execPath); os.IsNotExist(err) {
 		if err := copyEmbeddedDir(lhmFs, "lhm/bin/Release/net48", destDir); err != nil {
 			return nil, fmt.Errorf("failed to copy embedded directory: %w", err)
 		}
 	}
+	removeOutdatedLHM(baseDir, filepath.Base(destDir))
 
 	lhm := &lhmProcess{
 		execPath: execPath,
@@ -161,6 +235,7 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 	}
 
 	// Read all sensor lines until we hit an empty line or EOF
+	fans := make(map[string]uint16)
 	for lhm.scanner.Scan() {
 		line := strings.TrimSpace(lhm.scanner.Text())
 		if line == "" {
@@ -168,6 +243,14 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 		}
 
 		parts := strings.Split(line, "|")
+		if len(parts) == 3 && parts[0] == "fan" {
+			if name, rpm, ok := parseLHMFan(parts[1], parts[2]); ok {
+				fans[name] = rpm
+			} else {
+				slog.Debug("Invalid fan sensor", "line", line)
+			}
+			continue
+		}
 		if len(parts) != 2 {
 			slog.Debug("Invalid sensor format", "line", line)
 			continue
@@ -198,8 +281,10 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 		return temps, err
 	}
 
+	lhmFans.set(fans)
+
 	// Handle no sensors case
-	if len(temps) == 0 {
+	if len(temps) == 0 && len(fans) == 0 {
 		lhm.consecutiveNoSensors++
 		if lhm.consecutiveNoSensors >= 3 {
 			lhm.stoppedNoSensors = true
@@ -211,6 +296,9 @@ func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.Temperatur
 
 	lhm.consecutiveNoSensors = 0
 
+	if len(temps) == 0 {
+		return sensors.TemperaturesWithContext(ctx)
+	}
 	return temps, nil
 }
 

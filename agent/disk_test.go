@@ -1252,3 +1252,151 @@ func TestAddPartitionRootFsKeyAlreadyRegistered(t *testing.T) {
 	assert.Equal(t, "System", agent.fsStats["C:"].Name)
 	assert.False(t, agent.fsStats["D:"].Root)
 }
+
+// setApfsPhysicalDisk swaps the APFS volume -> physical disk lookup for the
+// duration of a test.
+func setApfsPhysicalDisk(t *testing.T, fn func(string) string) {
+	t.Helper()
+	old := apfsPhysicalDisk
+	apfsPhysicalDisk = fn
+	t.Cleanup(func() { apfsPhysicalDisk = old })
+}
+
+func TestRegisterFilesystemStatsAPFS(t *testing.T) {
+	// Physical disks as reported by IOKit on macOS: APFS containers (disk13)
+	// have no counters, and disk1 is a prefix of disk13s1.
+	counters := map[string]disk.IOCountersStat{
+		"disk1":  {Name: "disk1", ReadBytes: 9000, WriteBytes: 9000},
+		"disk3":  {Name: "disk3", ReadBytes: 100, WriteBytes: 100},
+		"disk12": {Name: "disk12", ReadBytes: 10, WriteBytes: 10},
+	}
+	darwinCtx := fsRegistrationContext{isDarwin: true, efPath: "/extra-filesystems", diskIoCounters: counters}
+
+	t.Run("maps apfs volume to its physical store disk", func(t *testing.T) {
+		calls := 0
+		setApfsPhysicalDisk(t, func(dev string) string {
+			calls++
+			assert.Equal(t, "/dev/disk13s1", dev)
+			return "disk12"
+		})
+
+		key, stats, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1", "/Volumes/DriveD", false, "DriveD", darwinCtx)
+
+		assert.True(t, ok)
+		assert.Equal(t, "disk12", key, "must not prefix-match disk1")
+		assert.Equal(t, "DriveD", stats.Name)
+		assert.Equal(t, 1, calls)
+	})
+
+	t.Run("maps apfs root volume to its physical store disk", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "disk12" })
+
+		key, _, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1s1", "/", true, "", darwinCtx)
+
+		assert.True(t, ok)
+		assert.Equal(t, "disk12", key)
+	})
+
+	t.Run("hfs volume keeps prefix fallback", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "" })
+
+		key, _, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk3s2", "/Volumes/DriveA", false, "", darwinCtx)
+
+		assert.True(t, ok)
+		assert.Equal(t, "disk3", key)
+	})
+
+	t.Run("unresolved lookup falls back to existing behaviour", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "" })
+
+		key, _, ok := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1", "/Volumes/DriveD", false, "", darwinCtx)
+
+		assert.True(t, ok)
+		assert.Equal(t, "disk1", key, "unchanged prefix fallback")
+	})
+
+	t.Run("physical disk without io counters falls back", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "disk19" })
+
+		key, _, _ := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk20s1", "/Volumes/Other", false, "", darwinCtx)
+
+		assert.Equal(t, "disk20s1", key)
+	})
+
+	t.Run("exact io match skips lookup", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string {
+			t.Fatal("APFS lookup should not be called")
+			return ""
+		})
+
+		key, _, _ := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk3", "/Volumes/Raw", false, "", darwinCtx)
+
+		assert.Equal(t, "disk3", key)
+	})
+
+	t.Run("non-darwin never calls lookup", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string {
+			t.Fatal("APFS lookup should not be called")
+			return ""
+		})
+		ctx := darwinCtx
+		ctx.isDarwin = false
+
+		key, _, _ := registerFilesystemStats(map[string]*system.FsStats{}, "/dev/disk13s1", "/Volumes/DriveD", false, "", ctx)
+
+		assert.Equal(t, "disk1", key)
+	})
+}
+
+func TestAddPartitionRootFsAPFS(t *testing.T) {
+	// Apple Silicon: root is a sealed snapshot of a volume in container disk3,
+	// whose physical store is disk0s2. Only physical disks have counters.
+	newDiscovery := func(isDarwin bool) (*Agent, diskDiscovery) {
+		agent := &Agent{fsStats: make(map[string]*system.FsStats)}
+		return agent, diskDiscovery{
+			agent:          agent,
+			rootMountPoint: "/",
+			ctx: fsRegistrationContext{
+				isDarwin: isDarwin,
+				diskIoCounters: map[string]disk.IOCountersStat{
+					"disk0":  {Name: "disk0", ReadBytes: 10, WriteBytes: 10},
+					"disk33": {Name: "disk33", ReadBytes: 9000, WriteBytes: 9000},
+				},
+			},
+		}
+	}
+
+	t.Run("maps apfs root snapshot to physical disk", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(dev string) string {
+			assert.Equal(t, "/dev/disk3s1s1", dev)
+			return "disk0"
+		})
+		agent, d := newDiscovery(true)
+
+		assert.True(t, d.addPartitionRootFs("/dev/disk3s1s1", "/"))
+		stats, ok := agent.fsStats["disk0"]
+		require.True(t, ok, "root should map to disk0, got %v", agent.fsStats)
+		assert.True(t, stats.Root)
+		assert.Equal(t, "/", stats.Mountpoint)
+	})
+
+	t.Run("unresolved lookup keeps existing behaviour", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string { return "" })
+		agent, d := newDiscovery(true)
+
+		// Unchanged: no prefix match, so the caller falls back to
+		// addLastResortRootFs.
+		assert.False(t, d.addPartitionRootFs("/dev/disk3s1s1", "/"))
+		assert.Empty(t, agent.fsStats)
+	})
+
+	t.Run("non-darwin never calls lookup", func(t *testing.T) {
+		setApfsPhysicalDisk(t, func(string) string {
+			t.Fatal("APFS lookup should not be called")
+			return ""
+		})
+		_, d := newDiscovery(false)
+
+		d.addPartitionRootFs("/dev/disk3s1s1", "/")
+	})
+}

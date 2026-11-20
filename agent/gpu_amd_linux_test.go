@@ -5,13 +5,83 @@ package agent
 import (
 	"os"
 	"path/filepath"
+	"runtime"
+	"strconv"
+	"syscall"
 	"testing"
+	"time"
 
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCollectAmdStatsRecoversAfterReadFailures(t *testing.T) {
+	root := t.TempDir()
+	oldRoot, oldSleep := drmSysfsRoot, amdSysfsSleep
+	drmSysfsRoot = root
+	t.Cleanup(func() {
+		drmSysfsRoot, amdSysfsSleep = oldRoot, oldSleep
+	})
+
+	devicePath := filepath.Join(root, "card0", "device")
+	require.NoError(t, os.MkdirAll(devicePath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(devicePath, "vendor"), []byte("0x1002"), 0o644))
+	metrics := map[string]string{
+		"gpu_busy_percent":    "25",
+		"mem_info_vram_used":  "1073741824",
+		"mem_info_vram_total": "2147483648",
+	}
+	writeMetrics := func() {
+		for name, value := range metrics {
+			require.NoError(t, os.WriteFile(filepath.Join(devicePath, name), []byte(value), 0o644))
+		}
+	}
+	writeMetrics()
+
+	gm := &GPUManager{GpuDataMap: map[string]*system.GPUData{"card0": {Name: "AMD Test GPU"}}}
+	failures := 0
+	removed := false
+	recovered := false
+	amdSysfsSleep = func(delay time.Duration) {
+		if !removed {
+			assert.Equal(t, 1.0, gm.GpuDataMap["card0"].Count)
+			assert.Equal(t, 3*time.Second, delay)
+			for name := range metrics {
+				require.NoError(t, os.Remove(filepath.Join(devicePath, name)))
+			}
+			removed = true
+			return
+		}
+		if gm.GpuDataMap["card0"].Count == 2 {
+			assert.Equal(t, 3*time.Second, delay)
+			recovered = true
+			// Stop the collector goroutine after observing the recovered sample.
+			runtime.Goexit()
+		}
+		assert.Equal(t, retryWaitTime, delay)
+		failures++
+		if failures == maxFailureRetries+2 {
+			writeMetrics()
+		} else if failures > maxFailureRetries+2 {
+			runtime.Goexit()
+		}
+	}
+
+	done := make(chan struct{})
+	var err error
+	go func() {
+		defer close(done)
+		err = gm.collectAmdStats()
+	}()
+	<-done
+	require.NoError(t, err, "collector must keep polling through prolonged sysfs read failures")
+	require.True(t, recovered, "collector must resume when sysfs metrics are restored")
+	assert.Equal(t, maxFailureRetries+2, failures)
+	assert.Equal(t, 50.0, gm.GpuDataMap["card0"].Usage)
+	assert.Equal(t, utils.BytesToMegabytes(1073741824), gm.GpuDataMap["card0"].MemoryUsed)
+}
 
 func TestNormalizeHexID(t *testing.T) {
 	tests := []struct {
@@ -79,6 +149,74 @@ func TestReadSysfsFloat(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestSysfsBackoff(t *testing.T) {
+	const path = "/sys/class/drm/card1/device/gpu_busy_percent"
+	start := time.Now()
+	unsupported := &os.PathError{Op: "read", Path: path, Err: syscall.EOPNOTSUPP}
+
+	t.Run("fast reads are never backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, time.Millisecond, start)
+		b.record(path, os.ErrNotExist, time.Millisecond, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("unsupported read backs off and doubles up to max", func(t *testing.T) {
+		b := newSysfsBackoff()
+		now := start
+		want := sysfsBackoffMin
+		for range 8 {
+			b.record(path, unsupported, time.Millisecond, now)
+			assert.False(t, b.allow(path, now.Add(want-time.Second)))
+			assert.True(t, b.allow(path, now.Add(want)))
+			now = now.Add(want)
+			want = min(want*2, sysfsBackoffMax)
+		}
+		assert.Equal(t, sysfsBackoffMax, b.entries[path].delay)
+	})
+
+	t.Run("slow failed read backs off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		timedOut := &os.PathError{Op: "read", Path: path, Err: syscall.ETIME}
+		b.record(path, timedOut, sysfsSlowReadThreshold, start)
+		assert.False(t, b.allow(path, start))
+		assert.True(t, b.allow(path, start.Add(sysfsBackoffMin)))
+	})
+
+	t.Run("slow successful read is not backed off", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, nil, sysfsSlowReadThreshold, start)
+		assert.True(t, b.allow(path, start))
+	})
+
+	t.Run("slow successful read clears backoff", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, nil, sysfsSlowReadThreshold, start.Add(sysfsBackoffMin))
+		assert.Empty(t, b.entries)
+	})
+
+	t.Run("fast success resets delay", func(t *testing.T) {
+		b := newSysfsBackoff()
+		b.record(path, unsupported, time.Millisecond, start)
+		b.record(path, unsupported, time.Millisecond, start.Add(sysfsBackoffMin))
+		b.record(path, nil, time.Millisecond, start.Add(3*sysfsBackoffMin))
+		assert.True(t, b.allow(path, start.Add(3*sysfsBackoffMin)))
+		b.record(path, unsupported, time.Millisecond, start.Add(3*sysfsBackoffMin))
+		assert.Equal(t, sysfsBackoffMin, b.entries[path].delay)
+	})
+
+	t.Run("readSysfsFloat skips backed off files", func(t *testing.T) {
+		valPath := filepath.Join(t.TempDir(), "val")
+		require.NoError(t, os.WriteFile(valPath, []byte("42"), 0o644))
+		amdSysfsBackoff.record(valPath, unsupported, time.Millisecond, time.Now())
+		t.Cleanup(func() { amdSysfsBackoff.record(valPath, nil, 0, time.Now()) })
+
+		_, err := readSysfsFloat(valPath)
+		assert.ErrorIs(t, err, errSysfsBackoff)
+	})
+}
+
 func TestIsAmdGpu(t *testing.T) {
 	dir := t.TempDir()
 	deviceDir := filepath.Join(dir, "device")
@@ -120,23 +258,77 @@ func TestAmdgpuNameCacheRoundTrip(t *testing.T) {
 }
 
 func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
+	const gib = 1 << 30
+	// gpu_metrics starts with metrics_table_header: u16 structure_size, u8 format_revision, u8 content_revision
+	metrics := func(formatRevision byte) []byte { return []byte{0x68, 0x00, formatRevision, 0x00} }
+
 	tests := []struct {
 		name            string
-		writeGTT        bool
+		gpuMetrics      []byte // nil: no gpu_metrics file
+		vramUsed        int64
+		vramTotal       int64
+		gttUsed         int64 // 0: no gtt files
+		gttTotal        int64
 		wantMemoryUsed  float64
 		wantMemoryTotal float64
 	}{
 		{
-			name:            "sums vram and gtt when gtt is present",
-			writeGTT:        true,
-			wantMemoryUsed:  utils.BytesToMegabytes(1073741824 + 536870912),
-			wantMemoryTotal: utils.BytesToMegabytes(2147483648 + 4294967296),
+			// Strix Halo style APU (issue 1569): 1 GiB carve-out, huge GTT
+			name:            "apu sums vram and gtt",
+			gpuMetrics:      metrics(2),
+			vramUsed:        gib / 4,
+			vramTotal:       gib,
+			gttUsed:         gib / 2,
+			gttTotal:        96 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib/4 + gib/2),
+			wantMemoryTotal: utils.BytesToMegabytes(gib + 96*gib),
+		},
+		{
+			name:            "gpu_metrics v3 is an apu too",
+			gpuMetrics:      metrics(3),
+			vramUsed:        gib / 4,
+			vramTotal:       gib,
+			gttUsed:         gib / 2,
+			gttTotal:        4 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib/4 + gib/2),
+			wantMemoryTotal: utils.BytesToMegabytes(gib + 4*gib),
+		},
+		{
+			// RX 5700 XT style card (issue 2682): GTT is system RAM, not VRAM
+			name:            "discrete card ignores gtt",
+			gpuMetrics:      metrics(1),
+			vramUsed:        gib / 2,
+			vramTotal:       8 * gib,
+			gttUsed:         21 << 20,
+			gttTotal:        15*gib + 700<<20,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib / 2),
+			wantMemoryTotal: utils.BytesToMegabytes(8 * gib),
+		},
+		{
+			name:            "no gpu_metrics and large vram is a discrete card",
+			vramUsed:        gib,
+			vramTotal:       8 * gib,
+			gttUsed:         gib / 2,
+			gttTotal:        16 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib),
+			wantMemoryTotal: utils.BytesToMegabytes(8 * gib),
+		},
+		{
+			name:            "no gpu_metrics and small vram is an apu",
+			vramUsed:        gib / 4,
+			vramTotal:       gib,
+			gttUsed:         gib / 2,
+			gttTotal:        4 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib/4 + gib/2),
+			wantMemoryTotal: utils.BytesToMegabytes(gib + 4*gib),
 		},
 		{
 			name:            "falls back to vram when gtt is missing",
-			writeGTT:        false,
-			wantMemoryUsed:  utils.BytesToMegabytes(1073741824),
-			wantMemoryTotal: utils.BytesToMegabytes(2147483648),
+			gpuMetrics:      metrics(2),
+			vramUsed:        gib,
+			vramTotal:       2 * gib,
+			wantMemoryUsed:  utils.BytesToMegabytes(gib),
+			wantMemoryTotal: utils.BytesToMegabytes(2 * gib),
 		},
 	}
 
@@ -155,11 +347,14 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 			write("device", "0x1506")
 			write("revision", "0xc1")
 			write("gpu_busy_percent", "25")
-			write("mem_info_vram_used", "1073741824")
-			write("mem_info_vram_total", "2147483648")
-			if tt.writeGTT {
-				write("mem_info_gtt_used", "536870912")
-				write("mem_info_gtt_total", "4294967296")
+			write("mem_info_vram_used", strconv.FormatInt(tt.vramUsed, 10))
+			write("mem_info_vram_total", strconv.FormatInt(tt.vramTotal, 10))
+			if tt.gttUsed > 0 {
+				write("mem_info_gtt_used", strconv.FormatInt(tt.gttUsed, 10))
+				write("mem_info_gtt_total", strconv.FormatInt(tt.gttTotal, 10))
+			}
+			if tt.gpuMetrics != nil {
+				require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), tt.gpuMetrics, 0o644))
 			}
 			require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "temp1_input"), []byte("45000"), 0o644))
 			require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "power1_input"), []byte("20000000"), 0o644))
@@ -182,6 +377,58 @@ func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
 			assert.Equal(t, 1.0, gpu.Count)
 		})
 	}
+}
+
+func TestAmdGpuIsUnifiedMemoryCaching(t *testing.T) {
+	const gib = 1 << 30
+	metrics := func(formatRevision byte) []byte { return []byte{0x68, 0x00, formatRevision, 0x00} }
+
+	t.Run("gpu_metrics result is cached", func(t *testing.T) {
+		devicePath := t.TempDir()
+		metricsPath := filepath.Join(devicePath, "gpu_metrics")
+		require.NoError(t, os.WriteFile(metricsPath, metrics(2), 0o644))
+
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+		// the table is not read again, so a changed (or removed) file has no effect
+		require.NoError(t, os.WriteFile(metricsPath, metrics(1), 0o644))
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+		require.NoError(t, os.Remove(metricsPath))
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+	})
+
+	t.Run("missing gpu_metrics caches size fallback", func(t *testing.T) {
+		devicePath := t.TempDir()
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, gib))
+		assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib), "size is re-evaluated each poll")
+		// a table appearing later is ignored: the fallback was cached
+		require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), metrics(2), 0o644))
+		assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+	})
+
+	t.Run("failed vram read is not taken for an apu", func(t *testing.T) {
+		assert.False(t, amdGpuIsUnifiedMemory(t.TempDir(), 0))
+	})
+
+	t.Run("transient read failure is retried", func(t *testing.T) {
+		devicePath := t.TempDir()
+		metricsPath := filepath.Join(devicePath, "gpu_metrics")
+		// opening a directory succeeds but reading it fails with EISDIR
+		require.NoError(t, os.Mkdir(metricsPath, 0o755))
+		assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib), "falls back to size while unreadable")
+
+		require.NoError(t, os.Remove(metricsPath))
+		require.NoError(t, os.WriteFile(metricsPath, metrics(2), 0o644))
+		assert.True(t, amdGpuIsUnifiedMemory(devicePath, 8*gib), "table is read again after a failure")
+	})
+
+	t.Run("unknown or short table falls back to size", func(t *testing.T) {
+		for _, data := range [][]byte{metrics(9), {0x68, 0x00}} {
+			devicePath := t.TempDir()
+			require.NoError(t, os.WriteFile(filepath.Join(devicePath, "gpu_metrics"), data, 0o644))
+			assert.True(t, amdGpuIsUnifiedMemory(devicePath, gib))
+			assert.False(t, amdGpuIsUnifiedMemory(devicePath, 8*gib))
+		}
+	})
 }
 
 func TestLookupAmdgpuNameInFile(t *testing.T) {

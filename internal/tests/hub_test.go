@@ -5,7 +5,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/require"
 )
 

@@ -13,7 +13,7 @@ body:
         - For translation-related issues or requests, please use the [Crowdin project](https://crowdin.com/project/beszel).
         - To request a change or feature, use the [feature request form](https://github.com/henrygd/beszel/issues/new?template=feature_request.yml).
         - Any issues that can be resolved by consulting the documentation or by reviewing existing open or closed issues will be closed.
-        **- Please do not submit bugs that are specific to ZFS. We plan to add integration with ZFS utilities in the near future.**
+        - Issues that don't follow this template (for example, removed sections or required fields left empty) may be closed without review.
 
       options:
       - label: I have read the [Documentation](https://beszel.dev/guide/getting-started)
@@ -93,7 +93,8 @@ body:
     id: version
     attributes:
       label: Beszel version
-      placeholder: 0.9.1
+      description: Hub and agent version, if they differ. Run `beszel-agent -v` to check the agent version.
+      placeholder: 0.21.1 (hub), 0.21.0 (agent)
     validations:
       required: true
   
@@ -122,12 +123,16 @@ body:
     id: hub-logs
     attributes:
       label: Hub Logs
-      description: Check the logs page in PocketBase (`/_/#/logs`) for relevant errors (copy JSON).
+      description: Check the logs page in PocketBase (`/_/#/logs`) for relevant errors (copy JSON). If there are none, write `none`.
       render: json
+    validations:
+      required: true
   
   - type: textarea
     id: agent-logs
     attributes:
       label: Agent Logs
-      description: Please provide any logs from the agent, if relevant. Use `LOG_LEVEL=debug` for more info.
+      description: Logs from the agent, started with `LOG_LEVEL=debug`. If there are none, write `none`.
       render: shell
+    validations:
+      required: true

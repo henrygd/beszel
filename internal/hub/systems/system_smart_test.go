@@ -13,8 +13,8 @@ import (
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 	_ "github.com/henrygd/beszel/internal/migrations"
 
-	"github.com/pocketbase/pocketbase/core"
-	pbtests "github.com/pocketbase/pocketbase/tests"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	pbtests "ganigeorgiev.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"

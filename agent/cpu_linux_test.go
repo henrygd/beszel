@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -120,6 +121,89 @@ func TestReadCgroupV2CpuSample(t *testing.T) {
 	assert.EqualValues(t, 2000000, s.userUsec)
 	assert.EqualValues(t, 1000000, s.systemUsec)
 	assert.InDelta(t, 4, s.cores, 0.001) // cpuset 2,5-7 = 4 cores
+}
+
+func TestCpuDetailsPreferContainerCpusetOverDocker(t *testing.T) {
+	for _, tt := range []struct {
+		name, cpus     string
+		cores, threads int
+	}{
+		{name: "stale Docker count", cpus: "0-2", cores: 3, threads: 3},
+		{name: "preserve physical cores", cpus: "0-7", cores: 4, threads: 8},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			swapCpuContainerSeams(t)
+			markLxc(t)
+			writeCpuFixture(t, procSelfCgroup, "0::/system.slice/beszel-agent.service\n")
+			writeCpuFixture(t, cgroupMountinfo, "")
+			writeCpuFixture(t, filepath.Join(cgroupRoot, "cpuset.cpus.effective"), tt.cpus+"\n")
+			// CPU time quota is independent of the number of assigned CPUs.
+			writeCpuFixture(t, filepath.Join(cgroupRoot, "cpu.max"), "200000 100000\n")
+			sysRoot := t.TempDir()
+			t.Setenv("HOST_SYS", sysRoot)
+			for id, siblings := range map[string]string{
+				"0": "0,4", "1": "1,5", "2": "2,6", "3": "3,7",
+				"4": "0,4", "5": "1,5", "6": "2,6", "7": "3,7",
+			} {
+				writeCpuFixture(t, filepath.Join(sysRoot, "devices/system/cpu/cpu"+id+"/topology/core_cpus_list"), siblings+"\n")
+			}
+			transport := &recordingRoundTripper{statusCode: http.StatusOK, body: `{"NCPU":2}`}
+			a := &Agent{dockerManager: &dockerManager{client: &http.Client{Transport: transport}}}
+			a.refreshSystemDetails()
+			assert.Equal(t, "/info", transport.lastPath)
+			assert.Equal(t, tt.threads, a.systemDetails.Threads)
+			assert.Equal(t, tt.cores, a.systemDetails.Cores)
+		})
+	}
+}
+
+func TestContainerCpuCountHybridHierarchy(t *testing.T) {
+	swapCpuContainerSeams(t)
+	markLxc(t)
+	writeCpuFixture(t, procSelfCgroup, "3:cpuset:/system.slice/agent.service\n0::/system.slice/agent.service\n")
+	v1 := filepath.Join(t.TempDir(), "cpuset")
+	v2 := filepath.Join(t.TempDir(), "unified")
+	writeCpuFixture(t, cgroupMountinfo,
+		"30 25 0:26 / "+v1+" rw - cgroup cgroup rw,cpuset\n"+
+			"31 25 0:27 / "+v2+" rw - cgroup2 cgroup2 rw\n")
+	writeCpuFixture(t, filepath.Join(v1, "cpuset.cpus"), "0-2\n")
+	writeCpuFixture(t, filepath.Join(v2, "cgroup.controllers"), "\n")
+	assert.Equal(t, 3, containerCpuCount(false))
+}
+
+func TestContainerCpuCount(t *testing.T) {
+	for _, tt := range []struct {
+		name, cpus     string
+		lxc, force, v1 bool
+		want           int
+	}{
+		{name: "LXC v2", cpus: "0-2", lxc: true, want: 3},
+		{name: "LXC v1", cpus: "2,5-6", lxc: true, v1: true, want: 3},
+		{name: "explicit opt-in", cpus: "0-2", force: true, want: 3},
+		{name: "host keeps existing count", cpus: "0-2"},
+		{name: "missing cpuset keeps existing count", lxc: true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			swapCpuContainerSeams(t)
+			if tt.lxc {
+				markLxc(t)
+			}
+			file := "cpuset.cpus.effective"
+			if tt.v1 {
+				writeCpuFixture(t, procSelfCgroup, "3:cpuset:/system.slice/beszel-agent.service\n")
+				writeCpuFixture(t, cgroupMountinfo,
+					"30 25 0:26 / "+cgroupRoot+" rw - cgroup cgroup rw,cpuset\n")
+				file = "cpuset.cpus"
+			} else {
+				writeCpuFixture(t, procSelfCgroup, "0::/system.slice/beszel-agent.service\n")
+				writeCpuFixture(t, cgroupMountinfo, "")
+			}
+			if tt.cpus != "" {
+				writeCpuFixture(t, filepath.Join(cgroupRoot, file), tt.cpus+"\n")
+			}
+			assert.Equal(t, tt.want, containerCpuCount(tt.force))
+		})
+	}
 }
 
 // The agent may sit in a sub-cgroup of the guest (a systemd service, or the

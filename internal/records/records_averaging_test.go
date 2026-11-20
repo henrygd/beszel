@@ -899,3 +899,29 @@ func TestAverageSystemStatsSlice_BtrfsDisplayName(t *testing.T) {
 	assert.Equal(t, "after", result.ZfsPools["b:uuid"].DisplayName)
 	assert.Equal(t, float64(15), result.ZfsPools["b:uuid"].Used)
 }
+
+func TestAverageSystemStatsRecords(t *testing.T) {
+	result := records.AverageSystemStats([]records.StatsRecord{
+		{Stats: []byte(`{"cpu":10}`)},
+		{Stats: []byte(`{"cpu":20}`)},
+		{Stats: []byte(`{"cpu":30}`)},
+		// malformed blobs are skipped
+		{Stats: []byte(`not json`)},
+	})
+	assert.Equal(t, 20.0, result.Cpu)
+}
+
+func TestAverageContainerStatsRecords(t *testing.T) {
+	result := records.AverageContainerStats([]records.StatsRecord{
+		{Stats: []byte(`[{"n":"web","c":10,"m":100},{"n":"db","c":30,"m":300}]`)},
+		{Stats: []byte(`[{"n":"web","c":20,"m":200}]`)},
+	})
+	require.Len(t, result, 2)
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	assert.Equal(t, "db", result[0].Name)
+	assert.Equal(t, 15.0, result[0].Cpu)
+	assert.Equal(t, 150.0, result[0].Mem)
+	assert.Equal(t, "web", result[1].Name)
+	assert.Equal(t, 15.0, result[1].Cpu)
+	assert.Equal(t, 150.0, result[1].Mem)
+}

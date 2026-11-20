@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -116,7 +117,7 @@ func TestFilterGpuFans(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, discovered, 2)
 
-	filtered := filterGpuFans(discovered)
+	filtered := (&SensorConfig{skipGPU: true}).filterFans(discovered)
 	require.Len(t, filtered, 1)
 	assert.Equal(t, "nct6798_fan1", filtered[0].key)
 	assert.Len(t, discovered, 2)
@@ -154,4 +155,95 @@ func TestReadFansWithTimeout(t *testing.T) {
 	fans, err = agent.readFansWithTimeout(newFanSensorCache(root))
 	require.NoError(t, err)
 	assert.Equal(t, map[string]uint16{"chip_fan1": 1000}, fans)
+}
+
+func TestFilterFanSensors(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "hwmon0", "name"), "nct6791\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan1_input"), "0\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan2_input"), "900\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan3_input"), "0\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan4_input"), "1100\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan4_label"), "chassis\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "name"), "gpio_fan\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "fan1_input"), "0\n")
+
+	discovered, err := discoverHwmonFans(root)
+	require.NoError(t, err)
+	require.Len(t, discovered, 5)
+
+	tests := []struct {
+		name       string
+		fanSensors string
+		expected   []string
+	}{
+		{"empty list keeps all", "", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis", "gpio_fan_fan1"}},
+		{"whitelist", "nct6791_fan2,nct6791_chassis", []string{"nct6791_fan2", "nct6791_chassis"}},
+		{"whitelist matches label not fan index", "nct6791_fan4", []string{}},
+		{"blacklist", "-gpio_fan_fan1", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis"}},
+		{"whitelist wildcard", "nct6791_*", []string{"nct6791_fan1", "nct6791_fan2", "nct6791_fan3", "nct6791_chassis"}},
+		{"blacklist wildcard and exact", "-gpio_*, nct6791_fan1 ,nct6791_fan3", []string{"nct6791_fan2", "nct6791_chassis"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filtered := (&SensorConfig{fanSensors: parseSensorFilter(tt.fanSensors)}).filterFans(discovered)
+			keys := make([]string, 0, len(filtered))
+			for _, sensor := range filtered {
+				keys = append(keys, sensor.key)
+			}
+			assert.ElementsMatch(t, tt.expected, keys)
+			assert.Len(t, discovered, 5)
+		})
+	}
+}
+
+func TestReadFansWithTimeoutFanSensors(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "hwmon0", "name"), "nct6791\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan1_input"), "0\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan2_input"), "900\n")
+
+	agent := &Agent{sensorConfig: &SensorConfig{timeout: time.Second, fanSensors: parseSensorFilter("-nct6791_fan1")}}
+	getSensors := newFanSensorCache(root)
+	fans, err := agent.readFansWithTimeout(getSensors)
+	require.NoError(t, err)
+	assert.Equal(t, map[string]uint16{"nct6791_fan2": 900}, fans)
+
+	// the cached discovery still holds every fan
+	sensors, err := getSensors()
+	require.NoError(t, err)
+	assert.Len(t, sensors, 2)
+}
+
+func TestFilterFansSkipGpuAndFanSensors(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "hwmon0", "name"), "xe\n")
+	writeFile(t, filepath.Join(root, "hwmon0", "fan1_input"), "1200\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "name"), "nct6798\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "fan1_input"), "800\n")
+	writeFile(t, filepath.Join(root, "hwmon1", "fan2_input"), "900\n")
+
+	discovered, err := discoverHwmonFans(root)
+	require.NoError(t, err)
+
+	config := &SensorConfig{skipGPU: true, fanSensors: parseSensorFilter("-nct6798_fan1")}
+	filtered := config.filterFans(discovered)
+	require.Len(t, filtered, 1)
+	assert.Equal(t, "nct6798_fan2", filtered[0].key)
+	assert.Len(t, discovered, 3)
+}
+
+func TestUpdateFansSkipFans(t *testing.T) {
+	originalGetFanSensors := getFanSensors
+	t.Cleanup(func() { getFanSensors = originalGetFanSensors })
+	getFanSensors = func() ([]fanSensor, error) {
+		t.Fatal("fan discovery should not run when FAN_SENSORS is empty")
+		return nil, nil
+	}
+
+	a := &Agent{sensorConfig: &SensorConfig{skipFans: true}}
+	var stats system.Stats
+	a.updateFans(&stats)
+	assert.Nil(t, stats.Fans)
 }

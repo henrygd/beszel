@@ -44,6 +44,10 @@ func TestMain(m *testing.M) {
 			os.Exit(1)
 		}
 		fmt.Print(string(output))
+		// A .fail file makes the command exit non-zero after printing its output.
+		if _, err := os.Stat(executable + ".fail"); err == nil {
+			os.Exit(1)
+		}
 		os.Exit(0)
 	}
 	os.Exit(m.Run())

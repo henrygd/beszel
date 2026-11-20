@@ -3,6 +3,7 @@ package agent
 import (
 	"errors"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,9 +27,18 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 	})
 }
 
-// updateFans populates systemStats.Fans from the host's hwmon sysfs tree.
-// No-op on platforms where hwmon isn't available (see fans_other.go).
+// updateFans populates systemStats.Fans from the host's hwmon sysfs tree, or on
+// Windows from the LHM helper (see fans_windows.go). No-op on other platforms.
 func (a *Agent) updateFans(systemStats *system.Stats) {
+	if a.sensorConfig != nil && a.sensorConfig.skipFans {
+		return
+	}
+	if platformFans != nil {
+		if fans := a.sensorConfig.filterFanKeys(platformFans()); len(fans) > 0 {
+			systemStats.Fans = fans
+		}
+		return
+	}
 	if hwmonRoot == "" {
 		return
 	}
@@ -72,8 +82,8 @@ func (a *Agent) readFansWithTimeout(getSensors func() ([]fanSensor, error)) (map
 			return nil, err
 		}
 		// Filter before reading fan*_input: each read can wake an idle GPU.
-		if a.sensorConfig != nil && a.sensorConfig.skipGPU {
-			sensors = filterGpuFans(sensors)
+		if a.sensorConfig != nil {
+			sensors = a.sensorConfig.filterFans(sensors)
 		}
 		return readFanSensors(sensors), nil
 	})
@@ -143,11 +153,27 @@ func readFanSensors(sensors []fanSensor) map[string]uint16 {
 	return fans
 }
 
-// filterGpuFans drops GPU chips without touching the shared cache backing array.
-func filterGpuFans(sensors []fanSensor) []fanSensor {
+// filterFanKeys drops fans excluded by FAN_SENSORS from readings that don't
+// come from hwmon, such as Windows LHM fans.
+func (config *SensorConfig) filterFanKeys(fans map[string]uint16) map[string]uint16 {
+	if config == nil {
+		return fans
+	}
+	maps.DeleteFunc(fans, func(key string, _ uint16) bool {
+		return !config.fanSensors.allows(key)
+	})
+	return fans
+}
+
+// filterFans drops GPU chips (SKIP_GPU) and fans excluded by FAN_SENSORS in a
+// single pass, without touching the shared cache backing array.
+func (config *SensorConfig) filterFans(sensors []fanSensor) []fanSensor {
 	kept := make([]fanSensor, 0, len(sensors))
 	for _, sensor := range sensors {
-		if isGpuChipName(sensor.chip) {
+		if config.skipGPU && isGpuChipName(sensor.chip) {
+			continue
+		}
+		if !config.fanSensors.allows(sensor.key) {
 			continue
 		}
 		kept = append(kept, sensor)

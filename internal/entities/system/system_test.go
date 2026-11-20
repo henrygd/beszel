@@ -76,9 +76,74 @@ func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
 }
 
 func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
-	var stats Stats
-	require.NoError(t, json.Unmarshal([]byte(`{"bat":[50,4]}`), &stats))
-	assert.Equal(t, Battery{50, 4}, stats.Battery)
+	for name, unmarshal := range map[string]func([]byte, any) error{
+		"json_v1": json.Unmarshal,
+		"json_v2": func(data []byte, val any) error { return jsonv2.Unmarshal(data, val) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stats Stats
+			require.NoError(t, unmarshal([]byte(`{"bat":[50,4]}`), &stats))
+			assert.Equal(t, Battery{50, 4}, stats.Battery)
+
+			var info Info
+			require.NoError(t, unmarshal([]byte(`{"bat":[59,5],"jl":true}`), &info))
+			assert.True(t, info.SystemdLogs)
+			assert.Equal(t, Battery{59, 5}, info.Battery)
+
+			var bat Battery
+			require.NoError(t, unmarshal([]byte(`[100,2]`), &bat))
+			assert.Equal(t, Battery{100, 2}, bat)
+
+			var nullBat Battery
+			require.NoError(t, unmarshal([]byte(`null`), &nullBat))
+			assert.Equal(t, Battery{0, 0}, nullBat)
+		})
+	}
+}
+
+// PocketBase decodes record JSON fields with encoding/json/v2, which rejects
+// numeric arrays for byte slices unless the type unmarshals them itself.
+func TestStatsCpuCoresNumericArrayUnmarshal(t *testing.T) {
+	for name, unmarshal := range map[string]func([]byte, any) error{
+		"json_v1": json.Unmarshal,
+		"json_v2": func(data []byte, val any) error { return jsonv2.Unmarshal(data, val) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stats Stats
+			require.NoError(t, unmarshal([]byte(`{"cpu":12.5,"cpus":[2,3,100,255],"t":{"cpu":40}}`), &stats))
+			assert.Equal(t, Uint8Slice{2, 3, 100, 255}, stats.CpuCoresUsage)
+			assert.Equal(t, 12.5, stats.Cpu)
+			assert.Equal(t, map[string]float64{"cpu": 40}, stats.Temperatures)
+
+			var empty Uint8Slice
+			require.NoError(t, unmarshal([]byte(`[]`), &empty))
+			assert.Equal(t, Uint8Slice{}, empty)
+
+			nullSlice := Uint8Slice{1}
+			require.NoError(t, unmarshal([]byte(`null`), &nullSlice))
+			assert.Nil(t, nullSlice)
+
+			var overflow Uint8Slice
+			assert.Error(t, unmarshal([]byte(`[256]`), &overflow))
+		})
+	}
+}
+
+func TestStatsCpuCoresJSONRoundTrip(t *testing.T) {
+	stats := Stats{CpuCoresUsage: Uint8Slice{0, 7, 99}}
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json_v1": json.Marshal,
+		"json_v2": func(value any) ([]byte, error) { return jsonv2.Marshal(value) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			data, err := marshal(stats)
+			require.NoError(t, err)
+			assert.Contains(t, string(data), `"cpus":[0,7,99]`)
+			var decoded Stats
+			require.NoError(t, jsonv2.Unmarshal(data, &decoded))
+			assert.Equal(t, stats.CpuCoresUsage, decoded.CpuCoresUsage)
+		})
+	}
 }
 
 func TestStatsLegacyBatteryPayload(t *testing.T) {
