@@ -16,6 +16,8 @@ func TestNvmlSampleToFloat(t *testing.T) {
 		ok      bool
 	}{
 		{0, math.Float64bits(55.5), 55.5, true},
+		{0, math.Float64bits(math.NaN()), 0, false},
+		{0, math.Float64bits(math.Inf(1)), 0, false},
 		{1, 0xdeadbeef_0000d878, 55416, true}, // upper union bytes ignored for uint32
 		{3, 115000, 115000, true},
 		{4, uint64(1<<64 - 5), -5, true},

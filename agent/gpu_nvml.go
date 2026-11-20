@@ -293,7 +293,11 @@ func (c *nvmlCollector) powerFromSamples(i int, device nvmlDevice) float64 {
 func nvmlSampleToFloat(valType int32, raw uint64) (float64, bool) {
 	switch valType {
 	case 0: // NVML_VALUE_TYPE_DOUBLE
-		return math.Float64frombits(raw), true
+		v := math.Float64frombits(raw)
+		if math.IsNaN(v) || math.IsInf(v, 0) {
+			return 0, false
+		}
+		return v, true
 	case 1: // NVML_VALUE_TYPE_UNSIGNED_INT
 		return float64(uint32(raw)), true
 	case 2, 3: // NVML_VALUE_TYPE_UNSIGNED_LONG, NVML_VALUE_TYPE_UNSIGNED_LONG_LONG
