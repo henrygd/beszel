@@ -164,7 +164,8 @@ var batteryStateNames = map[uint8]string{
 
 type wifiInfo struct {
 	SSID   string   `json:"ssid,omitempty"`
-	Signal *float64 `json:"signal_dbm,omitempty"` // omitted when the OS can't supply RSSI
+	Signal *float64 `json:"signal_dbm,omitempty"`   // omitted when the OS can't supply RSSI
+	AP     bool     `json:"access_point,omitempty"` // signal_dbm is the average RSSI of associated clients
 }
 
 type serverInfo struct {
@@ -277,7 +278,7 @@ func newSystemSummary(record *core.Record) systemSummary {
 		if len(info.WiFi) > 0 {
 			s.WiFi = make(map[string]wifiInfo, len(info.WiFi))
 			for iface, wifi := range info.WiFi {
-				s.WiFi[iface] = wifiInfo{SSID: wifi.SSID, Signal: wifi.Signal}
+				s.WiFi[iface] = wifiInfo{SSID: wifi.SSID, Signal: wifi.Signal, AP: wifi.AP}
 			}
 		}
 	}
