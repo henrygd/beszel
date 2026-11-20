@@ -33,6 +33,7 @@ export function BandwidthChart({
 
 	return (
 		<ChartCard
+            maxSelectable={false}
 			empty={dataEmpty}
 			grid={grid}
 			title={t`Bandwidth`}

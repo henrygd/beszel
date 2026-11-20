@@ -120,6 +120,7 @@ export default memo(function DiskIOSheet({
 						grid={grid}
 						title={title}
 						description={description}
+						maxSelectable={false}
 						cornerEl={maxValSelect}
 						// legend={true}
 					>
@@ -170,6 +171,7 @@ export default memo(function DiskIOSheet({
 							context: "Disk I/O",
 						})}
 						className="min-h-auto"
+						maxSelectable={false}
 						cornerEl={maxValSelect}
 					>
 						<AreaChartDefault
@@ -209,6 +211,7 @@ export default memo(function DiskIOSheet({
 							title={queueDepthTranslation}
 							description={t`Average number of I/O operations waiting to be serviced`}
 							className="min-h-auto"
+							maxSelectable={false}
 							cornerEl={maxValSelect}
 						>
 							<AreaChartDefault
@@ -239,6 +242,7 @@ export default memo(function DiskIOSheet({
 								context: "Disk I/O average operation time (iostat await)",
 							})}
 							className="min-h-auto"
+							maxSelectable={false}
 							cornerEl={maxValSelect}
 							// legend={true}
 						>
@@ -276,7 +280,7 @@ export default memo(function DiskIOSheet({
 						>
 							<AreaChartDefault
 								chartData={chartData}
-                chartProps={{syncId: "c"}}
+								chartProps={{ syncId: "c" }}
 								dataPoints={[
 									{
 										label: t`Read`,
@@ -307,7 +311,7 @@ export default memo(function DiskIOSheet({
 						>
 							<AreaChartDefault
 								chartData={chartData}
-                chartProps={{syncId: "c"}}
+								chartProps={{ syncId: "c" }}
 								dataPoints={[
 									{
 										label: t`Write`,
@@ -327,7 +331,6 @@ export default memo(function DiskIOSheet({
 							/>
 						</ChartCard>
 					)}
-
 				</SheetContent>
 			)}
 		</Sheet>
