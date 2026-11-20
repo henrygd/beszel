@@ -59,13 +59,42 @@ None — the delta applied wholesale; conflicts were per-file, not per-commit.
 - `go test ./...`: PASS
 - `gofmt -l`: clean
 
+## Fork releases
+
+Tag scheme: `v<upstream-version>-fork.<n>` — the fork syncs origin is
+upstream's tag, and the suffix keeps fork tags from ever colliding with an
+upstream tag on a future sync.
+
+What a tag triggers (`release.yml`, `docker-images.yml`, `helm-charts.yml`):
+
+- GoReleaser creates a **draft** release; publish it by hand after checking
+  the assets (`gh release edit <tag> --draft=false --latest`).
+- Container images go to `ghcr.io/dvorinka/*`. Because the tag is a
+  semver *prerelease*, `metadata-action`'s `latest=auto` never applies, so
+  `docker-images.yml` publishes `:latest` explicitly on tag pushes. Without
+  that line `:latest` silently stays behind — and both the README quick
+  start and the in-app updater (`internal/hub/app_update.go`) pull it.
+- Helm charts publish to `ghcr.io/dvorinka/beszel-charts`. Pointing this at
+  upstream's namespace makes CI fail, because upstream already published
+  those chart versions.
+
+Container builds pin Go in the Dockerfiles, not in CI: when `go.mod`'s
+`go` directive outruns `golang:x.y.z` in `internal/dockerfile_*`, every
+image job dies at `go mod download`. Bump both together.
+
+## Verified against a live hub
+
+- Existing `beszel_data` dir migrated to PocketBase v0.42.2 and booted
+  clean; `:latest` image booted clean on a fresh volume (`/api/health` 200,
+  site served, schedulers running).
+- Domain rows show live WHOIS data (registrar, expiry); public status page
+  renders per-check bars, error text and correct uptime on desktop and
+  390px mobile; monitor detail charts and incident banner render.
+
 ## Known debt / open items
 
 - `test_data/id_ed25519` remains in git history on older branches; key
   must be rotated everywhere it was authorized.
-- Hub.go startup ordering (fork schedulers vs upstream agent server)
-  reviewed at merge; runtime smoke test still recommended.
-- PocketBase v0.42.2 migration of fork collections compiles; live DB
-  migration on an existing data dir untested.
-- Functional domain-fetching correctness (WHOIS/registrar parsing)
-  still needs live-data verification — compile-clean only.
+- `docker-images.yml` publishes `edge` on tag pushes as well as on `main`,
+  so tagging an old commit would move `edge` backwards. Only matters if a
+  release is cut from a non-`main` commit.
