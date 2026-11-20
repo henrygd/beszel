@@ -5,14 +5,17 @@ import type { NetworkMonitorRecord } from "@/types"
 /** Most lines a comparison charts, to keep it readable and the stats request's filter short. */
 export const MAX_COMPARE_MONITORS = 24
 
-type MonitorTarget = Pick<NetworkMonitorRecord, "target" | "protocol" | "port">
+type MonitorTarget = Pick<NetworkMonitorRecord, "target" | "protocol" | "port"> &
+	Partial<Pick<NetworkMonitorRecord, "ipVersion">>
 
 export function getMonitorTarget(monitor: MonitorTarget) {
+	// Name the family, so IPv4 and IPv6 monitors of one host can be told apart.
+	const family = monitor.ipVersion ? ` (IPv${monitor.ipVersion})` : ""
 	// The protocol column already says http, so the URL scheme is redundant.
-	if (monitor.protocol === "http") return monitor.target.replace(/^https?:\/\//i, "")
-	if (monitor.protocol !== "tcp") return monitor.target
+	if (monitor.protocol === "http") return monitor.target.replace(/^https?:\/\//i, "") + family
+	if (monitor.protocol !== "tcp") return monitor.target + family
 	const host = monitor.target.includes(":") && !monitor.target.startsWith("[") ? `[${monitor.target}]` : monitor.target
-	return `${host}:${monitor.port}`
+	return `${host}:${monitor.port}${family}`
 }
 
 export function isHttpsTarget(target: string) {
@@ -30,8 +33,10 @@ export function getMonitorIdentityKey({
 	target,
 	port,
 	server,
-}: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server">) {
-	return JSON.stringify([protocol, target, port, server])
+	ipVersion,
+}: Pick<NetworkMonitorRecord, "protocol" | "target" | "port" | "server"> &
+	Partial<Pick<NetworkMonitorRecord, "ipVersion">>) {
+	return JSON.stringify([protocol, target, port, server, ipVersion ?? 0])
 }
 
 interface MonitorCompareInput {

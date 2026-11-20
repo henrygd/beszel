@@ -17,8 +17,8 @@ import (
 // within the hour.
 const certCheckInterval = time.Hour
 
-// certChecker fetches the leaf certificate for an HTTPS target.
-type certChecker func(context.Context, string) (monitor.CertInfo, error)
+// certChecker fetches the leaf certificate for an HTTPS target over the given IP version.
+type certChecker func(ctx context.Context, target string, ipVersion uint8) (monitor.CertInfo, error)
 
 // certCheckEnabled reports whether a monitor's certificate is checked, which is
 // the case for every HTTP monitor with an https target.
@@ -27,8 +27,10 @@ func certCheckEnabled(config monitor.Config) bool {
 }
 
 // checkCert reads the leaf certificate presented by an HTTPS target. The chain is
-// not verified, so expired or self-signed certificates are still reported.
-func checkCert(ctx context.Context, target string) (monitor.CertInfo, error) {
+// not verified, so expired or self-signed certificates are still reported. It
+// connects over the monitor's IP version, since each family may reach a
+// different server.
+func checkCert(ctx context.Context, target string, ipVersion uint8) (monitor.CertInfo, error) {
 	address, host, err := certAddress(target)
 	if err != nil {
 		return monitor.CertInfo{}, err
@@ -36,9 +38,9 @@ func checkCert(ctx context.Context, target string) (monitor.CertInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, monitor.MaxProbeTimeout)
 	defer cancel()
 	dialer := tls.Dialer{Config: &tls.Config{ServerName: host, InsecureSkipVerify: true}}
-	conn, err := dialer.DialContext(ctx, "tcp", address)
+	conn, err := dialer.DialContext(ctx, monitor.Network("tcp", ipVersion), address)
 	if err != nil {
-		return monitor.CertInfo{}, err
+		return monitor.CertInfo{}, lookupError(err, ipVersion, host)
 	}
 	defer conn.Close()
 	certs := conn.(*tls.Conn).ConnectionState().PeerCertificates

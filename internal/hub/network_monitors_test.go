@@ -231,6 +231,45 @@ func TestGenerateMonitorID(t *testing.T) {
 	}
 }
 
+func TestGenerateMonitorIDIPVersion(t *testing.T) {
+	config := monitor.Config{Protocol: "http", Target: "https://example.com"}
+	auto := generateMonitorID("sys123", config)
+	config.IPVersion = monitor.IPVersion4
+	v4 := generateMonitorID("sys123", config)
+	config.IPVersion = monitor.IPVersion6
+	v6 := generateMonitorID("sys123", config)
+
+	assert.NotEqual(t, auto, v4)
+	assert.NotEqual(t, auto, v6)
+	assert.NotEqual(t, v4, v6)
+}
+
+func TestNetworkMonitorRejectsInvalidIPVersion(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer cleanupTestHub(hub, testApp)
+	bindNetworkMonitorsEvents(hub)
+	user, err := createTestUser(hub)
+	require.NoError(t, err)
+	system, err := createTestRecord(hub, "systems", map[string]any{
+		"name": "Paused", "host": "localhost", "port": "45876", "status": "paused", "users": []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	for _, ipVersion := range []int{4, 6} {
+		_, err = createTestRecord(hub, "network_monitors", map[string]any{
+			"system": system.Id, "target": "example.com", "protocol": "icmp", "interval": 60, "ipVersion": ipVersion,
+		})
+		require.NoError(t, err, "IP version %d", ipVersion)
+	}
+	for _, ipVersion := range []int{5, 260, -1} {
+		_, err = createTestRecord(hub, "network_monitors", map[string]any{
+			"system": system.Id, "target": "example.com", "protocol": "icmp", "interval": 60, "ipVersion": ipVersion,
+		})
+		require.ErrorContains(t, err, "invalid IP version", "IP version %d", ipVersion)
+	}
+}
+
 func TestNetworkMonitorShortIDRequests(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
@@ -303,6 +342,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 		"interval":      60,
 		"enabled":       true,
 		"skipTlsVerify": true,
+		"ipVersion":     6,
 		"res":           1200,
 		"resAvg1h":      1300,
 		"resMin1h":      900,
@@ -321,6 +361,7 @@ func TestCopyMonitorToNewRecordDropsResultFields(t *testing.T) {
 	assert.Equal(t, "1.1.1.1", newRecord.GetString("server"))
 	assert.True(t, newRecord.GetBool("enabled"))
 	assert.True(t, newRecord.GetBool("skipTlsVerify"))
+	assert.Equal(t, 6, newRecord.GetInt("ipVersion"))
 	assert.Contains(t, []string{"", "null"}, newRecord.GetString("certInfo"))
 	assert.Zero(t, newRecord.GetFloat("res"))
 	assert.Zero(t, newRecord.GetFloat("resAvg1h"))
