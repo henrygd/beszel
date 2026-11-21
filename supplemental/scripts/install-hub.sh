@@ -444,7 +444,6 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 PrivateDevices=yes
-PrivateUsers=yes
 ProtectClock=yes
 ProtectHostname=yes
 ProtectKernelLogs=yes
@@ -454,8 +453,6 @@ ProtectControlGroups=yes
 ProtectProc=invisible
 ProcSubset=pid
 NoNewPrivileges=yes
-CapabilityBoundingSet=
-AmbientCapabilities=
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
 RestrictNamespaces=yes
 RestrictRealtime=yes
@@ -463,13 +460,7 @@ RestrictSUIDSGID=yes
 LockPersonality=yes
 MemoryDenyWriteExecute=yes
 KeyringMode=private
-RemoveIPC=yes
-UMask=0077
 SystemCallArchitectures=native
-SystemCallFilter=@system-service
-# @resources stays allowed: Go raises RLIMIT_NOFILE at startup via setrlimit.
-SystemCallFilter=~@privileged
-SystemCallErrorNumber=EPERM
 
 [Install]
 WantedBy=multi-user.target
