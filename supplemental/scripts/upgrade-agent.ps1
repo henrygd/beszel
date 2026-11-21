@@ -118,7 +118,7 @@ function Upgrade-BeszelAgentWithWinGet {
     $ErrorActionPreference = "Continue"
     
     # Use call operator (&) and capture exit code properly
-    & winget upgrade --exact --id henrygd.beszel-agent --accept-source-agreements --accept-package-agreements | Out-Null
+    $wingetOutput = & winget upgrade --exact --id henrygd.beszel-agent --accept-source-agreements --accept-package-agreements 2>&1
     $wingetExitCode = $LASTEXITCODE
     
     # Restore original ErrorActionPreference
@@ -131,8 +131,8 @@ function Upgrade-BeszelAgentWithWinGet {
     # Other codes indicate actual errors
     if ($wingetExitCode -eq -1978335212 -or $wingetExitCode -eq -1978335189) {
         Write-Host "Package is already up to date." -ForegroundColor Green
-    } elseif ($wingetExitCode -ne 0)  {
-        Write-Host "WinGet exit code: $wingetExitCode" -ForegroundColor Yellow
+    } elseif ($wingetExitCode -ne 0) {
+        throw "WinGet upgrade failed with exit code: $wingetExitCode`n$($wingetOutput -join [Environment]::NewLine)"
     }
     
     # Refresh PATH environment variable to make beszel-agent available in current session
@@ -294,6 +294,8 @@ function Start-BeszelAgentService {
 
 # Check if we're running as admin
 $isAdmin = Test-Admin
+$serviceStopped = $false
+$upgradeCompleted = $false
 
 try {
     Write-Host "Beszel Agent Upgrade Script" -ForegroundColor Cyan
@@ -325,6 +327,7 @@ try {
     # Stop the service before upgrade
     Write-Host "Stopping beszel-agent service..."
     & $nssmPath stop beszel-agent
+    $serviceStopped = $LASTEXITCODE -eq 0
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Warning: Failed to stop service, continuing anyway..." -ForegroundColor Yellow
     }
@@ -342,8 +345,7 @@ try {
         $newAgentPath = Upgrade-BeszelAgentWithWinGet
     }
     else {
-        Write-Host "ERROR: Neither Scoop nor WinGet is available for upgrading." -ForegroundColor Red
-        exit 1
+        throw "Neither Scoop nor WinGet is available for upgrading."
     }
     
     if (-not $newAgentPath) {
@@ -352,6 +354,7 @@ try {
             throw "Could not find beszel-agent executable after upgrade."
         }
     }
+    $upgradeCompleted = $true
     
     Write-Host "New agent path: $newAgentPath"
     
@@ -402,6 +405,15 @@ try {
 }
 catch {
     Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    if ($serviceStopped -and -not $upgradeCompleted) {
+        Write-Host "Restarting the existing beszel-agent service..." -ForegroundColor Yellow
+        try {
+            Start-BeszelAgentService -NSSMPath $nssmPath
+        }
+        catch {
+            Write-Host "Could not restart beszel-agent: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
     Write-Host "Upgrade failed. Please check the error message above." -ForegroundColor Red
     
     # Pause if this is likely a new window
@@ -412,4 +424,4 @@ catch {
     exit 1
 }
 
-#endregion 
+#endregion
