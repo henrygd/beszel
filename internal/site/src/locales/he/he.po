@@ -8,10 +8,10 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-04-05 18:27\n"
+"PO-Revision-Date: 2026-10-22 17:15\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
-"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: he\n"
@@ -26,9 +26,28 @@ msgstr "{0} זמין"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} מתוך {1} שורה(ות) נבחרו."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} שורות"
+
+#. placeholder {0}: selectedIds.size
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "{0} selected"
+msgstr "נבחרו {0}"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# active alert} other {# active alerts}}"
+msgstr "{alertCount, plural, one {התראה פעילה #} two {# התראות פעילות} other {# התראות פעילות}}"
+
+#: src/components/active-alerts.tsx
+msgid "{alertCount, plural, one {# alert is currently triggered} other {# alerts are currently triggered}}"
+msgstr "{alertCount, plural, one {התראה # מופעלת כעת} two {# התראות מופעלות כעת} other {# התראות מופעלות כעת}}"
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -46,13 +65,41 @@ msgstr "{count, plural, one {{countString} שעה} two {{countString} שעות} 
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} דקה} two {{countString} דקות} other {{countString} דקות}}"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "{daysLeft, plural, one {# day} other {# days}}"
+msgstr "{daysLeft, plural, one {יום #} two {# ימים} other {# ימים}}"
+
+#: src/components/routes/system/charts/disk-charts.tsx
+msgid "{diskName} I/O"
+msgstr "קלט/פלט של {diskName}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
+msgstr "{numFailed, plural, one {שירות # שנכשל} two {# שירותים שנכשלו} other {# שירותים שנכשלו}}"
+
+#: src/components/active-alerts.tsx
+msgid "{systemCount, plural, one {Across # system} other {Across # systems}}"
+msgstr "{systemCount, plural, one {ב-# מערכת} two {ב-# מערכות} other {ב-# מערכות}}"
+
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
 msgstr "{threads, plural, one {# תהליכון} other {# תהליכונים}}"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{total, plural, one {# update} other {# updates}}"
+msgstr "{total, plural, one {עדכון #} two {# עדכונים} other {# עדכונים}}"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "{totalCount, plural, one {# service} other {# services}}"
+msgstr "{totalCount, plural, one {שירות #} two {# שירותים} other {# שירותים}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {יום #} two {יומיים} other {# ימים}}"
+
 #: src/lib/utils.ts
-msgid "1 hour"
-msgstr "שעה"
+#~ msgid "1 hour"
+#~ msgstr "שעה"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -60,39 +107,44 @@ msgid "1 min"
 msgstr "דקה אחת"
 
 #: src/lib/utils.ts
-msgid "1 minute"
-msgstr "דקה אחת"
+#~ msgid "1 minute"
+#~ msgstr "דקה אחת"
 
 #: src/lib/utils.ts
-msgid "1 week"
-msgstr "שבוע אחד"
+#~ msgid "1 week"
+#~ msgstr "שבוע אחד"
 
 #: src/lib/utils.ts
-msgid "12 hours"
-msgstr "12 שעות"
+#~ msgid "12 hours"
+#~ msgstr "12 שע׳"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 דק'"
+msgstr "15 דק׳"
 
 #: src/lib/utils.ts
-msgid "24 hours"
-msgstr "24 שעות"
+#~ msgid "24 hours"
+#~ msgstr "24 שעות"
 
 #: src/lib/utils.ts
-msgid "30 days"
-msgstr "30 ימים"
+#~ msgid "30 days"
+#~ msgstr "30 ימים"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 דק'"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Accepted status codes"
+msgstr ""
+
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "פעולות"
@@ -112,10 +164,14 @@ msgstr "התראות פעילות"
 msgid "Active state"
 msgstr "מצב פעיל"
 
-#: src/components/add-system.tsx
-#: src/components/add-system.tsx
-#: src/components/navbar.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Add"
+msgstr "הוסף"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
@@ -129,6 +185,13 @@ msgstr ""
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Add Recovery Module"
 msgstr ""
+
+#: src/components/add-system.tsx
+#: src/components/add-system.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+msgid "Add System"
+msgstr "הוסף מערכת"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
@@ -158,7 +221,7 @@ msgstr "אחרי"
 
 #: src/components/routes/settings/heartbeat.tsx
 #~ msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
-#~ msgstr "לאחר הגדרת משתני הסביבה, הפעל מחדש את ה-Beszel hub שלך כדי שהשינויים ייכנסו לתוקף."
+#~ msgstr "לאחר הגדרת משתני הסביבה, יש להפעיל את ה־Beszel hub שלך מחדש כדי שהשינויים ייכנסו לתוקף."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -172,6 +235,7 @@ msgstr "היסטוריית התראות"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "התראות"
 
@@ -196,6 +260,23 @@ msgstr "כל המערכות"
 msgid "Allow the ESP32 to trigger the physical relay."
 msgstr ""
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "AP · client avg"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Applied the ESP's reported configuration."
 msgstr ""
@@ -204,7 +285,7 @@ msgstr ""
 msgid "Approve Module"
 msgstr ""
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "האם אתה בטוח שברצונך למחוק את {name}?"
 
@@ -216,9 +297,15 @@ msgstr ""
 msgid "Are you sure you want to unmap this channel?"
 msgstr ""
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
 msgstr "האם אתה בטוח?"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Auto"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -234,6 +321,16 @@ msgstr ""
 msgid "Autonomous Hardware Recovery"
 msgstr ""
 
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
+msgid "Available"
+msgstr "זמין"
+
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Available"
+msgstr "זמין"
+
 #: src/components/routes/system/chart-card.tsx
 msgid "Average"
 msgstr "ממוצע"
@@ -242,15 +339,13 @@ msgstr "ממוצע"
 msgid "Average CPU utilization of containers"
 msgstr "ניצול ממוצע של CPU בקונטיינרים"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average drops below <0>{value}{0}</0>"
-msgstr "הממוצע יורד מתחת ל-<0>{value}{0}</0>"
+msgid "Average drops below <0>{value}{unitLabel}</0>"
+msgstr "הממוצע יורד מתחת ל-<0>{value}{unitLabel}</0>"
 
-#. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
-msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "הממוצע עולה על <0>{value}{0}</0>"
+msgid "Average exceeds <0>{value}{unitLabel}</0>"
+msgstr "הממוצע עולה על <0>{value}{unitLabel}</0>"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Average number of I/O operations waiting to be serviced"
@@ -265,6 +360,10 @@ msgctxt "Disk I/O average operation time (iostat await)"
 msgid "Average queue to completion time per operation"
 msgstr "זמן ממוצע מהתור ועד להשלמה לכל פעולה"
 
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average response time"
+msgstr "זמן תגובה ממוצע"
+
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Average system-wide CPU utilization"
 msgstr "ניצול ממוצע כלל-מערכתי של CPU"
@@ -277,6 +376,15 @@ msgstr "ניצול ממוצע של {0}"
 #: src/components/routes/system/charts/gpu-charts.tsx
 msgid "Average utilization of GPU engines"
 msgstr "ניצול ממוצע של מנועי GPU"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Average, minimum, and maximum response time"
+msgstr "זמן תגובה ממוצע, מינימלי ומקסימלי"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Avg 1h"
+msgstr "ממוצע שעה אחת"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -293,6 +401,7 @@ msgstr "רוחב פס"
 msgid "Bat"
 msgstr "סוללה"
 
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 #: src/lib/alerts.ts
 msgid "Battery"
@@ -315,7 +424,7 @@ msgstr "לפני"
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "מתחת ל-{0}{1} ב-{2, plural, one {דקה האחרונה} other {-# הדקות האחרונות}}"
+msgstr "מתחת ל־{0}{1} ב{2, plural, one {דקה האחרונה} other {־# הדקות האחרונות}}"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Beszel (Desired)"
@@ -346,6 +455,15 @@ msgstr "מצב אתחול"
 msgid "Broadcast IP"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add"
+msgstr "הוספה מרוכזת"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Bulk Add {foo}"
+msgstr "הוספה מרוכזת של {foo}"
+
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Buzzer"
 msgstr ""
@@ -371,11 +489,13 @@ msgstr "יכול להתחיל"
 msgid "Can stop"
 msgstr "יכול לעצור"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/recovery-modules.tsx
 #: src/components/routes/settings/recovery-modules.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "ביטול"
 
@@ -384,6 +504,7 @@ msgid "Capabilities"
 msgstr "יכולות"
 
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Capacity"
 msgstr "קיבולת"
 
@@ -394,6 +515,28 @@ msgstr "זהירות - אפשרות לאובדן נתונים"
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
 msgstr "צלזיוס (°C)"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Certificate"
+msgstr "תעודה"
+
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "תפוגת אישור"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expired {expires}"
+msgstr "התעודה פגה {expires}"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Certificate expires {expires}"
+msgstr "התעודה פגה {expires}"
+
+#. Version change
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Change"
+msgstr "שינוי"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -452,11 +595,40 @@ msgstr "בדוק את שירות הניטור שלך"
 msgid "Check your notification service"
 msgstr "בדוק את שירות ההתראות שלך"
 
+#. placeholder {0}: formatShortDate(new Date(data.checkedAt * 1000).toISOString())
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Checked {0}"
+msgstr "נבדק {0}"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an A record exists."
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an AAAA record exists."
+msgstr ""
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Checksum errors"
+msgstr "שגיאות סכום ביקורת"
+
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
 msgstr "נקה"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear all"
+msgstr "נקה הכול"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Clear matches"
+msgstr "נקה התאמות"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -465,6 +637,10 @@ msgstr "לחץ על קונטיינר כדי לצפות במידע נוסף."
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
 msgstr "לחץ על התקן כדי לצפות במידע נוסף."
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Click on a pool to view vdev and dataset details."
+msgstr "לחצו על מאגר כדי להציג פרטי vdev ומערכי נתונים."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -478,6 +654,14 @@ msgstr "לחץ כדי להעתיק"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "הוראות שורת פקודה"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other systems"
+msgstr "השווה למערכות אחרות"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Compare with other targets"
+msgstr "השווה ליעדים אחרים"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Config Revision"
@@ -499,6 +683,10 @@ msgstr ""
 msgid "Configure how you receive alert notifications."
 msgstr "הגדר כיצד לקבל התראות."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Configure response monitoring from this agent."
+msgstr "הגדר ניטור תגובות מסוכן זה."
+
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
@@ -512,18 +700,31 @@ msgstr "התנגשויות"
 msgid "Connection is down"
 msgstr "החיבור נפל"
 
+#: src/lib/alerts.ts
+msgid "Container"
+msgstr "קונטיינר"
+
+#: src/lib/alerts.ts
+msgid "Container Health"
+msgstr "בריאות הקונטיינר"
+
 #: src/components/routes/system.tsx
 msgid "Containers"
 msgstr "קונטיינרים"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "המשך"
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
 msgstr "הועתק ללוח"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Copy bulk config"
+msgstr "העתק תצורה מרוכזת"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -545,9 +746,9 @@ msgstr "העתק env"
 #: src/components/alerts/alerts-sheet.tsx
 msgctxt "Copy alerts from another system"
 msgid "Copy from"
-msgstr "העתק מ-"
+msgstr "העתקה מ־"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "העתק מארח"
 
@@ -556,9 +757,13 @@ msgstr "העתק מארח"
 msgid "Copy Linux command"
 msgstr "העתק פקודת Linux"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "העתק שם"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy public key"
+msgstr "העתק מפתח ציבורי"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -571,6 +776,15 @@ msgstr "העתק את פקודת ההתקנה עבור הסוכן למטה, או
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "העתק את תוכן ה-<0>docker-compose.yml</0> עבור הסוכן למטה, או רשום סוכנים אוטומטית עם <1>token אוניברסלי</1>."
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "העתק אסימון"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -585,15 +799,23 @@ msgstr "ליבה"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "ליבות CPU"
 
+#: src/lib/alerts.ts
+msgid "CPU I/O Wait"
+msgstr "זמן המתנת קלט/פלט של המעבד (IOWait)"
+
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
 msgstr "שיא CPU"
+
+#: src/lib/alerts.ts
+msgid "CPU Steal Time"
+msgstr "זמן מעבד גנוב (Steal)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -618,6 +840,11 @@ msgstr "צור"
 msgid "Create account"
 msgstr "צור חשבון"
 
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
+
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
@@ -631,15 +858,38 @@ msgstr ""
 msgid "Critical (%)"
 msgstr "קריטי (%)"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data read since boot"
+msgstr "סך הנתונים שנקראו מאז האתחול"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative data written since boot"
+msgstr "סך הנתונים שנכתבו מאז האתחול"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
 msgstr "הורדה מצטברת"
+
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Read"
+msgstr "קריאה מצטברת"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
 msgstr "העלאה מצטברת"
 
+#: src/components/routes/system/disk-io-sheet.tsx
+msgid "Cumulative Write"
+msgstr "כתיבה מצטברת"
+
+#. Current package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Current"
+msgstr "נוכחי"
+
 #. Context: Battery state
+#. Context: Battery state
+#: src/components/routes/system/charts/sensor-charts.tsx
 #: src/components/routes/system/charts/sensor-charts.tsx
 msgid "Current state"
 msgstr "מצב נוכחי"
@@ -668,10 +918,11 @@ msgstr "תקופת זמן ברירת מחדל"
 msgid "DEGRADED"
 msgstr ""
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "מחק"
 
@@ -710,15 +961,10 @@ msgstr "בפריקה"
 msgid "Disk"
 msgstr "דיסק"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Disk I/O"
-msgstr "דיסק I/O"
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "יחידת דיסק"
 
-#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
@@ -728,10 +974,19 @@ msgstr "שימוש בדיסק"
 msgid "Disk usage of {extraFsName}"
 msgstr "שימוש בדיסק של {extraFsName}"
 
+#: src/components/alert-banner-sheet.tsx
+#: src/components/alert-banner-sheet.tsx
+msgid "Dismiss"
+msgstr "סגור"
+
 #: src/components/routes/system/info-bar.tsx
 msgctxt "Layout display options"
 msgid "Display"
 msgstr "תצוגה"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "DNS Server"
+msgstr "שרת DNS"
 
 #: src/components/routes/system/charts/cpu-charts.tsx
 msgid "Docker CPU Usage"
@@ -774,12 +1029,13 @@ msgstr "משך זמן"
 msgid "e.g. Rack A Watchdog"
 msgstr ""
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "ערוך"
 
-#: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
 msgstr "ערוך {foo}"
@@ -787,6 +1043,10 @@ msgstr "ערוך {foo}"
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Edit Channel Mapping"
 msgstr ""
+
+#: src/components/add-system.tsx
+msgid "Edit System"
+msgstr "ערוך מערכת"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -811,10 +1071,6 @@ msgstr ""
 msgid "Enabled"
 msgstr ""
 
-#: src/components/routes/system/recovery-info.tsx
-#~ msgid "ENABLED"
-#~ msgstr ""
-
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "End Time"
@@ -822,15 +1078,19 @@ msgstr "זמן סיום"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL"
-msgstr "URL של נקודת קצה"
+msgstr "כתובת נקודת קצה"
 
 #: src/components/routes/settings/heartbeat.tsx
 #~ msgid "Endpoint URL to ping (required)"
-#~ msgstr "URL של נקודת קצה לפינג (חובה)"
+#~ msgstr "כתובת נקודת קצה לפינג (חובה)"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Endpoint URL to ping. Leave blank to disable heartbeat monitoring."
 msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Enter a domain name to look up. Put the resolver's IP in DNS Server."
+msgstr "הזן שם דומיין לחיפוש. הכנס את כתובת ה-IP של הפותר (resolver) בשדה שרת DNS."
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -848,7 +1108,12 @@ msgstr "הכנס את הסיסמה החד-פעמית שלך."
 msgid "Ephemeral"
 msgstr "זמני"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -886,6 +1151,10 @@ msgstr ""
 msgid "ESP IP Address"
 msgstr ""
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 #~ msgid "Example:"
 #~ msgstr "דוגמה:"
@@ -909,9 +1178,26 @@ msgstr "מערכות קיימות שלא מוגדרות ב-<0>config.yml</0> י�
 msgid "Exited active"
 msgstr "יצא פעיל"
 
+#: src/components/alerts-history-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Expired"
+msgstr "פג תוקף"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "פג תוקף לאחר שעה או בהפעלה מחדש של ה-hub."
+msgstr "התוקף פג לאחר שעה או לאחר הפעלת ה־hub מחדש."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "יפוג תוך <0>{value, plural, one {יום #} two {יומיים} other {# ימים}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -929,17 +1215,30 @@ msgstr "ייצא את תצורת המערכות הנוכחית שלך."
 msgid "Fahrenheit (°F)"
 msgstr "פרנהייט (°F)"
 
-#: src/components/systems-table/systems-table-columns.tsx
-msgid "Failed"
-msgstr "נכשל"
-
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "מאפיינים שנכשלו:"
 
+#: src/lib/alerts.ts
+msgid "Failed Services"
+msgstr "שירותים שנכשלו"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "אימות נכשל"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to delete monitors."
+msgstr "מחיקת המנטרים נכשלה."
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed to load logs."
+msgstr "טעינת היומנים נכשלה."
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Failed to load package updates"
+msgstr "טעינת עדכוני החבילות נכשלה"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system/recovery-info.tsx
@@ -954,7 +1253,7 @@ msgstr "שמירת הגדרות נכשלה"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Failed to send heartbeat"
-msgstr "שליחת פעימת הלב נכשלה"
+msgstr "שליחת הדופק נכשלה"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -963,6 +1262,10 @@ msgstr "שליחת התראת בדיקה נכשלה"
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "עדכון התראה נכשל"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Failed to update monitors."
+msgstr "עדכון המנטרים נכשל."
 
 #. placeholder {0}: statusTotals[ServiceStatus.Failed]
 #: src/components/systemd-table/systemd-table.tsx
@@ -973,10 +1276,18 @@ msgstr "נכשל: {0}"
 msgid "Fallback to system host IP"
 msgstr ""
 
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "Fans"
+msgstr "מאווררים"
+
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/chart-card.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
@@ -1010,6 +1321,12 @@ msgstr ""
 msgid "Forgot password?"
 msgstr "שכחת סיסמה?"
 
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Free space"
+msgid "Free"
+msgstr "פנוי"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1021,6 +1338,11 @@ msgstr "פקודת FreeBSD"
 #: src/lib/i18n.ts
 msgid "Full"
 msgstr "מלא"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Fullscreen"
+msgstr "מסך מלא"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Gateway"
@@ -1090,6 +1412,7 @@ msgid "Hardware Recovery Modules"
 msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Health"
 msgstr "בריאות"
 
@@ -1103,23 +1426,24 @@ msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Heartbeat"
-msgstr "פעימת לב"
-
-#: src/components/routes/settings/recovery-modules.tsx
-#~ msgid "Heartbeat (s)"
-#~ msgstr ""
-
-#: src/components/routes/settings/recovery-modules.tsx
-#~ msgid "Heartbeat interval updated."
-#~ msgstr ""
+msgstr "דופק"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat Monitoring"
-msgstr "ניטור פעימות לב"
+msgstr "ניטור דופק"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Heartbeat sent successfully"
-msgstr "פעימת הלב נשלחה בהצלחה"
+msgstr "הדופק נשלח בהצלחה"
+
+#: src/components/logs-display.tsx
+msgid "Hide timestamps"
+msgstr "הסתר חותמות זמן"
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "הסתר אסימון"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1145,7 +1469,7 @@ msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 #~ msgid "HTTP method: POST, GET, or HEAD (default: POST)"
-#~ msgstr "שיטת HTTP: POST, GET, או HEAD (ברירת מחדל: POST)"
+#~ msgstr "שיטת HTTP:‏ POST,‏ GET, או HEAD (ברירת מחדל: POST)"
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average operation time (iostat await)"
@@ -1175,22 +1499,34 @@ msgstr "אם איבדת את הסיסמה לחשבון המנהל שלך, תוכ
 msgid "Ignore"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "התעלם משגיאות אישור TLS"
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
 msgstr "תמונה"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image update available"
+msgstr "עדכון תמונה זמין"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "לא פעיל"
 
-#: src/components/routes/settings/heartbeat.tsx
-#~ msgid "Interval"
-#~ msgstr "מרווח"
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Interval"
+msgstr "מרווח"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Interval (seconds)"
-msgstr ""
+msgstr "מרווח (שניות)"
 
 #: src/components/routes/system/recovery-info.tsx
 msgid "Interventions"
@@ -1200,8 +1536,17 @@ msgstr ""
 msgid "Invalid email address."
 msgstr "כתובת אימייל לא תקינה."
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP"
+msgstr ""
+
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "IP Address (Optional)"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP Version"
 msgstr ""
 
 #: src/components/routes/settings/recovery-modules.tsx
@@ -1212,7 +1557,6 @@ msgstr ""
 msgid "Kept Beszel's configuration."
 msgstr ""
 
-#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "שפה"
@@ -1285,6 +1629,7 @@ msgid "Loading recovery configuration..."
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "טוען..."
 
@@ -1293,6 +1638,7 @@ msgstr "טוען..."
 msgid "Log Out"
 msgstr "התנתק"
 
+#: src/components/login/login.tsx
 #: src/components/login/login.tsx
 #~ msgid "Login"
 #~ msgstr "התחבר"
@@ -1305,12 +1651,23 @@ msgstr "ניסיון התחברות נכשל"
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Logs"
 msgstr "יומנים"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "מחפש איפה ליצור התראות? לחץ על סמלי הפעמון <0/> בטבלת המערכות."
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgctxt "Packet loss"
+msgid "Loss"
+msgstr "אובדן"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Loss 1h"
+msgstr "אובדן שעה אחת"
 
 #: src/components/routes/settings/recovery-modules.tsx
 #: src/components/routes/settings/recovery-modules.tsx
@@ -1339,6 +1696,11 @@ msgstr ""
 msgid "MAINTENANCE REQUESTED"
 msgstr ""
 
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Major"
+msgstr "ראשי"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "נהל העדפות תצוגה והתראות."
@@ -1365,6 +1727,11 @@ msgstr ""
 #: src/components/routes/system/chart-card.tsx
 msgid "Max 1 min"
 msgstr "מקס 1 דק'"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Max 1h"
+msgstr "מקסימום שעה אחת"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Max Channels"
@@ -1393,13 +1760,37 @@ msgid "Memory Usage"
 msgstr "שימוש בזיכרון"
 
 #: src/components/routes/system/charts/memory-charts.tsx
-msgid "Memory usage of docker containers"
-msgstr "שימוש בזיכרון של קונטיינרים של Docker"
+msgid "Memory usage of containers"
+msgstr "שימוש בזיכרון של קונטיינרים"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Min 1h"
+msgstr "מינימום שעה אחת"
+
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Minor"
+msgstr "משני"
 
 #. Device model
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
 msgstr "דגם"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitor"
+msgstr "מנטר"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Monitors created"
+msgstr "המנטרים נוצרו"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Mountpoint"
+msgstr "נקודת עגינה"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Mute"
@@ -1423,9 +1814,32 @@ msgstr ""
 msgid "Net"
 msgstr "רשת"
 
+#: src/components/routes/system.tsx
+msgid "Network"
+msgstr "רשת"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Network Monitor"
+msgstr "מנטר רשת"
+
+#: src/lib/alerts.ts
+msgid "Network Monitor Loss"
+msgstr "אובדן מנטר רשת"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/monitors.tsx
+msgid "Network Monitors"
+msgstr "מנטרי רשת"
+
 #: src/components/routes/system/charts/network-charts.tsx
-msgid "Network traffic of docker containers"
-msgstr "תעבורת רשת של קונטיינרים של Docker"
+msgid "Network traffic of containers"
+msgstr "תעבורת רשת של קונטיינרים"
 
 #: src/components/routes/system/charts/network-charts.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -1439,6 +1853,7 @@ msgstr "תעבורת רשת של ממשקים ציבוריים"
 msgid "Network unit"
 msgstr "יחידת רשת"
 
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/system/recovery-info.tsx
 msgid "Never"
 msgstr ""
@@ -1449,9 +1864,13 @@ msgstr ""
 msgid "No"
 msgstr "לא"
 
-#: src/components/routes/system/recovery-info.tsx
-#~ msgid "NO"
-#~ msgstr ""
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "No detail data for this pool."
+msgstr "אין נתונים מפורטים עבור מאגר זה."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No logs found."
+msgstr "לא נמצאו יומנים."
 
 #: src/components/routes/system/recovery-info.tsx
 msgid "No recent recovery events"
@@ -1469,7 +1888,9 @@ msgstr "לא נמצאו תוצאות."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
@@ -1479,10 +1900,19 @@ msgstr "אין תוצאות."
 msgid "No S.M.A.R.T. attributes available for this device."
 msgstr "אין מאפייני S.M.A.R.T. זמינים עבור התקן זה."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "לא נמצאו מערכות."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "No targets found."
+msgstr "לא נמצאו יעדים."
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "None"
+msgstr "ללא"
 
 #: src/components/routes/system/recovery-info.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1494,6 +1924,10 @@ msgstr ""
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "התראות"
+
+#: src/lib/alerts.ts
+msgid "Notifications may include recent container log excerpts."
+msgstr "ההתראות עשויות לכלול קטעים מיומני קונטיינרים אחרונים."
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -1509,10 +1943,6 @@ msgid "OFFLINE"
 msgstr ""
 
 #: src/components/routes/settings/recovery-modules.tsx
-#~ msgid "OFFLINE PENDING"
-#~ msgstr ""
-
-#: src/components/routes/settings/recovery-modules.tsx
 msgid "On"
 msgstr ""
 
@@ -1523,6 +1953,24 @@ msgstr "בכל הפעלה מחדש, המערכות במסד הנתונים יע�
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Once you plug an ESP32 Recovery Module into your network, approval requests will appear here."
 msgstr ""
+
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "תוקפם של אישור אחד או יותר יפוג תוך {0, plural, one {יום #} two {יומיים} other {# ימים}}"
+
+#: src/lib/alerts.ts
+msgid "One or more containers are unhealthy"
+msgstr "קונטיינר אחד או יותר אינם תקינים"
+
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more monitors exceed {0}% loss"
+msgstr "מנטר אחד או יותר חורגים מאובדן של {0}%"
+
+#: src/lib/alerts.ts
+msgid "One or more services are in a failed state"
+msgstr "שירות אחד או יותר נמצאים במצב כשל"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1554,11 +2002,13 @@ msgstr ""
 msgid "Open Local ESP Portal"
 msgstr ""
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "פתח תפריט"
 
@@ -1567,11 +2017,21 @@ msgstr "פתח תפריט"
 msgid "Optional - defaults to http://{0}"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to any status code below 400."
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to the agent's system resolver."
+msgstr "אופציונלי. ברירת המחדל היא הפותר (resolver) של מערכת הסוכן."
+
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "או המשך עם"
 
+#. Package version
 #: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Other"
 msgstr "אחר"
 
@@ -1583,15 +2043,29 @@ msgstr ""
 msgid "Overwrite existing alerts"
 msgstr "דרוס התראות קיימות"
 
+#. Software package
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package"
+msgstr "חבילה"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Package Updates"
+msgstr "עדכוני חבילות"
+
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Packet loss (%)"
+msgstr "אובדן מנות (%)"
+
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "עמוד"
 
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#. placeholder {0}: pageIndex + 1
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "עמוד {0} מתוך {1}"
 
@@ -1609,6 +2083,10 @@ msgid "Password must be at least 8 characters."
 msgstr "הסיסמה חייבת להכיל לפחות 8 תווים."
 
 #: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "הסיסמה חייבת להכיל לכל היותר 71 תווים."
+
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "הסיסמה חייבת להיות פחות מ-72 בתים."
 
@@ -1620,7 +2098,13 @@ msgstr "בקשת איפוס סיסמה התקבלה"
 msgid "Past"
 msgstr "עבר"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#. Package version
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Patch"
+msgstr "תיקון"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "השהה"
 
@@ -1638,7 +2122,7 @@ msgstr "מושהה ({pausedSystemsLength})"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Payload format"
-msgstr "פורמט מטען (Payload)"
+msgstr "תבנית מטען (Payload)"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1660,6 +2144,10 @@ msgstr "קבוע"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
 msgstr "עקביות"
+
+#: src/components/routes/system/raw-capacity-label.tsx
+msgid "Physical device space. True usable capacity is unknown. Pool disk usage alerts are disabled."
+msgstr "שטח פיזי של ההתקן. הקיבולת האמיתית הניתנת לשימוש אינה ידועה. התראות השימוש בדיסקים של המאגר מושבתות."
 
 #: src/components/routes/system/recovery-info.tsx
 msgid "Physical relay reboot triggered"
@@ -1710,7 +2198,20 @@ msgstr "אנא ראה <0>את התיעוד</0> להוראות."
 msgid "Please sign in to your account"
 msgstr "אנא התחבר לחשבון שלך"
 
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "יש להמתין רגע ולנסות שוב."
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Pool Health"
+msgstr "מצב המאגר"
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Pool Usage"
+msgstr "שימוש במאגר"
+
 #: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Port"
 msgstr "פורט"
 
@@ -1733,10 +2234,6 @@ msgstr "ניצול מדויק בזמן הרשום"
 msgid "Preferred Language"
 msgstr "שפה מועדפת"
 
-#: src/components/routes/settings/recovery-modules.tsx
-#~ msgid "Probe Ports"
-#~ msgstr ""
-
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
 msgstr "תהליך התחיל"
@@ -1750,6 +2247,16 @@ msgstr ""
 msgid "Protection Status"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Protocol"
+msgstr "פרוטוקול"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Public key"
+msgstr "מפתח ציבורי"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -1761,20 +2268,39 @@ msgid "Queue Depth"
 msgstr "עומק תור"
 
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Quiet Hours"
 msgstr "שעות שקט"
+
+#: src/components/routes/system/raw-capacity-label.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Raw"
+msgstr "גולמי"
+
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Raw usage of storage pool {displayName}"
+msgstr "שימוש גולמי במאגר האחסון {displayName}"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Re-enable"
 msgstr ""
 
 #. Disk read
+#. Disk read
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Read"
 msgstr "קריאה"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Read errors"
+msgstr "שגיאות קריאה"
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1840,9 +2366,12 @@ msgid "Recovery Protection"
 msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
 #: src/components/routes/settings/recovery-modules.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Refresh"
 msgstr "רענן"
 
@@ -1904,6 +2433,17 @@ msgstr ""
 msgid "Resolved"
 msgstr "נפתר"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
+#: src/components/routes/system/charts/monitors-charts.tsx
+msgid "Response"
+msgstr "תגובה"
+
+#: src/components/network-monitors-table/network-monitors-table.tsx
+msgid "Response time monitoring from agents."
+msgstr "ניטור זמן תגובה מסוכנים."
+
 #: src/components/routes/system/recovery-info.tsx
 msgid "Restart failed"
 msgstr ""
@@ -1912,14 +2452,44 @@ msgstr ""
 msgid "Restarts"
 msgstr "הפעלות מחדש"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "המשך"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "הצג אסימון"
+
+#. Package version
 #: src/components/routes/settings/recovery-modules.tsx
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
+msgstr "גרסת משנה"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
 msgstr ""
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
+
+#: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
@@ -1929,7 +2499,7 @@ msgstr "שורש"
 msgid "Rotate token"
 msgstr "סובב token"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "שורות לעמוד"
 
@@ -1945,7 +2515,7 @@ msgstr "פרטי S.M.A.R.T."
 msgid "S.M.A.R.T. Self-Test"
 msgstr "בדיקה עצמית S.M.A.R.T."
 
-#: src/components/add-system.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Save {foo}"
 msgstr "שמור {foo}"
 
@@ -1962,6 +2532,10 @@ msgstr ""
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "שמור הגדרות"
+
+#: src/components/add-system.tsx
+msgid "Save System"
+msgstr "שמור מערכת"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
@@ -1987,6 +2561,14 @@ msgstr "חיפוש"
 msgid "Search for systems or settings..."
 msgstr "חפש מערכות או הגדרות..."
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search systems"
+msgstr "חיפוש מערכות"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Search targets"
+msgstr "חפש יעדים"
+
 #: src/components/routes/settings/heartbeat.tsx
 #~ msgid "Seconds between pings (default: 60)"
 #~ msgstr "שניות בין פינגים (ברירת מחדל: 60)"
@@ -1994,6 +2576,16 @@ msgstr "חפש מערכות או הגדרות..."
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Seconds between pings."
 msgstr ""
+
+#. Security update
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security"
+msgstr "אבטחה"
+
+#: src/components/routes/system/package-updates-table.tsx
+msgid "Security: {securityCount}"
+msgstr "אבטחה: {securityCount}"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
@@ -2003,9 +2595,34 @@ msgstr "ראה <0>הגדרות התראות</0> כדי להגדיר כיצד א�
 msgid "Select {foo}"
 msgstr "בחר {foo}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select a system"
+msgstr "בחר מערכת"
+
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Select a system..."
 msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select all"
+msgstr "בחר הכול"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select matches"
+msgstr "בחר התאמות"
+
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Select row"
+msgstr "בחר שורה"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select systems"
+msgstr "בחר מערכות"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Select targets"
+msgstr "בחר יעדים"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send a single heartbeat ping to verify your endpoint is working."
@@ -2017,7 +2634,11 @@ msgstr "שלח פינגים יוצאים תקופתיים לשירות ניטו�
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Send test heartbeat"
-msgstr "שלח פעימת לב לבדיקה"
+msgstr "שליחת דופק לבדיקה"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
@@ -2050,7 +2671,6 @@ msgstr "הגדר סף אחוזים עבור צבעי מד."
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "הגדרות"
 
@@ -2062,6 +2682,11 @@ msgstr "הגדרות נשמרו"
 msgid "Settings saved successfully"
 msgstr ""
 
+#: src/components/logs-display.tsx
+#: src/components/logs-display.tsx
+msgid "Show timestamps"
+msgstr "הצג חותמות זמן"
+
 #: src/components/routes/system/recovery-info.tsx
 msgid "Shutdown failed"
 msgstr ""
@@ -2070,10 +2695,15 @@ msgstr ""
 msgid "Sign in"
 msgstr "התחבר"
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Signal strength of connected Wi-Fi interfaces"
+msgstr "עוצמת האות של ממשקי Wi-Fi מחוברים"
+
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "הגדרות SMTP"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "מיין לפי"
@@ -2086,6 +2716,7 @@ msgstr "זמן התחלה"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "מצב"
@@ -2136,20 +2767,17 @@ msgstr "שימוש ב-Swap"
 #: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Switch theme"
-msgstr ""
+msgstr "החלף ערכת נושא"
 
 #: src/components/routes/system/recovery-info.tsx
 msgid "SYNC ISSUE"
 msgstr ""
 
-#: src/components/routes/settings/recovery-modules.tsx
-#~ msgid "SYNCED"
-#~ msgstr ""
-
-#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
-#: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -2160,6 +2788,10 @@ msgstr ""
 #: src/lib/alerts.ts
 msgid "System"
 msgstr "מערכת"
+
+#: src/components/routes/system/charts/sensor-charts.tsx
+msgid "System fan speeds (RPM)"
+msgstr "מהירויות מאווררי המערכת (RPM)"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "System is required."
@@ -2178,6 +2810,8 @@ msgid "Systemd Services"
 msgstr "שירותי Systemd"
 
 #: src/components/navbar.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Systems"
 msgstr "מערכות"
 
@@ -2193,6 +2827,22 @@ msgstr "טבלה"
 msgctxt "Tabs system layout option"
 msgid "Tabs"
 msgstr "לשוניות"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Target"
+msgstr "יעד"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#~ msgid "target[,protocol[,port[,interval[,server]]]]"
+#~ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2215,10 +2865,6 @@ msgstr "טמפרטורה"
 msgid "Temperature Monitoring"
 msgstr ""
 
-#: src/components/routes/settings/recovery-modules.tsx
-#~ msgid "Temperature Thresholds"
-#~ msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
 msgstr "יחידת טמפרטורה"
@@ -2233,7 +2879,7 @@ msgstr "בדוק <0>URL</0>"
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Test heartbeat"
-msgstr "בדוק פעימת לב"
+msgstr "בדיקת דופק"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -2267,7 +2913,7 @@ msgstr "הסטטוס הכללי הוא <0>ok</0> כשכל המערכות פוע�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "לאחר מכן התחבר ל-backend ואפס את סיסמת חשבון המשתמש שלך בטבלת המשתמשים."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "פעולה זו לא ניתנת לביטול. פעולה זו תמחק לצמיתות את כל הרשומות הנוכחיות עבור {name} ממסד הנתונים."
 
@@ -2275,6 +2921,7 @@ msgstr "פעולה זו לא ניתנת לביטול. פעולה זו תמחק �
 msgid "This module reported a local settings change that was made while Beszel's desired configuration had already moved on. Choose which side's configuration should win."
 msgstr ""
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
 msgstr "פעולה זו תמחק לצמיתות את כל הרשומות שנבחרו ממסד הנתונים."
@@ -2287,9 +2934,9 @@ msgstr ""
 msgid "Throughput of {extraFsName}"
 msgstr "תפוקה של {extraFsName}"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Throughput of root filesystem"
-msgstr "תפוקה של מערכת הקבצים הראשית"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Throughput of storage pool {displayName}"
+msgstr "תפוקה של מאגר האחסון {displayName}"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -2299,15 +2946,19 @@ msgstr "פורמט זמן"
 msgid "To email(s)"
 msgstr "לאימייל(ים)"
 
-#: src/components/mode-toggle.tsx
-#: src/components/mode-toggle.tsx
-#~ msgid "Toggle theme"
-#~ msgstr "החלף ערכת נושא"
-
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
+
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "אסימון עבור {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "האסימון מוסתר"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -2322,6 +2973,10 @@ msgstr "Tokens מאפשרים לסוכנים להתחבר ולהירשם. טבי
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens וטביעות אצבע משמשים לאימות חיבורי WebSocket ל-hub."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "יותר מדי ניסיונות התחברות"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2339,16 +2994,14 @@ msgstr "סך נתונים שנשלחו עבור כל ממשק"
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O"
 msgid "Total time spent on read/write (can exceed 100%)"
-msgstr ""
+msgstr "הזמן הכולל שהושקע בקריאה/כתיבה (יכול לחרוג מ־100%)"
 
 #. placeholder {0}: data.length
+#. placeholder {0}: rows.length
+#: src/components/routes/system/package-updates-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
 msgstr "סה\"כ: {0}"
-
-#: src/components/routes/system/recovery-info.tsx
-#~ msgid "Trigger Relay Press"
-#~ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -2371,8 +3024,20 @@ msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "מופעל כאשר ממוצע העומס ל-5 דקות עולה על סף"
 
 #: src/lib/alerts.ts
+msgid "Triggers when a container's health check reports unhealthy"
+msgstr "מופעל כאשר בדיקת התקינות של קונטיינר מדווחת על מצב לא תקין"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "מופעל כאשר אישור HTTPS מתקרב לתפוגה"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "מופעל כאשר כל חיישן עולה על סף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any systemd service enters the failed state"
+msgstr "מופעל כאשר שירות systemd כלשהו נכנס למצב כשל"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
@@ -2381,6 +3046,14 @@ msgstr "מופעל כאשר טעינת הסוללה יורדת מתחת לסף"
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "מופעל כאשר השילוב של למעלה/למטה עולה על סף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU I/O wait exceeds a threshold"
+msgstr "מופעל כאשר זמן המתנת הקלט/פלט של המעבד חורג מהסף"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU steal time exceeds a threshold"
+msgstr "מופעל כאשר זמן המעבד הגנוב חורג מהסף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -2395,6 +3068,10 @@ msgid "Triggers when memory usage exceeds a threshold"
 msgstr "מופעל כאשר שימוש בזיכרון עולה על סף"
 
 #: src/lib/alerts.ts
+msgid "Triggers when one hour loss exceeds a threshold"
+msgstr "מופעל כאשר אובדן של שעה חורג מסף"
+
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "מופעל כאשר הסטטוס מתחלף בין למעלה ולמטה"
 
@@ -2405,12 +3082,17 @@ msgstr "מופעל כאשר שימוש בכל דיסק עולה על סף"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Type"
 msgstr "סוג"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "UNAPPROVED"
 msgstr ""
+
+#: src/lib/alerts.ts
+msgid "Unhealthy"
+msgstr "לא תקין"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -2423,10 +3105,13 @@ msgstr "העדפות יחידות"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "token אוניברסלי"
 
 #. Context: Battery state
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "לא ידוע"
@@ -2458,6 +3143,11 @@ msgstr "למעלה"
 msgid "Up ({upSystemsLength})"
 msgstr "למעלה ({upSystemsLength})"
 
+#: src/components/routes/system/package-updates-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up to date"
+msgstr "מעודכן"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
 msgstr "עדכן"
@@ -2467,7 +3157,10 @@ msgid "Update failed"
 msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "עודכן"
@@ -2475,6 +3168,11 @@ msgstr "עודכן"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Updated every 10 minutes."
 msgstr "מתעדכן כל 10 דקות."
+
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Updates"
+msgstr "עדכונים"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -2486,23 +3184,32 @@ msgid "Uptime"
 msgstr "זמן פעילות"
 
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
 #: src/components/routes/system/charts/gpu-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "שימוש"
 
-#: src/components/routes/system/charts/disk-charts.tsx
-msgid "Usage of root partition"
-msgstr "שימוש במחיצה הראשית"
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+msgid "Usage of storage pool {displayName}"
+msgstr "שימוש במאגר האחסון {displayName}"
 
 #: src/components/routes/settings/recovery-modules.tsx
 msgid "Use ESP Value"
 msgstr ""
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "להשתמש עבור אישורים בחתימה עצמית."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
 msgid "Used"
 msgstr "בשימוש"
 
@@ -2520,9 +3227,19 @@ msgstr "ניצולת"
 msgid "Value"
 msgstr "ערך"
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "צפה"
+
+#: src/components/active-alerts.tsx
+msgid "View alerts"
+msgstr "הצג התראות"
+
+#: src/components/alert-banner-sheet.tsx
+msgid "View details"
+msgstr "הצג פרטים"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
@@ -2534,6 +3251,7 @@ msgstr "צפה בעוד"
 msgid "View your 200 most recent alerts."
 msgstr "צפה ב-200 ההתראות האחרונות שלך."
 
+#: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "שדות גלויים"
@@ -2542,6 +3260,7 @@ msgstr "שדות גלויים"
 msgid "WAITING APPROVAL"
 msgstr ""
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "ממתין לרשומות מספיקות לתצוגה"
@@ -2598,6 +3317,10 @@ msgstr "כאשר מופעל, אסימון זה מאפשר לסוכנים להי�
 msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 msgstr "בשימוש ב-POST, כל פעימת לב כוללת מטען JSON עם סיכום סטטוס המערכת, רשימת מערכות מושבתות והתראות שהופעלו."
 
+#: src/components/routes/system/charts/wifi-chart.tsx
+msgid "Wi-Fi signal"
+msgstr "אות Wi-Fi"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -2617,12 +3340,19 @@ msgid "WOL READY"
 msgstr ""
 
 #. Disk write
+#. Disk write
 #: src/components/routes/system/charts/disk-charts.tsx
+#: src/components/routes/system/charts/storage-pool-charts.tsx
+#: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 #: src/components/routes/system/disk-io-sheet.tsx
 msgid "Write"
 msgstr "כתיבה"
+
+#: src/components/routes/system/storage-pools-table.tsx
+msgid "Write errors"
+msgstr "שגיאות כתיבה"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
@@ -2637,10 +3367,6 @@ msgstr "תצורת YAML"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
 msgstr "כן"
-
-#: src/components/routes/system/recovery-info.tsx
-#~ msgid "YES"
-#~ msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

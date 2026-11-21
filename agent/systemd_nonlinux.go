@@ -11,6 +11,7 @@ import (
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
 	hasFreshStats bool
+	logsEnabled   bool
 }
 
 // newSystemdManager creates a new systemdManager.
@@ -35,4 +36,8 @@ func (sm *systemdManager) getFailedServiceCount() uint16 {
 
 func (sm *systemdManager) getServiceDetails(string) (systemd.ServiceDetails, error) {
 	return nil, errors.New("systemd manager unavailable")
+}
+
+func (sm *systemdManager) getServiceLogs(string) (string, error) {
+	return "", errors.New("systemd manager unavailable")
 }

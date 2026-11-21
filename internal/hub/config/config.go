@@ -6,12 +6,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"uuid"
 
-	"github.com/google/uuid"
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/spf13/cast"
 	"gopkg.in/yaml.v3"
 )

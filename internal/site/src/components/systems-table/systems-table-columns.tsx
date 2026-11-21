@@ -1,7 +1,8 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
-import { t } from "@lingui/core/macro"
-import { Trans, useLingui } from "@lingui/react/macro"
+import { plural, t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
+import { memo } from "react"
 import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
@@ -9,29 +10,21 @@ import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
-	CopyIcon,
 	CpuIcon,
 	ExternalLinkIcon,
 	HardDriveIcon,
 	MemoryStickIcon,
-	MoreHorizontalIcon,
-	PauseCircleIcon,
-	PenBoxIcon,
-	PlayCircleIcon,
+	PackageIcon,
 	ServerIcon,
 	TerminalSquareIcon,
-	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
-import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { isReadOnlyUser, pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { isModuleOnline } from "@/lib/recoveryManager"
-import { $longestSystemNameLen, $recoveryChannels, $recoveryModules, $userSettings } from "@/lib/stores"
+import { $recoveryChannels, $recoveryModules, $userSettings } from "@/lib/stores"
 import {
 	cn,
-	copyToClipboard,
 	decimalString,
 	formatBytes,
 	formatTemperature,
@@ -40,29 +33,12 @@ import {
 	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord } from "@/types"
-import { SystemDialog } from "../add-system"
+import { connectedWiFi, primaryWiFi, primaryWiFiSignal, wifiNetworkName, wifiSignalState } from "@/lib/wifi"
+import type { SystemRecord, WiFi } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "../ui/alert-dialog"
-import { Button, buttonVariants } from "../ui/button"
-import { Dialog } from "../ui/dialog"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
+import { ActionsButton } from "../system-actions-button"
+import { Button } from "../ui/button"
 import {
 	BatteryMediumIcon,
 	EthernetIcon,
@@ -125,6 +101,14 @@ const RecoveryCell = memo(function RecoveryCell({ systemId }: { systemId: string
 		</span>
 	)
 })
+/** Rank of the updates dot color for sorting: 2 security (red), 1 regular (yellow), 0 up to date (green), -1 no data */
+function getUpdatesRank(pu: SystemRecord["info"]["pu"]): number {
+	if (!pu) {
+		return -1
+	}
+	const [total, security = 0] = pu
+	return security > 0 ? 2 : total > 0 ? 1 : 0
+}
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
 	return value >= crit ? MeterState.Crit : value >= warn ? MeterState.Warn : MeterState.Good
@@ -181,12 +165,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			Icon: ServerIcon,
 			cell: (info) => {
 				const { name, id } = info.row.original
-				const longestName = useStore($longestSystemNameLen)
 				const linkUrl = getPagePath($router, "system", { id })
 				const webUrl = getServerWebUrl(info.row.original)
 
-				const nameLinkClass = "truncate z-10 relative"
-				const nameLinkStyle = { width: `${longestName / 1.05}ch` }
+				const nameLinkClass = "relative block max-w-48 truncate z-10"
 				// set title on hover if text is truncated to show full name
 				const showTitleIfTruncated = (e: React.MouseEvent<HTMLAnchorElement>) => {
 					const a = e.currentTarget
@@ -207,7 +189,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 								href={linkUrl}
 								tabIndex={-1}
 								className={nameLinkClass}
-								style={nameLinkStyle}
 								onMouseEnter={showTitleIfTruncated}
 							>
 								{name}
@@ -261,10 +242,16 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.g !== undefined ? info.g : undefined,
+			accessorFn: ({ info }) => info.g,
 			id: "gpu",
 			name: () => "GPU",
-			cell: TableCellWithMeter,
+			cell: (info) => {
+				const val = info.getValue() as number | undefined
+				if (val === undefined) {
+					return null
+				}
+				return TableCellWithMeter(info)
+			},
 			Icon: GpuIcon,
 			header: sortableHeader,
 		},
@@ -397,6 +384,62 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
+			accessorFn: primaryWiFiSignal,
+			id: "wifi",
+			name: () => "Wi-Fi",
+			size: 80,
+			Icon: WifiIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortUndefined: "last",
+			cell(info) {
+				const connections = connectedWiFi(info.row.original)
+				const primary = primaryWiFi(connections)
+				if (!primary) {
+					return null
+				}
+				const displayedConnections = viewMode === "table" ? [primary] : connections
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: info.row.original.id })}
+								tabIndex={-1}
+								className="flex flex-col gap-0.5 min-w-0 py-1 relative z-10"
+							>
+								{displayedConnections.map(([id, wifi]) => (
+									<WiFiSignal key={id} wifi={wifi} />
+								))}
+								{viewMode === "table" && connections.length > 1 && (
+									<span className="text-xs text-muted-foreground">+{connections.length - 1}</span>
+								)}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent side="right" className="max-w-xs pb-2">
+							<div className="grid gap-1">
+								{connections.map(([id, wifi]) => (
+									<div key={id} className="grid gap-0.5">
+										<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+											{id}
+										</div>
+										<div className="flex gap-2 items-center text-xs">
+											<WiFiSignal wifi={wifi} className="shrink-0" />
+											{(wifi.s || wifi.p) && <span className="truncate max-w-40">{wifiNetworkName(wifi)}</span>}
+											{wifi.a && (
+												<span className="text-muted-foreground whitespace-nowrap">
+													<Trans>AP · client avg</Trans>
+												</span>
+											)}
+										</div>
+									</div>
+								))}
+							</div>
+						</TooltipContent>
+					</Tooltip>
+				)
+			},
+		},
+		{
 			accessorFn: ({ info }) => info.sv?.[0],
 			id: "services",
 			name: () => t`Services`,
@@ -405,11 +448,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 			hideSort: true,
 			sortingFn: (a, b) => {
-				// sort priorities: 1) failed services, 2) total services
+				// sort priorities: 1) has failed services (dot color), 2) total services
 				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
 				const [totalCountB, numFailedB] = b.original.info.sv ?? [0, 0]
-				if (numFailedA !== numFailedB) {
-					return numFailedA - numFailedB
+				const hasFailedA = numFailedA > 0 ? 1 : 0
+				const hasFailedB = numFailedB > 0 ? 1 : 0
+				if (hasFailedA !== hasFailedB) {
+					return hasFailedA - hasFailedB
 				}
 				return totalCountA - totalCountB
 			},
@@ -419,18 +464,74 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				if (sys.status !== SystemStatus.Up || totalCount === 0) {
 					return null
 				}
+				const content = (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS.pending]: numFailed > 0,
+								[STATUS_COLORS.up]: numFailed === 0,
+							})}
+						/>
+						{plural(totalCount, { one: "# service", other: "# services" })}
+					</span>
+				)
+				if (numFailed === 0) {
+					return content
+				}
+				return (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "system", { id: sys.id })}
+								tabIndex={-1}
+								className="relative z-10 w-fit block"
+							>
+								{content}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent>
+							{plural(numFailed, { one: "# failed service", other: "# failed services" })}
+						</TooltipContent>
+					</Tooltip>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.pu?.[0],
+			id: "updates",
+			name: () => t`Updates`,
+			size: 50,
+			Icon: PackageIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) dot color (security > regular > up to date), 2) total updates
+				const puA = a.original.info.pu
+				const puB = b.original.info.pu
+				const rankA = getUpdatesRank(puA)
+				const rankB = getUpdatesRank(puB)
+				if (rankA !== rankB) {
+					return rankA - rankB
+				}
+				return (puA?.[0] ?? 0) - (puB?.[0] ?? 0)
+			},
+			cell(info) {
+				const sys = info.row.original
+				if (!sys.info.pu) {
+					return null
+				}
+				const [total, security = 0] = sys.info.pu
 				return (
 					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
 						<span
 							className={cn("block size-2 rounded-full", {
-								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
-								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
+								[STATUS_COLORS[SystemStatus.Down]]: security > 0,
+								[STATUS_COLORS[SystemStatus.Pending]]: security === 0 && total > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: total === 0,
+								[STATUS_COLORS[SystemStatus.Paused]]: sys.status !== SystemStatus.Up,
 							})}
 						/>
-						{totalCount}{" "}
-						<span className="text-muted-foreground text-sm -ms-0.5">
-							({t`Failed`.toLowerCase()}: {numFailed})
-						</span>
+						{total === 0 ? t`Up to date` : plural(total, { one: "# update", other: "# updates" })}
 					</span>
 				)
 			},
@@ -465,10 +566,11 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					return null
 				}
 				const system = info.row.original
-				const color = {
-					"text-green-500": version === globalThis.BESZEL.HUB_VERSION,
-					"text-yellow-500": version !== globalThis.BESZEL.HUB_VERSION,
-					"text-red-500": system.status !== SystemStatus.Up,
+				let color = "text-red-500"
+				if (system.status === SystemStatus.Up) {
+					color = version === globalThis.BESZEL.HUB_VERSION ? "text-green-500" : "text-yellow-500"
+				} else if (system.status === SystemStatus.Paused) {
+					color = "text-primary/40"
 				}
 				return (
 					<Link
@@ -550,7 +652,7 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 			STATUS_COLORS.down
 	)
 	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
+		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full min-w-0">
 			<span className="min-w-8 shrink-0">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
 			<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
@@ -564,9 +666,9 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 	const rootDiskPct = sysInfo.dp
+	const rootDiskName = sysInfo.rdn
 
-	// sort extra disks by percentage descending
-	extraFs.sort((a, b) => b[1] - a[1])
+	extraFs.sort((a, b) => a[0].localeCompare(b[0]))
 
 	function getIndicatorColor(pct: number) {
 		const threshold = getMeterStateByThresholds(pct, colorWarn, colorCrit)
@@ -621,8 +723,8 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 			<TooltipContent side="right" className="max-w-xs pb-2">
 				<div className="grid gap-1">
 					<div className="grid gap-0.5">
-						<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums">
-							<Trans context="Root disk label">Root</Trans>
+						<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate tabular-nums">
+							{rootDiskName ?? <Trans context="Root disk label">Root</Trans>}
 						</div>
 						<div className="flex gap-2 items-center tabular-nums text-xs">
 							<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
@@ -652,6 +754,23 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
+function WiFiSignal({ wifi, className }: { wifi: WiFi; className?: ClassValue }) {
+	const state = wifi.r === undefined ? undefined : wifiSignalState(wifi.r)
+	return (
+		<span className={cn("flex items-center gap-1.5 tabular-nums whitespace-nowrap", className)}>
+			<span
+				className={cn("block size-2 rounded-full shrink-0", {
+					[STATUS_COLORS[SystemStatus.Up]]: state === MeterState.Good,
+					[STATUS_COLORS[SystemStatus.Pending]]: state === MeterState.Warn,
+					[STATUS_COLORS[SystemStatus.Down]]: state === MeterState.Crit,
+					[STATUS_COLORS[SystemStatus.Paused]]: state === undefined,
+				})}
+			/>
+			{wifi.r === undefined ? t`Unknown` : `${wifi.r} dBm`}
+		</span>
+	)
+}
+
 export function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {
 	className ||= STATUS_COLORS[system.status as keyof typeof STATUS_COLORS] || ""
 	return (
@@ -661,105 +780,3 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 		/>
 	)
 }
-
-export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	const editOpened = useRef(false)
-	const { t } = useLingui()
-	const { id, status, host, name } = system
-
-	return useMemo(() => {
-		return (
-			<>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"}>
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="w-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{!isReadOnlyUser() && (
-							<DropdownMenuItem
-								onSelect={() => {
-									editOpened.current = true
-									setEditOpen(true)
-								}}
-							>
-								<PenBoxIcon className="me-2.5 size-4" />
-								<Trans>Edit</Trans>
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuItem
-							className={cn(isReadOnlyUser() && "hidden")}
-							onClick={() => {
-								pb.collection("systems").update(id, {
-									status: status === SystemStatus.Paused ? SystemStatus.Pending : SystemStatus.Paused,
-								})
-							}}
-						>
-							{status === SystemStatus.Paused ? (
-								<>
-									<PlayCircleIcon className="me-2.5 size-4" />
-									<Trans>Resume</Trans>
-								</>
-							) : (
-								<>
-									<PauseCircleIcon className="me-2.5 size-4" />
-									<Trans>Pause</Trans>
-								</>
-							)}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(name)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy name</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy host</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				{/* edit dialog */}
-				<Dialog open={editOpen} onOpenChange={setEditOpen}>
-					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-				</Dialog>
-				{/* deletion dialog */}
-				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>
-								<Trans>Are you sure you want to delete {name}?</Trans>
-							</AlertDialogTitle>
-							<AlertDialogDescription>
-								<Trans>
-									This action cannot be undone. This will permanently delete all current records for {name} from the
-									database.
-								</Trans>
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>
-								<Trans>Cancel</Trans>
-							</AlertDialogCancel>
-							<AlertDialogAction
-								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => pb.collection("systems").delete(id)}
-							>
-								<Trans>Continue</Trans>
-							</AlertDialogAction>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</>
-		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen])
-})

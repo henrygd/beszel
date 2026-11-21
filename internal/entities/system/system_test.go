@@ -1,0 +1,238 @@
+package system
+
+import (
+	"encoding/json"
+	jsonv2 "encoding/json/v2"
+	"testing"
+
+	"github.com/fxamacker/cbor/v2"
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/smart"
+	"github.com/henrygd/beszel/internal/entities/zfs"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestStatsBatteryTransport(t *testing.T) {
+	stats := Stats{Battery: [2]uint8{0, 1}, Batteries: map[string]uint8{"Primary": 0, "Mouse": 75}}
+
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json_v1": json.Marshal,
+		"json_v2": func(value any) ([]byte, error) { return jsonv2.Marshal(value) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			jsonData, err := marshal(stats)
+			require.NoError(t, err)
+			var jsonPayload map[string]any
+			require.NoError(t, json.Unmarshal(jsonData, &jsonPayload))
+			assert.Equal(t, []any{float64(0), float64(1)}, jsonPayload["bat"])
+			assert.Equal(t, map[string]any{"Primary": float64(0), "Mouse": float64(75)}, jsonPayload["bats"])
+		})
+	}
+
+	cborData, err := cbor.Marshal(stats)
+	require.NoError(t, err)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(cborData, &decoded))
+	assert.Equal(t, stats.Battery, decoded.Battery)
+	assert.Equal(t, stats.Batteries, decoded.Batteries)
+}
+
+// GPUs without a package power reading (e.g. NVIDIA) must not get a "pp" key,
+// otherwise the UI shows an empty package power series (PocketBase uses json/v2)
+func TestGPUDataPowerPkgOmittedWhenZero(t *testing.T) {
+	gpus := map[string]GPUData{
+		"0": {Name: "GeForce RTX 4060", Power: 91.21},
+		"1": {Name: "Arc A380", Power: 10, PowerPkg: 20},
+	}
+
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json_v1": json.Marshal,
+		"json_v2": func(value any) ([]byte, error) { return jsonv2.Marshal(value) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			jsonData, err := marshal(gpus)
+			require.NoError(t, err)
+			var jsonPayload map[string]map[string]any
+			require.NoError(t, json.Unmarshal(jsonData, &jsonPayload))
+			assert.NotContains(t, jsonPayload["0"], "pp")
+			assert.Equal(t, float64(20), jsonPayload["1"]["pp"])
+		})
+	}
+}
+
+func TestStatsDiskIOTotalAndFansTransport(t *testing.T) {
+	stats := Stats{
+		DiskIOTotal: [2]uint64{437348527104, 331522465792},
+		Fans:        map[string]uint16{"cpu": 1200},
+	}
+
+	cborData, err := cbor.Marshal(stats)
+	require.NoError(t, err)
+	var decoded Stats
+	require.NoError(t, cbor.Unmarshal(cborData, &decoded))
+	assert.Equal(t, stats.DiskIOTotal, decoded.DiskIOTotal)
+	assert.Equal(t, stats.Fans, decoded.Fans)
+}
+
+func TestStatsBatteryNumericArrayUnmarshal(t *testing.T) {
+	for name, unmarshal := range map[string]func([]byte, any) error{
+		"json_v1": json.Unmarshal,
+		"json_v2": func(data []byte, val any) error { return jsonv2.Unmarshal(data, val) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stats Stats
+			require.NoError(t, unmarshal([]byte(`{"bat":[50,4]}`), &stats))
+			assert.Equal(t, Battery{50, 4}, stats.Battery)
+
+			var info Info
+			require.NoError(t, unmarshal([]byte(`{"bat":[59,5],"jl":true}`), &info))
+			assert.True(t, info.SystemdLogs)
+			assert.Equal(t, Battery{59, 5}, info.Battery)
+
+			var bat Battery
+			require.NoError(t, unmarshal([]byte(`[100,2]`), &bat))
+			assert.Equal(t, Battery{100, 2}, bat)
+
+			var nullBat Battery
+			require.NoError(t, unmarshal([]byte(`null`), &nullBat))
+			assert.Equal(t, Battery{0, 0}, nullBat)
+		})
+	}
+}
+
+// PocketBase decodes record JSON fields with encoding/json/v2, which rejects
+// numeric arrays for byte slices unless the type unmarshals them itself.
+func TestStatsCpuCoresNumericArrayUnmarshal(t *testing.T) {
+	for name, unmarshal := range map[string]func([]byte, any) error{
+		"json_v1": json.Unmarshal,
+		"json_v2": func(data []byte, val any) error { return jsonv2.Unmarshal(data, val) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			var stats Stats
+			require.NoError(t, unmarshal([]byte(`{"cpu":12.5,"cpus":[2,3,100,255],"t":{"cpu":40}}`), &stats))
+			assert.Equal(t, Uint8Slice{2, 3, 100, 255}, stats.CpuCoresUsage)
+			assert.Equal(t, 12.5, stats.Cpu)
+			assert.Equal(t, map[string]float64{"cpu": 40}, stats.Temperatures)
+
+			var empty Uint8Slice
+			require.NoError(t, unmarshal([]byte(`[]`), &empty))
+			assert.Equal(t, Uint8Slice{}, empty)
+
+			nullSlice := Uint8Slice{1}
+			require.NoError(t, unmarshal([]byte(`null`), &nullSlice))
+			assert.Nil(t, nullSlice)
+
+			var overflow Uint8Slice
+			assert.Error(t, unmarshal([]byte(`[256]`), &overflow))
+		})
+	}
+}
+
+func TestStatsCpuCoresJSONRoundTrip(t *testing.T) {
+	stats := Stats{CpuCoresUsage: Uint8Slice{0, 7, 99}}
+	for name, marshal := range map[string]func(any) ([]byte, error){
+		"json_v1": json.Marshal,
+		"json_v2": func(value any) ([]byte, error) { return jsonv2.Marshal(value) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			data, err := marshal(stats)
+			require.NoError(t, err)
+			assert.Contains(t, string(data), `"cpus":[0,7,99]`)
+			var decoded Stats
+			require.NoError(t, jsonv2.Unmarshal(data, &decoded))
+			assert.Equal(t, stats.CpuCoresUsage, decoded.CpuCoresUsage)
+		})
+	}
+}
+
+func TestStatsLegacyBatteryPayload(t *testing.T) {
+	data, err := json.Marshal(Stats{Battery: [2]uint8{50, 4}})
+	require.NoError(t, err)
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(data, &payload))
+	assert.Contains(t, payload, "bat")
+	assert.NotContains(t, payload, "bats")
+}
+
+func TestCombinedDataSystemdUpdateMarkerTransport(t *testing.T) {
+	data := CombinedData{SystemdServicesUpdated: true}
+
+	jsonData, err := json.Marshal(data)
+	require.NoError(t, err)
+	var decodedJSON CombinedData
+	require.NoError(t, json.Unmarshal(jsonData, &decodedJSON))
+	assert.True(t, decodedJSON.SystemdServicesUpdated)
+	assert.Empty(t, decodedJSON.SystemdServices)
+
+	cborData, err := cbor.Marshal(data)
+	require.NoError(t, err)
+	var decodedCBOR CombinedData
+	require.NoError(t, cbor.Unmarshal(cborData, &decodedCBOR))
+	assert.True(t, decodedCBOR.SystemdServicesUpdated)
+	assert.Empty(t, decodedCBOR.SystemdServices)
+
+	var legacy CombinedData
+	require.NoError(t, json.Unmarshal([]byte(`{"stats":{},"info":{},"container":[]}`), &legacy))
+	assert.False(t, legacy.SystemdServicesUpdated)
+}
+
+func TestCombinedDataContainerValidityTransport(t *testing.T) {
+	validEmpty := CombinedData{Containers: []*container.Stats{}}
+
+	jsonData, err := json.Marshal(validEmpty)
+	require.NoError(t, err)
+	var decodedJSON CombinedData
+	require.NoError(t, json.Unmarshal(jsonData, &decodedJSON))
+	assert.NotNil(t, decodedJSON.Containers)
+	assert.Empty(t, decodedJSON.Containers)
+
+	jsonV2Data, err := jsonv2.Marshal(validEmpty)
+	require.NoError(t, err)
+	var decodedJSONV2 CombinedData
+	require.NoError(t, jsonv2.Unmarshal(jsonV2Data, &decodedJSONV2))
+	assert.NotNil(t, decodedJSONV2.Containers)
+	assert.Empty(t, decodedJSONV2.Containers)
+
+	cborData, err := cbor.Marshal(validEmpty)
+	require.NoError(t, err)
+	var decodedCBOR CombinedData
+	require.NoError(t, cbor.Unmarshal(cborData, &decodedCBOR))
+	assert.NotNil(t, decodedCBOR.Containers)
+	assert.Empty(t, decodedCBOR.Containers)
+
+	invalidData, err := cbor.Marshal(CombinedData{})
+	require.NoError(t, err)
+	var decodedInvalid CombinedData
+	require.NoError(t, cbor.Unmarshal(invalidData, &decodedInvalid))
+	assert.Nil(t, decodedInvalid.Containers)
+}
+
+// PocketBase marshals record JSON fields with encoding/json/v2, where omitempty
+// no longer omits zero numbers or false. Scalar fields must use omitzero so
+// stored records keep the same shape as encoding/json (v1).
+func TestZeroValueJSONMatchesV1(t *testing.T) {
+	for name, value := range map[string]any{
+		"stats": Stats{
+			ExtraFs:  map[string]*FsStats{"sda": {}},
+			GPUData:  map[string]GPUData{"0": {}},
+			ZfsPools: map[string]*ZfsPool{"tank": {}},
+		},
+		"info":            Info{WiFi: map[string]WiFi{"wlan0": {}}},
+		"package_updates": PackageUpdates{Packages: []PackageUpdate{{}}},
+		"zfs": zfs.ZfsData{Pools: []*zfs.PoolDetail{{
+			Scrub:    &zfs.Scrub{State: "NONE"}, // a scrub encoding to {} is dropped by v2 omitempty
+			Vdevs:    []*zfs.Vdev{{}},
+			Datasets: []*zfs.Dataset{{}},
+		}}},
+		"smart": smart.SmartData{Attributes: []*smart.SmartAttribute{{}}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			v1Data, err := json.Marshal(value)
+			require.NoError(t, err)
+			v2Data, err := jsonv2.Marshal(value)
+			require.NoError(t, err)
+			assert.JSONEq(t, string(v1Data), string(v2Data))
+		})
+	}
+}

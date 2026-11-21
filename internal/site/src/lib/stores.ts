@@ -1,4 +1,4 @@
-import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
+import { atom, computed, map, type ReadableAtom } from "nanostores"
 import type {
 	AlertMap,
 	ChartTimes,
@@ -12,7 +12,7 @@ import { pb } from "./api"
 import { Unit } from "./enums"
 
 /** Default layout width. Used as fallback when user setting is unset. */
-export const defaultLayoutWidth = 1580
+export const defaultLayoutWidth = 1600
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
@@ -29,6 +29,8 @@ export const $downSystems = map<Record<string, SystemRecord>>({})
 export const $pausedSystems = map<Record<string, SystemRecord>>({})
 /** List of all system records */
 export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, Object.values)
+/** Whether the initial systems list has been fetched */
+export const $systemsLoaded = atom(false)
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})
@@ -44,11 +46,25 @@ export const $publicKey = atom("")
 /** New version info if an update is available, otherwise undefined */
 export const $newVersion = atom<UpdateInfo | undefined>()
 
+/** Chart time period used when user settings don't provide one */
+export const defaultChartTime: ChartTimes = "1h"
+
 /** Chart time period */
-export const $chartTime = atom<ChartTimes>("1h")
+export const $chartTime = atom<ChartTimes>(defaultChartTime)
 
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
+
+const logTimestampsKey = "besz-log-ts"
+
+/** Whether to show timestamps in Docker and systemd logs */
+export const $showLogTimestamps = atom<boolean>(JSON.parse(globalThis.localStorage?.getItem(logTimestampsKey) ?? "true"))
+
+export function toggleLogTimestamps() {
+	const next = !$showLogTimestamps.get()
+	$showLogTimestamps.set(next)
+	globalThis.localStorage?.setItem(logTimestampsKey, JSON.stringify(next))
+}
 
 // export const UserSettingsSchema = v.object({
 // 	chartTime: v.picklist(["1h", "12h", "24h", "1w", "30d"]),
@@ -63,13 +79,25 @@ export const $maxValues = atom(false)
 
 /** User settings */
 export const $userSettings = map<UserSettings>({
-	chartTime: "1h",
+	chartTime: defaultChartTime,
 	emails: [pb.authStore.record?.email || ""],
 	unitNet: Unit.Bytes,
 	unitTemp: Unit.Celsius,
 })
-// update chart time on change
-listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime))
+
+/** Chart time period stored in user settings, or the default if it's missing */
+export function getUserChartTime(settings: UserSettings = $userSettings.get()): ChartTimes {
+	return settings.chartTime || defaultChartTime
+}
+
+/**
+ * Apply settings loaded from the database, including the default chart time.
+ * Other settings writes don't touch $chartTime so they can't reset the active chart range.
+ */
+export function hydrateUserSettings(settings: UserSettings) {
+	$userSettings.set(settings)
+	$chartTime.set(getUserChartTime(settings))
+}
 
 /** Container chart filter */
 export const $containerFilter = atom("")
@@ -77,13 +105,14 @@ export const $containerFilter = atom("")
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 
+/** Filter for network monitor charts (compare page and per-system monitor charts) */
+export const $monitorFilter = atom("")
+
+/** Fan-speed chart filter */
+export const $fanFilter = atom("")
+
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
 
 /** Direction for localization */
 export const $direction = atom<"ltr" | "rtl">("ltr")
-
-/** Longest system name length. Used to set table column width. I know this
- *  is stupid but the table is virtualized and I know this will work.
- */
-export const $longestSystemNameLen = atom(8)

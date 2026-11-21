@@ -51,21 +51,44 @@ class Program
     var updated = false;
     foreach (var sensor in hardware.Sensors)
     {
-      var validTemp = sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue;
-      if (!validTemp ||
+      var isFan = sensor.SensorType == SensorType.Fan;
+      if (!isFan && (sensor.SensorType != SensorType.Temperature ||
           sensor.Name.IndexOf("Distance", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Limit", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Critical", StringComparison.OrdinalIgnoreCase) >= 0 ||
           sensor.Name.IndexOf("Warning", StringComparison.OrdinalIgnoreCase) >= 0 ||
-          sensor.Name.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0)
+          sensor.Name.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0))
       {
         continue;
       }
 
       if (!updated)
       {
-        hardware.Update();
+        try
+        {
+          hardware.Update();
+        }
+        catch (Exception ex)
+        {
+          Console.Error.WriteLine($"Could not update {hardware.HardwareType} {hardware.Name}: {ex.Message}");
+          return;
+        }
         updated = true;
+      }
+
+      // Read the value once after Update(), which may reset it to null.
+      var temperature = sensor.Value;
+      if (!temperature.HasValue)
+      {
+        continue;
+      }
+
+      if (isFan)
+      {
+        // fan lines are "fan|<chip>_<name>|<rpm>", keyed like Linux hwmon fans
+        var rpm = temperature.Value.ToString("0", CultureInfo.InvariantCulture);
+        writer.WriteLine($"fan|{ChipName(hardware)}_{sensor.Name}|{rpm}");
+        continue;
       }
 
       var name = sensor.Name;
@@ -77,9 +100,24 @@ class Program
       }
 
       // invariant culture assures the value is parsable as a float
-      var value = sensor.Value.Value.ToString("0.##", CultureInfo.InvariantCulture);
+      var value = temperature.Value.ToString("0.##", CultureInfo.InvariantCulture);
       // write the name and value to the writer
       writer.WriteLine($"{name}|{value}");
     }
+  }
+
+  // ChipName returns the hardware's chip from its identifier, for example
+  // "nct6687d" for "/lpc/nct6687d/0" or "gpu-nvidia" for "/gpu-nvidia/0".
+  static string ChipName(IHardware hardware)
+  {
+    var parts = hardware.Identifier.ToString().Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+    for (var i = parts.Length - 1; i >= 0; i--)
+    {
+      if (!int.TryParse(parts[i], out _))
+      {
+        return parts[i];
+      }
+    }
+    return hardware.HardwareType.ToString().ToLowerInvariant();
   }
 }

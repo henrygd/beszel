@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/henrygd/beszel/agent/utils"
 	"github.com/henrygd/beszel/internal/entities/smart"
@@ -25,99 +24,70 @@ type emmcHealth struct {
 	lifeB    uint8
 }
 
-func scanEmmcDevices() []*DeviceInfo {
+// scanEmmcDevices returns the /dev paths of eMMC devices that expose health
+// fields in sysfs.
+func scanEmmcDevices() []string {
 	blockDir := filepath.Join(emmcSysfsRoot, "class", "block")
 	entries, err := os.ReadDir(blockDir)
 	if err != nil {
 		return nil
 	}
 
-	devices := make([]*DeviceInfo, 0, 2)
+	var devices []string
 	for _, ent := range entries {
 		name := ent.Name()
 		if !isEmmcBlockName(name) {
 			continue
 		}
-
-		deviceDir := filepath.Join(blockDir, name, "device")
-		if !hasEmmcHealthFiles(deviceDir) {
+		if !hasEmmcHealthFiles(filepath.Join(blockDir, name, "device")) {
 			continue
 		}
-
-		devPath := filepath.Join("/dev", name)
-		devices = append(devices, &DeviceInfo{
-			Name:     devPath,
-			Type:     "emmc",
-			InfoName: devPath + " [eMMC]",
-			Protocol: "MMC",
-		})
+		devices = append(devices, filepath.Join("/dev", name))
 	}
-
 	return devices
 }
 
-func (sm *SmartManager) collectEmmcHealth(deviceInfo *DeviceInfo) (bool, error) {
-	if deviceInfo == nil || deviceInfo.Name == "" {
-		return false, nil
-	}
-
-	base := filepath.Base(deviceInfo.Name)
-	if !isEmmcBlockName(base) && !strings.EqualFold(deviceInfo.Type, "emmc") && !strings.EqualFold(deviceInfo.Type, "mmc") {
-		return false, nil
-	}
-
+// readEmmcSmartData reads eMMC wear / EOL indicators from sysfs. It returns the
+// data map key (serial, or the device path when there is none).
+func readEmmcSmartData(path string) (string, *smart.SmartData, bool) {
+	base := filepath.Base(path)
 	health, ok := readEmmcHealth(base)
 	if !ok {
-		return false, nil
+		return "", nil, false
 	}
 
-	// Normalize the device type to keep pruning logic stable across refreshes.
-	deviceInfo.Type = "emmc"
-
+	devPath := filepath.Join("/dev", base)
 	key := health.serial
 	if key == "" {
-		key = filepath.Join("/dev", base)
+		key = devPath
 	}
 
-	status := emmcSmartStatus(health.preEOL)
-
-	attrs := []*smart.SmartAttribute{
-		{
-			Name:      "PreEOLInfo",
-			RawValue:  uint64(health.preEOL),
-			RawString: emmcPreEOLString(health.preEOL),
+	return key, &smart.SmartData{
+		ModelName:       health.model,
+		SerialNumber:    health.serial,
+		FirmwareVersion: health.revision,
+		Capacity:        health.capacity,
+		SmartStatus:     emmcSmartStatus(health.preEOL),
+		DiskName:        devPath,
+		DiskType:        "emmc",
+		Attributes: []*smart.SmartAttribute{
+			{
+				Name:      "PreEOLInfo",
+				RawValue:  uint64(health.preEOL),
+				RawString: emmcPreEOLString(health.preEOL),
+			},
+			{
+				Name:      "DeviceLifeTimeEstA",
+				RawValue:  uint64(health.lifeA),
+				RawString: emmcLifeTimeString(health.lifeA),
+			},
+			{
+				Name:      "DeviceLifeTimeEstB",
+				RawValue:  uint64(health.lifeB),
+				RawString: emmcLifeTimeString(health.lifeB),
+			},
 		},
-		{
-			Name:      "DeviceLifeTimeEstA",
-			RawValue:  uint64(health.lifeA),
-			RawString: emmcLifeTimeString(health.lifeA),
-		},
-		{
-			Name:      "DeviceLifeTimeEstB",
-			RawValue:  uint64(health.lifeB),
-			RawString: emmcLifeTimeString(health.lifeB),
-		},
-	}
-
-	sm.Lock()
-	defer sm.Unlock()
-
-	if _, exists := sm.SmartDataMap[key]; !exists {
-		sm.SmartDataMap[key] = &smart.SmartData{}
-	}
-
-	data := sm.SmartDataMap[key]
-	data.ModelName = health.model
-	data.SerialNumber = health.serial
-	data.FirmwareVersion = health.revision
-	data.Capacity = health.capacity
-	data.Temperature = 0
-	data.SmartStatus = status
-	data.DiskName = filepath.Join("/dev", base)
-	data.DiskType = "emmc"
-	data.Attributes = attrs
-
-	return true, nil
+	}, true
 }
 
 func readEmmcHealth(blockName string) (emmcHealth, bool) {

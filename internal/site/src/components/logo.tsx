@@ -8,7 +8,7 @@ export function Logo({ className }: { className?: string }) {
 
 	return (
 		// Righteous font from Google Fonts, "X Harix" suffix in the page's own font
-		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 510 75" className={className}>
+		<svg role="img" aria-label="Beszel X Harix" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 510 75" className={className}>
 			<defs>
 				<linearGradient id={id} x1="0%" y1="20%" x2="100%" y2="120%">
 					<stop offset="10%" style={{ stopColor: "#747bff" }} />

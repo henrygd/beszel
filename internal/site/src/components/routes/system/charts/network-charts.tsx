@@ -5,7 +5,6 @@ import { useContainerDataPoints } from "@/components/charts/hooks"
 import { $userSettings } from "@/lib/stores"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartConfig } from "@/components/ui/chart"
-import { pinnedAxisDomain } from "@/components/ui/chart"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { Separator } from "@/components/ui/separator"
 import NetworkSheet from "../network-sheet"
@@ -159,7 +158,7 @@ export function ContainerNetworkChart({
 			empty={dataEmpty}
 			grid={grid}
 			title={dockerOrPodman(t`Docker Network I/O`, isPodman)}
-			description={dockerOrPodman(t`Network traffic of docker containers`, isPodman)}
+			description={t`Network traffic of containers`}
 			cornerEl={<FilterBar />}
 		>
 			<AreaChartDefault
@@ -171,7 +170,6 @@ export function ContainerNetworkChart({
 					return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 				}}
 				contentFormatter={contentFormatter}
-				domain={pinnedAxisDomain()}
 				showTotal={true}
 				reverseStackOrder={true}
 				filter={filter}

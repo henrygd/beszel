@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"runtime"
@@ -11,7 +12,9 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/agent/btrfs"
 	"github.com/henrygd/beszel/agent/utils"
+	"github.com/henrygd/beszel/agent/wifi"
 	"github.com/henrygd/beszel/agent/zfs"
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -31,7 +34,11 @@ func (a *Agent) refreshSystemDetails() {
 
 	if a.dockerManager != nil {
 		a.systemDetails.Podman = a.dockerManager.IsPodman()
-		hostInfo, _ = a.dockerManager.GetHostInfo()
+		// Docker's host info describes the machine its daemon runs on. On macOS and
+		// Windows that is a Linux VM, so its CPU and memory totals are not this host's.
+		if runtime.GOOS != "darwin" && runtime.GOOS != "windows" {
+			hostInfo, _ = a.dockerManager.GetHostInfo()
+		}
 	}
 
 	a.systemDetails.Hostname, _ = os.Hostname()
@@ -77,12 +84,23 @@ func (a *Agent) refreshSystemDetails() {
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemDetails.CpuModel = info[0].ModelName
+		a.systemDetails.Sockets = cpuSockets(info)
+	}
+	// gopsutil doesn't parse the "cpu model" field from /proc/cpuinfo, which
+	// is the only source of the CPU model name on MIPS. Fall back to reading
+	// it directly when ModelName is empty.
+	if a.systemDetails.CpuModel == "" {
+		a.systemDetails.CpuModel = getCpuModelFromCpuinfo()
 	}
 	// cores / threads
 	cores, _ := cpu.Counts(false)
 	threads := hostInfo.NCPU
 	if threads == 0 {
 		threads, _ = cpu.Counts(true)
+	}
+	// Container cpusets describe assigned logical CPUs; Docker may report a stale count.
+	if count := containerCpuCount(a.forceUseCgroup); count > 0 {
+		threads = count
 	}
 	// in lxc, logical cores reflects container limits, so use that as cores if lower
 	if threads > 0 && threads < cores {
@@ -93,10 +111,15 @@ func (a *Agent) refreshSystemDetails() {
 
 	// total memory
 	a.systemDetails.MemoryTotal = hostInfo.MemTotal
-	if a.systemDetails.MemoryTotal == 0 {
-		if v, err := mem.VirtualMemory(); err == nil {
+	hostMemoryTotal := hostInfo.MemTotal
+	if v, err := memoryVirtualMemory(); err == nil {
+		hostMemoryTotal = v.Total
+		if a.systemDetails.MemoryTotal == 0 {
 			a.systemDetails.MemoryTotal = v.Total
 		}
+	}
+	if metrics, ok := containerMemoryMetrics(hostMemoryTotal, a.forceUseCgroup); ok {
+		a.systemDetails.MemoryTotal = metrics.Total
 	}
 
 	// zfs
@@ -140,13 +163,18 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
 
 	// battery
-	if batteryPercent, batteryState, err := battery.GetBatteryStats(); err == nil {
-		systemStats.Battery[0] = batteryPercent
-		systemStats.Battery[1] = batteryState
+	if batteries, err := battery.GetBatteryStats(); err == nil {
+		systemStats.Batteries = make(map[string]uint8, len(batteries))
+		for _, device := range batteries {
+			systemStats.Batteries[device.Name] = device.Percent
+		}
+		if primary, ok := battery.Primary(batteries); ok {
+			systemStats.Battery = [2]uint8{primary.Percent, primary.State}
+		}
 	}
 
 	// cpu metrics
-	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
+	cpuMetrics, err := getCpuMetrics(cacheTimeMs, a.forceUseCgroup)
 	if err == nil {
 		systemStats.Cpu = utils.TwoDecimals(cpuMetrics.Total)
 		systemStats.CpuBreakdown = []float64{
@@ -155,61 +183,35 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 			utils.TwoDecimals(cpuMetrics.Iowait),
 			utils.TwoDecimals(cpuMetrics.Steal),
 			utils.TwoDecimals(cpuMetrics.Idle),
+			utils.TwoDecimals(cpuMetrics.Irq),
+			utils.TwoDecimals(cpuMetrics.Softirq),
+			utils.TwoDecimals(cpuMetrics.Nice),
 		}
 	} else {
 		slog.Error("Error getting cpu metrics", "err", err)
 	}
 
-	// per-core cpu usage
-	if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
-		systemStats.CpuCoresUsage = perCoreUsage
+	// per-core cpu usage. Skipped when the total comes from cgroup accounting:
+	// per-core /proc/stat counters there describe shared host cores, not the
+	// guest, and would contradict the total.
+	if !cpuMetrics.fromCgroup {
+		if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
+			systemStats.CpuCoresUsage = perCoreUsage
+		}
 	}
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		systemStats.LoadAvg[0] = avgstat.Load1
-		systemStats.LoadAvg[1] = avgstat.Load5
-		systemStats.LoadAvg[2] = avgstat.Load15
+		systemStats.LoadAvg[0] = utils.TwoDecimals(avgstat.Load1)
+		systemStats.LoadAvg[1] = utils.TwoDecimals(avgstat.Load5)
+		systemStats.LoadAvg[2] = utils.TwoDecimals(avgstat.Load15)
 		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
 	} else {
 		slog.Error("Error getting load average", "err", err)
 	}
 
 	// memory
-	if v, err := mem.VirtualMemory(); err == nil {
-		// swap
-		systemStats.Swap = utils.BytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = utils.BytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
-		// cache + buffers value for default mem calculation
-		// note: gopsutil automatically adds SReclaimable to v.Cached
-		cacheBuff := v.Cached + v.Buffers - v.Shared
-		if cacheBuff <= 0 {
-			cacheBuff = max(v.Total-v.Free-v.Used, 0)
-		}
-		// htop memory calculation overrides (likely outdated as of mid 2025)
-		if a.memCalc == "htop" {
-			// cacheBuff = v.Cached + v.Buffers - v.Shared
-			v.Used = v.Total - (v.Free + cacheBuff)
-			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		}
-		// if a.memCalc == "legacy" {
-		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
-		// 	cacheBuff = v.Total - v.Free - v.Used
-		// 	v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		// }
-		// subtract ZFS ARC size from used memory and add as its own category
-		if a.zfs {
-			if arcSize, _ := zfs.ARCSize(); arcSize > 0 && arcSize < v.Used {
-				v.Used = v.Used - arcSize
-				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-				systemStats.MemZfsArc = utils.BytesToGigabytes(arcSize)
-			}
-		}
-		systemStats.Mem = utils.BytesToGigabytes(v.Total)
-		systemStats.MemBuffCache = utils.BytesToGigabytes(cacheBuff)
-		systemStats.MemUsed = utils.BytesToGigabytes(v.Used)
-		systemStats.MemPct = utils.TwoDecimals(v.UsedPercent)
-	}
+	a.updateMemoryStats(&systemStats)
 
 	// disk usage
 	a.updateDiskUsage(&systemStats)
@@ -217,12 +219,19 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	// disk i/o (cache-aware per interval)
 	a.updateDiskIo(cacheTimeMs, &systemStats)
 
+	// storage pool stats
+	a.storagePoolManager.Update(&systemStats)
+	a.storagePoolManager.markDuplicateCharts(&systemStats, a.fsStats, btrfs.MountID)
+
 	// network stats (per cache interval)
 	a.updateNetworkStats(cacheTimeMs, &systemStats)
 
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)
+
+	// fan speeds (Linux sysfs hwmon, Windows LHM)
+	a.updateFans(&systemStats)
 
 	// GPU data
 	if a.gpuManager != nil {
@@ -254,23 +263,133 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 				a.systemInfo.DashboardTemp = highestTemp
 			}
 		}
-		a.systemInfo.GpuPct = &gpuPct
-	} else {
-		a.systemInfo.GpuPct = nil
+		a.systemInfo.GpuPct = gpuPct
 	}
 
+	// Wi-Fi collection spawns a process on macOS and dumps the BSS cache on
+	// Linux, so only refresh on the default interval. Real-time requests reuse
+	// the last snapshot.
+	if cacheTimeMs == defaultDataCacheTimeMs {
+		a.systemInfo.WiFi = wifi.Collect()
+	}
+	systemStats.WiFi = wifi.Signals(a.systemInfo.WiFi)
+
 	// update system info
-	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType()
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
-	a.systemInfo.Uptime, _ = host.Uptime()
+	a.systemInfo.Uptime, _ = getUptime()
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	a.systemInfo.Threads = a.systemDetails.Threads
 
 	return systemStats
+}
+
+// cpuModelFallbackKeys are the field names to look for in /proc/cpuinfo when
+// gopsutil fails to return a ModelName. The "cpu model" key is used on MIPS
+// (e.g. "MIPS 1004Kc V2.15"), while "system type" provides SoC information
+// on various embedded architectures.
+var cpuModelFallbackKeys = []string{"cpu model", "system type"}
+
+// cpuSockets returns the number of physical CPU packages, or 0 if unknown.
+// PhysicalID is only a socket id on x86 Linux; on Windows gopsutil returns
+// one entry per package.
+func cpuSockets(info []cpu.InfoStat) int {
+	switch {
+	case runtime.GOOS == "windows":
+		return len(info)
+	case runtime.GOOS == "linux" && (runtime.GOARCH == "amd64" || runtime.GOARCH == "386"):
+		ids := make(map[string]struct{})
+		for _, c := range info {
+			if c.PhysicalID != "" {
+				ids[c.PhysicalID] = struct{}{}
+			}
+		}
+		return len(ids)
+	}
+	return 0
+}
+
+// getCpuModelFromCpuinfo reads /proc/cpuinfo and returns a CPU model string.
+// This is a fallback for architectures where gopsutil's cpu.Info() does not
+// populate ModelName, most notably MIPS.
+func getCpuModelFromCpuinfo() string {
+	file, err := os.Open("/proc/cpuinfo")
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+	return parseCpuModel(file)
+}
+
+// parseCpuModel scans r (expected to be /proc/cpuinfo content) and returns
+// a combined CPU model string. It collects values from all matching keys
+// and joins them with " / " when multiple are found.
+func parseCpuModel(r io.Reader) string {
+	lines := readLines(r)
+	var parts []string
+	for _, key := range cpuModelFallbackKeys {
+		for _, line := range lines {
+			after, found := strings.CutPrefix(line, key)
+			if !found {
+				continue
+			}
+			after = strings.TrimSpace(after)
+			if len(after) < 2 || after[0] != ':' {
+				continue
+			}
+			if value := strings.TrimSpace(after[1:]); value != "" {
+				parts = append(parts, value)
+				break
+			}
+		}
+	}
+	return strings.Join(parts, " / ")
+}
+
+// readLines reads all lines from r into a slice.
+func readLines(r io.Reader) []string {
+	scanner := bufio.NewScanner(r)
+	var lines []string
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines
+}
+
+// calculateHostMemoryUsage derives counters defensively because /proc/meminfo may
+// change while gopsutil reads it. Invalid unsigned subtractions saturate at zero.
+func calculateHostMemoryUsage(v *mem.VirtualMemoryStat, htop bool) (used, cacheBuff, swapUsed uint64) {
+	used = v.Used
+	if used > v.Total {
+		used = saturatingSub(v.Total, v.Available)
+	}
+
+	// gopsutil automatically adds SReclaimable to Cached.
+	cacheBuff = min(v.Cached, v.Total)
+	cacheBuff += min(v.Buffers, v.Total-cacheBuff)
+	cacheBuff = saturatingSub(cacheBuff, min(v.Shared, v.Total))
+	if v.Cached == 0 && v.Buffers == 0 {
+		cacheBuff = saturatingSub(v.Total, v.Free, used)
+	}
+	if htop {
+		used = saturatingSub(v.Total, v.Free, cacheBuff)
+	}
+	// Cached swap pages still occupy swap slots and are included in `free`'s used value.
+	return used, cacheBuff, saturatingSub(v.SwapTotal, v.SwapFree)
+}
+
+// saturatingSub subtracts each value, returning zero on underflow.
+func saturatingSub(value uint64, subtrahends ...uint64) uint64 {
+	for _, subtrahend := range subtrahends {
+		if subtrahend > value {
+			return 0
+		}
+		value -= subtrahend
+	}
+	return value
 }
 
 // getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems

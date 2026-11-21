@@ -16,9 +16,14 @@ RUN apk add --no-cache \
 RUN update-ca-certificates
 
 # Build
+# Defaults keep plain `docker build` (no buildx platform args) working.
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
-RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel ./internal/cmd/hub
+ARG TARGETVARIANT
+RUN if [ "$TARGETARCH" = "arm" ] && [ -n "$TARGETVARIANT" ]; then \
+    export GOARM="${TARGETVARIANT#v}"; \
+  fi; \
+  CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel ./internal/cmd/hub
 
 # ? -------------------------
 FROM scratch

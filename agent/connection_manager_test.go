@@ -7,10 +7,15 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
+	"testing/synctest"
 	"time"
 
+	"github.com/lxzan/gws"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
@@ -50,18 +55,18 @@ func TestConnectionManager_NewConnectionManager(t *testing.T) {
 
 	assert.NotNil(t, cm, "Connection manager should not be nil")
 	assert.Equal(t, agent, cm.agent, "Agent reference should be set")
-	assert.Equal(t, Disconnected, cm.State(), "Initial state should be Disconnected")
+	assert.Equal(t, Disconnected, cm.State, "Initial state should be Disconnected")
 	assert.Nil(t, cm.eventChan, "Event channel should be nil initially")
 	assert.Nil(t, cm.wsClient, "WebSocket client should be nil initially")
 	assert.Nil(t, cm.wsTicker, "WebSocket ticker should be nil initially")
-	assert.False(t, cm.isConnecting.Load(), "isConnecting should be false initially")
+	assert.False(t, cm.isConnecting, "isConnecting should be false initially")
 }
 
 // TestConnectionManager_StateTransitions tests basic state transitions
 func TestConnectionManager_StateTransitions(t *testing.T) {
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
-	initialState := cm.State()
+	initialState := cm.State
 	cm.wsClient = &WebSocketClient{
 		hubURL: &url.URL{
 			Host: "localhost:8080",
@@ -72,30 +77,34 @@ func TestConnectionManager_StateTransitions(t *testing.T) {
 
 	// Test state transitions
 	cm.handleStateChange(WebSocketConnected)
-	assert.Equal(t, WebSocketConnected, cm.State(), "State should change to WebSocketConnected")
+	assert.Equal(t, WebSocketConnected, cm.State, "State should change to WebSocketConnected")
 
 	cm.handleStateChange(SSHConnected)
-	assert.Equal(t, SSHConnected, cm.State(), "State should change to SSHConnected")
+	assert.Equal(t, SSHConnected, cm.State, "State should change to SSHConnected")
 
+	// Prevent handleStateChange from spawning its async reconnect goroutine:
+	// this test only checks the synchronous state machine, and the goroutine
+	// would otherwise race with the direct field writes below.
+	cm.setConnecting(true)
 	cm.handleStateChange(Disconnected)
-	assert.Equal(t, Disconnected, cm.State(), "State should change to Disconnected")
+	assert.Equal(t, Disconnected, cm.State, "State should change to Disconnected")
 
 	// Test that same state doesn't trigger changes
-	cm.setState(WebSocketConnected)
+	cm.State = WebSocketConnected
 	cm.handleStateChange(WebSocketConnected)
-	assert.Equal(t, WebSocketConnected, cm.State(), "Same state should not trigger change")
+	assert.Equal(t, WebSocketConnected, cm.State, "Same state should not trigger change")
 }
 
 // TestConnectionManager_EventHandling tests event handling logic
 func TestConnectionManager_EventHandling(t *testing.T) {
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
 	cm.wsClient = &WebSocketClient{
 		hubURL: &url.URL{
 			Host: "localhost:8080",
 		},
 	}
-
 	testCases := []struct {
 		name          string
 		initialState  ConnectionState
@@ -109,10 +118,22 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 			expectedState: WebSocketConnected,
 		},
 		{
+			name:          "WebSocket connect from SSH connected",
+			initialState:  SSHConnected,
+			event:         WebSocketConnect,
+			expectedState: WebSocketConnected,
+		},
+		{
 			name:          "SSH connect from disconnected",
 			initialState:  Disconnected,
 			event:         SSHConnect,
 			expectedState: SSHConnected,
+		},
+		{
+			name:          "SSH connect from WebSocket connected (no change)",
+			initialState:  WebSocketConnected,
+			event:         SSHConnect,
+			expectedState: WebSocketConnected,
 		},
 		{
 			name:          "WebSocket disconnect from connected",
@@ -142,9 +163,28 @@ func TestConnectionManager_EventHandling(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cm.setState(tc.initialState)
+			// Prevent handleStateChange from spawning its async reconnect
+			// goroutine: this test only checks the synchronous state machine,
+			// and the goroutine would otherwise race with the direct field
+			// writes here and in later subtests.
+			cm.setConnecting(true)
+			cm.mu.Lock()
+			cm.sshConnections = 0
+			if tc.event == SSHConnect {
+				cm.sshConnections = 1
+			}
+			cm.mu.Unlock()
+			cm.wsClient.connMu.Lock()
+			cm.wsClient.Conn = nil
+			cm.wsClient.hubVerified = false
+			if tc.event == WebSocketConnect {
+				cm.wsClient.Conn = &gws.Conn{}
+				cm.wsClient.hubVerified = true
+			}
+			cm.wsClient.connMu.Unlock()
+			cm.State = tc.initialState
 			cm.handleEvent(tc.event)
-			assert.Equal(t, tc.expectedState, cm.State(), "State should match expected after event")
+			assert.Equal(t, tc.expectedState, cm.State, "State should match expected after event")
 		})
 	}
 }
@@ -189,7 +229,7 @@ func TestConnectionManager_WebSocketConnectionFlow(t *testing.T) {
 	// Test WebSocket connection without proper environment
 	err := cm.startWebSocketConnection()
 	assert.Error(t, err, "WebSocket connection should fail without proper environment")
-	assert.Equal(t, Disconnected, cm.State(), "State should remain Disconnected after failed connection")
+	assert.Equal(t, Disconnected, cm.State, "State should remain Disconnected after failed connection")
 
 	// Test with invalid URL
 	t.Setenv("BESZEL_AGENT_HUB_URL", "1,33%")
@@ -208,19 +248,84 @@ func TestConnectionManager_WebSocketConnectionFlow(t *testing.T) {
 
 // TestConnectionManager_ReconnectionLogic tests reconnection prevention logic
 func TestConnectionManager_ReconnectionLogic(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
 	agent := createTestAgent(t)
 	cm := agent.connectionManager
 	cm.eventChan = make(chan ConnectionEvent, 1)
 
-	// Test that isConnecting flag prevents duplicate reconnection attempts
-	// Start from connected state, then simulate disconnect
-	cm.setState(WebSocketConnected)
-	cm.isConnecting.Store(false)
+	synctest.Test(t, func(t *testing.T) {
+		// An in-flight attempt must remain owned by its existing goroutine.
+		cm.State = WebSocketConnected
+		cm.setConnecting(true)
+		cm.handleStateChange(Disconnected)
+		defer cm.stopWsTicker()
+		synctest.Wait()
 
-	// First disconnect should trigger reconnection logic
-	cm.handleStateChange(Disconnected)
-	assert.Equal(t, Disconnected, cm.State(), "Should change to disconnected")
-	assert.True(t, cm.isConnecting.Load(), "Should set isConnecting flag")
+		assert.Equal(t, Disconnected, cm.getState(), "Should change to disconnected")
+		assert.True(t, cm.isConnectingNow(), "Must not start another attempt that clears the in-flight flag")
+	})
+}
+
+func TestWebSocketDisconnectStartsSSH(t *testing.T) {
+	t.Setenv("BESZEL_AGENT_DISABLE_SSH", "false")
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.serverOptions = createTestServerOptions(t)
+	cm.State = WebSocketConnected
+	cm.setConnecting(true) // keep this test focused on the synchronous fallback
+	defer cm.stopWsTicker()
+
+	cm.handleEvent(WebSocketDisconnect)
+	require.Equal(t, Disconnected, cm.getState())
+	agent.serverMu.Lock()
+	listener := agent.serverListener
+	agent.serverMu.Unlock()
+	require.NotNil(t, listener, "SSH should be ready as soon as an established WS closes")
+	require.NoError(t, agent.StopServer())
+}
+
+// TestConnectionManager_TickerSurvivesStaleDisconnect reproduces the freeze from
+// https://github.com/henrygd/beszel/issues/2326: a reconnect attempt's handshake
+// can fail asynchronously (after connect() already returned with a nil error)
+// while the manager is still in the Disconnected state. Previously the ticker
+// was only re-armed from connect()'s synchronous error branch, so once that
+// window was missed, the agent stopped retrying forever. The ticker must keep
+// running any time the manager transitions into Disconnected, regardless of
+// what happens to the in-flight handshake afterwards.
+func TestConnectionManager_TickerSurvivesStaleDisconnect(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	cm.eventChan = make(chan ConnectionEvent, 1)
+
+	// Run on synctest's fake clock so the ticker fires without waiting a real
+	// wsTickerInterval. The ticker must be created inside the bubble.
+	synctest.Test(t, func(t *testing.T) {
+		// Simulate a healthy WebSocket connection, then a disconnect - mirroring
+		// handleStateChange's own Disconnected branch, but without launching the
+		// real async connect() goroutine so the ticker state can be asserted
+		// deterministically.
+		cm.State = WebSocketConnected
+		cm.stopWsTicker()
+		cm.setConnecting(true)
+		cm.handleStateChange(Disconnected)
+		require.NotNil(t, cm.wsTicker, "ticker must be armed as soon as the manager becomes Disconnected")
+		defer cm.stopWsTicker()
+
+		// Now simulate connect()'s in-flight handshake dying asynchronously with the
+		// manager still Disconnected (e.g. a late OnClose on an unauthenticated
+		// connection). This event is dropped by handleEvent since State is not
+		// WebSocketConnected, but the ticker armed above must still be running so
+		// the manager keeps retrying.
+		cm.setConnecting(false)
+		cm.handleEvent(WebSocketDisconnect)
+		assert.Equal(t, Disconnected, cm.State)
+
+		select {
+		case <-cm.wsTicker.C:
+		case <-time.After(wsTickerInterval + 2*time.Second):
+			t.Fatal("ticker did not fire after a stale disconnect event - agent would freeze forever")
+		}
+	})
 }
 
 // TestConnectionManager_ConnectWithRateLimit tests connection rate limiting
@@ -253,6 +358,64 @@ func TestConnectionManager_ConnectWithRateLimit(t *testing.T) {
 	assert.NotContains(t, err.Error(), "already connecting", "Error should not indicate rate limiting")
 }
 
+func TestConnectionManager_PreservesPendingWebSocket(t *testing.T) {
+	for _, verified := range []bool{false, true} {
+		t.Run(fmt.Sprintf("verified=%v", verified), func(t *testing.T) {
+			upgrader := gws.NewUpgrader(&gws.BuiltinEventHandler{}, nil)
+			hub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				conn, err := upgrader.Upgrade(w, r)
+				if err == nil {
+					go conn.ReadLoop()
+				}
+			}))
+			defer hub.Close()
+
+			cm := newConnectionManager(&Agent{})
+			cm.ctx = t.Context()
+			cm.eventChan = make(chan ConnectionEvent, 1)
+			cm.agent.connectionManager = cm
+			client := &WebSocketClient{agent: cm.agent, hubURL: &url.URL{Host: "test-hub"}, options: &gws.ClientOption{
+				Addr: "ws" + strings.TrimPrefix(hub.URL, "http"),
+			}}
+			cm.wsClient = client
+			defer client.Close()
+			require.NoError(t, cm.startWebSocketConnection())
+			original := client.getConn()
+			require.NotNil(t, original)
+
+			// Reproduce a slow successful dial with the retry ticker ready before auth is processed.
+			client.lastConnectAttempt = time.Now().Add(-11 * time.Second)
+			if verified {
+				client.connMu.Lock()
+				client.hubVerified = true
+				client.connMu.Unlock()
+				cm.sendEvent(WebSocketConnect)
+			}
+			require.NoError(t, cm.startWebSocketConnection())
+			require.Same(t, original, client.getConn(), "retry must preserve the pending socket")
+
+			if verified {
+				cm.handleEvent(<-cm.eventChan)
+				require.Equal(t, WebSocketConnected, cm.getState())
+				return
+			}
+
+			// Authentication failure must still allow another attempt once OnClose clears the socket.
+			require.NoError(t, original.NetConn().Close())
+			select {
+			case event := <-cm.eventChan:
+				require.Equal(t, WebSocketDisconnect, event)
+			case <-time.After(time.Second):
+				t.Fatal("connection close did not notify the manager")
+			}
+			require.Nil(t, client.getConn())
+			require.NoError(t, cm.startWebSocketConnection())
+			require.NotNil(t, client.getConn())
+			require.NotSame(t, original, client.getConn())
+		})
+	}
+}
+
 // TestConnectionManager_StartWithInvalidConfig tests starting with invalid configuration
 func TestConnectionManager_StartWithInvalidConfig(t *testing.T) {
 	agent := createTestAgent(t)
@@ -261,8 +424,21 @@ func TestConnectionManager_StartWithInvalidConfig(t *testing.T) {
 
 	// Test starting when already started
 	cm.eventChan = make(chan ConnectionEvent, 5)
-	err := cm.Start(serverOptions)
+	err := cm.Start(t.Context(), serverOptions)
 	assert.Error(t, err, "Should error when starting already started connection manager")
+}
+
+func TestConnectionManager_StartRejectsInvalidCACertFile(t *testing.T) {
+	agent := createTestAgent(t)
+	cm := agent.connectionManager
+	t.Setenv("BESZEL_AGENT_HUB_URL", "https://hub.example.com")
+	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
+	t.Setenv("BESZEL_AGENT_CA_CERT_FILE", t.TempDir())
+
+	err := cm.Start(t.Context(), ServerOptions{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "read CA_CERT_FILE")
+	assert.Nil(t, cm.eventChan)
 }
 
 // TestConnectionManager_CloseWebSocket tests WebSocket closing

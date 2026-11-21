@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/hub/expirymap"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
 )

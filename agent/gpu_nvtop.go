@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -14,12 +15,15 @@ import (
 )
 
 type nvtopSnapshot struct {
-	DeviceName string  `json:"device_name"`
-	Temp       *string `json:"temp"`
-	PowerDraw  *string `json:"power_draw"`
-	GpuUtil    *string `json:"gpu_util"`
-	MemTotal   *string `json:"mem_total"`
-	MemUsed    *string `json:"mem_used"`
+	DeviceName   string  `json:"device_name"`
+	Temp         *string `json:"temp"`
+	PowerDraw    *string `json:"power_draw"`
+	GpuUtil      *string `json:"gpu_util"`
+	EncodeDecode *string `json:"encode_decode"` // devices with a shared media engine
+	Encode       *string `json:"encode"`        // devices with separate encoder and decoder
+	Decode       *string `json:"decode"`
+	MemTotal     *string `json:"mem_total"`
+	MemUsed      *string `json:"mem_used"`
 }
 
 // parseNvtopNumber parses nvtop numeric strings with units (C/W/%).
@@ -48,9 +52,14 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 
 	valid := false
 	usedIDs := make(map[string]struct{}, len(snapshots))
+	var xeName string
 	for i, sample := range snapshots {
+		// nvtop leaves device_name unset on xe devices.
 		if sample.DeviceName == "" {
-			continue
+			if xeName == "" {
+				xeName = xeGpuName()
+			}
+			sample.DeviceName = xeName
 		}
 		indexID := "n" + strconv.Itoa(i)
 		id := indexID
@@ -89,6 +98,9 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 		if sample.GpuUtil != nil {
 			gpu.Usage += parseNvtopNumber(*sample.GpuUtil)
 		}
+		addNvtopEngine(gpu, "ENC/DEC", sample.EncodeDecode)
+		addNvtopEngine(gpu, "ENC", sample.Encode)
+		addNvtopEngine(gpu, "DEC", sample.Decode)
 		if sample.PowerDraw != nil {
 			gpu.Power += parseNvtopNumber(*sample.PowerDraw)
 		}
@@ -97,6 +109,17 @@ func (gm *GPUManager) updateNvtopSnapshots(snapshots []nvtopSnapshot) bool {
 		valid = true
 	}
 	return valid
+}
+
+// addNvtopEngine accumulates a media engine reading if nvtop reported one.
+func addNvtopEngine(gpu *system.GPUData, name string, value *string) {
+	if value == nil {
+		return
+	}
+	if gpu.Engines == nil {
+		gpu.Engines = make(map[string]float64)
+	}
+	gpu.Engines[name] += parseNvtopNumber(*value)
 }
 
 // collectNvtopStats runs nvtop loop mode and continuously decodes JSON snapshots.
@@ -157,4 +180,39 @@ func (gm *GPUManager) startNvtopCollector(interval string, onFailure func()) {
 			}
 		}
 	}()
+}
+
+// xeDevicePath returns the sysfs device path of the first xe GPU, or "".
+func xeDevicePath() string {
+	cards, err := filepath.Glob("/sys/class/drm/card*")
+	if err != nil {
+		return ""
+	}
+	for _, card := range cards {
+		if strings.Contains(filepath.Base(card), "-") {
+			continue
+		}
+		if uevent, err := utils.ReadStringFileLimited(filepath.Join(card, "device", "uevent"), 4096); err == nil && strings.Contains(uevent, "DRIVER=xe") {
+			return filepath.Join(card, "device")
+		}
+	}
+	return ""
+}
+
+func (gm *GPUManager) hasXe() bool {
+	return xeDevicePath() != ""
+}
+
+// xeGpuName names an xe GPU from its PCI device id; nvtop leaves device_name unset on xe.
+func xeGpuName() string {
+	devicePath := xeDevicePath()
+	if devicePath == "" {
+		return "GPU"
+	}
+	id, err := utils.ReadStringFileLimited(filepath.Join(devicePath, "device"), 64)
+	if err != nil {
+		return "GPU"
+	}
+	id = strings.ToLower(strings.TrimSpace(strings.TrimPrefix(id, "0x")))
+	return "Intel GPU (" + id + ")"
 }

@@ -2,27 +2,34 @@ package hub
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log/slog"
+	"net"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
+	"uuid"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/apis"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
 	"github.com/blang/semver"
-	"github.com/google/uuid"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
+	"github.com/henrygd/beszel/internal/hub/mcp"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/hub/utils"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 // UpdateInfo holds information about the latest update check
@@ -67,6 +74,11 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 		}
 		isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
 		e.Auth, err = e.App.FindAuthRecordByEmail("users", email)
+		// log on the auth refresh only: the login page sends one per attempt,
+		// while this middleware runs on every request
+		if isAuthRefresh && errors.Is(err, sql.ErrNoRows) {
+			slog.Warn("No user matches the automatic login email, showing the login form", "email", email)
+		}
 		if err != nil || !isAuthRefresh {
 			return e.Next()
 		}
@@ -83,10 +95,82 @@ func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
 	}
 	// authenticate with trusted header
 	if trustedHeader, _ := utils.GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
+		// only honor the header from these peers, if set
+		trustedProxies, restricted := parseTrustedProxies()
+		if !restricted {
+			slog.Warn("TRUSTED_AUTH_HEADER is set without TRUSTED_PROXY_IPS: the header is trusted from any client that can reach the hub", "header", trustedHeader)
+		}
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
+			if restricted && !isTrustedProxy(trustedProxies, e.Request.RemoteAddr) {
+				return e.Next()
+			}
 			return authorizeRequestWithEmail(e, e.Request.Header.Get(trustedHeader))
 		})
 	}
+}
+
+// parseTrustedProxies reads TRUSTED_PROXY_IPS (comma-separated IPs or CIDRs).
+// restricted is false when the variable is unset or empty, meaning the trusted
+// header is accepted from any peer. Invalid entries are skipped with a warning,
+// so a typo narrows the allowlist rather than widening it.
+func parseTrustedProxies() (prefixes []netip.Prefix, restricted bool) {
+	value, _ := utils.GetEnv("TRUSTED_PROXY_IPS")
+	if value == "" {
+		return nil, false
+	}
+	for entry := range strings.SplitSeq(value, ",") {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			continue
+		}
+		if prefix, err := parseProxyPrefix(entry); err == nil {
+			prefixes = append(prefixes, prefix)
+		} else {
+			slog.Warn("Ignoring invalid TRUSTED_PROXY_IPS entry", "entry", entry)
+		}
+	}
+	return prefixes, true
+}
+
+// parseProxyPrefix parses an IP or CIDR into a masked prefix. IPv4-mapped IPv6
+// entries are converted to IPv4 so they match IPv4 peers.
+func parseProxyPrefix(entry string) (netip.Prefix, error) {
+	prefix, err := netip.ParsePrefix(entry)
+	if err != nil {
+		addr, err := netip.ParseAddr(entry)
+		if err != nil {
+			return netip.Prefix{}, err
+		}
+		addr = addr.Unmap()
+		return netip.PrefixFrom(addr, addr.BitLen()), nil
+	}
+	if prefix.Addr().Is4In6() {
+		if prefix.Bits() < 96 {
+			return netip.Prefix{}, fmt.Errorf("%s covers more than the IPv4-mapped range", entry)
+		}
+		prefix = netip.PrefixFrom(prefix.Addr().Unmap(), prefix.Bits()-96)
+	}
+	return prefix.Masked(), nil
+}
+
+// isTrustedProxy reports whether the peer address of a request (host:port) is
+// within one of the prefixes.
+func isTrustedProxy(prefixes []netip.Prefix, remoteAddr string) bool {
+	host, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		host = remoteAddr
+	}
+	addr, err := netip.ParseAddr(host)
+	if err != nil {
+		return false
+	}
+	addr = addr.Unmap().WithZone("")
+	for _, prefix := range prefixes {
+		if prefix.Contains(addr) {
+			return true
+		}
+	}
+	return false
 }
 
 // registerApiRoutes registers custom API routes
@@ -125,15 +209,25 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// handle agent websocket connection
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	apiNoAuth.POST("/recovery/ping", h.handleRecoveryPing)
-	// get or create universal tokens
-	apiAuth.GET("/universal-token", h.getUniversalToken).BindFunc(excludeReadOnlyRole)
+	// get, create, or delete universal tokens (POST keeps tokens out of URLs; GET is kept for legacy clients)
+	apiAuth.GET("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
+	apiAuth.POST("/universal-token", h.handleUniversalToken).BindFunc(excludeReadOnlyRole)
+	// create static API keys for the current user, or revoke all of them
+	apiAuth.POST("/api-keys", createApiKey).BindFunc(requireSessionToken)
+	apiAuth.POST("/api-keys/revoke", revokeApiKeys).BindFunc(requireSessionToken)
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
+	// refresh ZFS pool details for a system
+	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
+	// get recent logs for a systemd service
+	apiAuth.GET("/systemd/logs", h.getSystemdLogs)
+	// get pending package updates
+	apiAuth.GET("/package-updates", h.getPackageUpdates)
 	// /containers routes
 	if enabled, _ := utils.GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -152,6 +246,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/recovery/module/conflict", h.getRecoveryModuleConflict)
 	apiAuth.POST("/recovery/module/conflict", h.resolveRecoveryModuleConflict)
 	apiAuth.GET("/recovery/stats", h.getRecoveryStats)
+	// model context protocol (MCP) server for AI agents, enabled with MCP=true
+	if err := mcp.RegisterRoutes(h, se); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -162,8 +260,11 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 		Version     string `json:"v"`
 		CheckUpdate bool   `json:"cu"`
 	}
+	h.sshKeyMu.Lock()
+	pubKey := h.pubKey
+	h.sshKeyMu.Unlock()
 	info := infoResponse{
-		Key:     h.pubKey,
+		Key:     pubKey,
 		Version: beszel.Version,
 	}
 	if optIn, _ := utils.GetEnv("CHECK_UPDATES"); optIn == "true" {
@@ -197,18 +298,41 @@ func (info *UpdateInfo) getUpdate(e *core.RequestEvent) error {
 	return e.JSON(http.StatusOK, info)
 }
 
-// GetUniversalToken handles the universal token API endpoint (create, read, delete)
-func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
+// universalTokenRequest holds the options for the universal token endpoint.
+// Enable and Permanent use 0 for false, 1 for true, and -1 for unset.
+type universalTokenRequest struct {
+	Token     string `json:"token"`
+	Enable    int    `json:"enable"`
+	Permanent int    `json:"permanent"`
+}
+
+// handleUniversalToken handles the universal token API endpoint (create, read, delete)
+func (h *Hub) handleUniversalToken(e *core.RequestEvent) error {
+	e.Response.Header().Set("Cache-Control", "no-store")
 	if e.Auth.IsSuperuser() {
 		return e.ForbiddenError("Superusers cannot use universal tokens", nil)
 	}
 
+	req := universalTokenRequest{Enable: -1, Permanent: -1}
+	if e.Request.Method == http.MethodPost {
+		if err := e.BindBody(&req); err != nil {
+			return e.BadRequestError("Invalid universal token request", err)
+		}
+	} else {
+		// legacy GET requests pass options as query params
+		query := e.Request.URL.Query()
+		req.Token = query.Get("token")
+		if v, err := strconv.Atoi(query.Get("enable")); err == nil {
+			req.Enable = v
+		}
+		if v, err := strconv.Atoi(query.Get("permanent")); err == nil {
+			req.Permanent = v
+		}
+	}
+
 	tokenMap := universalTokenMap.GetMap()
 	userID := e.Auth.Id
-	query := e.Request.URL.Query()
-	token := query.Get("token")
-	enable := query.Get("enable")
-	permanent := query.Get("permanent")
+	token := req.Token
 
 	// helper for deleting any existing permanent token record for this user
 	deletePermanent := func() error {
@@ -238,19 +362,19 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	}
 
 	// Disable universal tokens (both ephemeral and permanent)
-	if enable == "0" {
+	if req.Enable == 0 {
 		tokenMap.RemovebyValue(userID)
 		_ = deletePermanent()
 		return e.JSON(http.StatusOK, map[string]any{"token": token, "active": false, "permanent": false})
 	}
 
 	// Enable universal token (ephemeral or permanent)
-	if enable == "1" {
+	if req.Enable == 1 {
 		if token == "" {
 			token = uuid.New().String()
 		}
 
-		if permanent == "1" {
+		if req.Permanent == 1 {
 			// make token permanent (persist across restarts)
 			tokenMap.RemovebyValue(userID)
 			if err := upsertPermanent(token); err != nil {
@@ -437,8 +561,70 @@ func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
 	if err != nil {
 		return e.InternalServerError("", err)
 	}
-	e.Response.Header().Set("Cache-Control", "public, max-age=60")
+	e.Response.Header().Set("Cache-Control", "private, max-age=60")
+	e.Response.Header().Add("Vary", "Authorization")
 	return e.JSON(http.StatusOK, map[string]any{"details": details})
+}
+
+// getSystemdLogs handles GET /api/beszel/systemd/logs requests.
+func (h *Hub) getSystemdLogs(e *core.RequestEvent) error {
+	query := e.Request.URL.Query()
+	systemID := query.Get("system")
+	serviceName := query.Get("service")
+
+	if systemID == "" || serviceName == "" {
+		return e.BadRequestError("Invalid system or service parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	// Only fetch logs for services that are currently monitored on this system.
+	_, err = e.App.FindFirstRecordByFilter("systemd_services", "system = {:system} && name = {:name}", dbx.Params{
+		"system": systemID,
+		"name":   serviceName,
+	})
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+	// Old agents and agents without journal access do not advertise this capability.
+	systemRecord, err := e.App.FindRecordById("systems", systemID)
+	if err != nil {
+		return e.NotFoundError("", err)
+	}
+	var info struct {
+		SystemdLogs bool `json:"jl"`
+	}
+	if err := systemRecord.UnmarshalJSONField("info", &info); err != nil {
+		e.App.Logger().Error("failed to unmarshal system info for systemd logs", "system", systemID, "err", err)
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+	}
+	if !info.SystemdLogs {
+		return e.JSON(http.StatusOK, map[string]string{"logs": ""})
+	}
+
+	logs, err := system.FetchSystemdLogsFromAgent(serviceName)
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, map[string]string{"logs": logs})
+}
+
+// getPackageUpdates handles GET /api/beszel/package-updates requests
+func (h *Hub) getPackageUpdates(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	updates, err := system.FetchPackageUpdatesFromAgent()
+	if err != nil {
+		return e.InternalServerError("", err)
+	}
+	return e.JSON(http.StatusOK, updates)
 }
 
 // refreshSmartData handles POST /api/beszel/smart/refresh requests
@@ -1210,3 +1396,22 @@ func (h *Hub) triggerManualForceRestart(e *core.RequestEvent) error {
 	return h.triggerRelayAction(e, 8000, "RELAY_FORCE_RESTART_SENT")
 }
 
+// refreshZfsData handles POST /api/beszel/zfs/refresh requests
+// Fetches fresh ZFS detail data from the agent and updates the collection
+func (h *Hub) refreshZfsData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.BadRequestError("Invalid system parameter", nil)
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+
+	if err := system.FetchAndSaveZfsPools(true); err != nil {
+		return e.InternalServerError("", err)
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
+}

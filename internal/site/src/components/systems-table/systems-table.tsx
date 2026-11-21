@@ -1,5 +1,7 @@
+import { useLingui as useLinguiContext } from "@lingui/react"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
+import { subscribeKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
 import {
 	type ColumnDef,
@@ -7,6 +9,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
 	type SortingState,
@@ -14,7 +17,6 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 import {
 	ArrowDownIcon,
 	ArrowUpDownIcon,
@@ -24,10 +26,11 @@ import {
 	FilterIcon,
 	LayoutGridIcon,
 	LayoutListIcon,
+	LoaderCircleIcon,
 	Settings2Icon,
 	XIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -40,17 +43,20 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
-import { cn, getServerWebUrl, runOnce, useBrowserStorage } from "@/lib/utils"
+import { queueUserSettings } from "@/lib/api"
+import { $allSystemsById, $downSystems, $pausedSystems, $systems, $systemsLoaded, $upSystems, $userSettings } from "@/lib/stores"
+import { cn, getServerWebUrl, runOnce } from "@/lib/utils"
 import type { SystemInfo, SystemRecord } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { ActionsButton } from "../system-actions-button"
+import { SystemsTableColumns, IndicatorDot } from "./systems-table-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -59,19 +65,98 @@ const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	const systemsLoaded = useStore($systemsLoaded)
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
-	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		"sortMode",
-		[{ id: "system", desc: false }],
-		sessionStorage
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+		() =>
+			$userSettings.get().statusFilter ??
+			(JSON.parse(localStorage.getItem("besz-statusFilter") || "null") as StatusFilter | null) ??
+			"all"
+	)
+	const [sorting, setSorting] = useState<SortingState>(
+		() =>
+			$userSettings.get().sortMode ??
+			JSON.parse(sessionStorage.getItem("besz-sortMode") || "null") ?? [{ id: "system", desc: false }]
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
+	)
+
+	// Apply settings from server once they load (handles incognito / new devices)
+	const applied = useRef(new Set<string>())
+	useEffect(() => {
+		return subscribeKeys($userSettings, ["cols", "statusFilter", "viewMode", "sortMode"], (vals) => {
+			if (!applied.current.has("cols") && vals.cols !== undefined) {
+				applied.current.add("cols")
+				setColumnVisibility(vals.cols)
+			}
+			if (!applied.current.has("statusFilter") && vals.statusFilter !== undefined) {
+				applied.current.add("statusFilter")
+				setStatusFilter(vals.statusFilter)
+			}
+			if (!applied.current.has("viewMode") && vals.viewMode !== undefined) {
+				applied.current.add("viewMode")
+				setViewMode(vals.viewMode)
+			}
+			if (!applied.current.has("sortMode") && vals.sortMode !== undefined) {
+				applied.current.add("sortMode")
+				setSorting(vals.sortMode)
+			}
+		})
+	}, [])
+
+	const handleColumnVisibilityChange = useCallback(
+		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
+			setColumnVisibility((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				localStorage.setItem("besz-cols", JSON.stringify(next))
+				$userSettings.setKey("cols", next)
+				queueUserSettings({ cols: next })
+				return next
+			})
+		},
+		[]
+	)
+
+	const handleStatusFilterChange = useCallback(
+		(value: string) => {
+			const next = value as StatusFilter
+			setStatusFilter(next)
+			resetPageIndex()
+			localStorage.setItem("besz-statusFilter", JSON.stringify(next))
+			$userSettings.setKey("statusFilter", next)
+			queueUserSettings({ statusFilter: next })
+		},
+		[resetPageIndex]
+	)
+
+	const handleViewModeChange = useCallback((view: string) => {
+		const next = view as ViewMode
+		setViewMode(next)
+		localStorage.setItem("besz-viewMode", JSON.stringify(next))
+		$userSettings.setKey("viewMode", next)
+		queueUserSettings({ viewMode: next })
+	}, [])
+
+	const handleSortingChange = useCallback(
+		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
+			setSorting((prev) => {
+				const next = typeof updater === "function" ? updater(prev) : updater
+				sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
+				$userSettings.setKey("sortMode", next)
+				queueUserSettings({ sortMode: next })
+				return next
+			})
+			resetPageIndex()
+		},
+		[resetPageIndex]
+	)
 
 	const locale = i18n.locale
 
@@ -168,15 +253,18 @@ export default function SystemsTable() {
 		return Object.values(pausedSystems) ?? []
 	}, [data, statusFilter])
 
-	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
-		"viewMode",
-		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
-		window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table"
+	const [viewMode, setViewMode] = useState<ViewMode>(
+		() =>
+			$userSettings.get().viewMode ??
+			(JSON.parse(localStorage.getItem("besz-viewMode") || "null") as ViewMode | null) ??
+			// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
+			(window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table")
 	)
 
 	useEffect(() => {
 		if (filter !== undefined) {
 			table.getColumn("system")?.setFilterValue(filter)
+			resetPageIndex()
 		}
 	}, [filter])
 
@@ -186,15 +274,19 @@ export default function SystemsTable() {
 		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
-		onSortingChange: setSorting,
+		onSortingChange: handleSortingChange,
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
-		onColumnVisibilityChange: setColumnVisibility,
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
+		onColumnVisibilityChange: handleColumnVisibilityChange,
 		state: {
 			sorting,
 			columnFilters,
 			columnVisibility,
+			pagination,
 		},
 		defaultColumn: {
 			invertSorting: true,
@@ -249,9 +341,8 @@ export default function SystemsTable() {
 						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button variant="outline">
-									<Settings2Icon className="me-1.5 size-4 opacity-80" />
-									<Trans>View</Trans>
+								<Button aria-label={t`View`} variant="outline" size="icon">
+									<Settings2Icon className="size-4 opacity-80" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
@@ -262,11 +353,7 @@ export default function SystemsTable() {
 											<Trans>Layout</Trans>
 										</DropdownMenuLabel>
 										<DropdownMenuSeparator />
-										<DropdownMenuRadioGroup
-											className="px-1 pb-1"
-											value={viewMode}
-											onValueChange={(view) => setViewMode(view as ViewMode)}
-										>
+										<DropdownMenuRadioGroup className="px-1 pb-1" value={viewMode} onValueChange={handleViewModeChange}>
 											<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutListIcon className="size-4" />
 												<Trans>Table</Trans>
@@ -287,7 +374,7 @@ export default function SystemsTable() {
 										<DropdownMenuRadioGroup
 											className="px-1 pb-1"
 											value={statusFilter}
-											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+											onValueChange={handleStatusFilterChange}
 										>
 											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()}>
 												<Trans>All Systems</Trans>
@@ -326,7 +413,9 @@ export default function SystemsTable() {
 													<DropdownMenuItem
 														onSelect={(e) => {
 															e.preventDefault()
-															setSorting([{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc }])
+															handleSortingChange([
+																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
+															])
 														}}
 														key={column.id}
 													>
@@ -388,7 +477,7 @@ export default function SystemsTable() {
 			{viewMode === "table" ? (
 				// table layout
 				<div className="rounded-md">
-					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+					<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} isLoading={!systemsLoaded} />
 				</div>
 			) : (
 				// grid layout
@@ -399,75 +488,61 @@ export default function SystemsTable() {
 						})
 					) : (
 						<div className="col-span-full text-center py-8">
-							<Trans>No systems found.</Trans>
+							{systemsLoaded ? (
+								<Trans>No systems found.</Trans>
+							) : (
+								<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+							)}
 						</div>
 					)}
 				</div>
 			)}
+			<DataTablePagination table={table} showSelected={false} />
 		</Card>
 	)
 }
 
 const AllSystemsTable = memo(
-	({ table, rows, colLength }: { table: TableType<SystemRecord>; rows: Row<SystemRecord>[]; colLength: number }) => {
-		// The virtualizer will need a reference to the scrollable container element
-		const scrollRef = useRef<HTMLDivElement>(null)
-
-		const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-			count: rows.length,
-			estimateSize: () => (rows.length > 10 ? 56 : 60),
-			getScrollElement: () => scrollRef.current,
-			overscan: 5,
-		})
-		const virtualRows = virtualizer.getVirtualItems()
-
-		const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-		const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
+	({
+		table,
+		rows,
+		colLength,
+		isLoading,
+	}: {
+		table: TableType<SystemRecord>
+		rows: Row<SystemRecord>[]
+		colLength: number
+		isLoading: boolean
+	}) => {
+		// based on all filtered rows rather than the current page, so every page uses the same height
+		const rowHeight = table.getPrePaginationRowModel().rows.length > 10 ? 56 : 60
 		return (
-			<div
-				className={cn(
-					"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-					// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-					(!rows.length || rows.length > 2) && "min-h-50"
-				)}
-				ref={scrollRef}
-			>
-				{/* add header height to table size */}
-				<div style={{ height: `${virtualizer.getTotalSize() + 50}px`, paddingTop, paddingBottom }}>
-					<table className="text-sm w-full h-full">
-						<SystemsTableHead table={table} />
-						<TableBody onMouseEnter={preloadSystemDetail}>
-							{rows.length ? (
-								virtualRows.map((virtualRow) => {
-									const row = rows[virtualRow.index] as Row<SystemRecord>
-									return (
-										<SystemTableRow
-											key={row.id}
-											row={row}
-											virtualRow={virtualRow}
-											length={rows.length}
-											colLength={colLength}
-										/>
-									)
-								})
-							) : (
-								<TableRow>
-									<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+			<div className="max-w-full relative overflow-auto border rounded-md">
+				<table className="text-sm w-full h-full">
+					<SystemsTableHead table={table} />
+					<TableBody onMouseEnter={preloadSystemDetail}>
+						{rows.length ? (
+							rows.map((row) => <SystemTableRow key={row.id} row={row} rowHeight={rowHeight} colLength={colLength} />)
+						) : (
+							<TableRow>
+								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+									{isLoading ? (
+										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+									) : (
 										<Trans>No systems found.</Trans>
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</table>
-				</div>
+									)}
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</table>
 			</div>
 		)
 	}
 )
 
 function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
-	const { t } = useLingui()
+	useLinguiContext()
 	return (
 		<TableHeader className="sticky top-0 z-50 w-full border-b-2">
 			{table.getHeaderGroups().map((headerGroup) => (
@@ -486,16 +561,7 @@ function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
 }
 
 const SystemTableRow = memo(
-	({
-		row,
-		virtualRow,
-		colLength,
-	}: {
-		row: Row<SystemRecord>
-		virtualRow: VirtualItem
-		length: number
-		colLength: number
-	}) => {
+	({ row, rowHeight, colLength }: { row: Row<SystemRecord>; rowHeight: number; colLength: number }) => {
 		const system = row.original
 		const { t } = useLingui()
 		return useMemo(() => {
@@ -511,7 +577,7 @@ const SystemTableRow = memo(
 							key={cell.id}
 							style={{
 								width: cell.column.getSize(),
-								height: virtualRow.size,
+								height: rowHeight,
 							}}
 							className="py-0 ps-4.5"
 						>
@@ -520,7 +586,7 @@ const SystemTableRow = memo(
 					))}
 				</TableRow>
 			)
-		}, [system, system.status, colLength, t])
+		}, [system, system.status, colLength, rowHeight, t])
 	}
 )
 
@@ -576,7 +642,10 @@ const SystemCard = memo(
 						</div>
 					</CardHeader>
 					<CardContent className="text-sm px-5 pt-3.5 pb-4">
-						<div className="grid gap-2.5" style={{ gridTemplateColumns: "24px minmax(80px, max-content) 1fr" }}>
+						<div
+							className="grid gap-2.5"
+							style={{ gridTemplateColumns: "24px minmax(80px, max-content) minmax(0, 1fr)" }}
+						>
 							{table.getAllColumns().map((column) => {
 								if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
 								const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
@@ -595,7 +664,7 @@ const SystemCard = memo(
 										<div key={`${column.id}-label`} className="flex items-center text-muted-foreground pr-3">
 											{name()}:
 										</div>
-										<div key={`${column.id}-value`} className="flex items-center">
+										<div key={`${column.id}-value`} className="flex items-center min-w-0">
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
 										</div>
 									</>

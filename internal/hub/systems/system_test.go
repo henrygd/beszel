@@ -3,9 +3,15 @@
 package systems
 
 import (
+	"context"
+	"net"
 	"testing"
+	"time"
 
+	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/ssh"
 )
 
 func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
@@ -70,6 +76,63 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 		if cd.Stats.DiskReadPs != 0 || cd.Stats.DiskWritePs != 0 {
 			t.Errorf("expected DiskReadPs and DiskWritePs to be reset, got %f, %f", cd.Stats.DiskReadPs, cd.Stats.DiskWritePs)
 		}
+	})
+
+	t.Run("Migrate ExtraFs DiskReadPs and DiskWritePs to DiskReadBytes and DiskWriteBytes", func(t *testing.T) {
+		cd := &system.CombinedData{
+			Stats: system.Stats{
+				ExtraFs: map[string]*system.FsStats{
+					"old": {DiskReadPs: 1.5, DiskWritePs: 2.5},
+					"new": {DiskReadBytes: 100, DiskWriteBytes: 200},
+					"nil": nil,
+				},
+			},
+		}
+		migrateDeprecatedFields(cd, true)
+
+		old := cd.Stats.ExtraFs["old"]
+		if old.DiskReadBytes != uint64(1.5*1024*1024) || old.DiskWriteBytes != uint64(2.5*1024*1024) {
+			t.Errorf("expected migrated bytes, got %d, %d", old.DiskReadBytes, old.DiskWriteBytes)
+		}
+		if old.DiskReadPs != 0 || old.DiskWritePs != 0 {
+			t.Errorf("expected DiskReadPs and DiskWritePs to be reset, got %f, %f", old.DiskReadPs, old.DiskWritePs)
+		}
+		if newFs := cd.Stats.ExtraFs["new"]; newFs.DiskReadBytes != 100 || newFs.DiskWriteBytes != 200 {
+			t.Errorf("expected existing bytes to be kept, got %d, %d", newFs.DiskReadBytes, newFs.DiskWriteBytes)
+		}
+	})
+
+	t.Run("Migrate memory GB fields to bytes", func(t *testing.T) {
+		const gb = 1024 * 1024 * 1024
+		cd := &system.CombinedData{
+			Stats: system.Stats{Mem: 16, MemUsed: 4.5, MemBuffCache: 2, MemZfsArc: 1, Swap: 4, SwapUsed: 0.5},
+		}
+		migrateDeprecatedFields(cd, true)
+
+		require.Equal(t, [4]uint64{16 * gb, 4.5 * gb, 2 * gb, 1 * gb}, cd.Stats.MemBytes)
+		require.Equal(t, [2]uint64{4 * gb, 0.5 * gb}, cd.Stats.SwapBytes)
+		// GB fields are kept for third-party integrations
+		require.Equal(t, 16.0, cd.Stats.Mem)
+		require.Equal(t, 4.5, cd.Stats.MemUsed)
+		require.Equal(t, 0.5, cd.Stats.SwapUsed)
+	})
+
+	t.Run("Keep memory bytes and GB fields from newer agents", func(t *testing.T) {
+		cd := &system.CombinedData{
+			Stats: system.Stats{
+				Mem: 0.06, MemUsed: 0.01, Swap: 0.03, SwapUsed: 0.01,
+				MemBytes:  [4]uint64{64 << 20, 12 << 20, 3 << 20, 0},
+				SwapBytes: [2]uint64{32 << 20, 1 << 20},
+			},
+		}
+		migrateDeprecatedFields(cd, true)
+
+		require.Equal(t, [4]uint64{64 << 20, 12 << 20, 3 << 20, 0}, cd.Stats.MemBytes)
+		require.Equal(t, [2]uint64{32 << 20, 1 << 20}, cd.Stats.SwapBytes)
+		require.Equal(t, 0.06, cd.Stats.Mem)
+		require.Equal(t, 0.01, cd.Stats.MemUsed)
+		require.Equal(t, 0.03, cd.Stats.Swap)
+		require.Equal(t, 0.01, cd.Stats.SwapUsed)
 	})
 
 	t.Run("Migrate Info fields to Details struct", func(t *testing.T) {
@@ -156,4 +219,85 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 			t.Errorf("expected Info.Hostname to be reset, got '%s'", cd.Info.Hostname)
 		}
 	})
+}
+
+func TestSetDownAfterContextCancelled(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	// manager is nil on purpose: setDown must bail out before touching the app
+	sys := &System{Status: up, ctx: ctx}
+
+	if err := sys.setDown(nil); err != context.Canceled {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+	if sys.Status != up {
+		t.Fatalf("status should be untouched, got %q", sys.Status)
+	}
+}
+
+func TestSSHDisabledSkipsSSHFallback(t *testing.T) {
+	t.Setenv("DISABLE_SSH", "true")
+	// manager is nil on purpose: any SSH attempt would panic
+	sys := &System{}
+
+	var result string
+	err := sys.request(context.Background(), common.GetContainerInfo, nil, &result)
+	require.ErrorIs(t, err, errSSHDisabled)
+
+	_, err = sys.fetchDataFromAgent(common.DataRequestOptions{})
+	require.ErrorIs(t, err, errSSHDisabled)
+}
+
+func TestSSHFallbackDialsAgentUnlessDisabled(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		hubEnv   string
+		wantDial bool
+	}{
+		{name: "enabled", wantDial: true},
+		{name: "disabled on hub", hubEnv: "DISABLE_SSH"},
+		{name: "disabled on hub with prefix", hubEnv: "BESZEL_HUB_DISABLE_SSH"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.hubEnv != "" {
+				t.Setenv(tc.hubEnv, "true")
+			}
+			listener, err := net.Listen("tcp", "127.0.0.1:0")
+			require.NoError(t, err)
+			defer listener.Close()
+			accepted := make(chan struct{}, 1)
+			go func() {
+				if conn, err := listener.Accept(); err == nil {
+					accepted <- struct{}{}
+					conn.Close()
+				}
+			}()
+
+			host, port, _ := net.SplitHostPort(listener.Addr().String())
+			sm := &SystemManager{sshConfig: &ssh.ClientConfig{HostKeyCallback: ssh.InsecureIgnoreHostKey(), Timeout: time.Second}}
+			sys := &System{Host: host, Port: port, Status: down, manager: sm, ctx: context.Background()}
+
+			_, err = sys.fetchDataFromAgent(common.DataRequestOptions{})
+			require.Error(t, err) // listener isn't a real agent
+			if !tc.wantDial {
+				require.ErrorIs(t, err, errSSHDisabled)
+			}
+
+			select {
+			case <-accepted:
+				require.True(t, tc.wantDial, "hub must not dial SSH when it is disabled")
+			case <-time.After(200 * time.Millisecond):
+				require.False(t, tc.wantDial, "hub must dial SSH when it is enabled")
+			}
+		})
+	}
+}
+
+func TestCreateRecordsSavesCpuSockets(t *testing.T) {
+	sys, app := newTestSystemWithHub(t)
+	_, err := sys.createRecords(&system.CombinedData{Details: &system.Details{Hostname: "host", Sockets: 2}})
+	require.NoError(t, err)
+	record, err := app.FindRecordById("system_details", sys.Id)
+	require.NoError(t, err)
+	require.Equal(t, 2, record.GetInt("sockets"))
 }

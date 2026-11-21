@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/email"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
@@ -20,8 +21,8 @@ import (
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
 
-	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -34,10 +35,12 @@ type Hub struct {
 	sm     *systems.SystemManager
 	hb     *heartbeat.Heartbeat
 	hbStop chan struct{}
-	pubKey string
-	signer ssh.Signer
-	appURL string
-	hbMu   sync.RWMutex
+	// sshKeyMu guards pubKey and signer
+	sshKeyMu sync.Mutex
+	pubKey   string
+	signer   ssh.Signer
+	appURL   string
+	hbMu     sync.RWMutex
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -99,6 +102,10 @@ func (h *Hub) StartHub() error {
 		if err := h.sm.Initialize(); err != nil {
 			return err
 		}
+		// start agent-only server if configured (after system manager is ready)
+		if err := h.startAgentServer(e); err != nil {
+			return err
+		}
 		// start heartbeat if configured
 		h.hbMu.RLock()
 		if h.hb != nil {
@@ -110,8 +117,12 @@ func (h *Hub) StartHub() error {
 
 	// TODO: move to users package
 	// handle default values for user / user_settings creation
+	h.App.OnRecordAuthWithOAuth2Request("users").BindFunc(h.um.InitializeOAuthUserRole)
 	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
 	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
+
+	bindNetworkMonitorsEvents(h)
+	email.BindAuthEmails(h.App)
 
 	pb, ok := h.App.(*pocketbase.PocketBase)
 	if !ok {
@@ -126,6 +137,8 @@ func (h *Hub) initialize(app core.App) error {
 	settings := app.Settings()
 	// batch requests (for alerts)
 	settings.Batch.Enabled = true
+	settings.Batch.MaxRequests = 100
+	settings.Batch.MaxBodySize = 1 << 20 // 1 MiB
 	// set URL if APP_URL env is set
 	if appURL, isSet := utils.GetEnv("APP_URL"); isSet {
 		h.appURL = appURL
@@ -147,8 +160,12 @@ func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 	return nil
 }
 
-// GetSSHKey generates key pair if it doesn't exist and returns signer
+// GetSSHKey generates key pair if it doesn't exist and returns signer.
+// The signer is cached after the first success. A failed call caches nothing, so the next call tries again.
 func (h *Hub) GetSSHKey(dataDir string) (ssh.Signer, error) {
+	h.sshKeyMu.Lock()
+	defer h.sshKeyMu.Unlock()
+
 	if h.signer != nil {
 		return h.signer, nil
 	}
@@ -168,6 +185,7 @@ func (h *Hub) GetSSHKey(dataDir string) (ssh.Signer, error) {
 		}
 		pubKeyBytes := ssh.MarshalAuthorizedKey(private.PublicKey())
 		h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
+		h.signer = private
 		return private, nil
 	} else if !os.IsNotExist(err) {
 		// File exists but couldn't be read for some other reason
@@ -192,6 +210,7 @@ func (h *Hub) GetSSHKey(dataDir string) (ssh.Signer, error) {
 	sshPrivate, _ := ssh.NewSignerFromSigner(privKey)
 	pubKeyBytes := ssh.MarshalAuthorizedKey(sshPrivate.PublicKey())
 	h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
+	h.signer = sshPrivate
 
 	h.Logger().Info("ed25519 key pair generated successfully.")
 	h.Logger().Info("Saved to: " + privateKeyPath)

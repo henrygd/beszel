@@ -1,0 +1,237 @@
+package hub
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/types"
+	"github.com/henrygd/beszel/internal/entities/monitor"
+	"github.com/henrygd/beszel/internal/hub/systems"
+)
+
+// generateMonitorID creates a stable hash ID for a monitor based on its configuration and the system it belongs to.
+func generateMonitorID(systemId string, config monitor.Config) string {
+	args := []string{systemId, config.Target, config.Protocol}
+	// only use port for TCP monitors, since for other protocols it's not relevant as standalone value
+	if config.Protocol == "tcp" {
+		args = append(args, strconv.FormatUint(uint64(config.Port), 10))
+	}
+	// only use server for DNS monitors, so the same target queried via different servers gets distinct monitors
+	if config.Protocol == "dns" {
+		args = append(args, config.Server)
+	}
+	// only add the IP version when set, so Auto monitors keep their existing IDs while
+	// IPv4 and IPv6 monitors for the same target get distinct ones
+	if config.IPVersion != monitor.IPVersionAuto {
+		args = append(args, strconv.FormatUint(uint64(config.IPVersion), 10))
+	}
+	// Meet the record ID minimum without changing existing IDs of six or more characters.
+	return fmt.Sprintf("%06s", systems.MakeStableHashId(args...))
+}
+
+// bindNetworkMonitorsEvents keeps monitor records and agent monitor state in sync.
+func bindNetworkMonitorsEvents(hub *Hub) {
+	// reject IP versions the agent can't apply, since it would otherwise fail every probe
+	hub.OnRecordValidate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
+		ipVersion := e.Record.GetInt("ipVersion")
+		if ipVersion < 0 || ipVersion > 255 || !monitor.ValidIPVersion(uint8(ipVersion)) {
+			return fmt.Errorf("invalid IP version: %d", ipVersion)
+		}
+		// the field pattern can't compare range bounds, and a reversed range would fail every probe
+		if err := validateStatusCodeRanges(e.Record.GetString("statusCodes")); err != nil {
+			return err
+		}
+		return e.Next()
+	})
+
+	// on create, make sure the id is set to a stable hash
+	hub.OnRecordCreate("network_monitors").BindFunc(func(e *core.RecordEvent) error {
+		systemID := e.Record.GetString("system")
+		config := monitorConfigFromRecord(e.Record)
+		id := generateMonitorID(systemID, *config)
+		e.Record.Set("id", id)
+		return e.Next()
+	})
+
+	// sync monitor to agent on creation and persist the first result immediately when available
+	hub.OnRecordAfterCreateSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
+		err := e.Next()
+		if err != nil {
+			return err
+		}
+		if !e.Record.GetBool("enabled") {
+			return nil
+		}
+		// If connected, run the monitor immediately. Paused systems may be absent
+		// from the manager; their monitors will sync when they reconnect.
+		system, err := hub.sm.GetSystem(e.Record.GetString("system"))
+		if err == nil && system.GetStatus() == "up" {
+			go hub.upsertNetworkMonitor(e.Record, true)
+		}
+		return nil
+	})
+
+	// On API update requests, if the monitor config changed in a way that requires a new ID, create a new
+	// record with the new ID and delete the old one. Otherwise, just update the existing monitor on the agent.
+	hub.OnRecordUpdateRequest("network_monitors").BindFunc(func(e *core.RecordRequestEvent) error {
+		systemID := e.Record.GetString("system")
+		if systemID != e.Record.Original().GetString("system") {
+			requestInfo, err := e.RequestInfo()
+			if err != nil {
+				return err
+			}
+			targetSystem, err := e.App.FindRecordById("systems", systemID)
+			if err != nil {
+				return e.ForbiddenError("", nil)
+			}
+			canAccess, err := e.App.CanAccessRecord(targetSystem, requestInfo, targetSystem.Collection().UpdateRule)
+			if err != nil {
+				return err
+			}
+			if !canAccess {
+				return e.ForbiddenError("", nil)
+			}
+		}
+		protocol := e.Record.GetString("protocol")
+		// only tcp uses port - set other protocols port to zero
+		if protocol != "tcp" {
+			e.Record.Set("port", 0)
+		}
+		// only dns uses server - clear it for other protocols
+		if protocol != "dns" {
+			e.Record.Set("server", "")
+		}
+		// only http uses TLS verification and status codes - clear them for other protocols
+		if protocol != "http" {
+			e.Record.Set("skipTlsVerify", false)
+			e.Record.Set("statusCodes", "")
+		}
+		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
+		if ID != e.Record.Id {
+			newRecord := copyMonitorToNewRecord(e.Record, ID)
+			if err := e.App.Save(newRecord); err != nil {
+				return err
+			}
+			if err := e.App.Delete(e.Record); err != nil {
+				return err
+			}
+			return nil
+		}
+		err := e.Next()
+		if err != nil {
+			return err
+		}
+		if e.Record.GetBool("enabled") {
+			// if the monitor is enabled, sync the updated config to the agent now
+			runNow := !e.Record.Original().GetBool("enabled")
+			err = hub.upsertNetworkMonitor(e.Record, runNow)
+		} else {
+			// if the monitor is paused, remove it from the agent
+			err = hub.deleteNetworkMonitor(e.Record)
+		}
+		if err != nil {
+			hub.Logger().Warn("failed to sync updated monitor", "system", systemID, "monitor", e.Record.Id, "err", err)
+		}
+		return nil
+	})
+
+	// sync monitor to agent on delete
+	hub.OnRecordAfterDeleteSuccess("network_monitors").BindFunc(func(e *core.RecordEvent) error {
+		if err := hub.deleteNetworkMonitor(e.Record); err != nil {
+			hub.Logger().Warn("failed to delete monitor on agent", "system", e.Record.Original().GetString("system"), "monitor", e.Record.Id, "err", err)
+		}
+		return e.Next()
+	})
+}
+
+// validateStatusCodeRanges rejects ranges whose start is greater than their end, such as
+// "299-200". The format itself is enforced by the statusCodes field pattern.
+func validateStatusCodeRanges(spec string) error {
+	for entry := range strings.SplitSeq(spec, ",") {
+		low, high, isRange := strings.Cut(entry, "-")
+		if !isRange {
+			continue
+		}
+		first, err1 := strconv.Atoi(low)
+		last, err2 := strconv.Atoi(high)
+		if err1 == nil && err2 == nil && first > last {
+			return fmt.Errorf("invalid status code range: %s", entry)
+		}
+	}
+	return nil
+}
+
+// monitorConfigFromRecord builds a monitor config from a network_monitors record.
+func monitorConfigFromRecord(record *core.Record) *monitor.Config {
+	return &monitor.Config{
+		ID:       record.Id,
+		Target:   record.GetString("target"),
+		Protocol: record.GetString("protocol"),
+		Port:     uint16(record.GetInt("port")),
+		Interval: uint16(record.GetInt("interval")),
+		Server:   record.GetString("server"),
+		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
+		SkipTLSVerify: record.GetBool("skipTlsVerify"),
+		IPVersion:     uint8(record.GetInt("ipVersion")),
+		StatusCodes:   record.GetString("statusCodes"),
+	}
+}
+
+// setMonitorResultFields stores the latest monitor result values on the record.
+func setMonitorResultFields(record *core.Record, result monitor.Result) {
+	nowString := time.Now().UTC().Format(types.DefaultDateLayout)
+	record.Set("res", result.AvgResponse)
+	record.Set("resAvg1h", result.AvgResponse1h)
+	record.Set("resMin1h", result.MinResponse1h)
+	record.Set("resMax1h", result.MaxResponse1h)
+	record.Set("loss1h", result.PacketLoss1h)
+	if result.Cert != nil {
+		record.Set("certInfo", result.Cert)
+	}
+	record.Set("updated", nowString)
+}
+
+// copyMonitorToNewRecord creates a new record with the same field values as the old one.
+// This is used when the monitor config changes in a way that requires a new ID, so we need
+// to create a new record with the new ID and delete the old one.
+func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
+	collection := oldRecord.Collection()
+	newRecord := core.NewRecord(collection)
+	newRecord.Id = newID
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "ipVersion", "statusCodes"}
+	for _, field := range fields {
+		newRecord.Set(field, oldRecord.Get(field))
+	}
+	return newRecord
+}
+
+// upsertNetworkMonitor creates or updates the record's monitor on the target system. If runNow
+// is true, it will also trigger an immediate monitor run and update the record with the result.
+func (h *Hub) upsertNetworkMonitor(record *core.Record, runNow bool) error {
+	systemID := record.GetString("system")
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return err
+	}
+	result, err := system.UpsertNetworkMonitor(*monitorConfigFromRecord(record), runNow)
+	if err != nil || result == nil {
+		return err
+	}
+	setMonitorResultFields(record, *result)
+	return h.App.SaveNoValidate(record)
+}
+
+// deleteNetworkMonitor removes the record's monitor from the target system.
+func (h *Hub) deleteNetworkMonitor(record *core.Record) error {
+	// Use the persisted system: a pending request may have changed the record's system,
+	// but the agent that holds the monitor is the one it was last saved with.
+	systemID := record.Original().GetString("system")
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return err
+	}
+	return system.DeleteNetworkMonitor(record.Id)
+}

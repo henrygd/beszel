@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 import { KeyIcon, LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
-import type { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
+import type { AuthMethodsList, AuthProviderInfo, ClientResponseError, OAuth2AuthConfig } from "pocketbase"
 import { useCallback, useEffect, useState } from "react"
 import * as v from "valibot"
 import { buttonVariants } from "@/components/ui/button"
@@ -21,6 +21,7 @@ const emailSchema = v.pipe(v.string(), v.rfcEmail(t`Invalid email address.`))
 const passwordSchema = v.pipe(
 	v.string(),
 	v.minLength(8, t`Password must be at least 8 characters.`),
+	v.maxLength(71, t`Password must be at most 71 characters.`),
 	v.maxBytes(72, t`Password must be less than 72 bytes.`)
 )
 
@@ -37,7 +38,15 @@ const RegisterSchema = v.looseObject({
 	passwordConfirm: passwordSchema,
 })
 
-export const showLoginFaliedToast = (description = t`Please check your credentials and try again`) => {
+export const showLoginFaliedToast = (err?: unknown, description = t`Please check your credentials and try again`) => {
+	if ((err as ClientResponseError | undefined)?.status === 429) {
+		toast({
+			title: t`Too many login attempts`,
+			description: t`Please wait a moment and try again.`,
+			variant: "destructive",
+		})
+		return
+	}
 	toast({
 		title: t`Login attempt failed`,
 		description,
@@ -111,7 +120,7 @@ export function UserAuthForm({
 			} catch (err: any) {
 				const mfaId = err?.response?.mfaId
 				if (!mfaId) {
-					showLoginFaliedToast()
+					showLoginFaliedToast(err)
 					throw err
 				}
 				setMfaId(mfaId)
@@ -120,7 +129,7 @@ export function UserAuthForm({
 					setOtpId(otpId)
 				} catch (err) {
 					console.log({ err })
-					showLoginFaliedToast()
+					showLoginFaliedToast(err)
 				}
 			} finally {
 				setIsLoading(false)
@@ -151,7 +160,7 @@ export function UserAuthForm({
 			const authWindow = window.open()
 			if (!authWindow) {
 				setIsOauthLoading(false)
-				showLoginFaliedToast(t`Please enable pop-ups for this site`)
+				showLoginFaliedToast(undefined, t`Please enable pop-ups for this site`)
 				return
 			}
 			oAuthOpts.urlCallback = (url) => {
@@ -163,7 +172,7 @@ export function UserAuthForm({
 			.then(() => {
 				$authenticated.set(pb.authStore.isValid)
 			})
-			.catch(showLoginFaliedToast)
+			.catch((err: unknown) => showLoginFaliedToast(err))
 			.finally(() => {
 				setIsOauthLoading(false)
 			})
@@ -175,8 +184,8 @@ export function UserAuthForm({
 	 */
 	function redirectToOauthProvider(provider: AuthProviderInfo) {
 		const url = new URL(provider.authURL)
-		// url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
-		sessionStorage.setItem("provider", JSON.stringify(provider))
+		url.searchParams.set("redirect_uri", `${window.location.origin}${basePath}`)
+		localStorage.setItem("provider", JSON.stringify(provider))
 		window.location.href = url.toString()
 	}
 
@@ -186,16 +195,17 @@ export function UserAuthForm({
 		const code = params.get("code")
 		if (code) {
 			const state = params.get("state")
-			const provider: AuthProviderInfo = JSON.parse(sessionStorage.getItem("provider") ?? "{}")
+			const provider: AuthProviderInfo = JSON.parse(localStorage.getItem("provider") ?? "{}")
+			localStorage.removeItem("provider")
+			window.history.replaceState({}, "", window.location.pathname)
 			if (!state || provider.state !== state) {
 				showLoginFaliedToast()
 			} else {
 				setIsOauthLoading(true)
-				window.history.replaceState({}, "", window.location.pathname)
 				pb.collection("users")
 					.authWithOAuth2Code(provider.name, code, provider.codeVerifier, `${window.location.origin}${basePath}`)
 					.then(() => $authenticated.set(pb.authStore.isValid))
-					.catch((e: unknown) => showLoginFaliedToast((e as Error).message))
+					.catch((e: unknown) => showLoginFaliedToast(e, (e as Error).message))
 					.finally(() => setIsOauthLoading(false))
 			}
 		}
@@ -206,14 +216,6 @@ export function UserAuthForm({
 			setTimeout(() => loginWithOauth(authProviders[0], false), 300)
 			return
 		}
-
-		// refresh auth if not in above states (required for trusted auth header)
-		pb.collection("users")
-			.authRefresh()
-			.then((res) => {
-				pb.authStore.save(res.token, res.record)
-				$authenticated.set(!!pb.authStore.isValid)
-			})
 	}, [])
 
 	if (!authMethods) {
@@ -285,7 +287,7 @@ export function UserAuthForm({
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
 							)}
-							<div className="sr-only">
+							<div className="sr-only" aria-hidden="true">
 								{/* honeypot */}
 								<label htmlFor="website">Website</label>
 								<input
@@ -293,6 +295,7 @@ export function UserAuthForm({
 									type="text"
 									name="website"
 									tabIndex={-1}
+									readOnly
 									autoComplete="off"
 									data-1p-ignore
 									data-lpignore="true"

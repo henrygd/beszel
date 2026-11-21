@@ -5,6 +5,7 @@ import {
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
 	type SortingState,
@@ -12,15 +13,17 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table"
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
-import { LoaderCircleIcon } from "lucide-react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon } from "lucide-react"
 import { listenKeys } from "nanostores"
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { getStatusColor, systemdTableCols } from "@/components/systemd-table/systemd-table-columns"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
+import { getLogTimestampDecorations } from "@/lib/logs"
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { ServiceStatus, ServiceStatusLabels, type ServiceSubState, ServiceSubStateLabels } from "@/lib/enums"
@@ -28,6 +31,25 @@ import { $allSystemsById } from "@/lib/stores"
 import { cn, decimalString, formatBytes, useBrowserStorage } from "@/lib/utils"
 import type { SystemdRecord, SystemdServiceDetails } from "@/types"
 import { Separator } from "../ui/separator"
+
+const syntaxTheme = "github-dark-dimmed"
+
+async function getSystemdLogsHtml(systemId: string, serviceName: string): Promise<string> {
+	const [{ highlighter }, { logs }] = await Promise.all([
+		import("@/lib/shiki"),
+		pb.send<{ logs: string }>("/api/beszel/systemd/logs", {
+			requestKey: null,
+			query: { system: systemId, service: serviceName },
+		}),
+	])
+	return logs
+		? highlighter.codeToHtml(logs, {
+				lang: "log",
+				theme: syntaxTheme,
+				decorations: getLogTimestampDecorations(logs),
+			})
+		: ""
+}
 
 export default function SystemdTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
@@ -40,9 +62,11 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
 
 	// clear old data when systemId changes
 	useEffect(() => {
+		resetPageIndex()
 		return setData([])
 	}, [systemId])
 
@@ -108,7 +132,13 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		getPaginationRowModel: getPaginationRowModel(),
+		autoResetPageIndex: false,
+		onPaginationChange,
+		onSortingChange: (updater) => {
+			setSorting(updater)
+			resetPageIndex()
+		},
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		defaultColumn: {
@@ -121,8 +151,12 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 			columnFilters,
 			columnVisibility,
 			globalFilter,
+			pagination,
 		},
-		onGlobalFilterChange: setGlobalFilter,
+		onGlobalFilterChange: (value) => {
+			setGlobalFilter(value)
+			resetPageIndex()
+		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const service = row.original
 			const systemName = $allSystemsById.get()[service.system]?.name ?? ""
@@ -172,7 +206,7 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 					<Input
 						placeholder={t`Filter...`}
 						value={globalFilter}
-						onChange={(e) => setGlobalFilter(e.target.value)}
+						onChange={(e) => table.setGlobalFilter(e.target.value)}
 						className="ms-auto px-4 w-full max-w-full md:w-64"
 					/>
 				</div>
@@ -180,6 +214,7 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 			<div className="rounded-md">
 				<AllSystemdTable table={table} rows={rows} colLength={visibleColumns.length} systemId={systemId} />
 			</div>
+			<DataTablePagination table={table} showSelected={false} />
 		</Card>
 	)
 }
@@ -195,56 +230,33 @@ const AllSystemdTable = memo(function AllSystemdTable({
 	colLength: number
 	systemId?: string
 }) {
-	// The virtualizer will need a reference to the scrollable container element
-	const scrollRef = useRef<HTMLDivElement>(null)
 	const activeService = useRef<SystemdRecord | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
+	const [sheetSession, setSheetSession] = useState(0)
 	const openSheet = (service: SystemdRecord) => {
 		activeService.current = service
+		setSheetSession((session) => session + 1)
 		setSheetOpen(true)
 	}
 
-	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-		count: rows.length,
-		estimateSize: () => 54,
-		getScrollElement: () => scrollRef.current,
-		overscan: 5,
-	})
-	const virtualRows = virtualizer.getVirtualItems()
-
-	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
 	return (
-		<div
-			className={cn(
-				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-				(!rows.length || rows.length > 2) && "min-h-50"
-			)}
-			ref={scrollRef}
-		>
-			{/* add header height to table size */}
-			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-				<table className="text-sm w-full h-full text-nowrap">
-					<SystemdTableHead table={table} />
-					<TableBody>
-						{rows.length ? (
-							virtualRows.map((virtualRow) => {
-								const row = rows[virtualRow.index]
-								return <SystemdTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
-							})
-						) : (
-							<TableRow>
-								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									<Trans>No results.</Trans>
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</table>
-			</div>
+		<div className="max-w-full relative overflow-auto border rounded-md">
+			<table className="text-sm w-full h-full text-nowrap">
+				<SystemdTableHead table={table} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => <SystemdTableRow key={row.id} row={row} openSheet={openSheet} />)
+					) : (
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								<Trans>No results.</Trans>
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</table>
 			<SystemdSheet
+				key={sheetSession}
 				sheetOpen={sheetOpen}
 				setSheetOpen={setSheetOpen}
 				activeService={activeService}
@@ -266,9 +278,23 @@ function SystemdSheet({
 	systemId?: string
 }) {
 	const service = activeService.current
+	const targetSystemId = systemId ?? service?.system
+	const canReadLogs = !!targetSystemId && !!$allSystemsById.get()[targetSystemId]?.info?.jl
 	const [details, setDetails] = useState<SystemdServiceDetails | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [logs, setLogs] = useState("")
+	const [logsStatus, setLogsStatus] = useState<"loading" | "ready" | "empty" | "error">("loading")
+	const [isLoadingLogs, setIsLoadingLogs] = useState(false)
+	const [logsFullscreenOpen, setLogsFullscreenOpen] = useState(false)
+	const logsContainerRef = useRef<HTMLDivElement>(null)
+	const logsRequestId = useRef(0)
+
+	const scrollLogsToBottom = () => {
+		if (logsContainerRef.current) {
+			logsContainerRef.current.scrollTo({ top: logsContainerRef.current.scrollHeight })
+		}
+	}
 
 	useEffect(() => {
 		if (!sheetOpen || !service) {
@@ -283,7 +309,7 @@ function SystemdSheet({
 
 		pb.send<{ details: SystemdServiceDetails }>("/api/beszel/systemd/info", {
 			query: {
-				system: systemId,
+				system: targetSystemId,
 				service: service.name,
 			},
 		})
@@ -310,7 +336,46 @@ function SystemdSheet({
 		return () => {
 			cancelled = true
 		}
-	}, [sheetOpen, service, systemId])
+	}, [sheetOpen, service, targetSystemId])
+
+	const loadLogs = async () => {
+		if (!service || !targetSystemId || !canReadLogs) return
+
+		const requestId = ++logsRequestId.current
+		setLogsStatus(logs ? "ready" : "loading")
+		setIsLoadingLogs(true)
+		try {
+			const logs = await getSystemdLogsHtml(targetSystemId, service.name)
+			if (requestId !== logsRequestId.current) return
+			setLogs(logs)
+			setLogsStatus(logs ? "ready" : "empty")
+		} catch (err) {
+			if (requestId !== logsRequestId.current) return
+			console.error(err)
+			setLogsStatus("error")
+		} finally {
+			if (requestId === logsRequestId.current) setIsLoadingLogs(false)
+		}
+	}
+
+	useEffect(() => {
+		if (sheetOpen && canReadLogs) {
+			loadLogs()
+		}
+		return () => {
+			logsRequestId.current++
+		}
+	}, [sheetOpen, service, targetSystemId, canReadLogs])
+
+	useEffect(() => {
+		if (!sheetOpen) setLogsFullscreenOpen(false)
+	}, [sheetOpen])
+
+	useEffect(() => {
+		if (logs) {
+			setTimeout(scrollLogsToBottom, 20)
+		}
+	}, [logs])
 
 	if (!service) return null
 
@@ -433,19 +498,62 @@ function SystemdSheet({
 
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-			<SheetContent className="w-full sm:max-w-220 p-6 overflow-y-auto">
+			<LogsFullscreenDialog
+				open={logsFullscreenOpen && !!logs}
+				onOpenChange={setLogsFullscreenOpen}
+				logsDisplay={logs}
+				name={service.name}
+				onRefresh={loadLogs}
+				isRefreshing={isLoadingLogs}
+			/>
+			<SheetContent className="w-full min-w-0 sm:max-w-220 p-6 overflow-y-auto">
 				<SheetHeader className="p-0">
 					<SheetTitle>
 						<Trans>Service Details</Trans>
 					</SheetTitle>
+					<SheetDescription className="sr-only">{service.name}</SheetDescription>
 				</SheetHeader>
-				<div className="grid gap-6">
-					{isLoading && (
-						<div className="flex items-center gap-2 text-sm text-muted-foreground">
-							<LoaderCircleIcon className="size-4 animate-spin" />
-							<Trans>Loading...</Trans>
+				<div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6">
+					{canReadLogs && (
+						<div className="min-w-0">
+							<div className="flex items-center mb-3">
+								<h3 className="text-sm font-medium">
+									<Trans>Logs</Trans>
+								</h3>
+								<LogsTimestampToggle className="ms-auto" />
+								<LogsIconButton label={t`Refresh`} onClick={loadLogs} disabled={isLoadingLogs}>
+									<RefreshCwIcon
+										className={cn("size-4 transition-transform duration-300", isLoadingLogs && "animate-spin")}
+									/>
+								</LogsIconButton>
+								<LogsIconButton label={t`Fullscreen`} onClick={() => setLogsFullscreenOpen(true)} disabled={!logs}>
+									<MaximizeIcon className="size-4" />
+								</LogsIconButton>
+							</div>
+							{logs ? (
+								<LogsDisplay logsDisplay={logs} containerRef={logsContainerRef} />
+							) : logsStatus === "loading" ? (
+								<>
+									<div className="h-28" aria-busy="true">
+										<LogsDisplay logsDisplay="" containerRef={logsContainerRef} />
+									</div>
+									<output className="sr-only">
+										<Trans>Loading...</Trans>
+									</output>
+								</>
+							) : (
+								<output className="flex min-h-28 items-center justify-center rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">
+									{logsStatus === "error" ? <Trans>Failed to load logs.</Trans> : <Trans>No logs found.</Trans>}
+								</output>
+							)}
+							{logs && logsStatus === "error" && (
+								<output className="mt-2 block text-sm text-destructive">
+									<Trans>Failed to load logs.</Trans>
+								</output>
+							)}
 						</div>
 					)}
+
 					{error && (
 						<Alert className="border-destructive/50 text-destructive dark:border-destructive/60 dark:text-destructive">
 							<AlertTitle>
@@ -453,6 +561,12 @@ function SystemdSheet({
 							</AlertTitle>
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
+					)}
+					{isLoading && (
+						<div className="flex items-center gap-2 text-sm text-muted-foreground">
+							<LoaderCircleIcon className="size-4 animate-spin" />
+							<Trans>Loading...</Trans>
+						</div>
 					)}
 
 					<div>
@@ -631,11 +745,9 @@ function SystemdTableHead({ table }: { table: TableType<SystemdRecord> }) {
 
 const SystemdTableRow = memo(function SystemdTableRow({
 	row,
-	virtualRow,
 	openSheet,
 }: {
 	row: Row<SystemdRecord>
-	virtualRow: VirtualItem
 	openSheet: (service: SystemdRecord) => void
 }) {
 	return (
@@ -649,7 +761,7 @@ const SystemdTableRow = memo(function SystemdTableRow({
 					key={cell.id}
 					className="py-0"
 					style={{
-						height: virtualRow.size,
+						height: 54,
 					}}
 				>
 					{flexRender(cell.column.columnDef.cell, cell.getContext())}

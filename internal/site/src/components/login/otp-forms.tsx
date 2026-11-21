@@ -22,7 +22,7 @@ export function OtpInputForm({ otpId, mfaId }: { otpId: string; mfaId: string })
 				$authenticated.set(true)
 			})
 			.catch((err) => {
-				showLoginFaliedToast(err.message)
+				showLoginFaliedToast(err, err.message)
 			})
 	}
 
@@ -56,7 +56,7 @@ export function OtpRequestForm() {
 				const { otpId } = await pb.collection("users").requestOTP(email)
 				setOtpId(otpId)
 			} catch (e: any) {
-				showLoginFaliedToast(e?.message)
+				showLoginFaliedToast(e, e?.message)
 			} finally {
 				setIsLoading(false)
 				setEmail("")

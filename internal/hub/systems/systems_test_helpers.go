@@ -5,10 +5,11 @@ package systems
 import (
 	"context"
 	"fmt"
-	"time"
+	"testing"
 
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	entities "github.com/henrygd/beszel/internal/entities/system"
-	"github.com/pocketbase/pocketbase/core"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
 // The hub integration tests create/replace systems and cleanup the test apps quickly.
@@ -17,6 +18,14 @@ import (
 // We keep the explicit SMART refresh endpoint / method available, but disable
 // the automatic background fetch during tests.
 func backgroundSmartFetchEnabled() bool { return false }
+
+// Background ZFS fetching follows the same policy as SMART fetching.
+func backgroundZfsFetchEnabled() bool { return false }
+
+// InitializeSSHConfigForTesting prepares SSH without registering hooks or starting systems.
+func (sm *SystemManager) InitializeSSHConfigForTesting() error {
+	return sm.createSSHClientConfig()
+}
 
 // TESTING ONLY: GetSystemCount returns the number of systems in the store
 func (sm *SystemManager) GetSystemCount() int {
@@ -35,7 +44,7 @@ func (sm *SystemManager) GetSystemStatusFromStore(systemID string) string {
 	if !ok {
 		return ""
 	}
-	return sys.Status()
+	return sys.GetStatus()
 }
 
 // TESTING ONLY: GetSystemContextFromStore returns the context and cancel function for a system
@@ -103,33 +112,33 @@ func (sm *SystemManager) SetSystemStatusInDB(systemID string, status string) boo
 
 	record.Set("status", status)
 	err = sm.hub.Save(record)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
-// TESTING ONLY: RemoveAllSystems removes all systems from the store
+// TESTING ONLY: RemoveAllSystems cancels and joins updaters before database cleanup.
+// Callers must stop producers that can add systems before calling it.
 func (sm *SystemManager) RemoveAllSystems() {
 	systems := sm.systems.GetAll()
 	for _, system := range systems {
 		sm.RemoveSystem(system.Id)
 	}
-	// RemoveSystem only cancels the updater; it does not wait for it. Block
-	// until each goroutine has actually exited, otherwise an in-flight update
-	// can hit the test app's DB after Cleanup() closes it and panic with a nil
-	// pointer dereference.
-	for _, system := range systems {
-		if system.done == nil {
-			continue
-		}
-		select {
-		case <-system.done:
-		case <-time.After(10 * time.Second):
-		}
-	}
+	// Removed or replaced systems may still be finishing their last update.
+	sm.updaters.Wait()
 	sm.smartFetchMap.StopCleaner()
+	sm.zfsFetchMap.StopCleaner()
+}
+
+// ResetContextForTesting replaces the manager context for a new synctest bubble.
+func (sm *SystemManager) ResetContextForTesting(t testing.TB) {
+	t.Helper()
+	sm.cancel()
+	sm.updaters.Wait()
+	sm.ctx, sm.cancel = context.WithCancel(context.Background())
+	cancel := sm.cancel
+	t.Cleanup(func() {
+		cancel()
+		sm.updaters.Wait()
+	})
 }
 
 // TESTING ONLY: Stop cancels all background work owned by the SystemManager's
@@ -148,4 +157,8 @@ func (s *System) StopUpdater() {
 func (s *System) CreateRecords(data *entities.CombinedData) (*core.Record, error) {
 	s.data = data
 	return s.createRecords(data)
+}
+
+func CreateSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
+	return createSystemdStatsRecords(app, data, systemId)
 }

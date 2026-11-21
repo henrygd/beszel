@@ -1,12 +1,15 @@
 package systems
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/hub/ws"
 
+	"github.com/henrygd/beszel/internal/entities/monitor"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/hub/expirymap"
 
@@ -14,10 +17,10 @@ import (
 
 	"github.com/henrygd/beszel"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/store"
 	"github.com/blang/semver"
-	"github.com/henrygd/beszel/internal/alerts"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/store"
 	"golang.org/x/crypto/ssh"
 	"os"
 	"strconv"
@@ -54,11 +57,19 @@ var errSystemExists = errors.New("system exists")
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.
 type SystemManager struct {
-	hub           hubLike                               // Hub interface for database and alert operations
-	systems       *store.Store[string, *System]         // Thread-safe store of active systems
-	sshConfig     *ssh.ClientConfig                     // SSH client configuration for system connections
-	smartFetchMap *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
-	rp            *RecoveryProber                       // Watchdog prober service
+	updaters            sync.WaitGroup                        // Tracks updater completion independently of store membership.
+	hub                 hubLike                               // Hub interface for database and alert operations
+	systems             *store.Store[string, *System]         // Thread-safe store of active systems
+	sshConfig           *ssh.ClientConfig                     // SSH client configuration for system connections
+	smartFetchMap       *expirymap.ExpiryMap[smartFetchState] // Stores last SMART fetch time/result; TTL is only for cleanup
+	zfsFetchMap         *expirymap.ExpiryMap[zfsFetchState]   // Stores last ZFS fetch time/result; TTL is only for cleanup
+	realtimeMutex       sync.Mutex                            // Protects all realtime worker and subscription state
+	activeSubscriptions map[string]*subscriptionInfo          // Realtime subscriptions keyed by system ID
+	realtimeWorkerStop  chan struct{}                         // Stops the current realtime worker generation
+	realtimeWorkerRun   bool                                  // Whether a realtime worker has been started
+	ctx                 context.Context                       // Cancelled when the app terminates
+	cancel              context.CancelFunc                    // Cancels ctx and all child system contexts
+	rp                  *RecoveryProber                       // Watchdog prober service
 }
 
 // hubLike defines the interface requirements for the hub dependency.
@@ -67,20 +78,25 @@ type hubLike interface {
 	core.App
 	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
+	HandleNetworkMonitorAlerts(systemRecord *core.Record, results map[string]monitor.Result) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
+	HandleContainerAlerts(systemRecord *core.Record, data *system.CombinedData, fetchLogs func(containerID string) (string, error)) error
 	CancelPendingStatusAlerts(systemID string)
-	SendAlert(data alerts.AlertMessageData) error
+	CancelPendingContainerAlerts(systemID string)
 }
 
 // NewSystemManager creates a new SystemManager instance with the provided hub.
 // The hub must implement the hubLike interface to provide database and alert functionality.
 func NewSystemManager(hub hubLike) *SystemManager {
 	sm := &SystemManager{
-		systems:       store.New(map[string]*System{}),
-		hub:           hub,
-		smartFetchMap: expirymap.New[smartFetchState](time.Hour),
+		systems:             store.New(map[string]*System{}),
+		hub:                 hub,
+		smartFetchMap:       expirymap.New[smartFetchState](time.Hour),
+		zfsFetchMap:         expirymap.New[zfsFetchState](time.Hour),
+		activeSubscriptions: make(map[string]*subscriptionInfo),
 	}
 	sm.rp = NewRecoveryProber(hub)
+	sm.ctx, sm.cancel = context.WithCancel(context.Background())
 	return sm
 }
 
@@ -128,7 +144,7 @@ func (sm *SystemManager) Initialize() error {
 	systems := make([]*System, 0, len(rows))
 	for _, row := range rows {
 		sys := &System{Id: row.Id, Host: row.Host, Port: row.Port}
-		sys.setStatus(row.Status)
+		sys.swapStatus(row.Status)
 		systems = append(systems, sys)
 	}
 
@@ -140,7 +156,9 @@ func (sm *SystemManager) Initialize() error {
 		sleepTime := time.Duration(delta) * time.Millisecond
 
 		for _, system := range systems {
-			time.Sleep(sleepTime)
+			if !waitForContext(sm.ctx, sleepTime) {
+				return
+			}
 			_ = sm.AddSystem(system)
 		}
 	}()
@@ -158,6 +176,14 @@ func (sm *SystemManager) bindEventHooks() {
 	sm.hub.OnRecordAfterUpdateSuccess("fingerprints").BindFunc(sm.onTokenRotated)
 	sm.hub.OnRealtimeSubscribeRequest().BindFunc(sm.onRealtimeSubscribeRequest)
 	sm.hub.OnRealtimeConnectRequest().BindFunc(sm.onRealtimeConnectRequest)
+	sm.hub.OnTerminate().BindFunc(sm.onTerminate)
+}
+
+// onTerminate cancels SystemManager context on app shutdown
+func (sm *SystemManager) onTerminate(e *core.TerminateEvent) error {
+	sm.cancel()
+	sm.stopRealtimeWorker()
+	return e.Next()
 }
 
 // onTokenRotated handles fingerprint token rotation events.
@@ -199,7 +225,9 @@ func (sm *SystemManager) onRecordAfterCreateSuccess(e *core.RecordEvent) error {
 // It clears system info when the status is changed to paused.
 func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 	if e.Record.GetString("status") == paused {
-		e.Record.Set("info", system.Info{})
+		var prevInfo system.Info
+		e.Record.UnmarshalJSONField("info", &prevInfo)
+		e.Record.Set("info", system.Info{AgentVersion: prevInfo.AgentVersion})
 	}
 	return e.Next()
 }
@@ -210,14 +238,13 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 // - paused: Closes SSH connection and deactivates alerts
 // - pending: Starts monitoring (reuses WebSocket if available)
 // - up: Triggers system alerts
-// - down: Triggers status change alerts
+// - down: Cancels pending container alerts and triggers status change alerts
 func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	newStatus := e.Record.GetString("status")
 	prevStatus := pending
 	system, ok := sm.systems.GetOk(e.Record.Id)
 	if ok {
-		prevStatus = system.Status()
-		system.setStatus(newStatus)
+		prevStatus = system.swapStatus(newStatus)
 	}
 
 	switch newStatus {
@@ -226,10 +253,15 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 			// Pause monitoring but keep system in manager for potential resume
 			system.closeSSHConnection()
 		}
-		_ = deactivateAlerts(e.App, e.Record.Id)
+		_ = deactivateAlerts(e.App, e.Record.Id, false)
 		sm.hub.CancelPendingStatusAlerts(e.Record.Id)
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 		return e.Next()
 	case pending:
+		// Keep an active status alert until connectivity is confirmed. This lets
+		// pending -> up resolve it and send the recovery notification after a
+		// system address or other connection setting is changed.
+		_ = deactivateAlerts(e.App, e.Record.Id, true)
 		// Resume monitoring, preferring existing WebSocket connection
 		if ok && system.WsConn != nil {
 			go system.update()
@@ -239,8 +271,11 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		if err := sm.AddRecord(e.Record, nil); err != nil {
 			e.App.Logger().Error("Error adding record", "err", err)
 		}
-		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
+	case down:
+		// Docker state is unknown while the system is unreachable. Do not let a
+		// delayed container-health alert fire from the last received snapshot.
+		sm.hub.CancelPendingContainerAlerts(e.Record.Id)
 	}
 
 	// Handle systems not in manager
@@ -253,10 +288,14 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
 			e.App.Logger().Error("Error handling system alerts", "err", err)
 		}
+		if err := sm.hub.HandleContainerAlerts(e.Record, system.data, system.FetchContainerLogsFromAgent); err != nil {
+			e.App.Logger().Error("Error handling container alerts", "err", err)
+		}
 	}
 
-	// Trigger status change alerts for up/down transitions
-	if (newStatus == down && prevStatus == up) || (newStatus == up && prevStatus == down) {
+	// A connection-setting update moves a down system through pending before it
+	// comes up, so recover active status alerts on any non-up -> up transition.
+	if (newStatus == down && prevStatus == up) || (newStatus == up && prevStatus != up) {
 		if err := sm.hub.HandleStatusAlerts(newStatus, e.Record); err != nil {
 			e.App.Logger().Error("Error handling status alerts", "err", err)
 		}
@@ -284,13 +323,12 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 
 	// Initialize system for monitoring
 	sys.manager = sm
-	sys.ctx, sys.cancel = sys.getContext()
+	sys.ctx, sys.cancel = sys.getContext(sm.ctx)
 	sys.data = &system.CombinedData{}
-	sys.done = make(chan struct{})
 	sm.systems.Set(sys.Id, sys)
 
 	// Start monitoring in background
-	go sys.StartUpdater()
+	sm.updaters.Go(sys.StartUpdater)
 	return nil
 }
 
@@ -331,7 +369,7 @@ func (sm *SystemManager) AddRecord(record *core.Record, system *System) (err err
 	}
 
 	// Populate system from record
-	system.setStatus(record.GetString("status"))
+	system.swapStatus(record.GetString("status"))
 	system.Host = record.GetString("host")
 	system.Port = record.GetString("port")
 
@@ -350,11 +388,16 @@ func (sm *SystemManager) AddWebSocketSystem(systemId string, agentVersion semver
 
 	system := sm.NewSystem(systemId)
 	system.WsConn = wsConn
-	system.agentVersion = agentVersion
+	system.setAgentVersion(agentVersion)
+	system.monitorsNeedSync.Store(true)
 
 	if err := sm.AddRecord(systemRecord, system); err != nil {
 		return err
 	}
+
+	// Sync network monitors to the newly connected agent
+	go system.syncPendingNetworkMonitors()
+
 	return nil
 }
 
@@ -364,6 +407,25 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 	state, ok := sm.smartFetchMap.GetOk(systemID)
 	if ok && !state.Successful {
 		sm.smartFetchMap.Remove(systemID)
+	}
+}
+
+// GetMonitorConfigsForSystem returns all enabled monitor configs for a system.
+func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
+	var configs []monitor.Config
+	err := sm.hub.DB().
+		NewQuery("SELECT id, target, protocol, port, interval, server, skipTlsVerify, ipVersion, statusCodes FROM network_monitors WHERE system = {:system} AND enabled = true").
+		Bind(dbx.Params{"system": systemID}).
+		All(&configs)
+	return configs, err
+}
+
+// resetFailedZfsFetchState clears only failed ZFS cooldown entries so a fresh
+// agent reconnect retries ZFS discovery immediately after configuration changes.
+func (sm *SystemManager) resetFailedZfsFetchState(systemID string) {
+	state, ok := sm.zfsFetchMap.GetOk(systemID)
+	if ok && !state.Successful {
+		sm.zfsFetchMap.Remove(systemID)
 	}
 }
 
@@ -391,18 +453,23 @@ func (sm *SystemManager) createSSHClientConfig() error {
 	return nil
 }
 
-// deactivateAlerts finds all triggered alerts for a system and sets them to inactive.
-// This is called when a system is paused or goes offline to prevent continued alerts.
-func deactivateAlerts(app core.App, systemID string) error {
+// deactivateAlerts finds triggered alerts for a system and sets them to inactive.
+// Status alerts can be preserved while connection changes are pending so that a
+// confirmed recovery still produces an "up" notification.
+// Monitor incidents remain open: a missing observation does not establish recovery.
+func deactivateAlerts(app core.App, systemID string, preserveStatusAlert bool) error {
 	// Note: Direct SQL updates don't trigger SSE, so we use the PocketBase API
 	// _, err := app.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", systemID)).Execute()
 
-	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1", systemID), "", -1, 0)
+	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1 && name != 'NetworkMonitorLoss' && name != 'NetworkMonitorCert'", systemID), "", -1, 0)
 	if err != nil {
 		return err
 	}
 
 	for _, alert := range alerts {
+		if preserveStatusAlert && alert.GetString("name") == "Status" {
+			continue
+		}
 		alert.Set("triggered", false)
 		if err := app.SaveNoValidate(alert); err != nil {
 			return err
@@ -433,4 +500,16 @@ func (sm *SystemManager) ReleaseRecoveryLock(channelID, leaseID string) {
 // RecoveryLockStatus reports the current lock holder for a channel, if any.
 func (sm *SystemManager) RecoveryLockStatus(channelID string) (owner string, secondsRemaining int, held bool) {
 	return sm.rp.ChannelLockInfo(channelID)
+}
+
+// waitForContext waits for delay or returns early when ctx is cancelled.
+func waitForContext(ctx context.Context, delay time.Duration) bool {
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-timer.C:
+		return true
+	}
 }

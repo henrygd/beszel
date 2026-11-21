@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/osutils"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/osutils"
 )
 
 // Wraps http.RoundTripper to modify dev proxy HTML responses

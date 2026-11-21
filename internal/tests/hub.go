@@ -9,11 +9,11 @@ import (
 
 	"github.com/henrygd/beszel/internal/hub"
 
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tests"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
 
-	_ "github.com/pocketbase/pocketbase/migrations"
+	_ "ganigeorgiev.com/pocketbase/pocketbase/migrations"
 )
 
 // TestHub is a wrapper hub instance used for testing.
@@ -112,6 +112,9 @@ func CreateRecord(app core.App, collectionName string, fields map[string]any) (*
 
 func ClearCollection(t testing.TB, app core.App, collectionName string) error {
 	_, err := app.DB().NewQuery(fmt.Sprintf("DELETE from %s", collectionName)).Execute()
+	if err != nil {
+		return err
+	}
 	recordCount, err := app.CountRecords(collectionName)
 	assert.EqualValues(t, recordCount, 0, "should have 0 records after clearing")
 	return err

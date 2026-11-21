@@ -1,0 +1,87 @@
+import { describe, expect, mock, test } from "bun:test"
+
+mock.module("@lingui/core/macro", () => ({
+	t: (strings: any) => (typeof strings === "string" ? strings : strings?.[0] ?? ""),
+	plural: (count: number, forms: any) => forms.other ?? "",
+}))
+
+const { debounceByKey, formatMicroseconds } = await import("../src/lib/utils")
+
+describe("formatMicroseconds", () => {
+	test("formats with fixedDigits = true (default)", () => {
+		expect(formatMicroseconds(500)).toBe("500μs")
+		expect(formatMicroseconds(6000)).toBe("6.00ms")
+		expect(formatMicroseconds(6500)).toBe("6.50ms")
+		expect(formatMicroseconds(12000)).toBe("12.0ms")
+		expect(formatMicroseconds(12500)).toBe("12.5ms")
+		expect(formatMicroseconds(1_000_000)).toBe("1.00s")
+		expect(formatMicroseconds(1_500_000)).toBe("1.50s")
+		expect(formatMicroseconds(12_000_000)).toBe("12.0s")
+	})
+
+	test("moves to the next unit when rounding reaches it", () => {
+		expect(formatMicroseconds(999_960)).toBe("1.00s")
+		expect(formatMicroseconds(999_999)).toBe("1.00s")
+		expect(formatMicroseconds(999_940)).toBe("999.9ms")
+		expect(formatMicroseconds(9_996)).toBe("10.0ms")
+		expect(formatMicroseconds(9_990)).toBe("9.99ms")
+		expect(formatMicroseconds(9_996_000)).toBe("10.0s")
+		expect(formatMicroseconds(999_999, false)).toBe("1s")
+		expect(formatMicroseconds(9_996, false)).toBe("10ms")
+		expect(formatMicroseconds(9_995)).toBe("10.0ms")
+		expect(formatMicroseconds(999_950)).toBe("1.00s")
+		expect(formatMicroseconds(9_995_000)).toBe("10.0s")
+	})
+
+	test("formats with fixedDigits = false (used for chart y-axis ticks)", () => {
+		expect(formatMicroseconds(500, false)).toBe("500μs")
+		expect(formatMicroseconds(500.5, false)).toBe("500.5μs")
+		expect(formatMicroseconds(6000, false)).toBe("6ms")
+		expect(formatMicroseconds(6200, false)).toBe("6.2ms")
+		expect(formatMicroseconds(6500, false)).toBe("6.5ms")
+		expect(formatMicroseconds(6750, false)).toBe("6.75ms")
+		expect(formatMicroseconds(7000, false)).toBe("7ms")
+		expect(formatMicroseconds(12000, false)).toBe("12ms")
+		expect(formatMicroseconds(12500, false)).toBe("12.5ms")
+		expect(formatMicroseconds(1_000_000, false)).toBe("1s")
+		expect(formatMicroseconds(1_500_000, false)).toBe("1.5s")
+		expect(formatMicroseconds(12_000_000, false)).toBe("12s")
+	})
+
+	test("prevents duplicate tick values for intermediate intervals (#2373)", () => {
+		const tickInputs = [6000, 6200, 6400, 6600, 6800, 7000]
+		const formattedTicks = tickInputs.map((val) => formatMicroseconds(val, false))
+		expect(formattedTicks).toEqual(["6ms", "6.2ms", "6.4ms", "6.6ms", "6.8ms", "7ms"])
+		// Verify all formatted ticks are unique
+		const uniqueTicks = new Set(formattedTicks)
+		expect(uniqueTicks.size).toBe(tickInputs.length)
+	})
+
+	test("handles invalid / non-finite values", () => {
+		expect(formatMicroseconds(Number.NaN)).toBe("-")
+		expect(formatMicroseconds(Number.POSITIVE_INFINITY)).toBe("-")
+		expect(formatMicroseconds(Number.NEGATIVE_INFINITY)).toBe("-")
+	})
+})
+
+describe("debounceByKey", () => {
+	const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+	test("calls for different keys within the wait are all delivered", async () => {
+		const calls: string[] = []
+		const send = debounceByKey((name: string) => calls.push(name), 20)
+		send("CPU", "CPU")
+		send("Memory", "Memory")
+		await wait(60)
+		expect(calls).toEqual(["CPU", "Memory"])
+	})
+
+	test("repeated calls for the same key keep only the last", async () => {
+		const calls: number[] = []
+		const send = debounceByKey((value: number) => calls.push(value), 20)
+		send("CPU", 80)
+		send("CPU", 90)
+		await wait(60)
+		expect(calls).toEqual([90])
+	})
+})

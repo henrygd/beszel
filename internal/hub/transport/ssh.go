@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blang/semver"
@@ -15,23 +16,43 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-// SSHTransport implements Transport over SSH connections.
+// sshKeepAliveInterval is the TCP keep-alive idle interval for SSH connections
+// to agents. Enabling OS-level keep-alives lets the hub eventually detect a
+// dead peer on an otherwise idle connection instead of trusting it forever.
+// This is a backstop for genuine network death; an application-level wedge
+// (agent process hung while its kernel keeps ACKing) is caught by per-operation
+// timeouts instead (see issue #2041).
+const sshKeepAliveInterval = 30 * time.Second
+
+// sshHandshakeTimeout bounds the SSH handshake after the TCP connection is
+// established. ssh.ClientConfig.Timeout only covers the TCP connect, so a peer
+// that accepts the connection but never sends an SSH banner would otherwise
+// block the caller forever (GHSA-h9jh-29rh-w464).
+var sshHandshakeTimeout = 10 * time.Second
+
+// SSHTransport implements Transport over SSH connections. It owns the single
+// SSH connection to an agent, which is shared by all requests and sessions.
 type SSHTransport struct {
-	client       *ssh.Client
-	config       *ssh.ClientConfig
-	host         string
-	port         string
-	agentVersion semver.Version
-	timeout      time.Duration
+	mu        sync.Mutex
+	client    *ssh.Client
+	config    *ssh.ClientConfig
+	host      string
+	port      string
+	timeout   time.Duration
+	onConnect func(agentVersion semver.Version)
 }
 
 // SSHTransportConfig holds configuration for creating an SSH transport.
 type SSHTransportConfig struct {
-	Host         string
-	Port         string
-	Config       *ssh.ClientConfig
-	AgentVersion semver.Version
-	Timeout      time.Duration
+	Host    string
+	Port    string
+	Config  *ssh.ClientConfig
+	Timeout time.Duration
+	// OnConnect is called when a new connection is established, before it is
+	// available to other callers, with the agent version from its SSH server
+	// version string. It runs under the transport lock and must not call back
+	// into the transport.
+	OnConnect func(agentVersion semver.Version)
 }
 
 // NewSSHTransport creates a new SSH transport with the given configuration.
@@ -41,43 +62,46 @@ func NewSSHTransport(cfg SSHTransportConfig) *SSHTransport {
 		timeout = 4 * time.Second
 	}
 	return &SSHTransport{
-		config:       cfg.Config,
-		host:         cfg.Host,
-		port:         cfg.Port,
-		agentVersion: cfg.AgentVersion,
-		timeout:      timeout,
+		config:    cfg.Config,
+		host:      cfg.Host,
+		port:      cfg.Port,
+		timeout:   timeout,
+		onConnect: cfg.OnConnect,
 	}
 }
 
-// SetClient sets the SSH client for reuse across requests.
-func (t *SSHTransport) SetClient(client *ssh.Client) {
-	t.client = client
-}
-
-// SetAgentVersion sets the agent version (extracted from SSH handshake).
-func (t *SSHTransport) SetAgentVersion(version semver.Version) {
-	t.agentVersion = version
-}
-
-// GetClient returns the current SSH client (for connection management).
+// GetClient returns the current SSH client, or nil if not connected.
 func (t *SSHTransport) GetClient() *ssh.Client {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	return t.client
 }
 
-// GetAgentVersion returns the agent version.
-func (t *SSHTransport) GetAgentVersion() semver.Version {
-	return t.agentVersion
-}
-
 // Request sends a request to the agent via SSH and unmarshals the response.
-func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketAction, req any, dest any) error {
-	if t.client == nil {
-		if err := t.connect(); err != nil {
-			return err
-		}
+func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketAction, req any, dest any) (err error) {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	client, err := t.Connect(ctx)
+	if err != nil {
+		return err
 	}
 
-	session, err := t.createSessionWithTimeout(ctx)
+	// Closing only the session still depends on the peer processing SSH packets.
+	// Close the captured connection to release every blocked read/write, including
+	// concurrent sessions; subsequent requests can reconnect.
+	stop := closeOnCancellation(ctx, func() { t.CloseClient(client) })
+	defer func() {
+		stop()
+		if err != nil && ctx.Err() != nil {
+			err = ctx.Err()
+		}
+		if isConnectionError(err) {
+			t.CloseClient(client)
+		}
+	}()
+
+	session, err := t.NewSession(ctx, client)
 	if err != nil {
 		return err
 	}
@@ -121,21 +145,50 @@ func (t *SSHTransport) Request(ctx context.Context, action common.WebSocketActio
 
 // IsConnected returns true if the SSH connection is active.
 func (t *SSHTransport) IsConnected() bool {
-	return t.client != nil
+	return t.GetClient() != nil
 }
 
 // Close terminates the SSH connection.
 func (t *SSHTransport) Close() {
-	if t.client != nil {
-		t.client.Close()
+	t.CloseClient(t.GetClient())
+}
+
+// CloseClient closes client and clears it if it is still the current
+// connection, so a late close never discards a replacement connection.
+func (t *SSHTransport) CloseClient(client *ssh.Client) {
+	t.mu.Lock()
+	if t.client == client {
 		t.client = nil
+	}
+	t.mu.Unlock()
+	if client != nil {
+		client.Close()
 	}
 }
 
-// connect establishes a new SSH connection.
-func (t *SSHTransport) connect() error {
+// closeOnCancellation stops I/O when ctx is cancelled. The returned function
+// waits for any in-progress close so it cannot outlive the operation.
+func closeOnCancellation(ctx context.Context, closeConn func()) func() {
+	done := make(chan struct{})
+	stop := context.AfterFunc(ctx, func() {
+		closeConn()
+		close(done)
+	})
+	return func() {
+		if !stop() {
+			<-done
+		}
+	}
+}
+
+// Connect returns the current client or establishes a new cancellable SSH
+// connection, calling OnConnect when a new connection is stored.
+func (t *SSHTransport) Connect(ctx context.Context) (*ssh.Client, error) {
+	if client := t.GetClient(); client != nil {
+		return client, nil
+	}
 	if t.config == nil {
-		return errors.New("SSH config not set")
+		return nil, errors.New("SSH config not set")
 	}
 
 	network := "tcp"
@@ -146,46 +199,59 @@ func (t *SSHTransport) connect() error {
 		host = net.JoinHostPort(host, t.port)
 	}
 
-	client, err := ssh.Dial(network, host, t.config)
+	dialer := net.Dialer{Timeout: t.config.Timeout, KeepAlive: sshKeepAliveInterval}
+	conn, err := dialer.DialContext(ctx, network, host)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	_ = conn.SetDeadline(time.Now().Add(sshHandshakeTimeout))
+	stop := closeOnCancellation(ctx, func() { conn.Close() })
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, host, t.config)
+	stop()
+	if ctx.Err() != nil {
+		conn.Close()
+		return nil, ctx.Err()
+	}
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	// clear the handshake deadline so it doesn't apply to the long-lived connection
+	_ = conn.SetDeadline(time.Time{})
+	client := ssh.NewClient(sshConn, chans, reqs)
+
+	t.mu.Lock()
+	if existing := t.client; existing != nil {
+		t.mu.Unlock()
+		client.Close()
+		return existing, nil
+	}
+	// Initialize per-connection state (e.g. the agent version, which selects the
+	// protocol) before other callers can reuse the client.
+	if t.onConnect != nil {
+		agentVersion, _ := extractAgentVersion(string(client.Conn.ServerVersion()))
+		t.onConnect(agentVersion)
 	}
 	t.client = client
-
-	// Extract agent version from server version string
-	t.agentVersion, _ = extractAgentVersion(string(client.Conn.ServerVersion()))
-	return nil
+	t.mu.Unlock()
+	return client, nil
 }
 
-// createSessionWithTimeout creates a new SSH session with a timeout.
-func (t *SSHTransport) createSessionWithTimeout(ctx context.Context) (*ssh.Session, error) {
-	if t.client == nil {
-		return nil, errors.New("client not initialized")
-	}
-
+// NewSession opens a session on client, bounded by the transport timeout
+// independently of ctx. The connection is closed if session creation stalls.
+func (t *SSHTransport) NewSession(ctx context.Context, client *ssh.Client) (*ssh.Session, error) {
 	ctx, cancel := context.WithTimeout(ctx, t.timeout)
 	defer cancel()
-
-	sessionChan := make(chan *ssh.Session, 1)
-	errChan := make(chan error, 1)
-
-	go func() {
-		session, err := t.client.NewSession()
-		if err != nil {
-			errChan <- err
-		} else {
-			sessionChan <- session
+	stop := closeOnCancellation(ctx, func() { t.CloseClient(client) })
+	session, err := client.NewSession()
+	stop()
+	if ctx.Err() != nil {
+		if session != nil {
+			session.Close()
 		}
-	}()
-
-	select {
-	case session := <-sessionChan:
-		return session, nil
-	case err := <-errChan:
-		return nil, err
-	case <-ctx.Done():
-		return nil, errors.New("timeout creating session")
+		return nil, ctx.Err()
 	}
+	return session, err
 }
 
 // extractAgentVersion extracts the beszel version from SSH server version string.
@@ -206,7 +272,6 @@ func (t *SSHTransport) RequestWithRetry(ctx context.Context, action common.WebSo
 
 		// Check if it's a connection error that warrants a retry
 		if isConnectionError(err) && attempt < retries {
-			t.Close()
 			continue
 		}
 		return err
