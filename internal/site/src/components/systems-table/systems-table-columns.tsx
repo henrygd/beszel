@@ -12,14 +12,18 @@ import {
 	CpuIcon,
 	HardDriveIcon,
 	MemoryStickIcon,
+	MicrochipIcon,
 	PackageIcon,
 	ServerIcon,
 	TerminalSquareIcon,
 	WifiIcon,
 } from "lucide-react"
+import { atom } from "nanostores"
+import { useEffect } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { pb } from "@/lib/api"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
-import { $userSettings } from "@/lib/stores"
+import { $upSystems, $userSettings } from "@/lib/stores"
 import { cn, decimalString, formatBytes, formatTemperature, parseSemVer, secondsToUptimeString } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, primaryWiFi, primaryWiFiSignal, wifiNetworkName, wifiSignalState } from "@/lib/wifi"
@@ -55,6 +59,34 @@ function getUpdatesRank(pu: SystemRecord["info"]["pu"]): number {
 	}
 	const [total, security = 0] = pu
 	return security > 0 ? 2 : total > 0 ? 1 : 0
+}
+
+type CpuCounts = { cores: number; threads: number }
+
+/** cores and threads from system_details, keyed by system id (systems.info.c is deprecated) */
+const $cpuCounts = atom<Record<string, CpuCounts>>({})
+
+/** Loads core and thread counts while the cores column is visible. Refetches when the set of up systems changes. */
+export function useLoadCpuCounts(enabled: boolean) {
+	useEffect(() => {
+		if (!enabled) {
+			return
+		}
+		let upKey = ""
+		return $upSystems.subscribe((upSystems) => {
+			const key = Object.keys(upSystems).sort().join(",")
+			if (!key || key === upKey) {
+				return
+			}
+			upKey = key
+			pb.collection("system_details")
+				.getFullList<CpuCounts & { id: string }>({ fields: "id,cores,threads", requestKey: "cpu-counts" })
+				.then((records) =>
+					$cpuCounts.set(Object.fromEntries(records.map(({ id, cores, threads }) => [id, { cores, threads }])))
+				)
+				.catch(() => {})
+		})
+	}, [enabled])
 }
 
 function getMeterStateByThresholds(value: number, warn = 65, crit = 90): MeterState {
@@ -148,6 +180,33 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			cell: TableCellWithMeter,
 			Icon: CpuIcon,
 			header: sortableHeader,
+		},
+		{
+			// sort by threads, which is still sent in info. Cores come from system_details,
+			// with the deprecated info.c as a fallback for agents that don't send details
+			accessorFn: ({ info }) => info.t || undefined,
+			id: "cores",
+			name: () => t({ message: "Cores", comment: "Systems table column showing CPU cores / threads" }),
+			size: 50,
+			Icon: MicrochipIcon,
+			header: sortableHeader,
+			cell(info) {
+				const { id, info: systemInfo } = info.row.original
+				const counts = useStore($cpuCounts)[id]
+				const cores = counts?.cores || systemInfo.c
+				const threads = counts?.threads || systemInfo.t
+				if (!threads) {
+					return null
+				}
+				const title = cores
+					? `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}`
+					: plural(threads, { one: "# thread", other: "# threads" })
+				return (
+					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")} title={title}>
+						{cores ? `${cores} / ${threads}` : threads}
+					</span>
+				)
+			},
 		},
 		{
 			// accessorKey: "info.mp",

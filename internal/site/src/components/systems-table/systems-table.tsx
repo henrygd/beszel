@@ -54,10 +54,13 @@ import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { ActionsButton } from "../system-actions-button"
-import { SystemsTableColumns, IndicatorDot } from "./systems-table-columns"
+import { SystemsTableColumns, IndicatorDot, useLoadCpuCounts } from "./systems-table-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
+
+/** columns that are hidden until the user enables them */
+const DEFAULT_COLUMN_VISIBILITY: VisibilityState = { cores: false }
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
@@ -82,9 +85,11 @@ export default function SystemsTable() {
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
-	)
+	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => ({
+		...DEFAULT_COLUMN_VISIBILITY,
+		...($userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")),
+	}))
+	useLoadCpuCounts(columnVisibility.cores === true)
 
 	// Apply settings from server once they load (handles incognito / new devices)
 	const applied = useRef(new Set<string>())
@@ -92,7 +97,7 @@ export default function SystemsTable() {
 		return subscribeKeys($userSettings, ["cols", "statusFilter", "viewMode", "sortMode"], (vals) => {
 			if (!applied.current.has("cols") && vals.cols !== undefined) {
 				applied.current.add("cols")
-				setColumnVisibility(vals.cols)
+				setColumnVisibility({ ...DEFAULT_COLUMN_VISIBILITY, ...vals.cols })
 			}
 			if (!applied.current.has("statusFilter") && vals.statusFilter !== undefined) {
 				applied.current.add("statusFilter")
