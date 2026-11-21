@@ -174,8 +174,8 @@ export const alertManager = (() => {
   const collection = pb.collection<AlertRecord>("alerts")
   let unsub: () => void
 
-  /** Fields to fetch from alerts collection */
-  const fields = "id,name,system,value,min,triggered"
+	/** Fields to fetch from alerts collection */
+	const fields = "id,name,system,value,thresholds,min,triggered"
 
   // show the number of active alerts on the favicon
   $activeAlerts.listen((activeAlerts) => updateFavicon(activeAlerts.length))
