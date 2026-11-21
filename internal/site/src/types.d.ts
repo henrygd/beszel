@@ -1,5 +1,6 @@
 import type { RecordModel } from "pocketbase"
 import type { Unit, Os, BatteryState, HourFormat, ConnectionType, ServiceStatus, ServiceSubState } from "@/lib/enums"
+import type { DefaultPage } from "@/components/router"
 
 // global window properties
 declare global {
@@ -411,6 +412,8 @@ export interface UserSettings {
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
+	/** page opened on initial load of the root URL and after login, defaults to the systems page */
+	defaultPage?: DefaultPage
 }
 
 type ChartDataContainer = {

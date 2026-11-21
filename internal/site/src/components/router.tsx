@@ -1,4 +1,4 @@
-import { createRouter } from "@nanostores/router"
+import { createRouter, getPagePath } from "@nanostores/router"
 
 const routes = {
 	home: "/",
@@ -31,6 +31,26 @@ for (const route in routes) {
 }
 
 export const $router = createRouter(routes, { links: false })
+
+/** Pages a user can choose to open by default (Settings > General) */
+export const defaultPages = ["home", "containers", "smart", "monitors"] as const
+export type DefaultPage = (typeof defaultPages)[number]
+
+/** Path of the given default page, or the systems page if it isn't set or isn't a valid choice */
+export const getDefaultPagePath = (page?: string) =>
+	getPagePath($router, defaultPages.includes(page as DefaultPage) ? (page as DefaultPage) : "home")
+
+/**
+ * Opens the user's default page in place of the systems page.
+ * Does nothing if the user has navigated away from startPath in the meantime.
+ */
+export const openDefaultPage = (page: string | undefined, startPath: string | undefined) => {
+	const current = $router.get()
+	if (!page || page === "home" || current?.route !== "home" || current.path !== startPath) {
+		return
+	}
+	$router.open(getDefaultPagePath(page), true)
+}
 
 /** Navigate to url using router
  *  Base path is automatically prepended if serving from subpath

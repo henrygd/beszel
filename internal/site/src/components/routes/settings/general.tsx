@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: component is only rendered once */
+import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { useState } from "react"
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import Slider from "@/components/ui/slider"
+import { defaultPages } from "@/components/router"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
@@ -16,6 +18,13 @@ import { $chartTime, $userSettings, defaultLayoutWidth, getUserChartTime } from 
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
+
+const defaultPageLabels = {
+	home: () => t`All Systems`,
+	containers: () => t`All Containers`,
+	smart: () => "S.M.A.R.T.",
+	monitors: () => t`Network Monitors`,
+} as const
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -86,6 +95,29 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 										)}
 									</span>
 									{label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Default page</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Page that opens when you log in or visit the dashboard root.</Trans>
+						</p>
+					</div>
+					<Select name="defaultPage" key={userSettings.defaultPage} defaultValue={userSettings.defaultPage ?? "home"}>
+						<SelectTrigger id="defaultPage" aria-label={t`Default page`}>
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							{defaultPages.map((page) => (
+								<SelectItem key={page} value={page}>
+									{defaultPageLabels[page]()}
 								</SelectItem>
 							))}
 						</SelectContent>

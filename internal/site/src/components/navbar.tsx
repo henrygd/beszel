@@ -1,4 +1,5 @@
 import { Trans } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import {
 	ContainerIcon,
@@ -30,11 +31,12 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { isAdmin, isReadOnlyUser, logOut, pb } from "@/lib/api"
+import { $userSettings } from "@/lib/stores"
 import { cn, runOnce } from "@/lib/utils"
 import { AddSystemDialog } from "./add-system"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
-import { $router, basePath, Link, navigate, prependBasePath } from "./router"
+import { $router, getDefaultPagePath, Link, navigate, prependBasePath } from "./router"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 const CommandPalette = lazy(() => import("./command-palette"))
@@ -46,6 +48,9 @@ export default function Navbar() {
 	const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
 	const AdminLinks = AdminDropdownGroup()
+	const { defaultPage } = useStore($userSettings, { keys: ["defaultPage"] })
+	// the logo opens the default page, so add a link back to the systems page when that's a different page
+	const showSystemsLink = !!defaultPage && defaultPage !== "home"
 
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border border-border/60 bt-0 rounded-md my-4">
@@ -55,7 +60,7 @@ export default function Navbar() {
 			<AddSystemDialog open={addSystemDialogOpen} setOpen={setAddSystemDialogOpen} />
 
 			<Link
-				href={basePath}
+				href={getDefaultPagePath(defaultPage)}
 				aria-label="Home"
 				className="p-2 ps-0 me-3 group"
 				onMouseEnter={runOnce(() => import("@/components/routes/home"))}
@@ -95,6 +100,12 @@ export default function Navbar() {
 						<DropdownMenuLabel className="max-w-40 truncate">{pb.authStore.record?.email}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
+							{showSystemsLink && (
+								<DropdownMenuItem onClick={() => navigate(getPagePath($router, "home"))} className="flex items-center">
+									<ServerIcon className="h-4 w-4 me-2.5" strokeWidth={1.5} />
+									<Trans>All Systems</Trans>
+								</DropdownMenuItem>
+							)}
 							<DropdownMenuItem
 								onClick={() => navigate(getPagePath($router, "containers"))}
 								className="flex items-center"
@@ -158,6 +169,22 @@ export default function Navbar() {
 				className="hidden md:flex items-center ms-auto"
 				onMouseEnter={() => import("@/components/routes/settings/general")}
 			>
+				{showSystemsLink && (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={getPagePath($router, "home")}
+								className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+								aria-label="All Systems"
+							>
+								<ServerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent>
+							<Trans>All Systems</Trans>
+						</TooltipContent>
+					</Tooltip>
+				)}
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<Link
