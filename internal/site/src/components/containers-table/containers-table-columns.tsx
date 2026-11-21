@@ -49,7 +49,12 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		accessorFn: (record) => record.name,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
 		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
+			const val = getValue() as string
+			return (
+				<span className="ms-1.5 block w-48 min-w-0 truncate" title={val}>
+					{val}
+				</span>
+			)
 		},
 	},
 	{
@@ -180,10 +185,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		cell: ({ getValue, row }) => {
 			const val = getValue() as string
 			return (
-				<div className="ms-1 xl:w-40 flex items-center gap-2">
-					<span className="truncate" title={val}>
-						{val}
-					</span>
+				<div className="ms-1 flex w-40 min-w-0 items-center gap-2">
 					{row.original.updatable && (
 						<Tooltip>
 							<TooltipTrigger
@@ -196,6 +198,9 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 							<TooltipContent>{t({ message: "Image update available", context: "Docker image" })}</TooltipContent>
 						</Tooltip>
 					)}
+					<span className="min-w-0 flex-1 truncate" title={val}>
+						{val}
+					</span>
 				</div>
 			)
 		},
