@@ -329,6 +329,25 @@ func (s *Scheduler) checkDomain(record *core.Record) error {
 
 	history := s.trackChanges(oldRecord, newData, status)
 
+	// Availability transitions are recorded in history and, for watchlist
+	// domains, fire an alert so a dropped or grabbed domain is not missed.
+	if newData.Availability != "" && newData.Availability != record.GetString("availability") {
+		oldAvailability := record.GetString("availability")
+		if oldAvailability != "" {
+			history = append(history, domain.DomainHistory{
+				ChangeType: domain.ChangeTypeStatus,
+				FieldName:  "availability",
+				OldValue:   oldAvailability,
+				NewValue:   newData.Availability,
+				CreatedAt:  time.Now(),
+			})
+			if record.GetString("monitor_type") == "watchlist" {
+				s.triggerAvailabilityAlert(record, newData.Availability)
+			}
+		}
+		record.Set("availability", newData.Availability)
+	}
+
 	if err := s.app.Save(record); err != nil {
 		log.Printf("[domain-scheduler] Failed to update %s: %v", domainName, err)
 		return err
@@ -352,8 +371,14 @@ func (s *Scheduler) checkDomain(record *core.Record) error {
 		}
 	}
 
-	// Discover and save subdomains using enhanced discovery
-	s.discoverSubdomainsEnhanced(record, domainName, userID)
+	// Discover and save subdomains using enhanced discovery. Detached from the
+	// check — CT-log lookups can run for minutes and must not hold one of the
+	// four check slots, or slow sources starve all domain monitoring.
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		s.discoverSubdomainsEnhanced(record, domainName, userID)
+	}()
 
 	log.Printf("[domain-scheduler] Updated domain: %s (status: %s)", domainName, status)
 	return nil
@@ -520,6 +545,21 @@ func (s *Scheduler) saveHistory(h domain.DomainHistory, domainID, userID string)
 }
 
 // triggerNotification sends notification for domain events
+func (s *Scheduler) triggerAvailabilityAlert(record *core.Record, availability string) {
+	if s.alertCallback == nil {
+		return
+	}
+	userID := record.GetString("user")
+	if userID == "" {
+		return
+	}
+	domainName := record.GetString("domain_name")
+	title := fmt.Sprintf("Domain availability changed: %s", domainName)
+	body := fmt.Sprintf("%s is now %s.", domainName, availability)
+	log.Printf("[domain-scheduler] %s: %s", title, body)
+	s.alertCallback(userID, title, body, fmt.Sprintf("/domain/%s", record.Id), "View Domain")
+}
+
 func (s *Scheduler) triggerNotification(record *core.Record, status string) {
 	domainName := record.GetString("domain_name")
 	userID := record.GetString("user")

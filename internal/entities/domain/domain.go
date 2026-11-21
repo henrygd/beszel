@@ -8,6 +8,8 @@ type Domain struct {
 	DomainName string `json:"domain_name" db:"domain_name"`
 	Status     string `json:"status" db:"status"`
 	Active     bool   `json:"active" db:"active"`
+	// Availability is "available" | "registered" | "" (unknown) — set from WHOIS/RDAP
+	Availability string `json:"availability" db:"availability"`
 
 	// Dates
 	ExpiryDate   *time.Time `json:"expiry_date" db:"expiry_date"`
@@ -129,6 +131,7 @@ type DomainHistory struct {
 // WHOISData represents parsed WHOIS information
 type WHOISData struct {
 	DomainName string         `json:"domain_name"`
+	Available  bool           `json:"available"`
 	Status     []string       `json:"status"`
 	DNSSEC     string         `json:"dnssec"`
 	Dates      WHOISDates     `json:"dates"`

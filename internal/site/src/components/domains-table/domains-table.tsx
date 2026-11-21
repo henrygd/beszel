@@ -267,6 +267,19 @@ function StatusIndicator({ status }: { status: string }) {
 	)
 }
 
+function AvailabilityBadge({ availability }: { availability?: string }) {
+	if (!availability) return null
+	const styles = {
+		available: "border-green-500/50 text-green-600 dark:text-green-400",
+		registered: "border-border text-muted-foreground",
+	}
+	return (
+		<span className={cn("ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs", styles[availability as keyof typeof styles] || "border-border text-muted-foreground")}>
+			{availability === "available" ? "Available" : "Registered"}
+		</span>
+	)
+}
+
 	if (isLoading) {
 		return (
 			<Card className="w-full px-3 py-5 sm:py-6 sm:px-6">
@@ -526,6 +539,7 @@ function StatusIndicator({ status }: { status: string }) {
 												</TableCell>
 												<TableCell>
 													<StatusIndicator status={domain.status} />
+													<AvailabilityBadge availability={domain.availability} />
 												</TableCell>
 												{displayOptions.showExpiryDate && (
 													<TableCell>

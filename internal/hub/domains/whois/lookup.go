@@ -114,6 +114,10 @@ func (s *LookupService) LookupWHOIS(ctx context.Context, domainName string) (*do
 		if data == nil {
 			return false
 		}
+		if data.Available {
+			partial, partialRaw = data, raw
+			return true
+		}
 		if hasExpiry(data) {
 			partial, partialRaw = data, raw
 			return true
@@ -201,6 +205,9 @@ func (s *LookupService) tryRDAP(ctx context.Context, domainName string) (*domain
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == 404 {
+		return &domain.WHOISData{DomainName: domainName, Available: true}, nil
+	}
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("RDAP returned status %d", resp.StatusCode)
 	}
@@ -413,8 +420,15 @@ func (s *LookupService) tryTCPWHOIS(ctx context.Context, domainName string) (*do
 		}
 	}
 
-	data, err := s.parseWHOISOutput(output.String(), domainName)
-	return data, output.String(), err
+	out := output.String()
+	lower := strings.ToLower(out)
+	for _, marker := range []string{"no match for", "not found", "status: free", "domain not found", "no data found", "is available for registration", "no entries found"} {
+		if strings.Contains(lower, marker) {
+			return &domain.WHOISData{DomainName: domainName, Available: true}, out, nil
+		}
+	}
+	data, err := s.parseWHOISOutput(out, domainName)
+	return data, out, err
 }
 
 // tryWhoisXML tries the WhoisXML API
@@ -1339,6 +1353,11 @@ func (s *LookupService) applyWHOISData(d *domain.Domain, whois *domain.WHOISData
 	d.RegistrarURL = whois.Registrar.URL
 	d.RegistryDomainID = whois.Registrar.RegistryDomainID
 	d.DomainStatuses = whois.Status
+	if whois.Available {
+		d.Availability = "available"
+	} else if hasExpiry(whois) || whois.Registrar.Name != "" {
+		d.Availability = "registered"
+	}
 
 	// Detect privacy protection from registrant name
 	registrantLower := strings.ToLower(whois.Registrant.Name + " " + whois.Registrant.Organization)
@@ -1737,6 +1756,9 @@ func hasExpiry(data *domain.WHOISData) bool {
 func hasValidData(data *domain.WHOISData) bool {
 	if data == nil {
 		return false
+	}
+	if data.Available {
+		return true
 	}
 	// Accept if we got any meaningful date (non-nil and not zero)
 	if data.Dates.ExpiryDate != nil && !data.Dates.ExpiryDate.IsZero() {

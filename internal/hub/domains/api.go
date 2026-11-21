@@ -614,6 +614,7 @@ func (h *APIHandler) recordToResponse(record *core.Record) map[string]interface{
 		"ssl_alert_enabled":          record.GetBool("ssl_alert_enabled"),
 		"ssl_alert_days":             record.GetInt("ssl_alert_days"),
 		"monitor_type":               record.GetString("monitor_type"),
+		"availability":               record.GetString("availability"),
 		"notify_on_expiry":           record.GetBool("notify_on_expiry"),
 		"notify_on_ssl_expiry":       record.GetBool("notify_on_ssl_expiry"),
 		"notify_on_dns_change":       record.GetBool("notify_on_dns_change"),

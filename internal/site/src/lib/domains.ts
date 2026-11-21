@@ -19,6 +19,7 @@ export interface Domain {
 	id: string
 	domain_name: string
 	status: "active" | "expiring" | "expired" | "unknown" | "paused"
+	availability?: "available" | "registered" | ""
 	active: boolean
 	expiry_date?: string
 	creation_date?: string
