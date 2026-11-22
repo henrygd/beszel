@@ -4,7 +4,7 @@ go 1.27.3
 
 require (
 	ganigeorgiev.com/pocketbase/dbx v1.13.0
-	ganigeorgiev.com/pocketbase/pocketbase v0.42.2
+	ganigeorgiev.com/pocketbase/pocketbase v0.42.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/distribution/reference v0.6.0
