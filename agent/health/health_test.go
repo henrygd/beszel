@@ -74,12 +74,64 @@ func TestCleanUpIsIdempotent(t *testing.T) {
 	assert.NoError(t, CleanUp(), "removing a health file that is already gone is not an error")
 }
 
+// A candidate the agent never wrote can be impossible to remove: under systemd ProtectSystem=strict
+// without PrivateTmp, /tmp is read-only and unlink fails with EROFS even for a missing file, and in
+// the sticky /dev/shm another user's file fails with EPERM. Neither may fail the shutdown.
+func TestCleanUpSkipsCandidatesItDidNotWrite(t *testing.T) {
+	dir := t.TempDir()
+	ours := filepath.Join(dir, "beszel_health")
+	// A non-empty directory stands in for a candidate that cannot be removed: os.Remove fails on it
+	// on every platform and regardless of privileges.
+	unremovable := filepath.Join(dir, "unremovable")
+	require.NoError(t, os.MkdirAll(filepath.Join(unremovable, "child"), 0o755))
+	useHealthFiles(t, ours, unremovable)
+
+	require.NoError(t, Update())
+	require.NoError(t, CleanUp())
+	assert.NoFileExists(t, ours)
+	assert.DirExists(t, unremovable)
+}
+
+// The file in another location may belong to another agent on the host, so CleanUp leaves it.
+func TestCleanUpLeavesOtherAgentsFile(t *testing.T) {
+	dir := t.TempDir()
+	ours := filepath.Join(dir, "shm_beszel_health")
+	other := filepath.Join(dir, "tmp_beszel_health")
+	useHealthFiles(t, ours, other)
+	require.NoError(t, os.WriteFile(other, nil, 0o644))
+
+	require.NoError(t, Update())
+	require.NoError(t, CleanUp())
+	assert.NoFileExists(t, ours)
+	assert.FileExists(t, other)
+}
+
+// If the preferred location becomes writable while the agent runs, Update switches to it; CleanUp
+// removes the earlier fallback file as well.
+func TestCleanUpRemovesEveryFileItWrote(t *testing.T) {
+	dir := t.TempDir()
+	preferredDir := filepath.Join(dir, "shm")
+	preferred := filepath.Join(preferredDir, "beszel_health")
+	fallback := filepath.Join(dir, "beszel_health")
+	useHealthFiles(t, preferred, fallback)
+
+	require.NoError(t, Update())
+	require.FileExists(t, fallback)
+	require.NoError(t, os.Mkdir(preferredDir, 0o755))
+	require.NoError(t, Update())
+	require.FileExists(t, preferred)
+
+	require.NoError(t, CleanUp())
+	assert.NoFileExists(t, preferred)
+	assert.NoFileExists(t, fallback)
+}
+
 // useHealthFiles points the package at the given candidate paths for one test.
 func useHealthFiles(t *testing.T, paths ...string) []string {
 	t.Helper()
-	original := healthFiles
-	healthFiles = paths
-	t.Cleanup(func() { healthFiles = original })
+	originalFiles, originalWritten := healthFiles, written
+	healthFiles, written = paths, nil
+	t.Cleanup(func() { healthFiles, written = originalFiles, originalWritten })
 	return paths
 }
 
