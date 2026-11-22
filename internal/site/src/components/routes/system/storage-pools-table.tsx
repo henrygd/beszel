@@ -3,17 +3,23 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
+import {
+	sortableHeader,
+	TableFilterInput,
+	TableSettingsMenu,
+	useTableSettings,
+} from "@/components/ui/data-table-settings"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { cn, formatBytes, formatShortDate, hourWithSeconds, toFixedFloat } from "@/lib/utils"
+import { cn, formatBytes, formatShortDate, hourWithSeconds, matchesTableFilter, toFixedFloat } from "@/lib/utils"
 import type { ZfsDataset, ZfsPoolRecord, ZfsVdev } from "@/types"
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import type { Column, ColumnDef, SortingState } from "@tanstack/react-table"
+import type { ColumnDef } from "@tanstack/react-table"
 import {
 	flexRender,
 	getCoreRowModel,
@@ -76,22 +82,6 @@ function formatCapacity(bytes: number): string {
 	return `${toFixedFloat(value, value >= 10 ? 1 : 2)} ${unit}`
 }
 
-function HeaderButton<T>({ column, name, Icon }: { column: Column<T>; name: string; Icon: React.ElementType }) {
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			className={cn(
-				"h-9 px-3 flex items-center gap-2 duration-50",
-				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
-			)}
-			variant="ghost"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			<Icon className="size-4" />
-			{name}
-		</Button>
-	)
-}
 
 function poolType(pool: ZfsPoolRecord): string {
 	return pool.name.startsWith("b:") ? "Btrfs" : "ZFS"
@@ -100,14 +90,17 @@ function poolType(pool: ZfsPoolRecord): string {
 const columns: ColumnDef<ZfsPoolRecord>[] = [
 	{
 		id: "name",
+		meta: { label: () => `Pool`, Icon: DatabaseIcon },
+		enableHiding: false,
 		accessorFn: (pool) => pool.display_name || pool.name,
-		header: ({ column }) => <HeaderButton column={column} name={`Pool`} Icon={DatabaseIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => <span className="font-medium ms-1.5">{getValue() as string}</span>,
 	},
 	{
 		id: "type",
+		meta: { label: () => t`Type`, Icon: FolderTreeIcon },
 		accessorFn: poolType,
-		header: ({ column }) => <HeaderButton column={column} name={t`Type`} Icon={FolderTreeIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const type = getValue() as string
 			return (
@@ -119,8 +112,9 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 	},
 	{
 		accessorKey: "health",
+		meta: { label: () => t`Health`, Icon: ActivityIcon },
 		sortingFn: (a, b) => a.original.health.localeCompare(b.original.health),
-		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ActivityIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue, row }) => {
 			const health = (getValue() as string) || ""
 			return <Badge variant={healthVariant(health, hasVdevErrors(row.original.vdevs))}>{health || t`Unknown`}</Badge>
@@ -128,29 +122,33 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 	},
 	{
 		id: "size",
+		meta: { label: () => t`Capacity`, Icon: BinaryIcon },
 		accessorFn: (record) => record.size,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue, row }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}{row.original.raw ? ` (${t`Raw`})` : ""}</span>,
 	},
 	{
 		id: "used",
+		meta: { label: () => t`Used`, Icon: HardDriveDownloadIcon },
 		accessorFn: (record) => record.alloc,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Used`} Icon={HardDriveDownloadIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue, row }) => <span className="ms-1.5 tabular-nums">{formatCapacity(getValue() as number)}{row.original.raw ? ` (${t`Raw`})` : ""}</span>,
 	},
 	{
 		id: "free",
+		meta: { label: () => t({ message: `Free`, context: "Free space" }), Icon: HardDriveUploadIcon },
 		accessorFn: (record) => record.free,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t({ message: `Free`, context: "Free space" })} Icon={HardDriveUploadIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue, row }) => <span className="ms-1.5 tabular-nums">{row.original.raw ? "-" : formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "scrub",
+		meta: { label: () => `Scrub`, Icon: RotateCwIcon },
 		accessorFn: (record) => record.scrub?.state ?? "",
-		header: ({ column }) => <HeaderButton column={column} name={`Scrub`} Icon={RotateCwIcon} />,
+		header: sortableHeader,
 		cell: ({ row }) => {
 			const scrub = row.original.scrub
 			if (!scrub?.state) return <span className="ms-1.5 text-muted-foreground">{t`None`}</span>
@@ -164,9 +162,10 @@ const columns: ColumnDef<ZfsPoolRecord>[] = [
 	},
 	{
 		id: "updated",
+		meta: { label: () => t`Updated`, Icon: ClockIcon },
 		invertSorting: true,
 		accessorFn: (record) => record.details_updated || record.updated,
-		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as string
 			if (!timestamp) return null
@@ -229,28 +228,32 @@ function VdevTable({ vdevs }: { vdevs: ZfsVdev[] }) {
 const datasetColumns: ColumnDef<ZfsDataset>[] = [
 	{
 		accessorKey: "name",
+		meta: { label: () => `Dataset`, Icon: DatabaseIcon },
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-		header: ({ column }) => <HeaderButton column={column} name={`Dataset`} Icon={DatabaseIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => <span className="font-mono text-xs">{getValue() as string}</span>,
 	},
 	{
 		id: "used",
+		meta: { label: () => t`Used`, Icon: HardDriveDownloadIcon },
 		accessorFn: (ds) => ds.used ?? 0,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Used`} Icon={HardDriveDownloadIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => <span className="text-right tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		id: "avail",
+		meta: { label: () => t({message:`Available`, context: "Disk space available"}), Icon: HardDriveUploadIcon },
 		accessorFn: (ds) => ds.avail ?? 0,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t({message:`Available`, context: "Disk space available"})} Icon={HardDriveUploadIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => <span className="text-right tabular-nums">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		accessorKey: "mount",
+		meta: { label: () => t`Mountpoint`, Icon: HardDriveIcon },
 		sortingFn: (a, b) => (a.original.mount ?? "").localeCompare(b.original.mount ?? ""),
-		header: ({ column }) => <HeaderButton column={column} name={t`Mountpoint`} Icon={HardDriveIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => (
 			<span className="font-mono text-xs text-muted-foreground">{(getValue() as string) || "-"}</span>
 		),
@@ -451,8 +454,13 @@ function PoolSheet({
 export default function ZfsTable({ systemId }: { systemId?: string }) {
 	const [zfsPools, setZfsPools] = useState<ZfsPoolRecord[]>()
 	const [globalFilter, setGlobalFilter] = useState("")
-	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const tableSettings = useTableSettings({
+		colsKey: "zfsCols",
+		sortKey: "zfsSortMode",
+		defaultSort: [{ id: "name", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
 	const [activePoolId, setActivePoolId] = useState<string | null>(null)
 	const [sheetOpen, setSheetOpen] = useState(false)
 	const [refreshingId, setRefreshingId] = useState<string | null>(null)
@@ -542,6 +550,7 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 		() => ({
 			id: "actions",
 			enableSorting: false,
+			enableHiding: false,
 			header: () => (
 				<span className="sr-only">
 					<Trans>Actions</Trans>
@@ -601,22 +610,21 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 		getPaginationRowModel: getPaginationRowModel(),
 		autoResetPageIndex: false,
 		onPaginationChange,
-		state: { sorting, globalFilter, pagination },
-		onSortingChange: (updater) => {
-			setSorting(updater)
-			resetPageIndex()
+		state: {
+			sorting: tableSettings.sorting,
+			columnVisibility: tableSettings.columnVisibility,
+			globalFilter,
+			pagination,
 		},
+		onSortingChange: tableSettings.onSortingChange,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		onGlobalFilterChange: (value) => {
 			setGlobalFilter(value)
 			resetPageIndex()
 		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const pool = row.original
-			const searchString = `${pool.display_name ?? ""} ${pool.name} ${poolType(pool)} ${pool.health ?? ""}`.toLowerCase()
-			return (filterValue as string)
-				.toLowerCase()
-				.split(" ")
-				.every((term) => searchString.includes(term))
+			return matchesTableFilter(filterValue, pool.display_name, pool.name, poolType(pool), pool.health)
 		},
 	})
 	const rows = table.getRowModel().rows
@@ -642,25 +650,9 @@ export default function ZfsTable({ systemId }: { systemId?: string }) {
 								<Trans>Click on a pool to view vdev and dataset details.</Trans>
 							</CardDescription>
 						</div>
-						<div className="relative ms-auto w-full max-w-full md:w-64">
-							<Input
-								placeholder={t`Filter...`}
-								value={globalFilter}
-								onChange={(event) => table.setGlobalFilter(event.target.value)}
-								className="px-4 w-full max-w-full md:w-64"
-							/>
-							{globalFilter && (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									aria-label={t`Clear`}
-									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => table.setGlobalFilter("")}
-								>
-									<XIcon className="h-4 w-4" />
-								</Button>
-							)}
+						<div className="flex gap-2 ms-auto w-full md:w-auto">
+							<TableFilterInput value={globalFilter} onChange={table.setGlobalFilter} />
+							<TableSettingsMenu table={table} />
 						</div>
 					</div>
 				</CardHeader>

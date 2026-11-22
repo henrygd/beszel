@@ -4,7 +4,6 @@ import { useStore } from "@nanostores/react"
 import { subscribeKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
 import {
-	type ColumnDef,
 	type ColumnFiltersState,
 	flexRender,
 	getCoreRowModel,
@@ -12,38 +11,20 @@ import {
 	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
-	type SortingState,
 	type Table as TableType,
 	useReactTable,
-	type VisibilityState,
 } from "@tanstack/react-table"
-import {
-	ArrowDownIcon,
-	ArrowUpDownIcon,
-	ArrowUpIcon,
-	EyeIcon,
-	FilterIcon,
-	LayoutGridIcon,
-	LayoutListIcon,
-	LoaderCircleIcon,
-	Settings2Icon,
-	XIcon,
-} from "lucide-react"
+import { EyeIcon, FilterIcon, LayoutGridIcon, LayoutListIcon, LoaderCircleIcon } from "lucide-react"
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenuRadioGroup, DropdownMenuRadioItem } from "@/components/ui/dropdown-menu"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import {
+	getColumnLabel,
+	TableFilterInput,
+	TableSettingsMenu,
+	TableSettingsSection,
+	useTableSettings,
+} from "@/components/ui/data-table-settings"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { SystemStatus } from "@/lib/enums"
 import { queueUserSettings } from "@/lib/api"
@@ -67,7 +48,7 @@ export default function SystemsTable() {
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
-	const { i18n, t } = useLingui()
+	const { i18n } = useLingui()
 	const [filter, setFilter] = useState<string>("")
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>(
 		() =>
@@ -75,25 +56,19 @@ export default function SystemsTable() {
 			(JSON.parse(localStorage.getItem("besz-statusFilter") || "null") as StatusFilter | null) ??
 			"all"
 	)
-	const [sorting, setSorting] = useState<SortingState>(
-		() =>
-			$userSettings.get().sortMode ??
-			JSON.parse(sessionStorage.getItem("besz-sortMode") || "null") ?? [{ id: "system", desc: false }]
-	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		() => $userSettings.get().cols ?? JSON.parse(localStorage.getItem("besz-cols") || "{}")
-	)
+	const tableSettings = useTableSettings({
+		colsKey: "cols",
+		sortKey: "sortMode",
+		defaultSort: [{ id: "system", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
 
 	// Apply settings from server once they load (handles incognito / new devices)
 	const applied = useRef(new Set<string>())
 	useEffect(() => {
-		return subscribeKeys($userSettings, ["cols", "statusFilter", "viewMode", "sortMode"], (vals) => {
-			if (!applied.current.has("cols") && vals.cols !== undefined) {
-				applied.current.add("cols")
-				setColumnVisibility(vals.cols)
-			}
+		return subscribeKeys($userSettings, ["statusFilter", "viewMode"], (vals) => {
 			if (!applied.current.has("statusFilter") && vals.statusFilter !== undefined) {
 				applied.current.add("statusFilter")
 				setStatusFilter(vals.statusFilter)
@@ -102,25 +77,8 @@ export default function SystemsTable() {
 				applied.current.add("viewMode")
 				setViewMode(vals.viewMode)
 			}
-			if (!applied.current.has("sortMode") && vals.sortMode !== undefined) {
-				applied.current.add("sortMode")
-				setSorting(vals.sortMode)
-			}
 		})
 	}, [])
-
-	const handleColumnVisibilityChange = useCallback(
-		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
-			setColumnVisibility((prev) => {
-				const next = typeof updater === "function" ? updater(prev) : updater
-				localStorage.setItem("besz-cols", JSON.stringify(next))
-				$userSettings.setKey("cols", next)
-				queueUserSettings({ cols: next })
-				return next
-			})
-		},
-		[]
-	)
 
 	const handleStatusFilterChange = useCallback(
 		(value: string) => {
@@ -141,20 +99,6 @@ export default function SystemsTable() {
 		$userSettings.setKey("viewMode", next)
 		queueUserSettings({ viewMode: next })
 	}, [])
-
-	const handleSortingChange = useCallback(
-		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
-			setSorting((prev) => {
-				const next = typeof updater === "function" ? updater(prev) : updater
-				sessionStorage.setItem("besz-sortMode", JSON.stringify(next))
-				$userSettings.setKey("sortMode", next)
-				queueUserSettings({ sortMode: next })
-				return next
-			})
-			resetPageIndex()
-		},
-		[resetPageIndex]
-	)
 
 	const locale = i18n.locale
 
@@ -193,18 +137,18 @@ export default function SystemsTable() {
 		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
-		onSortingChange: handleSortingChange,
+		onSortingChange: tableSettings.onSortingChange,
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		autoResetPageIndex: false,
 		onPaginationChange,
-		onColumnVisibilityChange: handleColumnVisibilityChange,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		state: {
-			sorting,
+			sorting: tableSettings.sorting,
 			columnFilters,
-			columnVisibility,
+			columnVisibility: tableSettings.columnVisibility,
 			pagination,
 		},
 		defaultColumn: {
@@ -217,7 +161,6 @@ export default function SystemsTable() {
 	})
 
 	const rows = table.getRowModel().rows
-	const columns = table.getAllColumns()
 	const visibleColumns = table.getVisibleLeafColumns()
 
 	const [upSystemsLength, downSystemsLength, pausedSystemsLength] = useMemo(() => {
@@ -237,150 +180,46 @@ export default function SystemsTable() {
 						</CardDescription>
 					</div>
 
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<div className="relative flex-1">
-							<Input
-								placeholder={t`Filter...`}
-								onChange={(e) => setFilter(e.target.value)}
-								value={filter}
-								className="ps-4 pe-10 w-full"
-							/>
-							{filter && (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									aria-label={t`Clear`}
-									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => setFilter("")}
-								>
-									<XIcon className="h-4 w-4" />
-								</Button>
-							)}
-						</div>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button aria-label={t`View`} variant="outline" size="icon">
-									<Settings2Icon className="size-4 opacity-80" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
-									<div className="border-r">
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<LayoutGridIcon className="size-4" />
-											<Trans>Layout</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<DropdownMenuRadioGroup className="px-1 pb-1" value={viewMode} onValueChange={handleViewModeChange}>
-											<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
-												<LayoutListIcon className="size-4" />
-												<Trans>Table</Trans>
-											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
-												<LayoutGridIcon className="size-4" />
-												<Trans>Grid</Trans>
-											</DropdownMenuRadioItem>
-										</DropdownMenuRadioGroup>
-									</div>
-
-									<div className="border-r">
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<FilterIcon className="size-4" />
-											<Trans>Status</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<DropdownMenuRadioGroup
-											className="px-1 pb-1"
-											value={statusFilter}
-											onValueChange={handleStatusFilterChange}
-										>
-											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()}>
-												<Trans>All Systems</Trans>
-											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()}>
-												<Trans>Up ({upSystemsLength})</Trans>
-											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()}>
-												<Trans>Down ({downSystemsLength})</Trans>
-											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()}>
-												<Trans>Paused ({pausedSystemsLength})</Trans>
-											</DropdownMenuRadioItem>
-										</DropdownMenuRadioGroup>
-									</div>
-
-									<div className="border-r">
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<ArrowUpDownIcon className="size-4" />
-											<Trans>Sort By</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<div className="px-1 pb-1">
-											{columns.map((column) => {
-												if (!column.getCanSort()) return null
-												let Icon = <span className="w-6"></span>
-												// if current sort column, show sort direction
-												if (sorting[0]?.id === column.id) {
-													if (sorting[0]?.desc) {
-														Icon = <ArrowUpIcon className="me-2 size-4" />
-													} else {
-														Icon = <ArrowDownIcon className="me-2 size-4" />
-													}
-												}
-												return (
-													<DropdownMenuItem
-														onSelect={(e) => {
-															e.preventDefault()
-															handleSortingChange([
-																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
-															])
-														}}
-														key={column.id}
-													>
-														{Icon}
-														{/* @ts-ignore */}
-														{column.columnDef.name()}
-													</DropdownMenuItem>
-												)
-											})}
-										</div>
-									</div>
-
-									<div>
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<EyeIcon className="size-4" />
-											<Trans>Visible Fields</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<div className="px-1.5 pb-1">
-											{columns
-												.filter((column) => column.getCanHide())
-												.map((column) => {
-													return (
-														<DropdownMenuCheckboxItem
-															key={column.id}
-															onSelect={(e) => e.preventDefault()}
-															checked={column.getIsVisible()}
-															onCheckedChange={(value) => column.toggleVisibility(!!value)}
-														>
-															{/* @ts-ignore */}
-															{column.columnDef.name()}
-														</DropdownMenuCheckboxItem>
-													)
-												})}
-										</div>
-									</div>
-								</div>
-							</DropdownMenuContent>
-						</DropdownMenu>
+					<div className="flex gap-2 ms-auto w-full md:w-auto">
+						<TableFilterInput value={filter} onChange={setFilter} />
+						<TableSettingsMenu table={table}>
+							<TableSettingsSection Icon={LayoutGridIcon} title={<Trans>Layout</Trans>}>
+								<DropdownMenuRadioGroup value={viewMode} onValueChange={handleViewModeChange}>
+									<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
+										<LayoutListIcon className="size-4" />
+										<Trans>Table</Trans>
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
+										<LayoutGridIcon className="size-4" />
+										<Trans>Grid</Trans>
+									</DropdownMenuRadioItem>
+								</DropdownMenuRadioGroup>
+							</TableSettingsSection>
+							<TableSettingsSection Icon={FilterIcon} title={<Trans>Status</Trans>}>
+								<DropdownMenuRadioGroup value={statusFilter} onValueChange={handleStatusFilterChange}>
+									<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()}>
+										<Trans>All Systems</Trans>
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()}>
+										<Trans>Up ({upSystemsLength})</Trans>
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()}>
+										<Trans>Down ({downSystemsLength})</Trans>
+									</DropdownMenuRadioItem>
+									<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()}>
+										<Trans>Paused ({pausedSystemsLength})</Trans>
+									</DropdownMenuRadioItem>
+								</DropdownMenuRadioGroup>
+							</TableSettingsSection>
+						</TableSettingsMenu>
 					</div>
 				</div>
 			</CardHeader>
 		)
 	}, [
 		visibleColumns.length,
-		sorting,
+		tableSettings.sorting,
+		tableSettings.columnVisibility,
 		viewMode,
 		locale,
 		statusFilter,
@@ -551,8 +390,7 @@ const SystemCard = memo(
 								if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
 								const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
 								if (!cell) return null
-								// @ts-expect-error
-								const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
+								const Icon = column.columnDef.meta?.Icon
 								return (
 									<>
 										<div key={`${column.id}-icon`} className="flex items-center">
@@ -563,7 +401,7 @@ const SystemCard = memo(
 											)}
 										</div>
 										<div key={`${column.id}-label`} className="flex items-center text-muted-foreground pr-3">
-											{name()}:
+											{getColumnLabel(column)}:
 										</div>
 										<div key={`${column.id}-value`} className="flex items-center min-w-0">
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}

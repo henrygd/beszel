@@ -409,6 +409,20 @@ export interface UserSettings {
 	monitorCols?: Record<string, boolean>
 	monitorSortMode?: Array<{ id: string; desc: boolean }>
 	monitorSortModeSystem?: Array<{ id: string; desc: boolean }>
+	containerCols?: Record<string, boolean>
+	containerSortMode?: Array<{ id: string; desc: boolean }>
+	containerSortModeSystem?: Array<{ id: string; desc: boolean }>
+	systemdCols?: Record<string, boolean>
+	systemdSortMode?: Array<{ id: string; desc: boolean }>
+	smartCols?: Record<string, boolean>
+	smartSortMode?: Array<{ id: string; desc: boolean }>
+	smartSortModeSystem?: Array<{ id: string; desc: boolean }>
+	zfsCols?: Record<string, boolean>
+	zfsSortMode?: Array<{ id: string; desc: boolean }>
+	packageUpdateCols?: Record<string, boolean>
+	packageUpdateSortMode?: Array<{ id: string; desc: boolean }>
+	alertsHistoryCols?: Record<string, boolean>
+	alertsHistorySortMode?: Array<{ id: string; desc: boolean }>
 	grid?: boolean
 	displayMode?: "default" | "tabs"
 }

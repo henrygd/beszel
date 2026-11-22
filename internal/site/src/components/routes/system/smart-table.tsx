@@ -2,9 +2,7 @@ import { t } from "@lingui/core/macro"
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
-	type Column,
 	type Row,
-	type SortingState,
 	type Table as TableType,
 	flexRender,
 	getCoreRowModel,
@@ -28,12 +26,16 @@ import {
 	RefreshCwIcon,
 	ServerIcon,
 	Trash2Icon,
-	XIcon,
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import {
+	sortableHeader,
+	TableFilterInput,
+	TableSettingsMenu,
+	useTableSettings,
+} from "@/components/ui/data-table-settings"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -48,6 +50,7 @@ import {
 	hourWithSeconds,
 	formatShortDate,
 	formatNumber,
+	matchesTableFilter,
 } from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -120,6 +123,7 @@ const SMART_DEVICE_FIELDS = "id,system,name,model,state,capacity,temp,type,hours
 export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	{
 		id: "system",
+		meta: { label: () => t`System`, Icon: ServerIcon },
 		accessorFn: (record) => record.system,
 		sortingFn: (a, b) => {
 			const allSystems = $allSystemsById.get()
@@ -127,7 +131,7 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 			const systemNameB = allSystems[b.original.system]?.name ?? ""
 			return systemNameA.localeCompare(systemNameB)
 		},
-		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
 			return <div className="ms-1.5 max-w-44 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
@@ -135,8 +139,10 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "name",
+		meta: { label: () => t`Device`, Icon: HardDrive },
+		enableHiding: false,
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-		header: ({ column }) => <HeaderButton column={column} name={t`Device`} Icon={HardDrive} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => (
 			<div className="font-medium ms-1 max-w-44 truncate" title={getValue() as string}>
 				{getValue() as string}
@@ -145,10 +151,9 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "model",
+		meta: { label: () => t({ message: "Model", comment: "Device model" }), Icon: Box },
 		sortingFn: (a, b) => a.original.model.localeCompare(b.original.model),
-		header: ({ column }) => (
-			<HeaderButton column={column} name={t({ message: "Model", comment: "Device model" })} Icon={Box} />
-		),
+		header: sortableHeader,
 		cell: ({ getValue }) => (
 			<div className="ms-1 max-w-44 truncate" title={getValue() as string}>
 				{getValue() as string}
@@ -157,13 +162,15 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "capacity",
+		meta: { label: () => t`Capacity`, Icon: BinaryIcon },
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => <span className="ms-1">{formatCapacity(getValue() as number)}</span>,
 	},
 	{
 		accessorKey: "state",
-		header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={Activity} />,
+		meta: { label: () => t`Status`, Icon: Activity },
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const status = getValue() as string
 			return (
@@ -175,8 +182,9 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "type",
+		meta: { label: () => t`Type`, Icon: ArrowLeftRightIcon },
 		sortingFn: (a, b) => a.original.type.localeCompare(b.original.type),
-		header: ({ column }) => <HeaderButton column={column} name={t`Type`} Icon={ArrowLeftRightIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => (
 			<Badge variant="outline" className="ms-1 uppercase">
 				{getValue() as string}
@@ -185,10 +193,9 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "hours",
+		meta: { label: () => t({ message: "Power On", comment: "Power On Time" }), Icon: Clock },
 		invertSorting: true,
-		header: ({ column }) => (
-			<HeaderButton column={column} name={t({ message: "Power On", comment: "Power On Time" })} Icon={Clock} />
-		),
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const hours = getValue() as number | undefined
 			// hours is stored as 0 when the device doesn't report it (e.g. eMMC, mdraid)
@@ -206,10 +213,9 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "cycles",
+		meta: { label: () => t({ message: "Cycles", comment: "Power Cycles" }), Icon: RotateCwIcon },
 		invertSorting: true,
-		header: ({ column }) => (
-			<HeaderButton column={column} name={t({ message: "Cycles", comment: "Power Cycles" })} Icon={RotateCwIcon} />
-		),
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const cycles = getValue() as number | undefined
 			if (!cycles) {
@@ -220,8 +226,9 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 	{
 		accessorKey: "temp",
+		meta: { label: () => t`Temp`, Icon: ThermometerIcon },
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Temp`} Icon={ThermometerIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const temp = getValue() as number | null | undefined
 			if (!temp) {
@@ -245,9 +252,10 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	// },
 	{
 		id: "updated",
+		meta: { label: () => t`Updated`, Icon: Clock },
 		invertSorting: true,
 		accessorFn: (record) => record.updated,
-		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={Clock} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as string
 			// if today, use hourWithSeconds, otherwise use formatShortDate
@@ -258,33 +266,8 @@ export const createColumns = (): ColumnDef<SmartDeviceRecord>[] => [
 	},
 ]
 
-function HeaderButton({
-	column,
-	name,
-	Icon,
-}: {
-	column: Column<SmartDeviceRecord>
-	name: string
-	Icon: React.ElementType
-}) {
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			className={cn(
-				"h-9 px-3 flex items-center gap-2 duration-50",
-				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
-			)}
-			variant="ghost"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="size-4" />}
-			{name}
-		</Button>
-	)
-}
 
 export default function DisksTable({ systemId }: { systemId?: string }) {
-	const [sorting, setSorting] = useState<SortingState>([{ id: systemId ? "name" : "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [rowSelection, setRowSelection] = useState({})
 	const [smartDevices, setSmartDevices] = useState<SmartDeviceRecord[] | undefined>(undefined)
@@ -293,6 +276,12 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 	const [rowActionState, setRowActionState] = useState<{ type: "refresh" | "delete"; id: string } | null>(null)
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const tableSettings = useTableSettings({
+		colsKey: "smartCols",
+		sortKey: systemId ? "smartSortModeSystem" : "smartSortMode",
+		defaultSort: [{ id: systemId ? "name" : "system", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
 
 	// duplicate the devices to test with more rows
 	// if (
@@ -408,6 +397,7 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 		() => ({
 			id: "actions",
 			enableSorting: false,
+			enableHiding: false,
 			header: () => (
 				<span className="sr-only">
 					<Trans>Actions</Trans>
@@ -476,10 +466,8 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 	const table = useReactTable({
 		data: smartDevices || ([] as SmartDeviceRecord[]),
 		columns: tableColumns,
-		onSortingChange: (updater) => {
-			setSorting(updater)
-			resetPageIndex()
-		},
+		onSortingChange: tableSettings.onSortingChange,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -489,7 +477,8 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 		onPaginationChange,
 		onRowSelectionChange: setRowSelection,
 		state: {
-			sorting,
+			sorting: tableSettings.sorting,
+			columnVisibility: tableSettings.columnVisibility,
 			columnFilters,
 			rowSelection,
 			globalFilter,
@@ -501,19 +490,18 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const disk = row.original
-			const systemName = $allSystemsById.get()[disk.system]?.name ?? ""
-			const device = disk.name ?? ""
-			const model = disk.model ?? ""
-			const status = disk.state ?? ""
-			const type = disk.type ?? ""
-			const searchString = `${systemName} ${device} ${model} ${status} ${type}`.toLowerCase()
-			return (filterValue as string)
-				.toLowerCase()
-				.split(" ")
-				.every((term) => searchString.includes(term))
+			return matchesTableFilter(
+				filterValue,
+				$allSystemsById.get()[disk.system]?.name,
+				disk.name,
+				disk.model,
+				disk.state,
+				disk.type
+			)
 		},
 	})
 	const rows = table.getRowModel().rows
+	const visibleColumns = table.getVisibleLeafColumns()
 
 	// Hide the table on system pages if there's no data, but always show on global page
 	if (systemId && !smartDevices?.length && !columnFilters.length) {
@@ -531,32 +519,17 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 								<Trans>Click on a device to view more information.</Trans>
 							</CardDescription>
 						</div>
-						<div className="relative ms-auto w-full max-w-full md:w-64">
-							<Input
-								placeholder={t`Filter...`}
-								value={globalFilter}
-								onChange={(event) => table.setGlobalFilter(event.target.value)}
-								className="px-4 w-full max-w-full md:w-64"
-							/>
-							{globalFilter && (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									aria-label={t`Clear`}
-									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => table.setGlobalFilter("")}
-								>
-									<XIcon className="h-4 w-4" />
-								</Button>
-							)}
+						<div className="flex gap-2 ms-auto w-full md:w-auto">
+							<TableFilterInput value={globalFilter} onChange={table.setGlobalFilter} />
+							<TableSettingsMenu table={table} />
 						</div>
 					</div>
 				</CardHeader>
 				<SmartDevicesTable
 					table={table}
 					rows={rows}
-					colLength={tableColumns.length}
+					colLength={visibleColumns.length}
+					visibleColumnsKey={visibleColumns.map((column) => column.id).join(",")}
 					data={smartDevices}
 					openSheet={openSheet}
 				/>
@@ -571,12 +544,14 @@ const SmartDevicesTable = memo(function SmartDevicesTable({
 	table,
 	rows,
 	colLength,
+	visibleColumnsKey,
 	data,
 	openSheet,
 }: {
 	table: TableType<SmartDeviceRecord>
 	rows: Row<SmartDeviceRecord>[]
 	colLength: number
+	visibleColumnsKey: string
 	data: SmartDeviceRecord[] | undefined
 	openSheet: (disk: SmartDeviceRecord) => void
 }) {
@@ -586,15 +561,24 @@ const SmartDevicesTable = memo(function SmartDevicesTable({
 				<SmartTableHead table={table} />
 				<TableBody>
 					{rows.length ? (
-						rows.map((row) => <SmartDeviceTableRow key={row.id} row={row} openSheet={openSheet} />)
+						rows.map((row) => (
+							<SmartDeviceTableRow
+								key={row.id}
+								row={row}
+								openSheet={openSheet}
+								visibleColumnsKey={visibleColumnsKey}
+							/>
+						))
 					) : (
-						<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-							{data ? (
-								<Trans>No results.</Trans>
-							) : (
-								<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-							)}
-						</TableCell>
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+								{data ? (
+									<Trans>No results.</Trans>
+								) : (
+									<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+								)}
+							</TableCell>
+						</TableRow>
 					)}
 				</TableBody>
 			</table>
@@ -621,9 +605,13 @@ function SmartTableHead({ table }: { table: TableType<SmartDeviceRecord> }) {
 const SmartDeviceTableRow = memo(function SmartDeviceTableRow({
 	row,
 	openSheet,
+	visibleColumnsKey: _visibleColumnsKey,
 }: {
 	row: Row<SmartDeviceRecord>
 	openSheet: (disk: SmartDeviceRecord) => void
+	// Column visibility doesn't change the row object identity, so this prop exists only
+	// to force a re-render (and a fresh row.getVisibleCells() read) when columns are toggled.
+	visibleColumnsKey: string
 }) {
 	return (
 		<TableRow
