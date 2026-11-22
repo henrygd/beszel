@@ -1054,8 +1054,8 @@ type alertEvent struct {
 	System      string   `json:"system"` // system id; see systems map
 	Name        string   `json:"name"`   // alert name (CPU, Memory, StatusFailedServices, ...)
 	MonitorName string   `json:"monitor_name,omitempty"`
-	Value       *float64 `json:"value,omitempty"` // observed value that triggered the alert
-	TriggeredAt string   `json:"triggered_at"`    // RFC3339
+	Value       *float64 `json:"value,omitempty" jsonschema:"for system alerts (CPU, Memory, Disk, Temperature, ...) the configured alert threshold, not the measured value; for NetworkMonitorLoss the observed packet loss % and for NetworkMonitorCert the days left until the certificate expires (negative once expired)"`
+	TriggeredAt string   `json:"triggered_at"` // RFC3339
 	ResolvedAt  string   `json:"resolved_at,omitempty"`
 }
 
