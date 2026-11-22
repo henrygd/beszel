@@ -172,7 +172,7 @@ func TestStoragePoolBackendOrder(t *testing.T) {
 	b.poolData[0].IODevice = "sda"
 	calls := 0
 	m.markDuplicateCharts(&stats, map[string]*system.FsStats{
-		"sda": {Mountpoint: "/", DiskTotal: 100},
+		"/": {Mountpoint: "/", IoDevice: "sda", DiskTotal: 100},
 	}, func(string) string { calls++; return "uuid" })
 	assert.Equal(t, 1, calls, "resolve each filesystem once across all backends")
 	assert.True(t, stats.ZfsPools["b:uuid"].HideUsage)
@@ -461,14 +461,14 @@ func TestMarkDuplicatePoolCharts(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			zm := &StoragePoolManager{detailInterval: time.Hour, backends: []*poolBackend{{name: "zfs", poolData: []zfs.PoolStat{{Name: "arbitrary label", MountID: tc.poolID, IODevice: tc.device, Raw: tc.raw}}}}}
 			stats := &system.Stats{ZfsPools: map[string]*system.ZfsPool{"arbitrary label": {}}}
-			fs := map[string]*system.FsStats{"dm-0": {Root: true, Mountpoint: "/", DiskTotal: tc.diskTotal}}
+			fs := map[string]*system.FsStats{"/": {Root: true, Mountpoint: "/", IoDevice: "dm-0", DiskTotal: tc.diskTotal}}
 			zm.markDuplicateCharts(stats, fs, func(string) string { return "fs1" })
 			assert.Equal(t, tc.wantUsage, stats.ZfsPools["arbitrary label"].HideUsage)
 			assert.Equal(t, tc.wantIO, stats.ZfsPools["arbitrary label"].HideIO)
 			// Bind mounts and custom extra-filesystem names have the same identity.
-			fs["dm-0"].Root = false
-			fs["dm-0"].Mountpoint = "/extra-filesystems/storage"
-			fs["dm-0"].Name = "custom name"
+			fs["/"].Root = false
+			fs["/"].Mountpoint = "/extra-filesystems/storage"
+			fs["/"].Name = "custom name"
 			stats.ZfsPools["arbitrary label"] = &system.ZfsPool{}
 			zm.markDuplicateCharts(stats, fs, func(string) string { return "fs1" })
 			assert.Equal(t, tc.wantUsage, stats.ZfsPools["arbitrary label"].HideUsage)

@@ -56,10 +56,10 @@ func TestUpdateDiskIoTimeCounterWrap(t *testing.T) {
 			t.Setenv("HOST_DEV", dir)
 			t.Setenv("HOST_RUN", dir)
 
-			fs := &system.FsStats{Root: true}
+			fs := &system.FsStats{Root: true, Mountpoint: "/", IoDevice: "sda"}
 			a := &Agent{
 				fsNames:  []string{"sda"},
-				fsStats:  map[string]*system.FsStats{"sda": fs},
+				fsStats:  map[string]*system.FsStats{"/": fs},
 				diskPrev: map[uint16]map[string]prevDisk{60000: {"sda": prev}},
 			}
 			var stats system.Stats
@@ -104,9 +104,9 @@ func TestUpdateDiskIoFirstSampleOfInterval(t *testing.T) {
 	counters, err := disk.IOCounters("sda")
 	require.NoError(t, err)
 
-	fs := &system.FsStats{Root: true}
+	fs := &system.FsStats{Root: true, Mountpoint: "/", IoDevice: "sda"}
 	a := &Agent{
-		fsStats:  map[string]*system.FsStats{"sda": fs},
+		fsStats:  map[string]*system.FsStats{"/": fs},
 		diskPrev: map[uint16]map[string]prevDisk{},
 	}
 	a.initializeDiskIoStats(counters)
@@ -145,9 +145,9 @@ func TestUpdateDiskIoSkipsShortSeededSample(t *testing.T) {
 	counters, err := disk.IOCounters("sda")
 	require.NoError(t, err)
 
-	fs := &system.FsStats{Root: true}
+	fs := &system.FsStats{Root: true, Mountpoint: "/", IoDevice: "sda"}
 	a := &Agent{
-		fsStats:  map[string]*system.FsStats{"sda": fs},
+		fsStats:  map[string]*system.FsStats{"/": fs},
 		diskPrev: map[uint16]map[string]prevDisk{},
 	}
 	a.initializeDiskIoStats(counters)
@@ -171,4 +171,33 @@ func TestUpdateDiskIoSkipsShortSeededSample(t *testing.T) {
 	a.updateDiskIo(60000, &stats)
 
 	assert.InDelta(t, 1_048_576, float64(stats.DiskIO[0]), 20_000)
+}
+
+// Two filesystems on one device (#1878, #1931) both get its I/O. The device
+// is read once, as a second delta in the same call would span ~0ms.
+func TestUpdateDiskIoSharedDevice(t *testing.T) {
+	writeDiskstats := setupDiskstats(t)
+
+	writeDiskstats("   8       0 sda 1000 0 20000 900 500 0 10000 700 0 400 0\n")
+	counters, err := disk.IOCounters("sda")
+	require.NoError(t, err)
+
+	root := &system.FsStats{Root: true, Mountpoint: "/", IoDevice: "sda"}
+	extra := &system.FsStats{Mountpoint: "/mnt/data", IoDevice: "sda"}
+	a := &Agent{
+		fsStats:  map[string]*system.FsStats{"/": root, "/mnt/data": extra},
+		diskPrev: map[uint16]map[string]prevDisk{},
+	}
+	a.initializeDiskIoStats(counters)
+	require.Equal(t, []string{"sda"}, a.fsNames)
+	backdateDiskBaseline(a, "sda", 60*time.Second)
+
+	writeDiskstats("   8       0 sda 1010 0 21200 1200 520 0 10400 1100 0 1600 3000\n")
+	var stats system.Stats
+	a.updateDiskIo(60000, &stats)
+
+	require.NotZero(t, root.DiskReadBytes)
+	assert.Equal(t, root.DiskReadBytes, extra.DiskReadBytes)
+	assert.Equal(t, root.DiskIoStats, extra.DiskIoStats)
+	assert.Equal(t, root.DiskReadBytes, stats.DiskIO[0])
 }

@@ -92,8 +92,8 @@ func TestInitializeDiskIoStatsSkipsZfsMountpoints(t *testing.T) {
 	}
 	agent := &Agent{
 		fsStats: map[string]*system.FsStats{
-			"tank": {Root: false, Mountpoint: "/tank"},
-			"sda1": {Root: false, Mountpoint: "/mnt/data"},
+			"/tank":     {Root: false, Mountpoint: "/tank", IoDevice: "tank"},
+			"/mnt/data": {Root: false, Mountpoint: "/mnt/data", IoDevice: "sda1"},
 		},
 		storagePoolManager: zm,
 		diskPrev:           make(map[uint16]map[string]prevDisk),
@@ -104,7 +104,7 @@ func TestInitializeDiskIoStatsSkipsZfsMountpoints(t *testing.T) {
 	})
 
 	assert.Equal(t, []string{"sda1"}, agent.fsNames)
-	assert.Equal(t, uint64(100), agent.fsStats["sda1"].TotalRead)
+	assert.Equal(t, uint64(100), agent.fsStats["/mnt/data"].TotalRead)
 	// ZFS entry is present but untouched by diskstats initialization.
-	assert.Equal(t, uint64(0), agent.fsStats["tank"].TotalRead)
+	assert.Equal(t, uint64(0), agent.fsStats["/tank"].TotalRead)
 }

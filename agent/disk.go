@@ -1,12 +1,15 @@
 package agent
 
 import (
+	"cmp"
 	"context"
 	"log/slog"
+	"maps"
 	"math"
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -16,25 +19,16 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 )
 
-// fsRegistrationContext holds the shared lookup state needed to resolve a
-// filesystem into the tracked fsStats key and metadata.
-type fsRegistrationContext struct {
-	filesystem     string // device part of optional FILESYSTEM env var
-	filesystemName string // optional custom name from FILESYSTEM=device__name
-	isWindows      bool
-	isDarwin       bool
-	efPath         string // path to extra filesystems (default "/extra-filesystems")
-	diskIoCounters map[string]disk.IOCountersStat
-}
-
-// diskDiscovery groups the transient state for a single initializeDiskInfo run so
-// helper methods can share the same partitions, mount paths, and lookup functions
+// diskDiscovery holds the state of one initializeDiskInfo run.
 type diskDiscovery struct {
 	agent          *Agent
 	rootMountPoint string
 	partitions     []disk.PartitionStat
+	ioCounters     map[string]disk.IOCountersStat
 	usageFn        func(string) (*disk.UsageStat, error)
-	ctx            fsRegistrationContext
+	isWindows      bool
+	isDarwin       bool
+	efPath         string // folder whose subfolders are extra filesystems ("/extra-filesystems")
 }
 
 // prevDisk stores previous per-device disk counters for a given cache interval
@@ -78,18 +72,6 @@ func parseFilesystemEntry(entry string) (device, customName string) {
 	return device, customName
 }
 
-// extraFilesystemPartitionInfo derives the I/O device and optional display name
-// for a mounted /extra-filesystems partition. Prefer the partition device reported
-// by the system and only use the folder name for custom naming metadata.
-func extraFilesystemPartitionInfo(p disk.PartitionStat) (device, customName string) {
-	device = strings.TrimSpace(p.Device)
-	folderDevice, customName := parseFilesystemEntry(filepath.Base(p.Mountpoint))
-	if device == "" {
-		device = folderDevice
-	}
-	return device, customName
-}
-
 func isDockerSpecialMountpoint(mountpoint string) bool {
 	switch mountpoint {
 	case "/etc/hosts", "/etc/resolv.conf", "/etc/hostname":
@@ -110,142 +92,103 @@ var apfsPhysicalDisk = diskutilPhysicalDisk
 
 // apfsIoDevice returns the physical disk I/O key for an APFS volume on
 // darwin, if it has I/O counters.
-func (ctx fsRegistrationContext) apfsIoDevice(device string) (string, bool) {
-	if !ctx.isDarwin || !filepath.IsAbs(device) {
+func (d *diskDiscovery) apfsIoDevice(device string) (string, bool) {
+	if !d.isDarwin || !filepath.IsAbs(device) {
 		return "", false
 	}
 	physical := apfsPhysicalDisk(device)
 	if physical == "" {
 		return "", false
 	}
-	_, ok := ctx.diskIoCounters[physical]
+	_, ok := d.ioCounters[physical]
 	return physical, ok
 }
 
-// registerFilesystemStats resolves the tracked key and stats payload for a
-// filesystem before it is inserted into fsStats.
-func registerFilesystemStats(existing map[string]*system.FsStats, device, mountpoint string, root bool, customName string, ctx fsRegistrationContext) (string, *system.FsStats, bool) {
-	key := device
-	resolvedKey := ""
-	if !ctx.isWindows {
+// ioKey returns the diskstats device a filesystem's I/O is read from. Hints
+// are device names the user gave (the FILESYSTEM value or an
+// /extra-filesystems folder name) and win over guesses from the device itself.
+// When nothing matches, ok is false and key is the device's base name.
+func (d *diskDiscovery) ioKey(device string, hints ...string) (key string, ok bool) {
+	key = device
+	if !d.isWindows {
 		key = filepath.Base(device)
-		// Device-mapper mounts appear as symlinked paths like /dev/vg/lv whose
-		// base name matches neither the diskstats name (dm-N) nor the dm label
-		// (vg-lv); the resolved target's base is one of those existing names.
-		// Bare names (folder devices, ZFS datasets) are skipped because they
-		// would resolve relative to the agent's working directory.
-		if filepath.IsAbs(device) {
-			if resolved, err := evalSymlinks(device); err == nil {
-				if base := filepath.Base(resolved); base != key {
-					resolvedKey = base
-				}
-			}
-		}
-		// APFS volumes sit on a synthesized container disk (disk13s1 in
-		// container disk13) that IOKit reports no counters for, and whose
-		// number is unrelated to the physical disk (disk12). Resolve the
-		// physical store up front so the prefix fallback below can't pick an
-		// unrelated disk (disk1 is a prefix of disk13s1).
-		if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
-			if physical, ok := ctx.apfsIoDevice(device); ok {
-				key = physical
-			}
+	}
+	if _, ok := d.ioCounters[key]; ok {
+		return key, true
+	}
+	// APFS volumes sit on a synthesized container disk (disk13s1 in container
+	// disk13) that IOKit reports no counters for, and whose number is
+	// unrelated to the physical disk (disk12). Resolve the physical store
+	// before the prefix fallback can pick an unrelated disk (disk1 is a prefix
+	// of disk13s1).
+	if physical, ok := d.apfsIoDevice(device); ok {
+		return physical, true
+	}
+	// A hint also covers mapper paths (e.g. a luks UUID) that obscure the
+	// underlying block device.
+	for _, hint := range hints {
+		if match, ok := findIoDevice(hint, d.ioCounters); ok {
+			return match, true
 		}
 	}
-
-	if root {
-		// Try to map root device to a diskIoCounters entry. First checks for an
-		// exact key match, then uses findIoDevice for normalized / prefix-based
-		// matching (e.g. nda0p2 -> nda0) and the symlink-resolved device name,
-		// and finally falls back to FILESYSTEM.
-		if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
-			if matchedKey, match := findIoDevice(key, ctx.diskIoCounters); match {
-				key = matchedKey
-			} else if matchedKey, match := findIoDevice(resolvedKey, ctx.diskIoCounters); match {
-				key = matchedKey
-			} else if ctx.filesystem != "" {
-				if matchedKey, match := findIoDevice(ctx.filesystem, ctx.diskIoCounters); match {
-					key = matchedKey
-				}
-			}
-			if _, ioMatch = ctx.diskIoCounters[key]; !ioMatch {
-				slog.Warn("Root I/O unmapped; set FILESYSTEM", "device", device, "mountpoint", mountpoint)
-			}
-		}
-	} else {
-		// Check if non-root has diskstats and prefer the folder device for
-		// /extra-filesystems mounts when the discovered partition device is a
-		// mapper path (e.g. luks UUID) that obscures the underlying block device.
-		if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
-			if strings.HasPrefix(mountpoint, ctx.efPath) {
-				folderDevice, _ := parseFilesystemEntry(filepath.Base(mountpoint))
-				if folderDevice != "" {
-					if matchedKey, match := findIoDevice(folderDevice, ctx.diskIoCounters); match {
-						key = matchedKey
-					}
-				}
-			}
-			if _, ioMatch = ctx.diskIoCounters[key]; !ioMatch {
-				if matchedKey, match := findIoDevice(key, ctx.diskIoCounters); match {
-					key = matchedKey
-				} else if matchedKey, match := findIoDevice(resolvedKey, ctx.diskIoCounters); match {
-					key = matchedKey
-				}
+	if match, ok := findIoDevice(device, d.ioCounters); ok {
+		return match, true
+	}
+	// Device-mapper mounts appear as symlinked paths like /dev/vg/lv whose
+	// base name matches neither the diskstats name (dm-N) nor the dm label
+	// (vg-lv); the resolved target's base is one of those. Bare names (folder
+	// devices, ZFS datasets) are skipped because they would resolve relative
+	// to the agent's working directory.
+	if !d.isWindows && filepath.IsAbs(device) {
+		if resolved, err := evalSymlinks(device); err == nil {
+			if match, ok := findIoDevice(resolved, d.ioCounters); ok {
+				return match, true
 			}
 		}
 	}
-
-	if _, exists := existing[key]; exists {
-		return "", nil, false
-	}
-
-	fsStats := &system.FsStats{Root: root, Mountpoint: mountpoint}
-	if customName != "" {
-		fsStats.Name = customName
-	}
-	return key, fsStats, true
+	return key, false
 }
 
-// addFsStat inserts a discovered filesystem if it resolves to a new tracking
-// key and reports whether it was added. The key selection itself lives in
-// registerFilesystemStats so that logic can stay directly unit-tested.
-func (d *diskDiscovery) addFsStat(device, mountpoint string, root bool, customName string) bool {
-	key, fsStats, ok := registerFilesystemStats(d.agent.fsStats, device, mountpoint, root, customName, d.ctx)
-	if !ok {
-		return false
+// register tracks a filesystem by its mountpoint and reports whether it was
+// added. A root filesystem on an already tracked mountpoint (e.g. the root
+// drive also listed in EXTRA_FILESYSTEMS) promotes that entry.
+func (d *diskDiscovery) register(ioDevice, mountpoint string, root bool, name string) bool {
+	if fs, exists := d.agent.fsStats[mountpoint]; exists {
+		if !root {
+			return false
+		}
+		fs.Root = true
+		fs.IoDevice = ioDevice
+		if name != "" {
+			fs.Name = name
+		}
+		return true
 	}
-	d.agent.fsStats[key] = fsStats
-	name := key
-	if customName != "" {
-		name = customName
-	}
-	slog.Info("Detected disk", "name", name, "device", device, "mount", mountpoint, "io", key, "root", root)
+	d.agent.fsStats[mountpoint] = &system.FsStats{Root: root, Mountpoint: mountpoint, Name: name, IoDevice: ioDevice}
+	slog.Info("Detected disk", "name", cmp.Or(name, ioDevice), "mount", mountpoint, "io", ioDevice, "root", root)
 	return true
 }
 
 // addConfiguredRootFs resolves FILESYSTEM against partitions first, then falls
 // back to direct diskstats matching for setups like ZFS where partitions do not
 // expose the physical device name.
-func (d *diskDiscovery) addConfiguredRootFs() bool {
-	if d.ctx.filesystem == "" {
+func (d *diskDiscovery) addConfiguredRootFs(filesystem, name string) bool {
+	if filesystem == "" {
 		return false
 	}
-
-	for _, p := range d.partitions {
-		if filesystemMatchesPartitionSetting(d.ctx.filesystem, p) {
-			d.addFsStat(p.Device, p.Mountpoint, true, d.ctx.filesystemName)
-			return true
+	if p, found := findPartition(filesystem, d.partitions); found {
+		key, ok := d.ioKey(p.Device, filesystem)
+		if !ok {
+			slog.Warn("Root I/O device not found in diskstats", "filesystem", filesystem, "device", p.Device)
 		}
+		return d.register(key, p.Mountpoint, true, name)
 	}
-
 	// FILESYSTEM may name a physical disk absent from partitions (e.g. ZFS lists
 	// dataset paths like zroot/ROOT/default, not block devices).
-	if ioKey, match := findIoDevice(d.ctx.filesystem, d.ctx.diskIoCounters); match {
-		d.agent.fsStats[ioKey] = &system.FsStats{Root: true, Mountpoint: d.rootMountPoint, Name: d.ctx.filesystemName}
-		return true
+	if key, ok := findIoDevice(filesystem, d.ioCounters); ok {
+		return d.register(key, d.rootMountPoint, true, name)
 	}
-
-	slog.Warn("Partition details not found", "filesystem", d.ctx.filesystem)
+	slog.Warn("Partition details not found", "filesystem", filesystem)
 	return false
 }
 
@@ -254,121 +197,133 @@ func isRootFallbackPartition(p disk.PartitionStat, rootMountPoint string) bool {
 		(isDockerSpecialMountpoint(p.Mountpoint) && strings.HasPrefix(p.Device, "/dev"))
 }
 
-// addPartitionRootFs handles the non-configured root fallback path when a
-// partition looks like the active root mount but still needs translating to an
-// I/O device key.
+// addPartitionRootFs registers a partition that looks like the root mount if
+// its device maps to an I/O device. Without a match the caller tries the next
+// candidate and finally addLastResortRootFs.
 func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
-	// device is passed through as-is: findIoDevice normalizes it, and
-	// filepath.Base would turn a Windows volume name such as "C:" into "\"
-	// on the way in (#2417).
-	// An APFS root (e.g. disk3s1s1 on Apple Silicon) never prefix-matches its
-	// physical disk (disk0), so resolve it before the generic lookup.
-	fs, match := "", false
-	if _, exact := d.ctx.diskIoCounters[normalizeDeviceName(device)]; !exact {
-		fs, match = d.ctx.apfsIoDevice(device)
-	}
-	if !match {
-		fs, match = findIoDevice(device, d.ctx.diskIoCounters)
-	}
-	if !match {
+	key, ok := d.ioKey(device)
+	if !ok {
 		return false
 	}
-	// The root device is already resolved, so if it was registered earlier as an
-	// extra filesystem (e.g. root drive listed in EXTRA_FILESYSTEMS), promote that
-	// entry rather than letting addLastResortRootFs guess a different device.
-	if stats, exists := d.agent.fsStats[fs]; exists {
-		stats.Root = true
-		stats.Mountpoint = mountpoint
-		return true
-	}
-	// Use the resolved I/O device directly to avoid a second fallback search
-	// inside registerFilesystemStats.
-	return d.addFsStat(fs, mountpoint, true, "")
+	return d.register(key, mountpoint, true, "")
 }
 
 // addLastResortRootFs is only used when neither FILESYSTEM nor partition-based
 // heuristics can identify root, so it picks the busiest I/O device as a final
 // fallback and preserves the root mountpoint for usage collection.
 func (d *diskDiscovery) addLastResortRootFs() {
-	rootKey := mostActiveIoDevice(d.ctx.diskIoCounters)
-	if rootKey != "" {
-		slog.Warn("Using most active device for root I/O; set FILESYSTEM to override", "device", rootKey)
+	key := mostActiveIoDevice(d.ioCounters)
+	if key != "" {
+		slog.Warn("Using most active device for root I/O; set FILESYSTEM to override", "device", key)
 	} else {
-		rootKey = filepath.Base(d.rootMountPoint)
-		if _, exists := d.agent.fsStats[rootKey]; exists {
-			rootKey = "root"
-		}
 		slog.Warn("Root I/O device not detected; set FILESYSTEM to override")
 	}
-	d.agent.fsStats[rootKey] = &system.FsStats{Root: true, Mountpoint: d.rootMountPoint}
+	d.register(key, d.rootMountPoint, true, "")
 }
 
-// findPartitionByFilesystemSetting matches an EXTRA_FILESYSTEMS entry against a
-// discovered partition either by mountpoint or by device suffix.
-func findPartitionByFilesystemSetting(filesystem string, partitions []disk.PartitionStat) (disk.PartitionStat, bool) {
-	for _, p := range partitions {
-		if strings.HasSuffix(p.Device, filesystem) || p.Mountpoint == filesystem {
-			return p, true
+// isDeviceSetting reports whether a setting can name a device rather than only
+// a mountpoint: a bare name (sda1, mapper/vg-lv), a /dev path or a Windows
+// volume. /mnt/sda1 must not match device sda1 by its base name.
+func isDeviceSetting(setting string) bool {
+	if _, ok := windowsVolumeName(setting); ok {
+		return true
+	}
+	return strings.HasPrefix(setting, "/dev/") || !strings.HasPrefix(setting, "/") && !filepath.IsAbs(setting)
+}
+
+// findPartition returns the partition a FILESYSTEM or EXTRA_FILESYSTEMS value
+// refers to. A mount at that path wins, then an exact device name, then a
+// prefix-related one (FILESYSTEM=ada0 matches /dev/ada0p2), so sda1 never
+// resolves to sda10. When several mounts share a path the last one is the
+// visible one, and autofs placeholders are skipped (#1931).
+func findPartition(setting string, partitions []disk.PartitionStat) (disk.PartitionStat, bool) {
+	setting = strings.TrimSpace(setting)
+	if setting == "" {
+		return disk.PartitionStat{}, false
+	}
+	name := ""
+	if isDeviceSetting(setting) {
+		name = normalizeDeviceName(setting)
+	}
+	byMount, byDevice, byPrefix := -1, -1, -1
+	for i, p := range partitions {
+		if p.Fstype == "autofs" {
+			continue
+		}
+		if p.Mountpoint == setting {
+			byMount = i
+			continue
+		}
+		if name == "" {
+			continue
+		}
+		device := normalizeDeviceName(p.Device)
+		if device == name {
+			if byDevice < 0 {
+				byDevice = i
+			}
+		} else if byPrefix < 0 && prefixRelated(device, name) {
+			byPrefix = i
+		}
+	}
+	for _, i := range []int{byMount, byDevice, byPrefix} {
+		if i >= 0 {
+			return partitions[i], true
 		}
 	}
 	return disk.PartitionStat{}, false
 }
 
-// addConfiguredExtraFsEntry resolves one EXTRA_FILESYSTEMS entry, preferring a
-// discovered partition and falling back to any path that disk.Usage accepts.
-func (d *diskDiscovery) addConfiguredExtraFsEntry(filesystem, customName string) {
-	if p, found := findPartitionByFilesystemSetting(filesystem, d.partitions); found {
-		d.addFsStat(p.Device, p.Mountpoint, false, customName)
-		return
-	}
-
-	if _, err := d.usageFn(filesystem); err == nil {
-		d.addFsStat(filepath.Base(filesystem), filesystem, false, customName)
-		return
-	} else {
-		slog.Error("Invalid filesystem", "name", filesystem, "err", err)
-	}
-}
-
-// addConfiguredExtraFilesystems parses and registers the comma-separated
-// EXTRA_FILESYSTEMS env var entries.
+// addConfiguredExtraFilesystems registers the comma-separated
+// EXTRA_FILESYSTEMS entries, preferring a matching partition and falling back
+// to any path that disk.Usage accepts.
 func (d *diskDiscovery) addConfiguredExtraFilesystems(extraFilesystems string) {
-	for fsEntry := range strings.SplitSeq(extraFilesystems, ",") {
-		filesystem, customName := parseFilesystemEntry(fsEntry)
-		d.addConfiguredExtraFsEntry(filesystem, customName)
-	}
-}
-
-// addPartitionExtraFs registers partitions mounted under /extra-filesystems so
-// their display names can come from the folder name while their I/O keys still
-// prefer the underlying partition device. Only direct children are matched to
-// avoid registering nested virtual mounts (e.g. /proc, /sys) that are returned by
-// disk.Partitions(true) when the host root is bind-mounted in /extra-filesystems.
-func (d *diskDiscovery) addPartitionExtraFs(p disk.PartitionStat) {
-	if filepath.Dir(p.Mountpoint) != d.ctx.efPath {
-		return
-	}
-	device, customName := extraFilesystemPartitionInfo(p)
-	d.addFsStat(device, p.Mountpoint, false, customName)
-}
-
-// addExtraFilesystemFolders handles bare directories under /extra-filesystems
-// that may not appear in partition discovery, while skipping mountpoints that
-// were already registered from higher-fidelity sources.
-func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
-	existingMountpoints := make(map[string]bool, len(d.agent.fsStats))
-	for _, stats := range d.agent.fsStats {
-		existingMountpoints[stats.Mountpoint] = true
-	}
-
-	for _, folderName := range folderNames {
-		mountpoint := filepath.Join(d.ctx.efPath, folderName)
-		slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
-		if existingMountpoints[mountpoint] {
+	for entry := range strings.SplitSeq(extraFilesystems, ",") {
+		setting, name := parseFilesystemEntry(entry)
+		if setting == "" {
 			continue
 		}
-		device, customName := parseFilesystemEntry(folderName)
-		d.addFsStat(device, mountpoint, false, customName)
+		if p, found := findPartition(setting, d.partitions); found {
+			key, _ := d.ioKey(p.Device)
+			d.register(key, p.Mountpoint, false, name)
+			continue
+		}
+		// Usage of a device node is the usage of /dev, not of the device.
+		if strings.HasPrefix(setting, "/dev/") {
+			slog.Error("Filesystem not mounted", "name", setting)
+			continue
+		}
+		if _, err := d.usageFn(setting); err != nil {
+			slog.Error("Invalid filesystem", "name", setting, "err", err)
+			continue
+		}
+		key, _ := d.ioKey(filepath.Base(setting))
+		d.register(key, setting, false, name)
+	}
+}
+
+// addExtraFilesystemFolders registers each folder in /extra-filesystems. The
+// I/O device comes from the partition mounted there, else from the folder
+// name ("device__name"), which also acts as a hint when the partition device
+// does not map to diskstats.
+func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
+	// Only direct children count: when the host root is bind-mounted here,
+	// disk.Partitions(true) also returns its nested mounts (/proc, /sys, ...).
+	mounted := make(map[string]disk.PartitionStat)
+	for _, p := range d.partitions {
+		if filepath.Dir(p.Mountpoint) == d.efPath && p.Fstype != "autofs" {
+			mounted[p.Mountpoint] = p
+		}
+	}
+	for _, folder := range folderNames {
+		mountpoint := filepath.Join(d.efPath, folder)
+		hint, name := parseFilesystemEntry(folder)
+		device := hint
+		if p, ok := mounted[mountpoint]; ok && strings.TrimSpace(p.Device) != "" {
+			device = strings.TrimSpace(p.Device)
+		}
+		key, _ := d.ioKey(device, hint)
+		d.register(key, mountpoint, false, name)
 	}
 }
 
@@ -376,7 +331,6 @@ func (d *diskDiscovery) addExtraFilesystemFolders(folderNames []string) {
 func (a *Agent) initializeDiskInfo() {
 	filesystemRaw, _ := utils.GetEnv("FILESYSTEM")
 	filesystem, filesystemName := parseFilesystemEntry(filesystemRaw)
-	hasRoot := false
 	isWindows := runtime.GOOS == "windows"
 
 	partitions, err := disk.PartitionsWithContext(context.Background(), true)
@@ -397,88 +351,123 @@ func (a *Agent) initializeDiskInfo() {
 		slog.Error("Error getting diskstats", "err", err)
 	}
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
-	ctx := fsRegistrationContext{
-		filesystem:     filesystem,
-		filesystemName: filesystemName,
-		isWindows:      isWindows,
-		isDarwin:       runtime.GOOS == "darwin",
-		diskIoCounters: diskIoCounters,
-		efPath:         "/extra-filesystems",
-	}
 
-	// Get the appropriate root mount point for this system
-	discovery := diskDiscovery{
+	d := diskDiscovery{
 		agent:          a,
 		rootMountPoint: a.getRootMountPoint(),
 		partitions:     partitions,
+		ioCounters:     diskIoCounters,
 		usageFn:        disk.Usage,
-		ctx:            ctx,
+		isWindows:      isWindows,
+		isDarwin:       runtime.GOOS == "darwin",
+		efPath:         "/extra-filesystems",
 	}
 
-	hasRoot = discovery.addConfiguredRootFs()
+	hasRoot := d.addConfiguredRootFs(filesystem, filesystemName)
 
-	// Add EXTRA_FILESYSTEMS env var values to fsStats
 	if extraFilesystems, exists := utils.GetEnv("EXTRA_FILESYSTEMS"); exists {
-		discovery.addConfiguredExtraFilesystems(extraFilesystems)
+		d.addConfiguredExtraFilesystems(extraFilesystems)
 	}
 
-	// Process partitions for various mount points
 	for _, p := range partitions {
-		if !hasRoot && isRootFallbackPartition(p, discovery.rootMountPoint) {
-			hasRoot = discovery.addPartitionRootFs(p.Device, p.Mountpoint)
+		if hasRoot {
+			break
 		}
-		discovery.addPartitionExtraFs(p)
+		if isRootFallbackPartition(p, d.rootMountPoint) {
+			hasRoot = d.addPartitionRootFs(p.Device, p.Mountpoint)
+		}
 	}
 
-	// Check all folders in /extra-filesystems and add them if not already present
-	if folders, err := os.ReadDir(discovery.ctx.efPath); err == nil {
+	if folders, err := os.ReadDir(d.efPath); err == nil {
 		folderNames := make([]string, 0, len(folders))
 		for _, folder := range folders {
 			if folder.IsDir() {
 				folderNames = append(folderNames, folder.Name())
 			}
 		}
-		discovery.addExtraFilesystemFolders(folderNames)
+		d.addExtraFilesystemFolders(folderNames)
 	}
 
 	// If no root filesystem set, try the most active I/O device as a last
 	// resort (e.g. ZFS where dataset names are unrelated to disk names).
 	if !hasRoot {
-		discovery.addLastResortRootFs()
+		d.addLastResortRootFs()
 	}
 
-	a.pruneDuplicateRootExtraFilesystems()
+	a.pruneDuplicateFilesystems(diskIoCounters, disk.Usage)
 	a.initializeDiskIoStats(diskIoCounters)
 }
 
-// Removes extra filesystems that mirror root usage (https://github.com/henrygd/beszel/issues/1428).
-func (a *Agent) pruneDuplicateRootExtraFilesystems() {
-	var rootMountpoint string
-	for _, stats := range a.fsStats {
-		if stats != nil && stats.Root {
-			rootMountpoint = stats.Mountpoint
-			break
+// pruneDuplicateFilesystems drops filesystems that repeat one already kept,
+// such as a folder of the root disk bind-mounted into /extra-filesystems
+// (#1428). Same usage alone is not enough: in Docker the container's / reports
+// the usage of whichever host filesystem holds the Docker root dir (#2103), so
+// the I/O devices must match too. A filesystem without diskstats matches any
+// device.
+func (a *Agent) pruneDuplicateFilesystems(ioCounters map[string]disk.IOCountersStat, usageFn func(string) (*disk.UsageStat, error)) {
+	type keptFs struct {
+		ioDevice string
+		usage    *disk.UsageStat
+	}
+	sameDevice := func(x, y string) bool {
+		_, xKnown := ioCounters[x]
+		_, yKnown := ioCounters[y]
+		return x == y || !xKnown || !yKnown
+	}
+	// Root first, so it is the one kept.
+	mountpoints := slices.SortedFunc(maps.Keys(a.fsStats), func(x, y string) int {
+		if rx, ry := a.fsStats[x].Root, a.fsStats[y].Root; rx != ry {
+			if rx {
+				return -1
+			}
+			return 1
 		}
-	}
-	if rootMountpoint == "" {
-		return
-	}
-	rootUsage, err := disk.Usage(rootMountpoint)
-	if err != nil {
-		return
-	}
-	for name, stats := range a.fsStats {
-		if stats == nil || stats.Root {
-			continue
-		}
-		extraUsage, err := disk.Usage(stats.Mountpoint)
+		return strings.Compare(x, y)
+	})
+	var kept []keptFs
+	for _, mountpoint := range mountpoints {
+		fs := a.fsStats[mountpoint]
+		usage, err := usageFn(fs.Mountpoint)
 		if err != nil {
 			continue
 		}
-		if hasSameDiskUsage(rootUsage, extraUsage) {
-			slog.Info("Ignoring duplicate FS", "name", name, "mount", stats.Mountpoint)
-			delete(a.fsStats, name)
+		if !fs.Root && slices.ContainsFunc(kept, func(k keptFs) bool {
+			return sameDevice(k.ioDevice, fs.IoDevice) && hasSameDiskUsage(k.usage, usage)
+		}) {
+			slog.Info("Ignoring duplicate FS", "name", cmp.Or(fs.Name, fs.IoDevice), "mount", fs.Mountpoint)
+			delete(a.fsStats, mountpoint)
+			continue
 		}
+		kept = append(kept, keptFs{fs.IoDevice, usage})
+	}
+}
+
+// setExtraFsStats adds the non-root filesystems to the payload. They are keyed
+// by custom name, else by I/O device, as chart history is. When two share a
+// key (e.g. two mounts on one device) the later mountpoint uses its base name.
+func (a *Agent) setExtraFsStats(stats *system.Stats, info *system.Info) {
+	stats.ExtraFs = make(map[string]*system.FsStats)
+	info.ExtraFsPct = make(map[string]float64)
+	for _, mountpoint := range slices.Sorted(maps.Keys(a.fsStats)) {
+		fs := a.fsStats[mountpoint]
+		if fs.Root {
+			if fs.Name != "" {
+				info.RootDiskName = fs.Name
+			}
+			continue
+		}
+		if fs.DiskTotal <= 0 {
+			continue
+		}
+		key := cmp.Or(fs.Name, fs.IoDevice)
+		if _, taken := stats.ExtraFs[key]; taken || key == "" {
+			key = filepath.Base(mountpoint)
+			if _, taken := stats.ExtraFs[key]; taken {
+				key = mountpoint
+			}
+		}
+		stats.ExtraFs[key] = fs
+		info.ExtraFsPct[key] = utils.TwoDecimals(fs.DiskUsed / fs.DiskTotal * 100)
 	}
 }
 
@@ -507,6 +496,22 @@ type ioMatchCandidate struct {
 	ops   uint64
 }
 
+func ioCandidate(d disk.IOCountersStat) ioMatchCandidate {
+	return ioMatchCandidate{name: d.Name, bytes: d.ReadBytes + d.WriteBytes, ops: d.ReadCount + d.WriteCount}
+}
+
+// moreActive reports whether c has seen more I/O than best, breaking ties by
+// name so the choice is deterministic.
+func (c ioMatchCandidate) moreActive(best ioMatchCandidate) bool {
+	if c.bytes != best.bytes {
+		return c.bytes > best.bytes
+	}
+	if c.ops != best.ops {
+		return c.ops > best.ops
+	}
+	return c.name < best.name
+}
+
 // findIoDevice prefers exact device/label matches, then falls back to a
 // prefix-related candidate with the highest recent activity.
 func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat) (string, bool) {
@@ -515,35 +520,25 @@ func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersSt
 		return "", false
 	}
 
-	candidates := []ioMatchCandidate{}
-
+	var best ioMatchCandidate
 	for _, d := range diskIoCounters {
-		if normalizeDeviceName(d.Name) == filesystem || (d.Label != "" && normalizeDeviceName(d.Label) == filesystem) {
+		name, label := normalizeDeviceName(d.Name), ""
+		if d.Label != "" {
+			label = normalizeDeviceName(d.Label)
+		}
+		if name == filesystem || (label != "" && label == filesystem) {
 			return d.Name, true
 		}
-		if prefixRelated(normalizeDeviceName(d.Name), filesystem) ||
-			(d.Label != "" && prefixRelated(normalizeDeviceName(d.Label), filesystem)) {
-			candidates = append(candidates, ioMatchCandidate{
-				name:  d.Name,
-				bytes: d.ReadBytes + d.WriteBytes,
-				ops:   d.ReadCount + d.WriteCount,
-			})
+		if prefixRelated(name, filesystem) || (label != "" && prefixRelated(label, filesystem)) {
+			if c := ioCandidate(d); best.name == "" || c.moreActive(best) {
+				best = c
+			}
 		}
 	}
 
-	if len(candidates) == 0 {
+	if best.name == "" {
 		return "", false
 	}
-
-	best := candidates[0]
-	for _, c := range candidates[1:] {
-		if c.bytes > best.bytes ||
-			(c.bytes == best.bytes && c.ops > best.ops) ||
-			(c.bytes == best.bytes && c.ops == best.ops && c.name < best.name) {
-			best = c
-		}
-	}
-
 	slog.Info("Using disk I/O fallback", "requested", filesystem, "selected", best.name)
 	return best.name, true
 }
@@ -553,14 +548,7 @@ func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersSt
 func mostActiveIoDevice(diskIoCounters map[string]disk.IOCountersStat) string {
 	var best ioMatchCandidate
 	for _, d := range diskIoCounters {
-		c := ioMatchCandidate{
-			name:  d.Name,
-			bytes: d.ReadBytes + d.WriteBytes,
-			ops:   d.ReadCount + d.WriteCount,
-		}
-		if best.name == "" || c.bytes > best.bytes ||
-			(c.bytes == best.bytes && c.ops > best.ops) ||
-			(c.bytes == best.bytes && c.ops == best.ops && c.name < best.name) {
+		if c := ioCandidate(d); best.name == "" || c.moreActive(best) {
 			best = c
 		}
 	}
@@ -573,29 +561,6 @@ func prefixRelated(a, b string) bool {
 		return false
 	}
 	return strings.HasPrefix(a, b) || strings.HasPrefix(b, a)
-}
-
-// filesystemMatchesPartitionSetting checks whether a FILESYSTEM env var value
-// matches a partition by mountpoint, exact device name, or prefix relationship
-// (e.g. FILESYSTEM=ada0 matches partition /dev/ada0p2).
-func filesystemMatchesPartitionSetting(filesystem string, p disk.PartitionStat) bool {
-	filesystem = strings.TrimSpace(filesystem)
-	if filesystem == "" {
-		return false
-	}
-	if p.Mountpoint == filesystem {
-		return true
-	}
-
-	fsName := normalizeDeviceName(filesystem)
-	partName := normalizeDeviceName(p.Device)
-	if fsName == "" || partName == "" {
-		return false
-	}
-	if fsName == partName {
-		return true
-	}
-	return prefixRelated(partName, fsName)
 }
 
 // normalizeDeviceName canonicalizes device strings for comparisons.
@@ -647,22 +612,24 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 	if a.storagePoolManager != nil {
 		zfsMountpoints = a.storagePoolManager.ZfsMountpoints()
 	}
-	for device, stats := range a.fsStats {
-		if zfsMountpoints[stats.Mountpoint] {
+	for _, stats := range a.fsStats {
+		if zfsMountpoints[stats.Mountpoint] || stats.IoDevice == "" {
 			continue
 		}
 		// skip if not in diskIoCounters
-		d, exists := diskIoCounters[device]
+		d, exists := diskIoCounters[stats.IoDevice]
 		if !exists {
-			slog.Warn("Device not found in diskstats", "name", device)
+			slog.Warn("Device not found in diskstats", "name", stats.IoDevice)
 			continue
 		}
 		// populate initial values
 		stats.TotalRead = d.ReadBytes
 		stats.TotalWrite = d.WriteBytes
-		a.setDiskBaseline(device, prevDiskFromCounter(d, now))
-		// add to list of valid io device names
-		a.fsNames = append(a.fsNames, device)
+		// several filesystems can share a device; it is read once
+		if !slices.Contains(a.fsNames, stats.IoDevice) {
+			a.setDiskBaseline(stats.IoDevice, prevDiskFromCounter(d, now))
+			a.fsNames = append(a.fsNames, stats.IoDevice)
+		}
 	}
 }
 
@@ -733,10 +700,17 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			a.diskPrev[cacheTimeMs] = make(map[string]prevDisk)
 		}
 		now := time.Now()
+		// Filesystems by I/O device. Deltas are computed once per device, as a
+		// second read within the same call would see a near-zero interval.
+		filesystems := make(map[string][]*system.FsStats, len(a.fsNames))
+		for _, stats := range a.fsStats {
+			if stats.IoDevice != "" {
+				filesystems[stats.IoDevice] = append(filesystems[stats.IoDevice], stats)
+			}
+		}
 		for name, d := range ioCounters {
-			stats := a.fsStats[d.Name]
-			if stats == nil {
-				// skip devices not tracked
+			tracked := filesystems[d.Name]
+			if len(tracked) == 0 {
 				continue
 			}
 
@@ -811,28 +785,17 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 
 			// Update the baseline that seeds new intervals
 			a.setDiskBaseline(name, prevDiskFromCounter(d, now))
-			stats.TotalRead = d.ReadBytes
-			stats.TotalWrite = d.WriteBytes
-			stats.DiskReadBytes = diskIORead
-			stats.DiskWriteBytes = diskIOWrite
-			stats.DiskIoStats[0] = diskReadTime
-			stats.DiskIoStats[1] = diskWriteTime
-			stats.DiskIoStats[2] = diskIoUtilPct
-			stats.DiskIoStats[3] = rAwait
-			stats.DiskIoStats[4] = wAwait
-			stats.DiskIoStats[5] = diskWeightedIO
-
-			if stats.Root {
-				systemStats.DiskIO[0] = diskIORead
-				systemStats.DiskIO[1] = diskIOWrite
-				systemStats.DiskIOTotal[0] = d.ReadBytes
-				systemStats.DiskIOTotal[1] = d.WriteBytes
-				systemStats.DiskIoStats[0] = diskReadTime
-				systemStats.DiskIoStats[1] = diskWriteTime
-				systemStats.DiskIoStats[2] = diskIoUtilPct
-				systemStats.DiskIoStats[3] = rAwait
-				systemStats.DiskIoStats[4] = wAwait
-				systemStats.DiskIoStats[5] = diskWeightedIO
+			for _, stats := range tracked {
+				stats.TotalRead = d.ReadBytes
+				stats.TotalWrite = d.WriteBytes
+				stats.DiskReadBytes = diskIORead
+				stats.DiskWriteBytes = diskIOWrite
+				stats.DiskIoStats = [6]float64{diskReadTime, diskWriteTime, diskIoUtilPct, rAwait, wAwait, diskWeightedIO}
+				if stats.Root {
+					systemStats.DiskIO = [2]uint64{diskIORead, diskIOWrite}
+					systemStats.DiskIOTotal = [2]uint64{d.ReadBytes, d.WriteBytes}
+					systemStats.DiskIoStats = stats.DiskIoStats
+				}
 			}
 		}
 	}
