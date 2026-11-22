@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-11-12 19:12\n"
+"PO-Revision-Date: 2026-11-22 21:20\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -22,7 +22,7 @@ msgstr ""
 #: src/components/footer-repo-link.tsx
 msgctxt "New version available"
 msgid "{0} available"
-msgstr "{0} beschikbaar"
+msgstr "{0} Beschikbaar"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -71,7 +71,7 @@ msgstr "{daysLeft, plural, one {# dag} other {# dagen}}"
 
 #: src/components/routes/system/charts/disk-charts.tsx
 msgid "{diskName} I/O"
-msgstr "I/O van {diskName}"
+msgstr "I/O Van {diskName}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{numFailed, plural, one {# failed service} other {# failed services}}"
@@ -87,11 +87,11 @@ msgstr "{threads, plural, one {# draad} other {# draden}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{total, plural, one {# update} other {# updates}}"
-msgstr ""
+msgstr "{total, plural, one {# update} other {# updates}}"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
-msgstr ""
+msgstr "{totalCount, plural, one {# service} other {# services}}"
 
 #: src/components/alerts-history-columns.tsx
 msgid "{value, plural, one {# day} other {# days}}"
@@ -439,7 +439,7 @@ msgstr "Certificaat"
 
 #: src/lib/alerts.ts
 msgid "Certificate Expiration"
-msgstr "Certificaatverloop"
+msgstr "Certificaat Vervaldatum"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
@@ -1215,7 +1215,7 @@ msgstr "Als je het wachtwoord voor je beheerdersaccount bent kwijtgeraakt, kan j
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Ignore TLS certificate errors"
-msgstr "TLS-certificaatfouten negeren"
+msgstr "TLS-certificaat fouten negeren"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
