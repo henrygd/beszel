@@ -7,7 +7,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 	fixedDomainTicks,
-	xAxis,
+	useXAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartOptions, SystemStatsRecord } from "@/types"
@@ -127,7 +127,7 @@ export default function LineChartDefault({
 	// Use a stable key derived from data point identities and visual properties
 	const linesKey = dataPoints?.map((d) => `${d.label}:${d.strokeOpacity}${d.dot}${d.yAxisId}${d.strokeDasharray}`).join("\0")
 
-	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+	const XAxis = useXAxis(chartData.chartTime, displayData.at(-1)?.created)
 
 	const Lines = useMemo(() => {
 		return dataPoints?.map((dataPoint, i) => {

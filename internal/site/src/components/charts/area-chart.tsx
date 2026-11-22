@@ -7,7 +7,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 	fixedDomainTicks,
-	xAxis,
+	useXAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
@@ -113,7 +113,7 @@ export default function AreaChartDefault({
 		})
 	}, [areasKey, displayMaxToggled])
 
-	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+	const XAxis = useXAxis(chartData.chartTime, displayData.at(-1)?.created)
 
 	return useMemo(() => {
 		if (displayData.length === 0) {
