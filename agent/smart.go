@@ -511,8 +511,9 @@ func (sm *SmartManager) isExcludedDevice(deviceName string) bool {
 	return exists
 }
 
-// detectSmartctl checks if smartctl is installed, returns an error if not
-func (sm *SmartManager) detectSmartctl() (string, error) {
+// detectSmartctl checks if smartctl is installed, returns an error if not. It
+// is a variable so tests can simulate a host without smartctl.
+var detectSmartctl = func() (string, error) {
 	if runtime.GOOS == "windows" {
 		// Load embedded smartctl.exe for Windows amd64 builds.
 		if runtime.GOARCH == "amd64" {
@@ -557,15 +558,14 @@ func NewSmartManager() (*SmartManager, error) {
 		data: make(map[string]*smart.SmartData),
 	}
 	sm.refreshExcludedDevices()
-	path, err := sm.detectSmartctl()
+	path, err := detectSmartctl()
 	slog.Debug("smartctl", "path", path, "err", err)
 	if err != nil {
 		// Keep the previous fail-fast behavior unless this Linux host exposes
 		// eMMC or mdraid health via sysfs, in which case smartctl is optional.
-		if runtime.GOOS == "linux" {
-			if len(scanEmmcDevices()) > 0 || len(scanMdraidDevices()) > 0 {
-				return sm, nil
-			}
+		if runtime.GOOS == "linux" && len(scanSysfsDevices()) > 0 {
+			slog.Warn("smartctl not found; only eMMC/mdraid health will be collected. Install smartctl or use an agent image with smartmontools for physical disk SMART", "err", err)
+			return sm, nil
 		}
 		return nil, err
 	}
