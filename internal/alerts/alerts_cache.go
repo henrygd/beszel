@@ -16,6 +16,7 @@ type CachedAlertData struct {
 	UserID       string
 	Name         string
 	Value        float64
+	Thresholds   map[string]float64
 	Triggered    bool
 	Min          uint8
 	PendingSince time.Time
@@ -31,6 +32,12 @@ func (a *CachedAlertData) PopulateFromRecord(record *core.Record) {
 	a.UserID = record.GetString("user")
 	a.Name = record.GetString("name")
 	a.Value = record.GetFloat("value")
+	// Decode into a fresh map: JSON unmarshalling into a reused map retains old keys.
+	a.Thresholds = nil
+	var thresholds map[string]float64
+	if err := record.UnmarshalJSONField("thresholds", &thresholds); err == nil {
+		a.Thresholds = thresholds
+	}
 	a.Triggered = record.GetBool("triggered")
 	a.Min = uint8(record.GetInt("min"))
 	a.PendingSince = record.GetDateTime("pending_since").Time()

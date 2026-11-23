@@ -27,6 +27,13 @@ function AlertTriggeredDesc({ alert }: { alert: AlertRecord }) {
 	if (alert.name === "Status") {
 		return <Trans>Connection is down</Trans>
 	}
+	if (alert.name === "Temperature" && Object.keys(alert.thresholds ?? {}).length > 0) {
+		return (
+			<Trans>
+				Sensor threshold exceeded in last <Plural value={alert.min} one="# minute" other="# minutes" />
+			</Trans>
+		)
+	}
 	if (info.invert) {
 		return (
 			<Trans>
@@ -69,7 +76,7 @@ export const ActiveAlerts = ({ className }: { className?: string }) => {
 
 		for (const alert of activeAlerts) {
 			systemIds.add(alert.system)
-			alertsKey.push(`${alert.id}${alert.value}${alert.min}`)
+			alertsKey.push(`${alert.id}${alert.value}${JSON.stringify(alert.thresholds)}${alert.min}`)
 		}
 
 		return { systemCount: systemIds.size, alertsKey: alertsKey.join("") }

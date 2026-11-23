@@ -28,6 +28,16 @@ func createCombinedData[T any](value T, setValue systemAlertValueSetter[T]) *sys
 }
 
 func newSystemAlertTestFixture(t *testing.T, alertName string, min int, threshold float64) *systemAlertTestFixture {
+	return newSystemAlertTestFixtureWithThresholds(t, alertName, min, threshold, nil)
+}
+
+func newSystemAlertTestFixtureWithThresholds(
+	t *testing.T,
+	alertName string,
+	min int,
+	threshold float64,
+	thresholds map[string]float64,
+) *systemAlertTestFixture {
 	t.Helper()
 
 	hub, user := beszelTests.GetHubWithUser(t)
@@ -46,13 +56,17 @@ func newSystemAlertTestFixture(t *testing.T, alertName string, min int, threshol
 	userSettings.Set("settings", `{"emails":["test@example.com"],"webhooks":[]}`)
 	require.NoError(t, hub.Save(userSettings))
 
-	alertRecord, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+	alertFields := map[string]any{
 		"name":   alertName,
 		"system": systemRecord.Id,
 		"user":   user.Id,
 		"min":    min,
 		"value":  threshold,
-	})
+	}
+	if thresholds != nil {
+		alertFields["thresholds"] = thresholds
+	}
+	alertRecord, err := beszelTests.CreateRecord(hub, "alerts", alertFields)
 	require.NoError(t, err)
 
 	assert.False(t, alertRecord.GetBool("triggered"), "Alert should not be triggered initially")
@@ -193,6 +207,15 @@ func setTemperatureAlertValue(info *system.Info, stats *system.Stats, value floa
 	}
 }
 
+func setTemperatureAlertValues(info *system.Info, stats *system.Stats, values map[string]float64) {
+	stats.Temperatures = values
+	for _, value := range values {
+		if value > info.DashboardTemp {
+			info.DashboardTemp = value
+		}
+	}
+}
+
 func setLoadAvgAlertValue(info *system.Info, stats *system.Stats, value [3]float64) {
 	info.LoadAvg = value
 	stats.LoadAvg = value
@@ -250,5 +273,147 @@ func TestCPUStateAlertWithoutBreakdown(t *testing.T) {
 
 		fixture.assertTriggered(t, false, "Alert should ignore missing CPU breakdown data")
 		assert.Zero(t, fixture.hub.TestMailer.TotalSend(), "No email should be sent without CPU breakdown data")
+	})
+}
+
+func TestTemperatureAlertPerSensorThresholdsOneMin(t *testing.T) {
+	fixture := newSystemAlertTestFixtureWithThresholds(t, "Temperature", 1, 70, map[string]float64{
+		"CPU Package": 80,
+		"NVMe":        60,
+	})
+	defer fixture.cleanup()
+	synctest.Test(t, func(t *testing.T) {
+		// A hot unselected sensor and selected sensors below their own thresholds do not trigger.
+		submitValue(fixture, t, map[string]float64{"CPU Package": 79, "NVMe": 59, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "Alert should ignore unselected sensors")
+		assert.Zero(t, fixture.hub.TestMailer.TotalSend())
+
+		// Either selected sensor can trigger using its individual threshold.
+		submitValue(fixture, t, map[string]float64{"CPU Package": 79, "NVMe": 61, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Alert should trigger when a selected sensor exceeds its threshold")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+
+		submitValue(fixture, t, map[string]float64{"GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Missing selected sensors must not resolve the alert")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+
+		submitValue(fixture, t, map[string]float64{"CPU Package": 79, "NVMe": 59, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "Alert should resolve when selected sensors fall below their thresholds")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend())
+
+		waitForSystemAlert(time.Minute)
+	})
+}
+
+func TestTemperatureAlertPerSensorThresholdsTwoMin(t *testing.T) {
+	fixture := newSystemAlertTestFixtureWithThresholds(t, "Temperature", 2, 70, map[string]float64{
+		"CPU Package": 80,
+		"NVMe":        60,
+	})
+	defer fixture.cleanup()
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, map[string]float64{"CPU Package": 50, "NVMe": 40, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Minute + time.Second)
+		fixture.assertTriggered(t, false, "Alert should not trigger on the baseline reading")
+
+		submitValue(fixture, t, map[string]float64{"CPU Package": 82, "NVMe": 62, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Minute)
+		fixture.assertTriggered(t, false, "Alert should wait for a complete history window")
+
+		submitValue(fixture, t, map[string]float64{"CPU Package": 82, "NVMe": 62, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Alert should use per-sensor averages and thresholds")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+
+		submitValue(fixture, t, map[string]float64{"CPU Package": 70, "NVMe": 50, "GPU": 99}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "Alert should resolve when per-sensor averages recover")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend())
+	})
+}
+
+func TestTemperatureAlertSparseHistory(t *testing.T) {
+	fixture := newSystemAlertTestFixtureWithThresholds(t, "Temperature", 2, 80, map[string]float64{"cpu": 80})
+	defer fixture.cleanup()
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, map[string]float64{"cpu": 70}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Minute + time.Second)
+		submitValue(fixture, t, map[string]float64{"other": 100}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Minute)
+		submitValue(fixture, t, map[string]float64{"cpu": 90}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "One sample must not satisfy two-minute sensor history")
+		assert.Zero(t, fixture.hub.TestMailer.TotalSend())
+	})
+}
+
+func TestTemperatureAlertPartialSensorLossOneMin(t *testing.T) {
+	fixture := newSystemAlertTestFixtureWithThresholds(t, "Temperature", 1, 80, map[string]float64{"cpu": 80, "nvme": 60})
+	defer fixture.cleanup()
+	synctest.Test(t, func(t *testing.T) {
+		// Missing CPU must not prevent the available NVMe sensor from triggering.
+		submitValue(fixture, t, map[string]float64{"nvme": 70}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Available selected sensors can trigger")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+
+		for _, values := range []map[string]float64{
+			{"cpu": 50},
+			{"cpu": 50, "nvme": 0},
+			{"cpu": 50, "nvme": -1},
+		} {
+			submitValue(fixture, t, values, setTemperatureAlertValues)
+			waitForSystemAlert(time.Second)
+			fixture.assertTriggered(t, true, "Missing or invalid NVMe must not resolve a triggered alert")
+			assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+		}
+
+		submitValue(fixture, t, map[string]float64{"cpu": 50, "nvme": 50}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "Complete safe readings can resolve")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend())
+		waitForSystemAlert(time.Minute)
+	})
+}
+
+func TestTemperatureAlertPartialSensorLossTwoMin(t *testing.T) {
+	fixture := newSystemAlertTestFixtureWithThresholds(t, "Temperature", 2, 80, map[string]float64{"cpu": 80, "nvme": 60})
+	defer fixture.cleanup()
+	synctest.Test(t, func(t *testing.T) {
+		submitValue(fixture, t, map[string]float64{"cpu": 50, "nvme": 50}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Minute + time.Second)
+		// A complete NVMe history can trigger even with CPU missing.
+		submitValue(fixture, t, map[string]float64{"nvme": 70}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Minute)
+		submitValue(fixture, t, map[string]float64{"nvme": 70}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Available selected sensor history can trigger")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+
+		// Age the hot samples out while only safe CPU readings remain.
+		for range 3 {
+			waitForSystemAlert(time.Minute)
+			submitValue(fixture, t, map[string]float64{"cpu": 50}, setTemperatureAlertValues)
+			waitForSystemAlert(time.Second)
+			fixture.assertTriggered(t, true, "Partial current readings must not resolve")
+			assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+		}
+
+		// Current coverage is complete, but NVMe still lacks enough history.
+		waitForSystemAlert(time.Minute)
+		submitValue(fixture, t, map[string]float64{"cpu": 50, "nvme": 50}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, true, "Insufficient selected sensor history must not resolve")
+		assert.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+
+		waitForSystemAlert(time.Minute)
+		submitValue(fixture, t, map[string]float64{"cpu": 50, "nvme": 50}, setTemperatureAlertValues)
+		waitForSystemAlert(time.Second)
+		fixture.assertTriggered(t, false, "Complete safe sensor histories can resolve")
+		assert.Equal(t, 2, fixture.hub.TestMailer.TotalSend())
 	})
 }
