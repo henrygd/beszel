@@ -154,19 +154,17 @@ const BulkMonitorSchema = v.object({
 	),
 })
 
-function normalizeHttpTarget(target: string, port = 0) {
+export function normalizeHttpTarget(target: string, port = 0) {
 	const useExplicitPort = port > 0 && port !== 80 && port !== 443
-	const hasOriginOnlyTarget = /^https?:\/\/[^/?#]+$/i.test(target)
-	if (!/^https?:\/\//i.test(target)) {
-		const scheme = port === 80 ? "http" : "https"
-		return `${scheme}://${target}${useExplicitPort ? `:${port}` : ""}`
-	}
+	const scheme = port === 80 ? "http" : "https"
+	const urlTarget = /^https?:\/\//i.test(target) ? target : `${scheme}://${target}`
+	const hasOriginOnlyTarget = /^https?:\/\/[^/?#]+$/i.test(urlTarget)
 
 	let parsedUrl: URL
 	try {
-		parsedUrl = new URL(target)
+		parsedUrl = new URL(urlTarget)
 	} catch {
-		return target
+		return urlTarget
 	}
 
 	if (!parsedUrl.port && useExplicitPort) {
