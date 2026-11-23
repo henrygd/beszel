@@ -50,6 +50,7 @@ type cmdOptions struct {
 	listen string // listen is the address or port to listen on.
 	hubURL string // hubURL is the URL of the Beszel hub.
 	token  string // token is the token to use for authentication.
+	power  bool   // power indicates whether to enable power management features.
 }
 
 // parse parses the command line flags and populates the config struct.
@@ -79,6 +80,7 @@ func (opts *cmdOptions) parse() bool {
 	pflag.StringVarP(&opts.listen, "listen", "l", "", "Address or port to listen on")
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
+	pflag.BoolVarP(&opts.power, "power", "p", false, "Enable power management features (requires elevated privileges)")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
 	if ghupdate.SelfUpdateDisabled {
 		_ = pflag.CommandLine.MarkHidden("china-mirrors")
@@ -140,6 +142,9 @@ func (opts *cmdOptions) parse() bool {
 	}
 	if opts.token != "" {
 		os.Setenv("TOKEN", opts.token)
+	}
+	if opts.power {
+		os.Setenv("POWER_COMMANDS_ENABLED", "true")
 	}
 	return false
 }

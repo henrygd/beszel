@@ -98,8 +98,8 @@ msgid "{value, plural, one {# day} other {# days}}"
 msgstr "{value, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}"
 
 #: src/lib/utils.ts
-msgid "1 hour"
-msgstr "1 ساعة"
+#~ msgid "1 hour"
+#~ msgstr "1 ساعة"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -107,16 +107,16 @@ msgid "1 min"
 msgstr "دقيقة واحدة"
 
 #: src/lib/utils.ts
-msgid "1 minute"
-msgstr "1 دقيقة"
+#~ msgid "1 minute"
+#~ msgstr "1 دقيقة"
 
 #: src/lib/utils.ts
-msgid "1 week"
-msgstr "1 أسبوع"
+#~ msgid "1 week"
+#~ msgstr "1 أسبوع"
 
 #: src/lib/utils.ts
-msgid "12 hours"
-msgstr "12 ساعة"
+#~ msgid "12 hours"
+#~ msgstr "12 ساعة"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -124,17 +124,21 @@ msgid "15 min"
 msgstr "15 دقيقة"
 
 #: src/lib/utils.ts
-msgid "24 hours"
-msgstr "24 ساعة"
+#~ msgid "24 hours"
+#~ msgstr "24 ساعة"
 
 #: src/lib/utils.ts
-msgid "30 days"
-msgstr "30 يومًا"
+#~ msgid "30 days"
+#~ msgstr "30 يومًا"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 دقائق"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Accepted status codes"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -239,6 +243,23 @@ msgstr "جميع الحاويات"
 msgid "All Systems"
 msgstr "جميع الأنظمة"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "AP · client avg"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
 #: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
@@ -248,17 +269,22 @@ msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
 msgid "Are you sure?"
 msgstr "هل أنت متأكد؟"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "المتاح"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "المتاح"
 
@@ -410,7 +436,9 @@ msgstr "يمكن الإيقاف"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/system-actions-button.tsx
 #: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "إلغاء"
@@ -499,6 +527,14 @@ msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Checked {0}"
 msgstr "تم الفحص {0}"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an A record exists."
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an AAAA record exists."
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
@@ -591,6 +627,7 @@ msgstr "حاويات"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/system-actions-button.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "متابعة"
 
@@ -653,6 +690,10 @@ msgstr "انسخ أمر التثبيت للوكيل أدناه، أو سجل ا�
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "انسخ محتوى <0>docker-compose.yml</0> للوكيل أدناه، أو سجل الوكلاء تلقائياً باستخدام <1>رمز مميز عالمي</1>."
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
 msgid "Copy token"
@@ -711,6 +752,11 @@ msgstr "إنشاء"
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "إنشاء حساب"
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
@@ -942,6 +988,7 @@ msgstr "مؤقت"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -953,6 +1000,10 @@ msgstr "مؤقت"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "خطأ"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
@@ -981,6 +1032,14 @@ msgstr "خرج نشطًا"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "منتهية الصلاحية"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -1246,6 +1305,15 @@ msgstr "الفاصل الزمني (بالثواني)"
 msgid "Invalid email address."
 msgstr "عنوان البريد الإشباكي غير صالح."
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP Version"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "اللغة"
@@ -1468,6 +1536,10 @@ msgstr "حركة مرور الشبكة للواجهات العامة"
 msgid "Network unit"
 msgstr "وحدة الشبكة"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Never"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1570,6 +1642,10 @@ msgstr "كلمة مرور لمرة واحدة"
 #: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "فتح القائمة"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to any status code below 400."
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Optional. Defaults to the agent's system resolver."
@@ -1746,6 +1822,14 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "المنافذ"
 
+#: src/components/system-actions-button.tsx
+msgid "Power command accepted"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Power command failed"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1778,6 +1862,10 @@ msgstr "المفتاح العام"
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "المفتاح العام"
+
+#: src/components/system-actions-button.tsx
+msgid "Put {name} to sleep?"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average queue depth"
@@ -1814,6 +1902,14 @@ msgstr "قراءة"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "أخطاء القراءة"
+
+#: src/components/system-actions-button.tsx
+msgid "Reboot"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Reboot {name}?"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1887,6 +1983,26 @@ msgstr "إظهار الرمز"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
 msgstr "المراجعة"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2023,6 +2139,10 @@ msgstr "أرسل pings صادرة دورية إلى خدمة مراقبة خار
 msgid "Send test heartbeat"
 msgstr "إرسال نبضة قلب اختبارية"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "تم الإرسال"
@@ -2066,6 +2186,14 @@ msgstr "تم حفظ الإعدادات"
 msgid "Show timestamps"
 msgstr "إظهار الطوابع الزمنية"
 
+#: src/components/system-actions-button.tsx
+msgid "Shut down"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Shut down {name}?"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "تسجيل الدخول"
@@ -2073,6 +2201,10 @@ msgstr "تسجيل الدخول"
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "قوة إشارة واجهات Wi-Fi المتصلة"
+
+#: src/components/system-actions-button.tsx
+msgid "Sleep"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -2176,8 +2308,13 @@ msgstr "الهدف"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval[,server]]]]"
+msgid "target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]"
 msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#~ msgid "target[,protocol[,port[,interval[,server]]]]"
+#~ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2214,9 +2351,17 @@ msgstr "اختبار نبضة القلب"
 msgid "Test notification sent"
 msgstr "تم إرسال إشعار الاختبار"
 
+#: src/components/system-actions-button.tsx
+msgid "The agent acknowledged the request."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
 msgstr "الحالة العامة هي <0>موافق</0> عندما تكون جميع الأنظمة تعمل، و<1>تحذير</1> عند تشغيل التنبيهات، و<2>خطأ</2> عندما يكون أي نظام معطلاً."
+
+#: src/components/system-actions-button.tsx
+msgid "The system will disconnect while the power command runs. The hub cannot confirm when it completes."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."

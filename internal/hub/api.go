@@ -21,6 +21,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/henrygd/beszel/internal/hub/config"
 	"github.com/henrygd/beszel/internal/hub/mcp"
@@ -216,6 +217,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// refresh ZFS pool details for a system
 	apiAuth.POST("/zfs/refresh", h.refreshZfsData).BindFunc(excludeReadOnlyRole)
+	// send an explicit power action to a monitored system
+	apiAuth.POST("/power", h.runPowerAction).BindFunc(requireAdminRole)
 	// get systemd service details
 	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// get recent logs for a systemd service
@@ -234,6 +237,41 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		return err
 	}
 	return nil
+}
+
+type powerActionAPIRequest struct {
+	System string             `json:"system"`
+	Action common.PowerAction `json:"action"`
+}
+
+// runPowerAction handles POST /api/beszel/power. The response reports that the
+// agent acknowledged the request; the host may disconnect before completion.
+func (h *Hub) runPowerAction(e *core.RequestEvent) error {
+	var req powerActionAPIRequest
+	if err := e.BindBody(&req); err != nil || req.System == "" {
+		return e.BadRequestError("Invalid power action request", err)
+	}
+	switch req.Action {
+	case common.PowerActionShutdown, common.PowerActionReboot, common.PowerActionSuspend, common.PowerActionHibernate, "sleep":
+	default:
+		return e.BadRequestError("Unsupported power action", nil)
+	}
+	if req.Action == "sleep" {
+		req.Action = common.PowerActionSuspend
+	}
+	system, err := h.sm.GetSystem(req.System)
+	if err != nil || !system.HasUser(e.App, e.Auth) {
+		return e.NotFoundError("", nil)
+	}
+	result, err := system.RunPowerAction(req.Action)
+	if err != nil {
+		return e.InternalServerError("Agent could not accept the power action", err)
+	}
+	if !result.Accepted {
+		return e.InternalServerError("Agent did not accept the power action", nil)
+	}
+	slog.Info("Power action accepted by agent", "system", req.System, "action", req.Action, "user", e.Auth.Id)
+	return e.JSON(http.StatusAccepted, result)
 }
 
 // getInfo returns data needed by authenticated users, such as the public key and current version

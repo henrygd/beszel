@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
@@ -60,8 +61,38 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.SyncNetworkMonitors, &SyncNetworkMonitorsHandler{})
 	registry.Register(common.GetZfsData, &GetZfsDataHandler{})
 	registry.Register(common.GetPackageUpdates, &GetPackageUpdatesHandler{})
+	registry.Register(common.RunPowerAction, &RunPowerActionHandler{})
 
 	return registry
+}
+
+// RunPowerActionHandler accepts an explicit power action and schedules it only
+// after its acknowledgement has been written to the hub connection.
+type RunPowerActionHandler struct{}
+
+func (h *RunPowerActionHandler) Handle(hctx *HandlerContext) error {
+	var req common.PowerActionRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	if !powerActionSupported(req.Action) {
+		return fmt.Errorf("unsupported power action %q", req.Action)
+	}
+	if !powerActionsEnabled() {
+		return errors.New("power commands are disabled; set POWER_COMMANDS_ENABLED=true to enable them")
+	}
+	if err := hctx.SendResponse(common.PowerActionResponse{Accepted: true}, hctx.RequestID); err != nil {
+		return err
+	}
+	go func() {
+		// Give the transport time to flush the acknowledgement before the host
+		// suspends or shuts down.
+		time.Sleep(time.Second)
+		if err := runPowerAction(req.Action); err != nil {
+			slog.Error("Power action failed", "action", req.Action, "err", err)
+		}
+	}()
+	return nil
 }
 
 // Register registers a handler for a specific action type
