@@ -130,6 +130,7 @@ export function useSystemData(id: string) {
 		if (!system.id || system.info?.m) {
 			return
 		}
+		let cancelled = false
 		pb.collection<SystemDetailsRecord>("system_details")
 			.getOne(system.id, {
 				fields: "hostname,kernel,cores,threads,sockets,cpu,os,os_name,arch,memory,podman",
@@ -137,7 +138,15 @@ export function useSystemData(id: string) {
 					"Cache-Control": "public, max-age=60",
 				},
 			})
-			.then(setDetails)
+			.then((details) => {
+				if (!cancelled) setDetails(details)
+			})
+			.catch((error) => {
+				if (!cancelled) console.error("Failed to fetch system details", error)
+			})
+		return () => {
+			cancelled = true
+		}
 	}, [system.id])
 
 	// subscribe to realtime metrics if chart time is 1m
