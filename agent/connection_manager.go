@@ -220,7 +220,8 @@ func (c *ConnectionManager) Start(ctx context.Context, serverOptions ServerOptio
 		case <-sigCtx.Done():
 			slog.Info("Shutting down", "cause", context.Cause(sigCtx))
 			c.reconnectWG.Wait()
-			return c.stop()
+			c.stop()
+			return nil
 		}
 	}
 }
@@ -234,12 +235,16 @@ func (c *ConnectionManager) handleSSHChange() {
 }
 
 // stop closes active connections after the manager and reconnect attempts finish.
-func (c *ConnectionManager) stop() error {
+// Failing to remove the health file is logged, not returned: it must not turn a
+// normal shutdown into a non-zero exit.
+func (c *ConnectionManager) stop() {
 	_ = c.agent.StopServer()
 	c.agent.monitorManager.Stop()
 	c.closeWebSocket()
 	c.agent.cleanupSensorShadow()
-	return health.CleanUp()
+	if err := health.CleanUp(); err != nil {
+		slog.Warn("Failed to remove health file", "err", err)
+	}
 }
 
 // handleEvent processes connection events and updates the connection state accordingly.
@@ -337,7 +342,7 @@ func (c *ConnectionManager) connect() {
 	if err != nil {
 		if shouldExitOnErr(err) {
 			time.Sleep(2 * time.Second) // prevent tight restart loop
-			_ = c.stop()
+			c.stop()
 			os.Exit(1)
 		}
 		if c.getState() == Disconnected {
