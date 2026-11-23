@@ -9,7 +9,7 @@ test.each([
 	["first-run", true],
 	["auth-methods", true],
 	["both", true],
-] as const)("a stalled %s request releases the login form (auto login %s)", async (stalledPath, autoLogin) => {
+] as const)("a stalled %s request releases the login form (auto login %p)", async (stalledPath, autoLogin) => {
 	const pb = new PocketBase("http://localhost")
 	let aborted = false
 	const requests: string[] = []
