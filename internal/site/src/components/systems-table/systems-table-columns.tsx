@@ -3,10 +3,9 @@ import { plural, t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
+import type { CellContext, ColumnDef } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
 import {
-	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
 	CpuIcon,
@@ -20,14 +19,22 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $userSettings } from "@/lib/stores"
-import { cn, decimalString, formatBytes, formatTemperature, parseSemVer, secondsToUptimeString } from "@/lib/utils"
+import { sortableHeader } from "@/components/ui/data-table-settings"
+import {
+	cn,
+	decimalString,
+	formatBytes,
+	formatTemperature,
+	matchesTableFilter,
+	parseSemVer,
+	secondsToUptimeString,
+} from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import { connectedWiFi, primaryWiFi, primaryWiFiSignal, wifiNetworkName, wifiSignalState } from "@/lib/wifi"
 import type { SystemRecord, WiFi } from "@/types"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { ActionsButton } from "../system-actions-button"
-import { Button } from "../ui/button"
 import {
 	BatteryMediumIcon,
 	EthernetIcon,
@@ -73,43 +80,29 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			minSize: 0,
 			accessorKey: "name",
 			id: "system",
-			name: () => t`System`,
+			meta: { label: () => t`System`, Icon: ServerIcon },
 			sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 			filterFn: (() => {
-				let filterInput = ""
-				let filterInputLower = ""
-				const nameCache = new Map<string, string>()
 				const statusTranslations = {
-					[SystemStatus.Up]: t`Up`.toLowerCase(),
-					[SystemStatus.Down]: t`Down`.toLowerCase(),
-					[SystemStatus.Paused]: t`Paused`.toLowerCase(),
+					[SystemStatus.Up]: t`Up`,
+					[SystemStatus.Down]: t`Down`,
+					[SystemStatus.Paused]: t`Paused`,
 				} as const
 
-				// match filter value against name or translated status
-				return (row, _, newFilterInput) => {
+				// match filter value against name, host, agent version, or translated status
+				return (row, _, filterValue) => {
 					const sys = row.original
-					if (sys.host.includes(newFilterInput) || sys.info.v?.includes(newFilterInput)) {
-						return true
-					}
-					if (newFilterInput !== filterInput) {
-						filterInput = newFilterInput
-						filterInputLower = newFilterInput.toLowerCase()
-					}
-					let nameLower = nameCache.get(sys.name)
-					if (nameLower === undefined) {
-						nameLower = sys.name.toLowerCase()
-						nameCache.set(sys.name, nameLower)
-					}
-					if (nameLower.includes(filterInputLower)) {
-						return true
-					}
-					const statusLower = statusTranslations[sys.status as keyof typeof statusTranslations]
-					return statusLower?.includes(filterInputLower) || false
+					return matchesTableFilter(
+						filterValue,
+						sys.name,
+						sys.host,
+						sys.info.v,
+						statusTranslations[sys.status as keyof typeof statusTranslations]
+					)
 				}
 			})(),
 			enableHiding: false,
 			invertSorting: false,
-			Icon: ServerIcon,
 			cell: (info) => {
 				const { name, id } = info.row.original
 				const linkUrl = getPagePath($router, "system", { id })
@@ -144,33 +137,30 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.cpu || undefined,
 			id: "cpu",
-			name: () => t`CPU`,
+			meta: { label: () => t`CPU`, Icon: CpuIcon },
 			cell: TableCellWithMeter,
-			Icon: CpuIcon,
 			header: sortableHeader,
 		},
 		{
 			// accessorKey: "info.mp",
 			accessorFn: ({ info }) => info.mp || undefined,
 			id: "memory",
-			name: () => t`Memory`,
+			meta: { label: () => t`Memory`, Icon: MemoryStickIcon },
 			cell: TableCellWithMeter,
-			Icon: MemoryStickIcon,
 			header: sortableHeader,
 		},
 		{
 			accessorFn: ({ info }) => info.dp || undefined,
 			id: "disk",
-			name: () => t`Disk`,
+			meta: { label: () => t`Disk`, Icon: HardDriveIcon },
 			cell: (info: CellContext<SystemRecord, unknown>) =>
 				info.row.original.info.efs ? DiskCellWithMultiple(info) : TableCellWithMeter(info),
-			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
 		{
 			accessorFn: ({ info }) => info.g,
 			id: "gpu",
-			name: () => "GPU",
+			meta: { label: () => "GPU", Icon: GpuIcon },
 			cell: (info) => {
 				const val = info.getValue() as number | undefined
 				if (val === undefined) {
@@ -178,15 +168,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				}
 				return TableCellWithMeter(info)
 			},
-			Icon: GpuIcon,
 			header: sortableHeader,
 		},
 		{
 			id: "loadAverage",
 			accessorFn: ({ info }) => info.la?.reduce((acc, curr) => acc + curr, 0),
-			name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
+			meta: { label: () => t({ message: "Load Avg", comment: "Short label for load average" }), Icon: HourglassIcon },
 			size: 0,
-			Icon: HourglassIcon,
 			header: sortableHeader,
 			cell(info: CellContext<SystemRecord, unknown>) {
 				const { info: sysInfo, status } = info.row.original
@@ -222,9 +210,8 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info, status }) => (status !== SystemStatus.Up ? undefined : info.bb),
 			id: "net",
-			name: () => t`Net`,
+			meta: { label: () => t`Net`, Icon: EthernetIcon },
 			size: 0,
-			Icon: EthernetIcon,
 			header: sortableHeader,
 			sortUndefined: "last",
 			cell(info) {
@@ -244,10 +231,12 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.dt,
 			id: "temp",
-			name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
+			meta: {
+				label: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
+				Icon: ThermometerIcon,
+				hideSortIcon: true,
+			},
 			size: 50,
-			hideSort: true,
-			Icon: ThermometerIcon,
 			header: sortableHeader,
 			cell(info) {
 				const val = info.getValue() as number
@@ -266,11 +255,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.bat?.[0],
 			id: "battery",
-			name: () => t({ message: "Bat", comment: "Battery label in systems table header" }),
+			meta: {
+				label: () => t({ message: "Bat", comment: "Battery label in systems table header" }),
+				Icon: BatteryMediumIcon,
+				hideSortIcon: true,
+			},
 			size: 70,
-			Icon: BatteryMediumIcon,
 			header: sortableHeader,
-			hideSort: true,
 			cell(info) {
 				const [pct, state] = info.row.original.info.bat ?? []
 				if (pct === undefined) {
@@ -312,11 +303,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: primaryWiFiSignal,
 			id: "wifi",
-			name: () => "Wi-Fi",
+			meta: { label: () => "Wi-Fi", Icon: WifiIcon, hideSortIcon: true },
 			size: 80,
-			Icon: WifiIcon,
 			header: sortableHeader,
-			hideSort: true,
 			sortUndefined: "last",
 			cell(info) {
 				const connections = connectedWiFi(info.row.original)
@@ -368,11 +357,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.sv?.[0],
 			id: "services",
-			name: () => t`Services`,
+			meta: { label: () => t`Services`, Icon: TerminalSquareIcon, hideSortIcon: true },
 			size: 50,
-			Icon: TerminalSquareIcon,
 			header: sortableHeader,
-			hideSort: true,
 			sortingFn: (a, b) => {
 				// sort priorities: 1) has failed services (dot color), 2) total services
 				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
@@ -425,11 +412,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.pu?.[0],
 			id: "updates",
-			name: () => t`Updates`,
+			meta: { label: () => t`Updates`, Icon: PackageIcon, hideSortIcon: true },
 			size: 50,
-			Icon: PackageIcon,
 			header: sortableHeader,
-			hideSort: true,
 			sortingFn: (a, b) => {
 				// sort priorities: 1) dot color (security > regular > up to date), 2) total updates
 				const puA = a.original.info.pu
@@ -465,11 +450,9 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.u || undefined,
 			id: "uptime",
-			name: () => t`Uptime`,
+			meta: { label: () => t`Uptime`, Icon: ClockArrowUp, hideSortIcon: true },
 			size: 50,
-			Icon: ClockArrowUp,
 			header: sortableHeader,
-			hideSort: true,
 			cell(info) {
 				const uptime = info.getValue() as number
 				if (!uptime) {
@@ -481,10 +464,8 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		{
 			accessorFn: ({ info }) => info.v,
 			id: "agent",
-			name: () => t`Agent`,
+			meta: { label: () => t`Agent`, Icon: WifiIcon, hideSortIcon: true },
 			size: 50,
-			Icon: WifiIcon,
-			hideSort: true,
 			header: sortableHeader,
 			cell(info) {
 				const version = info.getValue() as string
@@ -523,8 +504,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 		},
 		{
 			id: "actions",
-			// @ts-expect-error
-			name: () => t({ message: "Actions", comment: "Table column" }),
+			meta: { label: () => t({ message: "Actions", comment: "Table column" }) },
 			size: 50,
 			cell: ({ row }) => (
 				<div className="relative z-10 flex justify-end items-center gap-1 -ms-3">
@@ -536,23 +516,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 	] as ColumnDef<SystemRecord>[]
 }
 
-function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
-	const { column } = context
-	// @ts-expect-error
-	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			variant="ghost"
-			className={cn("h-9 px-3 flex duration-50", isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90")}
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="me-2 size-4" />}
-			{name()}
-			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
-		</Button>
-	)
-}
 
 function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 	const { colorWarn = 65, colorCrit = 90 } = useStore($userSettings, { keys: ["colorWarn", "colorCrit"] })

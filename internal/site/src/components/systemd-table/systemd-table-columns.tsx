@@ -1,11 +1,10 @@
-import type { Column, ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
+import type { ColumnDef } from "@tanstack/react-table"
+import { sortableHeader } from "@/components/ui/data-table-settings"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { SystemdRecord } from "@/types"
 import { ServiceStatus, ServiceStatusLabels, ServiceSubState, ServiceSubStateLabels } from "@/lib/enums"
 import {
 	ActivityIcon,
-	ArrowUpDownIcon,
 	ClockIcon,
 	CpuIcon,
 	MemoryStickIcon,
@@ -33,9 +32,11 @@ function getSubStateColor(subState: ServiceSubState) {
 export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	{
 		id: "name",
+		meta: { label: () => t`Name`, Icon: TerminalSquareIcon },
+		enableHiding: false,
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		accessorFn: (record) => record.name,
-		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={TerminalSquareIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			return <span className="ms-1.5 xl:w-50 block truncate">{getValue() as string}</span>
 		},
@@ -57,8 +58,9 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	// },
 	{
 		id: "state",
+		meta: { label: () => t`State`, Icon: ActivityIcon },
 		accessorFn: (record) => record.state,
-		header: ({ column }) => <HeaderButton column={column} name={t`State`} Icon={ActivityIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const statusValue = getValue() as ServiceStatus
 			const statusLabel = ServiceStatusLabels[statusValue] || "Unknown"
@@ -72,8 +74,9 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 	{
 		id: "sub",
+		meta: { label: () => t`Sub State`, Icon: ActivityIcon },
 		accessorFn: (record) => record.sub,
-		header: ({ column }) => <HeaderButton column={column} name={t`Sub State`} Icon={ActivityIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const subState = getValue() as ServiceSubState
 			const subStateLabel = ServiceSubStateLabels[subState] || "Unknown"
@@ -87,6 +90,7 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 	{
 		id: "cpu",
+		meta: { label: () => `${t`CPU`} (10m)`, Icon: CpuIcon },
 		accessorFn: (record) => {
 			if (record.sub !== ServiceSubState.Running) {
 				return -1
@@ -94,7 +98,7 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 			return record.cpu
 		},
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={`${t`CPU`} (10m)`} Icon={CpuIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			if (val < 0) {
@@ -105,6 +109,7 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 	{
 		id: "cpuPeak",
+		meta: { label: () => t`CPU Peak`, Icon: CpuIcon },
 		accessorFn: (record) => {
 			if (record.sub !== ServiceSubState.Running) {
 				return -1
@@ -112,7 +117,7 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 			return record.cpuPeak ?? 0
 		},
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`CPU Peak`} Icon={CpuIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			if (val < 0) {
@@ -123,9 +128,10 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 	{
 		id: "memory",
+		meta: { label: () => t`Memory`, Icon: MemoryStickIcon },
 		accessorFn: (record) => record.memory,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Memory`} Icon={MemoryStickIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			if (!val) {
@@ -139,9 +145,10 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 	{
 		id: "memPeak",
+		meta: { label: () => t`Memory Peak`, Icon: MemoryStickIcon },
 		accessorFn: (record) => record.memPeak,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Memory Peak`} Icon={MemoryStickIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			if (!val) {
@@ -155,9 +162,10 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 	{
 		id: "updated",
+		meta: { label: () => t`Updated`, Icon: ClockIcon },
 		invertSorting: true,
 		accessorFn: (record) => record.updated,
-		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
 			return (
@@ -169,20 +177,6 @@ export const systemdTableCols: ColumnDef<SystemdRecord>[] = [
 	},
 ]
 
-function HeaderButton({ column, name, Icon }: { column: Column<SystemdRecord>; name: string; Icon: React.ElementType }) {
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			className={cn("h-9 px-3 flex items-center gap-2 duration-50", isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90")}
-			variant="ghost"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="size-4" />}
-			{name}
-			<ArrowUpDownIcon className="size-4" />
-		</Button>
-	)
-}
 
 export function getStatusColor(status: ServiceStatus) {
 	switch (status) {

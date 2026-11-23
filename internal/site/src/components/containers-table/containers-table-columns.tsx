@@ -1,5 +1,5 @@
-import type { Column, ColumnDef } from "@tanstack/react-table"
-import { Button } from "@/components/ui/button"
+import type { ColumnDef } from "@tanstack/react-table"
+import { sortableHeader } from "@/components/ui/data-table-settings"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
 import { ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
@@ -47,15 +47,18 @@ function getStatusValue(status: string): number {
 export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "name",
+		meta: { label: () => t`Name`, Icon: ContainerIcon },
+		enableHiding: false,
 		sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 		accessorFn: (record) => record.name,
-		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
 		},
 	},
 	{
 		id: "system",
+		meta: { label: () => t`System`, Icon: ServerIcon },
 		accessorFn: (record) => record.system,
 		sortingFn: (a, b) => {
 			const allSystems = $allSystemsById.get()
@@ -67,7 +70,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			}
 			return a.original.name.localeCompare(b.original.name)
 		},
-		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
 			return <div className="ms-1 max-w-40 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
@@ -84,9 +87,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	// },
 	{
 		id: "cpu",
+		meta: { label: () => t`CPU`, Icon: CpuIcon },
 		accessorFn: (record) => record.cpu,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`CPU`} Icon={CpuIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			return <span className="ms-1 tabular-nums">{`${decimalString(val, val >= 10 ? 1 : 2)}%`}</span>
@@ -94,9 +98,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "memory",
+		meta: { label: () => t`Memory`, Icon: MemoryStickIcon },
 		accessorFn: (record) => record.memory,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Memory`} Icon={MemoryStickIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
 			const formatted = formatBytes(val, false, undefined, true)
@@ -107,9 +112,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "net",
+		meta: { label: () => t`Net`, Icon: EthernetIcon },
 		accessorFn: (record) => record.net,
 		invertSorting: true,
-		header: ({ column }) => <HeaderButton column={column} name={t`Net`} Icon={EthernetIcon} />,
+		header: sortableHeader,
 		minSize: 112,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
@@ -121,9 +127,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "health",
+		meta: { label: () => t`Health`, Icon: ShieldCheckIcon },
 		invertSorting: true,
 		accessorFn: (record) => record.health,
-		header: ({ column }) => <HeaderButton column={column} name={t`Health`} Icon={ShieldCheckIcon} />,
+		header: sortableHeader,
 		minSize: 121,
 		cell: ({ getValue }) => {
 			const healthValue = getValue() as number
@@ -145,14 +152,9 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "ports",
+		meta: { label: () => t({ message: "Ports", context: "Container ports" }), Icon: SquareArrowRightEnterIcon },
 		accessorFn: (record) => record.ports || undefined,
-		header: ({ column }) => (
-			<HeaderButton
-				column={column}
-				name={t({ message: "Ports", context: "Container ports" })}
-				Icon={SquareArrowRightEnterIcon}
-			/>
-		),
+		header: sortableHeader,
 		sortingFn: (a, b) => getPortValue(a.original.ports) - getPortValue(b.original.ports),
 		minSize: 147,
 		cell: ({ getValue }) => {
@@ -174,11 +176,10 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "image",
+		meta: { label: () => t({ message: "Image", context: "Docker image" }), Icon: LayersIcon },
 		sortingFn: (a, b) => a.original.image.localeCompare(b.original.image),
 		accessorFn: (record) => record.image,
-		header: ({ column }) => (
-			<HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />
-		),
+		header: sortableHeader,
 		cell: ({ getValue, row }) => {
 			const val = getValue() as string
 			return (
@@ -204,19 +205,21 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 	{
 		id: "status",
+		meta: { label: () => t`Status`, Icon: HourglassIcon },
 		accessorFn: (record) => record.status,
 		invertSorting: true,
 		sortingFn: (a, b) => getStatusValue(a.original.status) - getStatusValue(b.original.status),
-		header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={HourglassIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			return <span className="ms-1 w-25 block truncate">{getValue() as string}</span>
 		},
 	},
 	{
 		id: "updated",
+		meta: { label: () => t`Updated`, Icon: ClockIcon },
 		invertSorting: true,
 		accessorFn: (record) => record.updated,
-		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
+		header: sortableHeader,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
 			return <span className="ms-1 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
@@ -224,31 +227,6 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 ]
 
-function HeaderButton({
-	column,
-	name,
-	Icon,
-}: {
-	column: Column<ContainerRecord>
-	name: string
-	Icon: React.ElementType
-}) {
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			className={cn(
-				"h-9 px-3 flex items-center gap-2 duration-50",
-				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
-			)}
-			variant="ghost"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="size-4" />}
-			{name}
-			{/* <ArrowUpDownIcon className="size-4" /> */}
-		</Button>
-	)
-}
 
 /**
  * Convert port string to a number for sorting.

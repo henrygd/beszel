@@ -9,26 +9,24 @@ import {
 	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
-	type SortingState,
 	type Table as TableType,
 	useReactTable,
-	type VisibilityState,
 } from "@tanstack/react-table"
-import { memo, type RefObject, useEffect, useRef, useState } from "react"
+import { memo, type RefObject, useEffect, useMemo, useRef, useState } from "react"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import { TableFilterInput, TableSettingsMenu, useTableSettings } from "@/components/ui/data-table-settings"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import type { ContainerRecord } from "@/types"
 import { containerChartCols } from "@/components/containers-table/containers-table-columns"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ContainerHealth, ContainerHealthLabels } from "@/lib/enums"
-import { cn, useBrowserStorage } from "@/lib/utils"
+import { cn, matchesTableFilter } from "@/lib/utils"
 import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "../ui/sheet"
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
@@ -40,30 +38,28 @@ const syntaxTheme = "github-dark-dimmed"
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const [data, setData] = useState<ContainerRecord[] | undefined>(undefined)
-	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		`sort-c-${systemId ? 1 : 0}`,
-		[{ id: systemId ? "name" : "system", desc: false }],
-		sessionStorage
-	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-
-	// Hide ports column if no ports are present
-	useEffect(() => {
-		if (data) {
-			const hasPorts = data.some((container) => container.ports)
-			setColumnVisibility((prev) => {
-				if (prev.ports === hasPorts) {
-					return prev
-				}
-				return { ...prev, ports: hasPorts }
-			})
-		}
-	}, [data])
-
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const tableSettings = useTableSettings({
+		colsKey: "containerCols",
+		sortKey: systemId ? "containerSortModeSystem" : "containerSortMode",
+		defaultSort: [{ id: systemId ? "name" : "system", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
+
+	// Leave out the ports column if no container has ports
+	const hasPorts = !!data?.some((container) => container.ports)
+	const columns = useMemo(
+		() =>
+			containerChartCols.filter((col) => {
+				if (systemId && col.id === "system") return false
+				if (!hasPorts && col.id === "ports") return false
+				return true
+			}),
+		[systemId, hasPorts]
+	)
 
 	useEffect(() => {
 		function fetchData(systemId?: string) {
@@ -129,19 +125,16 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 	const table = useReactTable({
 		data: data ?? [],
-		columns: containerChartCols.filter((col) => (systemId ? col.id !== "system" : true)),
+		columns,
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
 		autoResetPageIndex: false,
 		onPaginationChange,
-		onSortingChange: (updater) => {
-			setSorting(updater)
-			resetPageIndex()
-		},
+		onSortingChange: tableSettings.onSortingChange,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		onRowSelectionChange: setRowSelection,
 		defaultColumn: {
 			sortUndefined: "last",
@@ -149,9 +142,9 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			minSize: 0,
 		},
 		state: {
-			sorting,
+			sorting: tableSettings.sorting,
 			columnFilters,
-			columnVisibility,
+			columnVisibility: tableSettings.columnVisibility,
 			rowSelection,
 			globalFilter,
 			pagination,
@@ -162,19 +155,16 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const container = row.original
-			const systemName = $allSystemsById.get()[container.system]?.name ?? ""
-			const id = container.id ?? ""
-			const name = container.name ?? ""
-			const status = container.status ?? ""
-			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
-			const image = container.image ?? ""
-			const ports = container.ports ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image} ${ports}`.toLowerCase()
-
-			return (filterValue as string)
-				.toLowerCase()
-				.split(" ")
-				.every((term) => searchString.includes(term))
+			return matchesTableFilter(
+				filterValue,
+				$allSystemsById.get()[container.system]?.name,
+				container.id,
+				container.name,
+				ContainerHealthLabels[container.health as ContainerHealth],
+				container.status,
+				container.image,
+				container.ports
+			)
 		},
 	})
 
@@ -193,30 +183,20 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 							<Trans>Click on a container to view more information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="relative ms-auto w-full max-w-full md:w-64">
-						<Input
-							placeholder={t`Filter...`}
-							value={globalFilter}
-							onChange={(e) => table.setGlobalFilter(e.target.value)}
-							className="ps-4 pe-10 w-full"
-						/>
-						{globalFilter && (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon"
-								aria-label={t`Clear`}
-								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-								onClick={() => table.setGlobalFilter("")}
-							>
-								<XIcon className="h-4 w-4" />
-							</Button>
-						)}
+					<div className="flex gap-2 ms-auto w-full md:w-auto">
+						<TableFilterInput value={globalFilter} onChange={table.setGlobalFilter} />
+						<TableSettingsMenu table={table} />
 					</div>
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
-				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
+				<AllContainersTable
+					table={table}
+					rows={rows}
+					colLength={visibleColumns.length}
+					visibleColumnsKey={visibleColumns.map((column) => column.id).join(",")}
+					data={data}
+				/>
 			</div>
 			<DataTablePagination table={table} showSelected={false} />
 		</Card>
@@ -227,11 +207,13 @@ const AllContainersTable = memo(function AllContainersTable({
 	table,
 	rows,
 	colLength,
+	visibleColumnsKey,
 	data,
 }: {
 	table: TableType<ContainerRecord>
 	rows: Row<ContainerRecord>[]
 	colLength: number
+	visibleColumnsKey: string
 	data: ContainerRecord[] | undefined
 }) {
 	const activeContainer = useRef<ContainerRecord | null>(null)
@@ -247,7 +229,14 @@ const AllContainersTable = memo(function AllContainersTable({
 				<ContainersTableHead table={table} />
 				<TableBody>
 					{rows.length ? (
-						rows.map((row) => <ContainerTableRow key={row.id} row={row} openSheet={openSheet} />)
+						rows.map((row) => (
+							<ContainerTableRow
+								key={row.id}
+								row={row}
+								openSheet={openSheet}
+								visibleColumnsKey={visibleColumnsKey}
+							/>
+						))
 					) : (
 						<TableRow>
 							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
@@ -467,9 +456,13 @@ function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 const ContainerTableRow = memo(function ContainerTableRow({
 	row,
 	openSheet,
+	visibleColumnsKey: _visibleColumnsKey,
 }: {
 	row: Row<ContainerRecord>
 	openSheet: (container: ContainerRecord) => void
+	// Column visibility doesn't change the row object identity, so this prop exists only
+	// to force a re-render (and a fresh row.getVisibleCells() read) when columns are toggled.
+	visibleColumnsKey: string
 }) {
 	return (
 		<TableRow

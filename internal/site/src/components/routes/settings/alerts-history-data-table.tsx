@@ -7,9 +7,7 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type SortingState,
 	useReactTable,
-	type VisibilityState,
 } from "@tanstack/react-table"
 import { DownloadIcon, Trash2Icon } from "lucide-react"
 import { memo, useEffect, useState } from "react"
@@ -27,12 +25,12 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import { TableFilterInput, TableSettingsMenu, useTableSettings } from "@/components/ui/data-table-settings"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
-import { cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { cn, formatDuration, formatShortDate, matchesTableFilter } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
 
@@ -51,14 +49,19 @@ const SectionIntro = memo(() => {
 
 export default function AlertsHistoryDataTable() {
 	const [data, setData] = useState<AlertsHistoryRecord[]>([])
-	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const [rowSelection, setRowSelection] = useState({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { toast } = useToast()
 	const [deleteOpen, setDeleteDialogOpen] = useState(false)
-	const { pagination, onPaginationChange } = usePagination()
+	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	// default to no sorting, which keeps the newest-first order from the server
+	const tableSettings = useTableSettings({
+		colsKey: "alertsHistoryCols",
+		sortKey: "alertsHistorySortMode",
+		defaultSort: [],
+		onSortingChange: resetPageIndex,
+	})
 
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
@@ -125,29 +128,26 @@ export default function AlertsHistoryDataTable() {
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		onSortingChange: setSorting,
+		onSortingChange: tableSettings.onSortingChange,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		onRowSelectionChange: setRowSelection,
 		onPaginationChange,
 		state: {
-			sorting,
+			sorting: tableSettings.sorting,
 			columnFilters,
-			columnVisibility,
+			columnVisibility: tableSettings.columnVisibility,
 			rowSelection,
 			globalFilter,
 			pagination,
 		},
 		onGlobalFilterChange: setGlobalFilter,
 		globalFilterFn: (row, _columnId, filterValue) => {
-			const system = row.original.expand?.system?.name ?? ""
-			const name = row.getValue("name") ?? ""
-			const created = row.getValue("created") ?? ""
-			const search = String(filterValue).toLowerCase()
-			return (
-				system.toLowerCase().includes(search) ||
-				(name as string).toLowerCase().includes(search) ||
-				(created as string).toLowerCase().includes(search)
+			return matchesTableFilter(
+				filterValue,
+				row.original.expand?.system?.name,
+				row.getValue<string>("name"),
+				row.getValue<string>("created")
 			)
 		},
 	})
@@ -256,12 +256,12 @@ export default function AlertsHistoryDataTable() {
 							</Button>
 						</div>
 					)}
-					<Input
-						placeholder={t`Filter...`}
+					<TableFilterInput
 						value={globalFilter}
-						onChange={(e) => setGlobalFilter(e.target.value)}
-						className="px-4 w-full max-w-full @3xl:w-64"
+						onChange={table.setGlobalFilter}
+						className="@3xl:flex-none @3xl:w-64"
 					/>
+					<TableSettingsMenu table={table} />
 				</div>
 			</div>
 			<div className="rounded-md border overflow-x-auto whitespace-nowrap">
@@ -290,7 +290,7 @@ export default function AlertsHistoryDataTable() {
 							))
 						) : (
 							<TableRow>
-								<TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
+								<TableCell colSpan={table.getVisibleLeafColumns().length} className="h-24 text-center">
 									<Trans>No results.</Trans>
 								</TableCell>
 							</TableRow>

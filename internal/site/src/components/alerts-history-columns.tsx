@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { sortableHeader } from "@/components/ui/data-table-settings"
 import { alertInfo } from "@/lib/alerts"
 import { cn, formatDuration, formatShortDate, toFixedFloat } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
@@ -10,12 +10,9 @@ import type { AlertsHistoryRecord } from "@/types"
 export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	{
 		accessorKey: "system",
+		meta: { label: () => t`System` },
 		enableSorting: true,
-		header: ({ column }) => (
-			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans>System</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell: ({ row }) => (
 			<div className="ps-2 max-w-60 truncate">{row.original.expand?.system?.name || row.original.system}</div>
 		),
@@ -27,17 +24,15 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	{
 		// accessorKey: "name",
 		id: "name",
+		meta: { label: () => t`Name` },
+		enableHiding: false,
 		accessorFn: (record) => {
 			const name = record.name
 			const info = alertInfo[name]
 			const label = info?.name().replace("cpu", "CPU") || name
 			return record.monitor_name ? `${label}: ${record.monitor_name}` : label
 		},
-		header: ({ column }) => (
-			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans>Name</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell: ({ getValue, row }) => {
 			const name = getValue() as string
 			const info = alertInfo[row.original.name]
@@ -53,12 +48,9 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	},
 	{
 		accessorKey: "value",
+		meta: { label: () => t`Value` },
 		enableSorting: false,
-		header: () => (
-			<Button variant="ghost">
-				<Trans>Value</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell({ row, getValue }) {
 			const name = row.original.name
 			const info = alertInfo[name]
@@ -87,13 +79,10 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	},
 	{
 		accessorKey: "state",
+		meta: { label: () => t({ message: "State", comment: "Context: alert state (active or resolved)" }) },
 		enableSorting: true,
 		sortingFn: (rowA, rowB) => (rowA.original.resolved ? 1 : 0) - (rowB.original.resolved ? 1 : 0),
-		header: ({ column }) => (
-			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans comment="Context: alert state (active or resolved)">State</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell: ({ row }) => {
 			const resolved = row.original.resolved
 			return (
@@ -113,14 +102,11 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	},
 	{
 		accessorKey: "created",
+		meta: { label: () => t({ message: "Created", comment: "Context: date created" }) },
 		accessorFn: (record) => formatShortDate(record.created),
 		enableSorting: true,
 		invertSorting: true,
-		header: ({ column }) => (
-			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans comment="Context: date created">Created</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell: ({ getValue, row }) => (
 			<span className="ps-1 tabular-nums tracking-tight" title={`${row.original.created} UTC`}>
 				{getValue() as string}
@@ -129,13 +115,10 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	},
 	{
 		accessorKey: "resolved",
+		meta: { label: () => t`Resolved` },
 		enableSorting: true,
 		invertSorting: true,
-		header: ({ column }) => (
-			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans>Resolved</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell: ({ row, getValue }) => {
 			const resolved = getValue() as string | null
 			if (!resolved) {
@@ -150,6 +133,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	},
 	{
 		accessorKey: "duration",
+		meta: { label: () => t`Duration` },
 		invertSorting: true,
 		enableSorting: true,
 		sortingFn: (rowA, rowB) => {
@@ -163,11 +147,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 			if (aDuration && !bDuration) return 1
 			return (aDuration || 0) - (bDuration || 0)
 		},
-		header: ({ column }) => (
-			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans>Duration</Trans>
-			</Button>
-		),
+		header: sortableHeader,
 		cell: ({ row }) => {
 			const duration = formatDuration(row.original.created, row.original.resolved)
 			if (!duration) {

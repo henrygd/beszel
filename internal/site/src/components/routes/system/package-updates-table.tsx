@@ -1,36 +1,36 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import {
-	type Column,
 	type ColumnDef,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table"
 import {
-	ArrowUpDownIcon,
 	GitCompareArrowsIcon,
 	PackageCheckIcon,
 	PackageIcon,
 	PackageOpenIcon,
 	ShieldAlertIcon,
-	XIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { Badge, type BadgeProps } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import {
+	sortableHeader,
+	TableFilterInput,
+	TableSettingsMenu,
+	useTableSettings,
+} from "@/components/ui/data-table-settings"
 import { Separator } from "@/components/ui/separator"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
 import { classifyVersionChange, type VersionChange } from "@/lib/package-updates"
-import { cn, formatShortDate } from "@/lib/utils"
+import { cn, formatShortDate, matchesTableFilter } from "@/lib/utils"
 import type { PackageUpdate, PackageUpdates } from "@/types"
 
 interface PackageUpdateRow extends PackageUpdate {
@@ -63,85 +63,46 @@ function changeLabel(change: VersionChange) {
 	}
 }
 
-function HeaderButton({
-	column,
-	name,
-	Icon,
-}: {
-	column: Column<PackageUpdateRow>
-	name: string
-	Icon: React.ElementType
-}) {
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			className={cn(
-				"h-9 px-3 flex items-center gap-2 duration-50",
-				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
-			)}
-			variant="ghost"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			<Icon className="size-4" />
-			{name}
-			<ArrowUpDownIcon className="size-4" />
-		</Button>
-	)
-}
 
 function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 	const columns: ColumnDef<PackageUpdateRow>[] = [
 		{
 			id: "name",
+			meta: { label: () => t({ message: "Package", comment: "Software package" }), Icon: PackageIcon },
+			enableHiding: false,
 			accessorFn: (pkg) => pkg.name,
 			sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
-			header: ({ column }) => (
-				<HeaderButton
-					column={column}
-					name={t({ message: "Package", comment: "Software package" })}
-					Icon={PackageIcon}
-				/>
-			),
+			header: sortableHeader,
 			cell: ({ getValue }) => <span className="ms-1.5 block">{getValue() as string}</span>,
 		},
 		{
 			id: "current",
+			meta: { label: () => t({ message: "Current", comment: "Current package version" }), Icon: PackageCheckIcon },
 			accessorFn: (pkg) => pkg.current ?? "",
 			enableSorting: false,
-			header: () => (
-				<span className="flex items-center gap-2 px-3">
-					<PackageCheckIcon className="size-4" />
-					<Trans comment="Current package version">Current</Trans>
-				</span>
-			),
+			header: sortableHeader,
 			cell: ({ getValue }) => (
 				<span className="ms-1.5 block font-mono text-sm text-muted-foreground">{(getValue() as string) || "-"}</span>
 			),
 		},
 		{
 			id: "available",
+			meta: {
+				label: () => t({ message: "Available", comment: "Package version available to install" }),
+				Icon: PackageOpenIcon,
+			},
 			accessorFn: (pkg) => pkg.available,
 			enableSorting: false,
-			header: () => (
-				<span className="flex items-center gap-2 px-3">
-					<PackageOpenIcon className="size-4" />
-					<Trans comment="Package version available to install">Available</Trans>
-				</span>
-			),
+			header: sortableHeader,
 			cell: ({ getValue }) => <span className="ms-1.5 block font-mono text-sm">{getValue() as string}</span>,
 		},
 	]
 	if (securityKnown) {
 		columns.push({
 			id: "security",
+			meta: { label: () => t({ message: "Security", comment: "Security update" }), Icon: ShieldAlertIcon },
 			accessorFn: (pkg) => (pkg.security ? 1 : 0),
-			header: ({ column }) => (
-				<HeaderButton
-					column={column}
-					name={t({ message: "Security", comment: "Security update" })}
-					Icon={ShieldAlertIcon}
-				/>
-			),
+			header: sortableHeader,
 			cell: ({ row }) =>
 				row.original.security ? (
 					<span className="ms-1.5 flex items-center gap-1.5 text-red-600 dark:text-red-400">
@@ -154,14 +115,9 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 	// Change is always the last column, pinned to the right edge of the table
 	columns.push({
 		id: "change",
+		meta: { label: () => t({ message: `Change`, comment: "Version change" }), Icon: GitCompareArrowsIcon },
 		accessorFn: (pkg) => changeRank[pkg.change],
-		header: ({ column }) => (
-			<HeaderButton
-				column={column}
-				name={t({ message: `Change`, comment: "Version change" })}
-				Icon={GitCompareArrowsIcon}
-			/>
-		),
+		header: sortableHeader,
 		cell: ({ row }) => (
 			<Badge variant={changeVariant[row.original.change]} className="ms-1.5">
 				{changeLabel(row.original.change)}
@@ -178,9 +134,14 @@ function getColumns(securityKnown: boolean): ColumnDef<PackageUpdateRow>[] {
 export default function PackageUpdatesTable({ systemId, counts }: { systemId: string; counts: string }) {
 	const [data, setData] = useState<PackageUpdates | null>(null)
 	const [error, setError] = useState<string | null>(null)
-	const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }])
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const tableSettings = useTableSettings({
+		colsKey: "packageUpdateCols",
+		sortKey: "packageUpdateSortMode",
+		defaultSort: [{ id: "name", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
 
 	useEffect(() => {
 		let cancelled = false
@@ -213,24 +174,23 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
-		onSortingChange: (updater) => {
-			setSorting(updater)
-			resetPageIndex()
-		},
+		onSortingChange: tableSettings.onSortingChange,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		onGlobalFilterChange: (value) => {
 			setGlobalFilter(value)
 			resetPageIndex()
 		},
 		autoResetPageIndex: false,
 		onPaginationChange,
-		state: { sorting, globalFilter, pagination },
+		state: {
+			sorting: tableSettings.sorting,
+			columnVisibility: tableSettings.columnVisibility,
+			globalFilter,
+			pagination,
+		},
 		globalFilterFn: (row, _columnId, filterValue: string) => {
 			const pkg = row.original
-			const searchString = `${pkg.name} ${pkg.current ?? ""} ${pkg.available} ${changeLabel(pkg.change)}`.toLowerCase()
-			return filterValue
-				.toLowerCase()
-				.split(" ")
-				.every((term) => searchString.includes(term))
+			return matchesTableFilter(filterValue, pkg.name, pkg.current, pkg.available, changeLabel(pkg.change))
 		},
 	})
 
@@ -272,25 +232,9 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 						</CardDescription>
 					</div>
 					{rows.length > 0 && (
-						<div className="relative ms-auto w-full max-w-full md:w-64">
-							<Input
-								placeholder={t`Filter...`}
-								value={globalFilter}
-								onChange={(event) => table.setGlobalFilter(event.target.value)}
-								className="px-4 w-full max-w-full md:w-64"
-							/>
-							{globalFilter && (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									aria-label={t`Clear`}
-									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-									onClick={() => table.setGlobalFilter("")}
-								>
-									<XIcon className="h-4 w-4" />
-								</Button>
-							)}
+						<div className="flex gap-2 ms-auto w-full md:w-auto">
+							<TableFilterInput value={globalFilter} onChange={table.setGlobalFilter} />
+							<TableSettingsMenu table={table} />
 						</div>
 					)}
 				</div>
@@ -324,7 +268,10 @@ export default function PackageUpdatesTable({ systemId, counts }: { systemId: st
 								))
 							) : (
 								<TableRow>
-									<TableCell colSpan={columns.length} className="h-24 text-center pointer-events-none">
+									<TableCell
+										colSpan={table.getVisibleLeafColumns().length}
+										className="h-24 text-center pointer-events-none"
+									>
 										{rows.length ? <Trans>No results.</Trans> : <Trans>Up to date</Trans>}
 									</TableCell>
 								</TableRow>

@@ -1,5 +1,6 @@
-import type { CellContext, Column, ColumnDef } from "@tanstack/react-table"
+import type { CellContext, ColumnDef } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
+import { sortableHeader } from "@/components/ui/data-table-settings"
 import { cn, copyToClipboard, decimalString, formatMicroseconds, hourWithSeconds } from "@/lib/utils"
 import {
 	GlobeIcon,
@@ -44,12 +45,6 @@ import {
 } from "@/lib/network-monitor-utils"
 
 const certExpiryDotColors = { ok: "bg-green-500", warning: "bg-yellow-500", critical: "bg-red-500" }
-
-declare module "@tanstack/react-table" {
-	interface ColumnMeta<TData, TValue> {
-		label?: string
-	}
-}
 
 const protocolColors: Record<string, string> = {
 	icmp: "bg-blue-500/15! text-blue-600 dark:text-blue-400",
@@ -109,7 +104,7 @@ export function getMonitorColumns({
 		},
 		{
 			id: "system",
-			meta: { label: t`System` },
+			meta: { label: () => t`System`, Icon: ServerIcon },
 			accessorFn: (record) => record.system,
 			sortingFn: (a, b) => {
 				const allSystems = $allSystemsById.get()
@@ -121,7 +116,7 @@ export function getMonitorColumns({
 				}
 				return a.original.target.localeCompare(b.original.target)
 			},
-			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
+			header: sortableHeader,
 			cell: ({ getValue }) => {
 				const system = useStore($allSystemsById)[getValue() as string] as SystemRecord | undefined
 				const name = system?.name
@@ -140,12 +135,12 @@ export function getMonitorColumns({
 		},
 		{
 			id: "target",
-			meta: { label: t`Target` },
+			meta: { label: () => t`Target`, Icon: GlobeIcon },
 			sortingFn: (a, b) =>
 				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
 			// The protocol column shows the IP version as a badge, so leave it out of the target.
 			accessorFn: (record) => getMonitorTarget({ ...record, ipVersion: 0 }),
-			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
+			header: sortableHeader,
 			cell: ({ row, getValue }) => {
 				const monitor = row.original
 				const { status } = useStore($allSystemsById)[monitor.system] || {}
@@ -168,9 +163,9 @@ export function getMonitorColumns({
 		},
 		{
 			id: "protocol",
-			meta: { label: t`Protocol` },
+			meta: { label: () => t`Protocol`, Icon: ArrowLeftRightIcon },
 			accessorFn: (record) => getMonitorProtocolLabel(record),
-			header: ({ column }) => <HeaderButton column={column} name={t`Protocol`} Icon={ArrowLeftRightIcon} />,
+			header: sortableHeader,
 			cell: ({ row, getValue }) => {
 				const protocol = getValue() as string
 				if (row.original.skipTlsVerify) {
@@ -186,9 +181,9 @@ export function getMonitorColumns({
 		},
 		{
 			id: "ipVersion",
-			meta: { label: t`IP Version` },
+			meta: { label: () => t`IP Version`, Icon: Layers2Icon },
 			accessorFn: (record) => record.ipVersion ?? 0,
-			header: ({ column }) => <HeaderButton column={column} name={t`IP`} Icon={Layers2Icon} />,
+			header: sortableHeader,
 			cell: ({ getValue }) => {
 				const ipVersion = getValue() as number
 				return <Badge variant="secondary">{ipVersion ? `IPv${ipVersion}` : <Trans>Auto</Trans>}</Badge>
@@ -196,50 +191,50 @@ export function getMonitorColumns({
 		},
 		{
 			id: "interval",
-			meta: { label: t`Interval` },
+			meta: { label: () => t`Interval`, Icon: RefreshCwIcon },
 			accessorFn: (record) => record.interval,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Interval`} Icon={RefreshCwIcon} />,
+			header: sortableHeader,
 			cell: ({ getValue }) => <span className="ms-1.5 tabular-nums">{getValue() as number}s</span>,
 		},
 		{
 			id: "res",
-			meta: { label: t`Response` },
+			meta: { label: () => t`Response`, Icon: TimerIcon },
 			accessorFn: (record) => record.res,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Response`} Icon={TimerIcon} />,
+			header: sortableHeader,
 			cell: responseTimeCell,
 		},
 		{
 			id: "res1h",
-			meta: { label: t`Avg 1h` },
+			meta: { label: () => t`Avg 1h`, Icon: TimerIcon },
 			accessorFn: (record) => record.resAvg1h,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Avg 1h`} Icon={TimerIcon} />,
+			header: sortableHeader,
 			cell: responseTimeCell,
 		},
 		{
 			id: "max1h",
-			meta: { label: t`Max 1h` },
+			meta: { label: () => t`Max 1h`, Icon: TimerIcon },
 			accessorFn: (record) => record.resMax1h,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Max 1h`} Icon={TimerIcon} />,
+			header: sortableHeader,
 			cell: responseTimeCell,
 		},
 		{
 			id: "min1h",
-			meta: { label: t`Min 1h` },
+			meta: { label: () => t`Min 1h`, Icon: TimerIcon },
 			accessorFn: (record) => record.resMin1h,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Min 1h`} Icon={TimerIcon} />,
+			header: sortableHeader,
 			cell: responseTimeCell,
 		},
 		{
 			id: "loss",
-			meta: { label: t`Loss 1h` },
+			meta: { label: () => t`Loss 1h`, Icon: WifiOffIcon },
 			accessorFn: (record) => record.loss1h,
 			invertSorting: true,
-			header: ({ column }) => <HeaderButton column={column} name={t`Loss 1h`} Icon={WifiOffIcon} />,
+			header: sortableHeader,
 			cell: ({ row }) => {
 				const { loss1h, res, system } = row.original
 				const systemRecord = useStore($allSystemsById)[system]
@@ -265,9 +260,9 @@ export function getMonitorColumns({
 		},
 		{
 			id: "cert",
-			meta: { label: t`Certificate` },
+			meta: { label: () => t`Certificate`, Icon: ShieldCheckIcon },
 			accessorFn: (record) => record.certInfo?.expires,
-			header: ({ column }) => <HeaderButton column={column} name={t`Certificate`} Icon={ShieldCheckIcon} />,
+			header: sortableHeader,
 			cell: ({ row }) => {
 				const { certInfo, system } = row.original
 				const systemRecord = useStore($allSystemsById)[system]
@@ -290,10 +285,10 @@ export function getMonitorColumns({
 		},
 		{
 			id: "updated",
-			meta: { label: t`Updated` },
+			meta: { label: () => t`Updated`, Icon: ClockIcon },
 			invertSorting: true,
 			accessorFn: (record) => record.updated,
-			header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
+			header: sortableHeader,
 			cell: ({ getValue }) => {
 				const timestamp = getValue() as number
 				if (!timestamp) {
@@ -414,27 +409,3 @@ function responseTimeCell(cell: CellContext<NetworkMonitorRecord, unknown>) {
 	)
 }
 
-function HeaderButton({
-	column,
-	name,
-	Icon,
-}: {
-	column: Column<NetworkMonitorRecord>
-	name: string
-	Icon: React.ElementType
-}) {
-	const isSorted = column.getIsSorted()
-	return (
-		<Button
-			className={cn(
-				"h-9 px-3 flex items-center gap-2 duration-50",
-				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
-			)}
-			variant="ghost"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="size-4" />}
-			{name}
-		</Button>
-	)
-}

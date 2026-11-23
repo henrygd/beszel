@@ -8,10 +8,8 @@ import {
 	getPaginationRowModel,
 	getSortedRowModel,
 	type Row,
-	type SortingState,
 	type Table as TableType,
 	useReactTable,
-	type VisibilityState,
 } from "@tanstack/react-table"
 import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon } from "lucide-react"
 import { listenKeys } from "nanostores"
@@ -20,7 +18,7 @@ import { getStatusColor, systemdTableCols } from "@/components/systemd-table/sys
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import { TableFilterInput, TableSettingsMenu, useTableSettings } from "@/components/ui/data-table-settings"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
 import { getLogTimestampDecorations } from "@/lib/logs"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -28,7 +26,7 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/compon
 import { pb } from "@/lib/api"
 import { ServiceStatus, ServiceStatusLabels, type ServiceSubState, ServiceSubStateLabels } from "@/lib/enums"
 import { $allSystemsById } from "@/lib/stores"
-import { cn, decimalString, formatBytes, useBrowserStorage } from "@/lib/utils"
+import { cn, decimalString, formatBytes, matchesTableFilter } from "@/lib/utils"
 import type { SystemdRecord, SystemdServiceDetails } from "@/types"
 import { Separator } from "../ui/separator"
 
@@ -54,15 +52,15 @@ async function getSystemdLogsHtml(systemId: string, serviceName: string): Promis
 export default function SystemdTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
 	const [data, setData] = useState<SystemdRecord[]>([])
-	const [sorting, setSorting] = useBrowserStorage<SortingState>(
-		`sort-sd-${systemId ? 1 : 0}`,
-		[{ id: systemId ? "name" : "system", desc: false }],
-		sessionStorage
-	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const tableSettings = useTableSettings({
+		colsKey: "systemdCols",
+		sortKey: "systemdSortMode",
+		defaultSort: [{ id: "name", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
 
 	// clear old data when systemId changes
 	useEffect(() => {
@@ -135,21 +133,18 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 		getPaginationRowModel: getPaginationRowModel(),
 		autoResetPageIndex: false,
 		onPaginationChange,
-		onSortingChange: (updater) => {
-			setSorting(updater)
-			resetPageIndex()
-		},
+		onSortingChange: tableSettings.onSortingChange,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		defaultColumn: {
 			sortUndefined: "last",
 			size: 100,
 			minSize: 0,
 		},
 		state: {
-			sorting,
+			sorting: tableSettings.sorting,
 			columnFilters,
-			columnVisibility,
+			columnVisibility: tableSettings.columnVisibility,
 			globalFilter,
 			pagination,
 		},
@@ -159,16 +154,13 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const service = row.original
-			const systemName = $allSystemsById.get()[service.system]?.name ?? ""
-			const name = service.name ?? ""
-			const statusLabel = ServiceStatusLabels[service.state as ServiceStatus] ?? ""
-			const subState = service.sub ?? ""
-			const searchString = `${systemName} ${name} ${statusLabel} ${subState}`.toLowerCase()
-
-			return (filterValue as string)
-				.toLowerCase()
-				.split(" ")
-				.every((term) => searchString.includes(term))
+			return matchesTableFilter(
+				filterValue,
+				$allSystemsById.get()[service.system]?.name,
+				service.name,
+				ServiceStatusLabels[service.state as ServiceStatus],
+				service.sub
+			)
 		},
 	})
 
@@ -203,16 +195,20 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 							<Trans>Updated every 10 minutes.</Trans>
 						</div>
 					</div>
-					<Input
-						placeholder={t`Filter...`}
-						value={globalFilter}
-						onChange={(e) => table.setGlobalFilter(e.target.value)}
-						className="ms-auto px-4 w-full max-w-full md:w-64"
-					/>
+					<div className="flex gap-2 ms-auto w-full md:w-auto">
+						<TableFilterInput value={globalFilter} onChange={table.setGlobalFilter} />
+						<TableSettingsMenu table={table} />
+					</div>
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
-				<AllSystemdTable table={table} rows={rows} colLength={visibleColumns.length} systemId={systemId} />
+				<AllSystemdTable
+					table={table}
+					rows={rows}
+					colLength={visibleColumns.length}
+					visibleColumnsKey={visibleColumns.map((column) => column.id).join(",")}
+					systemId={systemId}
+				/>
 			</div>
 			<DataTablePagination table={table} showSelected={false} />
 		</Card>
@@ -223,11 +219,13 @@ const AllSystemdTable = memo(function AllSystemdTable({
 	table,
 	rows,
 	colLength,
+	visibleColumnsKey,
 	systemId,
 }: {
 	table: TableType<SystemdRecord>
 	rows: Row<SystemdRecord>[]
 	colLength: number
+	visibleColumnsKey: string
 	systemId?: string
 }) {
 	const activeService = useRef<SystemdRecord | null>(null)
@@ -245,7 +243,14 @@ const AllSystemdTable = memo(function AllSystemdTable({
 				<SystemdTableHead table={table} />
 				<TableBody>
 					{rows.length ? (
-						rows.map((row) => <SystemdTableRow key={row.id} row={row} openSheet={openSheet} />)
+						rows.map((row) => (
+							<SystemdTableRow
+								key={row.id}
+								row={row}
+								openSheet={openSheet}
+								visibleColumnsKey={visibleColumnsKey}
+							/>
+						))
 					) : (
 						<TableRow>
 							<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
@@ -746,9 +751,13 @@ function SystemdTableHead({ table }: { table: TableType<SystemdRecord> }) {
 const SystemdTableRow = memo(function SystemdTableRow({
 	row,
 	openSheet,
+	visibleColumnsKey: _visibleColumnsKey,
 }: {
 	row: Row<SystemdRecord>
 	openSheet: (service: SystemdRecord) => void
+	// Column visibility doesn't change the row object identity, so this prop exists only
+	// to force a re-render (and a fresh row.getVisibleCells() read) when columns are toggled.
+	visibleColumnsKey: string
 }) {
 	return (
 		<TableRow

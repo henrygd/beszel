@@ -15,10 +15,8 @@ import {
 	getSortedRowModel,
 	type Row,
 	type RowSelectionState,
-	type SortingState,
 	type Table as TableType,
 	useReactTable,
-	type VisibilityState,
 } from "@tanstack/react-table"
 import {
 	AlertDialog,
@@ -30,47 +28,31 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { subscribeKeys } from "nanostores"
+import { buttonVariants } from "@/components/ui/button"
+import { memo, useCallback, useMemo, useState } from "react"
 import { getMonitorColumns } from "@/components/network-monitors-table/network-monitors-columns"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
-import { Input } from "@/components/ui/input"
+import { TableFilterInput, TableSettingsMenu, useTableSettings } from "@/components/ui/data-table-settings"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast"
-import { isReadOnlyUser, queueUserSettings } from "@/lib/api"
+import { isReadOnlyUser } from "@/lib/api"
 import { pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $allSystemsById, $direction, $userSettings, getUserChartTime } from "@/lib/stores"
-import { cn, formatShortDate, matchesFilterGroups, parseFilterGroups, parseSemVer } from "@/lib/utils"
+import { $allSystemsById, $direction, getUserChartTime } from "@/lib/stores"
+import { cn, formatShortDate, matchesTableFilter, parseSemVer } from "@/lib/utils"
 import type { ChartOptions, MonitorCertInfo, NetworkMonitorRecord } from "@/types"
 import { AddMonitorDialog, EditMonitorDialog, MonitorMultiSelect, SystemMultiSelect } from "./monitor-dialog"
 import {
-	ArrowDownIcon,
 	ArrowLeftRightIcon,
-	ArrowUpDownIcon,
-	ArrowUpIcon,
 	EthernetPortIcon,
-	EyeIcon,
 	GlobeIcon,
 	LandmarkIcon,
 	Layers2Icon,
 	LoaderCircleIcon,
 	ServerIcon,
-	Settings2Icon,
 	ShieldCheckIcon,
-	XIcon,
 } from "lucide-react"
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { LossChart, AvgMinMaxResponseChart, ResponseChart } from "@/components/routes/system/charts/monitors-charts"
@@ -91,70 +73,22 @@ export default function NetworkMonitorsTableNew({
 	monitors: NetworkMonitorRecord[]
 	isLoading: boolean
 }) {
-	const sortSettingsKey = systemId ? "monitorSortModeSystem" : "monitorSortMode"
-	const sortStorageKey = `besz-sort-np-target-${systemId ? 1 : 0}`
-	const [sorting, setSorting] = useState<SortingState>(
-		() =>
-			$userSettings.get()[sortSettingsKey] ??
-			JSON.parse(sessionStorage.getItem(sortStorageKey) || "null") ?? [
-				{ id: systemId ? "target" : "system", desc: false },
-			]
-	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
-		() => $userSettings.get().monitorCols ?? JSON.parse(localStorage.getItem("besz-monitor-cols") || "{}")
-	)
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { pagination, onPaginationChange, resetPageIndex } = usePagination()
+	const tableSettings = useTableSettings({
+		colsKey: "monitorCols",
+		sortKey: systemId ? "monitorSortModeSystem" : "monitorSortMode",
+		defaultSort: [{ id: systemId ? "target" : "system", desc: false }],
+		onSortingChange: resetPageIndex,
+	})
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [pendingDelete, setPendingDelete] = useState<NetworkMonitorRecord[]>([])
 	const [editingMonitor, setEditingMonitor] = useState<NetworkMonitorRecord>()
 
 	const { toast } = useToast()
 	const canManageMonitors = !isReadOnlyUser()
-
-	// Apply settings from server once they load (handles incognito / new devices)
-	const appliedSettings = useRef(new Set<string>())
-	useEffect(() => {
-		return subscribeKeys($userSettings, ["monitorCols", sortSettingsKey], (vals) => {
-			if (!appliedSettings.current.has("monitorCols") && vals.monitorCols !== undefined) {
-				appliedSettings.current.add("monitorCols")
-				setColumnVisibility(vals.monitorCols)
-			}
-			if (!appliedSettings.current.has(sortSettingsKey) && vals[sortSettingsKey] !== undefined) {
-				appliedSettings.current.add(sortSettingsKey)
-				setSorting(vals[sortSettingsKey] as SortingState)
-			}
-		})
-	}, [sortSettingsKey])
-
-	const handleColumnVisibilityChange = useCallback(
-		(updater: VisibilityState | ((prev: VisibilityState) => VisibilityState)) => {
-			setColumnVisibility((prev) => {
-				const next = typeof updater === "function" ? updater(prev) : updater
-				localStorage.setItem("besz-monitor-cols", JSON.stringify(next))
-				$userSettings.setKey("monitorCols", next)
-				queueUserSettings({ monitorCols: next })
-				return next
-			})
-		},
-		[]
-	)
-
-	const handleSortingChange = useCallback(
-		(updater: SortingState | ((prev: SortingState) => SortingState)) => {
-			setSorting((prev) => {
-				const next = typeof updater === "function" ? updater(prev) : updater
-				sessionStorage.setItem(sortStorageKey, JSON.stringify(next))
-				$userSettings.setKey(sortSettingsKey, next)
-				queueUserSettings({ [sortSettingsKey]: next })
-				return next
-			})
-			resetPageIndex()
-		},
-		[sortSettingsKey, sortStorageKey, resetPageIndex]
-	)
 
 	const runMonitorBatch = useCallback(
 		async (ids: string[], enqueue: (batch: ReturnType<typeof pb.createBatch>, id: string) => void) => {
@@ -262,9 +196,9 @@ export default function NetworkMonitorsTableNew({
 		getPaginationRowModel: getPaginationRowModel(),
 		autoResetPageIndex: false,
 		onPaginationChange,
-		onSortingChange: handleSortingChange,
+		onSortingChange: tableSettings.onSortingChange,
 		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: handleColumnVisibilityChange,
+		onColumnVisibilityChange: tableSettings.onColumnVisibilityChange,
 		onRowSelectionChange: setRowSelection,
 		defaultColumn: {
 			sortUndefined: "last",
@@ -272,9 +206,9 @@ export default function NetworkMonitorsTableNew({
 			minSize: 0,
 		},
 		state: {
-			sorting,
+			sorting: tableSettings.sorting,
 			columnFilters,
-			columnVisibility,
+			columnVisibility: tableSettings.columnVisibility,
 			rowSelection,
 			globalFilter,
 			pagination,
@@ -284,14 +218,10 @@ export default function NetworkMonitorsTableNew({
 			resetPageIndex()
 		},
 		globalFilterFn: (row, _columnId, filterValue) => {
-			const value = (filterValue as string).trim()
-			if (!value) return true
 			const monitor = row.original
-			const systemName = $allSystemsById.get()[monitor.system]?.name ?? ""
+			const systemName = $allSystemsById.get()[monitor.system]?.name
 			// Include the raw target so searches for the hidden URL scheme still match.
-			const searchString =
-				`${getMonitorTarget(monitor)}${monitor.target}${monitor.protocol}${systemName}`.toLocaleLowerCase()
-			return matchesFilterGroups(searchString, parseFilterGroups(value))
+			return matchesTableFilter(filterValue, getMonitorTarget(monitor), monitor.target, monitor.protocol, systemName)
 		},
 	})
 
@@ -313,94 +243,13 @@ export default function NetworkMonitorsTableNew({
 					</div>
 					<div className="md-lg:ms-auto flex items-center gap-2">
 						{monitors.length > 0 && (
-							<div className="relative grow">
-								<Input
-									placeholder={t`Filter...`}
-									value={globalFilter}
-									onChange={(e) => table.setGlobalFilter(e.target.value)}
-									className="ms-auto px-4 w-full max-w-full md-lg:w-50"
-								/>
-								{globalFilter && (
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										aria-label={t`Clear`}
-										className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
-										onClick={() => table.setGlobalFilter("")}
-									>
-										<XIcon className="h-4 w-4" />
-									</Button>
-								)}
-							</div>
+							<TableFilterInput
+								value={globalFilter}
+								onChange={table.setGlobalFilter}
+								className="md-lg:flex-none md-lg:w-64"
+							/>
 						)}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button aria-label={t`View`} variant="outline" size="icon">
-									<Settings2Icon className="size-4 opacity-80" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-2 divide-y md:divide-s md:divide-y-0">
-									<div className="border-r">
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<ArrowUpDownIcon className="size-4" />
-											<Trans>Sort By</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<div className="px-1 pb-1">
-											{table.getAllColumns().map((column) => {
-												if (!column.getCanSort()) return null
-												let Icon = <span className="w-6"></span>
-												if (sorting[0]?.id === column.id) {
-													Icon = sorting[0]?.desc ? (
-														<ArrowUpIcon className="me-2 size-4" />
-													) : (
-														<ArrowDownIcon className="me-2 size-4" />
-													)
-												}
-												return (
-													<DropdownMenuItem
-														onSelect={(e) => {
-															e.preventDefault()
-															handleSortingChange([
-																{ id: column.id, desc: sorting[0]?.id === column.id && !sorting[0]?.desc },
-															])
-														}}
-														key={column.id}
-													>
-														{Icon}
-														{column.columnDef.meta?.label ?? column.id}
-													</DropdownMenuItem>
-												)
-											})}
-										</div>
-									</div>
-									<div>
-										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
-											<EyeIcon className="size-4" />
-											<Trans>Visible Fields</Trans>
-										</DropdownMenuLabel>
-										<DropdownMenuSeparator />
-										<div className="px-1.5 pb-1">
-											{table
-												.getAllColumns()
-												.filter((column) => column.getCanHide())
-												.map((column) => (
-													<DropdownMenuCheckboxItem
-														key={column.id}
-														onSelect={(e) => e.preventDefault()}
-														checked={column.getIsVisible()}
-														onCheckedChange={(value) => column.toggleVisibility(!!value)}
-													>
-														{column.columnDef.meta?.label ?? column.id}
-													</DropdownMenuCheckboxItem>
-												))}
-										</div>
-									</div>
-								</div>
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<TableSettingsMenu table={table} />
 						{canManageMonitors ? <AddMonitorDialog systemId={systemId} monitors={monitors} /> : null}
 						{canManageMonitors ? (
 							<EditMonitorDialog
