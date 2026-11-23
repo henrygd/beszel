@@ -8,6 +8,7 @@ import (
 	"testing"
 	"testing/synctest"
 	"time"
+	"unicode/utf8"
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
 	"github.com/henrygd/beszel/internal/alerts"
@@ -346,4 +347,46 @@ func TestBuildContainerLogExcerptFallsBackToTailWhenNoMatches(t *testing.T) {
 
 func TestBuildContainerLogExcerptEmpty(t *testing.T) {
 	assert.Equal(t, "", alerts.BuildContainerLogExcerpt("   \n  \n"))
+}
+
+// The excerpt and message caps count bytes, so they must not cut a multi-byte
+// character in half: notifications would carry invalid UTF-8.
+func TestBuildContainerLogExcerptKeepsValidUTF8(t *testing.T) {
+	// Shift the alignment so the cut lands on every byte of a 3-byte rune.
+	for pad := range 3 {
+		raw := strings.Repeat("ERROR "+strings.Repeat("数据库连接失败", 5)+"\n", 20) + "ERROR" + strings.Repeat("x", pad)
+		excerpt := alerts.BuildContainerLogExcerpt(raw)
+		assert.True(t, strings.HasPrefix(excerpt, "…"), "excerpt should be truncated (pad %d)", pad)
+		assert.True(t, utf8.ValidString(excerpt), "excerpt should be valid UTF-8 (pad %d)", pad)
+	}
+}
+
+func TestContainerHealthAlertMessageCapKeepsValidUTF8(t *testing.T) {
+	fixture := newContainerAlertTestFixture(t, 1)
+	defer fixture.cleanup()
+
+	containers := make([]*container.Stats, 160)
+	names := make([]string, len(containers))
+	for i := range containers {
+		names[i] = fmt.Sprintf("容器-%03d", i)
+		containers[i] = &container.Stats{Name: names[i], Id: fmt.Sprintf("id-%d", i), Health: container.DockerHealthUnhealthy}
+	}
+	// precondition: a plain byte cut at 1800 lands inside a rune
+	full := "Unhealthy: " + strings.Join(names, ", ")
+	require.Greater(t, len(full), 1800)
+	require.False(t, utf8.RuneStart(full[1800]))
+
+	fetchLogs := func(containerID string) (string, error) {
+		return "", fmt.Errorf("agent unreachable")
+	}
+
+	synctest.Test(t, func(t *testing.T) {
+		fixture.submit(t, containers, fetchLogs)
+
+		fixture.assertTriggered(t, true, "Alert should be triggered")
+		require.Equal(t, 1, fixture.hub.TestMailer.TotalSend())
+		body := fixture.hub.TestMailer.LastMessage().Text
+		assert.Contains(t, body, "…(truncated)")
+		assert.True(t, utf8.ValidString(body), "message should be valid UTF-8")
+	})
 }
