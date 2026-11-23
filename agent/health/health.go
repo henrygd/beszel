@@ -11,6 +11,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
+	"sync"
 	"time"
 )
 
@@ -19,6 +21,15 @@ import (
 // in the agent image (#1455).
 // Resolving them must not write: package init runs in the `agent health` process too.
 var healthFiles = getHealthFilePaths("/dev/shm")
+
+// written holds the candidates this process has written, so CleanUp removes only those. The
+// others may be read-only to this process (e.g. /tmp under systemd ProtectSystem=strict without
+// PrivateTmp) or belong to another agent (e.g. in the sticky /dev/shm), and failing to remove
+// them must not turn a normal shutdown into an error.
+var (
+	writtenMu sync.Mutex
+	written   []string
+)
 
 func getHealthFilePaths(shmDir string) []string {
 	const filename = "beszel_health"
@@ -69,20 +80,29 @@ func Update() error {
 	var err error
 	for _, path := range healthFiles {
 		if err = updateHealthFile(path); err == nil {
+			writtenMu.Lock()
+			if !slices.Contains(written, path) {
+				written = append(written, path)
+			}
+			writtenMu.Unlock()
 			return nil
 		}
 	}
 	return err
 }
 
-// CleanUp removes the health file. The path is shared by every agent on the host, so a file that
-// is already gone - another agent removed it, or a test ran two agents - is not a failure to
-// report: it would surface as the error from Start.
+// CleanUp removes the health files this process wrote. The path is shared by every agent on the
+// host, so a file that is already gone - another agent removed it, or a test ran two agents - is
+// not a failure to report: it would surface as the error from Start. Candidates this process never
+// wrote are left alone (see written).
 func CleanUp() error {
-	for _, path := range healthFiles {
-		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	writtenMu.Lock()
+	defer writtenMu.Unlock()
+	for len(written) > 0 {
+		if err := os.Remove(written[0]); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
+		written = written[1:]
 	}
 	return nil
 }
