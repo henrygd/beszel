@@ -57,16 +57,16 @@ func (f *freeBSDRestarter) Restart() error {
 }
 
 func detectRestarter() restarter {
-	if path, err := exec.LookPath("systemctl"); err == nil {
+	if path, err := safeLookPath("systemctl"); err == nil {
 		return &systemdRestarter{cmd: path}
 	}
-	if path, err := exec.LookPath("rc-service"); err == nil {
+	if path, err := safeLookPath("rc-service"); err == nil {
 		return &openRCRestarter{cmd: path}
 	}
-	if path, err := exec.LookPath("procd"); err == nil {
+	if path, err := safeLookPath("procd"); err == nil {
 		return &openWRTRestarter{cmd: path}
 	}
-	if path, err := exec.LookPath("service"); err == nil {
+	if path, err := safeLookPath("service"); err == nil {
 		if runtime.GOOS == "freebsd" {
 			return &freeBSDRestarter{cmd: path}
 		}
@@ -100,7 +100,7 @@ func Update(useMirror bool) error {
 		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set executable permissions: %v", err)
 	}
 	// set ownership to beszel:beszel if possible
-	if chownPath, err := exec.LookPath("chown"); err == nil {
+	if chownPath, err := safeLookPath("chown"); err == nil {
 		if err := exec.Command(chownPath, "beszel:beszel", exePath).Run(); err != nil {
 			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to set file ownership: %v", err)
 		}
