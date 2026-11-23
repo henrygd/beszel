@@ -156,7 +156,8 @@ describe("initial login authentication", () => {
 		// abort once the first attempt has failed and the retry delay is pending
 		await new Promise((resolve) => setTimeout(resolve, 50))
 		controller.abort()
-		await expect(loading).rejects.toThrow()
+		const error = await loading.catch((error) => error)
+		expect(error).toBeInstanceOf(Error)
 		expect(requests.filter((path) => path.endsWith("/auth-methods"))).toHaveLength(1)
 	})
 
