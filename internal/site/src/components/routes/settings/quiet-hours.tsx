@@ -473,7 +473,7 @@ function QuietHoursDialog({
 								type="datetime-local"
 								value={startDateTime}
 								onChange={(e) => setStartDateTime(e.target.value)}
-								min={formatDateTimeLocal(new Date(new Date().setHours(0, 0, 0, 0)))}
+								min={editingRecord ? undefined : formatDateTimeLocal(new Date(new Date().setHours(0, 0, 0, 0)))}
 								required
 								className="tabular-nums tracking-tighter"
 							/>
