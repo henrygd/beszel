@@ -7,7 +7,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 	fixedDomainTicks,
-	xAxis,
+	useXAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
@@ -69,27 +69,30 @@ export default function AreaChartDefault({
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { isIntersecting, ref } = useIntersectionObserver({ freeze: false })
 	const sourceData = customData ?? chartData.systemStats ?? []
-	const [displayData, setDisplayData] = useState(sourceData)
+	const [{ data: displayData, points: displayPoints }, setDisplayed] = useState({
+		data: sourceData,
+		points: dataPoints,
+	})
 	const [displayMaxToggled, setDisplayMaxToggled] = useState(maxToggled)
 
-	// Reduce chart redraws by only updating while visible or when chart time changes
+	// Freeze the series order along with the samples while offscreen.
 	useEffect(() => {
 		const shouldPrimeData = sourceData.length && !displayData.length
-		const sourceChanged = sourceData !== displayData
+		const sourceChanged = sourceData !== displayData || dataPoints !== displayPoints
 		const shouldUpdate = shouldPrimeData || (sourceChanged && isIntersecting)
 		if (shouldUpdate) {
-			setDisplayData(sourceData)
+			setDisplayed({ data: sourceData, points: dataPoints })
 		}
 		if (isIntersecting && maxToggled !== displayMaxToggled) {
 			setDisplayMaxToggled(maxToggled)
 		}
-	}, [displayData, displayMaxToggled, isIntersecting, maxToggled, sourceData])
+	}, [dataPoints, displayData, displayMaxToggled, displayPoints, isIntersecting, maxToggled, sourceData])
 
 	// Use a stable key derived from data point identities and visual properties
-	const areasKey = dataPoints?.map((d) => `${d.label}:${d.opacity}`).join("\0")
+	const areasKey = displayPoints?.map((d) => `${d.label}:${d.opacity}`).join("\0")
 
 	const Areas = useMemo(() => {
-		return dataPoints?.map((dataPoint, i) => {
+		return displayPoints?.map((dataPoint, i) => {
 			let { color } = dataPoint
 			if (typeof color === "number") {
 				color = `var(--chart-${color})`
@@ -113,13 +116,13 @@ export default function AreaChartDefault({
 		})
 	}, [areasKey, displayMaxToggled])
 
-	const XAxis = xAxis(chartData.chartTime, displayData.at(-1)?.created)
+	const XAxis = useXAxis(chartData.chartTime, displayData.at(-1)?.created)
 
 	return useMemo(() => {
 		if (displayData.length === 0) {
 			return null
 		}
-		if (!hasChartValues(displayData, dataPoints)) {
+		if (!hasChartValues(displayData, displayPoints)) {
 			return <ChartNoValues ref={ref} />
 		}
 		// if (logRender) {

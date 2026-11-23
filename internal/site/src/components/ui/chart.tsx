@@ -446,23 +446,26 @@ function createXAxisData(chartTime: ChartTimes): XAxisData {
 	}
 }
 
-function xAxis(chartTime: ChartTimes, lastCreated: number) {
-	if (!lastCreated) {
-		return null
-	}
-	const cachedAxis = xAxisCache.get(chartTime)
+function useXAxis(chartTime: ChartTimes, lastCreated?: number) {
+	// Keep the chart's axis stable while its displayed samples are frozen offscreen.
+	return React.useMemo(() => {
+		if (!lastCreated) {
+			return null
+		}
+		const cachedAxis = xAxisCache.get(chartTime)
 
-	const expectedInterval = chartTimeData[chartTime].expectedInterval
-	const conservativeEndTime = Date.now() - expectedInterval / 2
-	const axisEndTime = Math.max(lastCreated, conservativeEndTime)
+		const expectedInterval = chartTimeData[chartTime].expectedInterval
+		const conservativeEndTime = Date.now() - expectedInterval / 2
+		const axisEndTime = Math.max(lastCreated, conservativeEndTime)
 
-	if (cachedAxis && axisEndTime < cachedAxis.domain[1]) {
-		return cachedAxis.el
-	}
+		if (cachedAxis && axisEndTime < cachedAxis.domain[1]) {
+			return cachedAxis.el
+		}
 
-	const axisData = createXAxisData(chartTime)
-	xAxisCache.set(chartTime, axisData)
-	return axisData.el
+		const axisData = createXAxisData(chartTime)
+		xAxisCache.set(chartTime, axisData)
+		return axisData.el
+	}, [chartTime, lastCreated])
 }
 
 export {
@@ -471,7 +474,7 @@ export {
 	ChartTooltipContent,
 	ChartLegend,
 	ChartLegendContent,
-	xAxis,
+	useXAxis,
 	// ChartStyle,
 }
 
