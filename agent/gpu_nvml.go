@@ -19,6 +19,19 @@ const (
 	nvmlSuccess           int        = 0
 	nvmlErrorNotFound     nvmlReturn = 6
 	nvmlTotalPowerSamples int        = 0
+
+	nvmlClockMem = 2 // NVML_CLOCK_MEM
+
+	nvmlGpmMetricDramBwUtil  = 10 // NVML_GPM_METRIC_DRAM_BW_UTIL: % of theoretical DRAM bandwidth
+	nvmlGpmMetricsGetVersion = 1  // NVML_GPM_METRICS_GET_VERSION
+	nvmlGpmSupportVersion    = 1  // NVML_GPM_SUPPORT_VERSION
+	// nvmlGpmMetricSlots is NVML_GPM_METRIC_MAX from nvml.h, the C size of
+	// nvmlGpmMetricsGet_t.metrics. The Go array matches it so the struct is
+	// ABI-exact and the driver can never write past it.
+	nvmlGpmMetricSlots = 98
+	// nvmlGpmMaxFailures consecutive GPM errors switch a device to the
+	// utilization.memory fallback.
+	nvmlGpmMaxFailures = 3
 )
 
 type nvmlDevice uintptr
@@ -50,6 +63,33 @@ type nvmlSample struct {
 	SampleValue uint64
 }
 
+// nvmlGpmSample is an opaque nvmlGpmSample_t handle.
+type nvmlGpmSample uintptr
+
+type nvmlGpmSupport struct {
+	Version           uint32
+	IsSupportedDevice uint32
+}
+
+// nvmlGpmMetric mirrors nvmlGpmMetric_t (metricInfo is three char pointers).
+type nvmlGpmMetric struct {
+	MetricId   uint32
+	NvmlReturn int32
+	Value      float64
+	ShortName  uintptr
+	LongName   uintptr
+	Unit       uintptr
+}
+
+// nvmlGpmMetricsGet mirrors nvmlGpmMetricsGet_t.
+type nvmlGpmMetricsGet struct {
+	Version    uint32
+	NumMetrics uint32
+	Sample1    nvmlGpmSample
+	Sample2    nvmlGpmSample
+	Metrics    [nvmlGpmMetricSlots]nvmlGpmMetric
+}
+
 type nvmlPciInfo struct {
 	BusId          [16]byte
 	Domain         uint32
@@ -73,7 +113,28 @@ var (
 	nvmlDeviceGetPciInfo          func(device nvmlDevice, pci *nvmlPciInfo) nvmlReturn
 	nvmlDeviceGetSamples          func(device nvmlDevice, sampleType int, lastSeenTimeStamp uint64, sampleValType *int32, sampleCount *uint32, samples *nvmlSample) nvmlReturn
 	nvmlErrorString               func(result nvmlReturn) string
+	// Optional symbols for memory bandwidth (nil when the driver lacks them)
+	nvmlDeviceGetMaxClockInfo   func(device nvmlDevice, clockType int, clock *uint32) nvmlReturn
+	nvmlDeviceGetMemoryBusWidth func(device nvmlDevice, busWidth *uint32) nvmlReturn
+	nvmlGpmQueryDeviceSupport   func(device nvmlDevice, support *nvmlGpmSupport) nvmlReturn
+	nvmlGpmSampleAlloc          func(sample *nvmlGpmSample) nvmlReturn
+	nvmlGpmSampleFree           func(sample nvmlGpmSample) nvmlReturn
+	nvmlGpmSampleGet            func(device nvmlDevice, sample nvmlGpmSample) nvmlReturn
+	nvmlGpmMetricsGetFn         func(metrics *nvmlGpmMetricsGet) nvmlReturn
 )
+
+// nvmlMemBw holds per-device memory bandwidth state. Peak bandwidth and GPM
+// support are detected once, on the first tick the device is active, so
+// detection never wakes a suspended GPU.
+type nvmlMemBw struct {
+	detected bool
+	peak     float64 // theoretical GB/s; 0 disables bandwidth for the device
+	gpm      bool    // GPM DRAM_BW_UTIL available; otherwise approximate
+	samples  [2]nvmlGpmSample
+	cur      int  // index of the newest sample in samples
+	hasPrev  bool // samples[cur] holds a valid sample
+	failures int
+}
 
 type nvmlCollector struct {
 	gm      *GPUManager
@@ -81,6 +142,9 @@ type nvmlCollector struct {
 	devices []nvmlDevice
 	bdfs    []string
 	isV2    bool
+	memBw   []nvmlMemBw
+	hasGpm  bool
+	gpmReq  nvmlGpmMetricsGet
 	// per-device state for the power sample fallback
 	lastSampleTs []uint64
 	lastPower    []float64
@@ -113,6 +177,19 @@ func (c *nvmlCollector) init() error {
 	purego.RegisterLibFunc(&nvmlDeviceGetPowerUsage, lib, "nvmlDeviceGetPowerUsage")
 	purego.RegisterLibFunc(&nvmlDeviceGetPciInfo, lib, "nvmlDeviceGetPciInfo")
 	purego.RegisterLibFunc(&nvmlErrorString, lib, "nvmlErrorString")
+	if hasSymbol(lib, "nvmlDeviceGetMaxClockInfo") && hasSymbol(lib, "nvmlDeviceGetMemoryBusWidth") {
+		purego.RegisterLibFunc(&nvmlDeviceGetMaxClockInfo, lib, "nvmlDeviceGetMaxClockInfo")
+		purego.RegisterLibFunc(&nvmlDeviceGetMemoryBusWidth, lib, "nvmlDeviceGetMemoryBusWidth")
+	}
+	if hasSymbol(lib, "nvmlGpmQueryDeviceSupport") && hasSymbol(lib, "nvmlGpmSampleAlloc") &&
+		hasSymbol(lib, "nvmlGpmSampleFree") && hasSymbol(lib, "nvmlGpmSampleGet") && hasSymbol(lib, "nvmlGpmMetricsGet") {
+		purego.RegisterLibFunc(&nvmlGpmQueryDeviceSupport, lib, "nvmlGpmQueryDeviceSupport")
+		purego.RegisterLibFunc(&nvmlGpmSampleAlloc, lib, "nvmlGpmSampleAlloc")
+		purego.RegisterLibFunc(&nvmlGpmSampleFree, lib, "nvmlGpmSampleFree")
+		purego.RegisterLibFunc(&nvmlGpmSampleGet, lib, "nvmlGpmSampleGet")
+		purego.RegisterLibFunc(&nvmlGpmMetricsGetFn, lib, "nvmlGpmMetricsGet")
+		c.hasGpm = true
+	}
 	if hasSymbol(lib, "nvmlDeviceGetSamples") {
 		purego.RegisterLibFunc(&nvmlDeviceGetSamples, lib, "nvmlDeviceGetSamples")
 	}
@@ -145,12 +222,14 @@ func (c *nvmlCollector) init() error {
 			c.lastPower = append(c.lastPower, 0)
 		}
 	}
+	c.memBw = make([]nvmlMemBw, len(c.devices))
 
 	return nil
 }
 
 func (c *nvmlCollector) start() {
 	defer nvmlShutdown()
+	defer c.freeGpmSamples()
 	ticker := time.Tick(3 * time.Second)
 
 	for range ticker {
@@ -180,6 +259,7 @@ func (c *nvmlCollector) collect() {
 
 		if bdf != "" && !c.isGPUActive(bdf) {
 			slog.Debug("NVML: GPU is suspended, skipping", "bdf", bdf)
+			c.memBw[i].hasPrev = false
 			gpu.Temperature = 0
 			gpu.MemoryUsed = 0
 			continue
@@ -189,6 +269,7 @@ func (c *nvmlCollector) collect() {
 		var utilization nvmlUtilization
 		if ret := nvmlDeviceGetUtilizationRates(device, &utilization); ret != nvmlReturn(nvmlSuccess) {
 			slog.Debug("NVML: Utilization failed (GPU likely suspended)", "bdf", bdf, "ret", ret)
+			c.memBw[i].hasPrev = false
 			gpu.Temperature = 0
 			gpu.MemoryUsed = 0
 			continue
@@ -240,11 +321,136 @@ func (c *nvmlCollector) collect() {
 			powerWatts = c.powerFromSamples(i, device)
 		}
 
+		// Memory bandwidth
+		if bw, approx, ok := c.memBandwidth(i, device, utilization.Memory); ok {
+			gpu.MemBandwidth += bw
+			gpu.MemBandwidthCount++
+			gpu.MemBandwidthPeak = c.memBw[i].peak
+			gpu.MemBandwidthApprox = approx
+		}
+
 		gpu.Temperature = float64(temp)
 		gpu.Usage += float64(utilization.Gpu)
 		gpu.Power += powerWatts
 		gpu.Count++
 		slog.Debug("NVML: Collected data", "gpu", gpu)
+	}
+}
+
+// detectMemBw computes peak bandwidth and GPM support for one device.
+func (c *nvmlCollector) detectMemBw(i int, device nvmlDevice) {
+	state := &c.memBw[i]
+	state.detected = true
+	if nvmlDeviceGetMaxClockInfo == nil || nvmlDeviceGetMemoryBusWidth == nil {
+		return
+	}
+	var clockMHz, busWidth uint32
+	if ret := nvmlDeviceGetMaxClockInfo(device, nvmlClockMem, &clockMHz); ret != nvmlReturn(nvmlSuccess) {
+		slog.Debug("NVML: max memory clock unavailable", "gpu", i, "ret", ret)
+		return
+	}
+	if ret := nvmlDeviceGetMemoryBusWidth(device, &busWidth); ret != nvmlReturn(nvmlSuccess) {
+		slog.Debug("NVML: memory bus width unavailable", "gpu", i, "ret", ret)
+		return
+	}
+	state.peak = nvmlPeakMemBandwidthGBps(clockMHz, busWidth)
+	if state.peak == 0 || !c.hasGpm {
+		return
+	}
+	support := nvmlGpmSupport{Version: nvmlGpmSupportVersion}
+	if ret := nvmlGpmQueryDeviceSupport(device, &support); ret != nvmlReturn(nvmlSuccess) || support.IsSupportedDevice == 0 {
+		slog.Debug("NVML: GPM unsupported, memory bandwidth is approximate", "gpu", i, "ret", ret)
+		return
+	}
+	for j := range state.samples {
+		if ret := nvmlGpmSampleAlloc(&state.samples[j]); ret != nvmlReturn(nvmlSuccess) {
+			slog.Debug("NVML: GPM sample alloc failed", "gpu", i, "ret", ret)
+			c.disableGpm(state)
+			return
+		}
+	}
+	state.gpm = true
+	slog.Debug("NVML: memory bandwidth", "gpu", i, "peakGBps", state.peak, "clockMHz", clockMHz, "busWidth", busWidth, "gpm", state.gpm)
+}
+
+// memBandwidth returns this tick's bandwidth sample in GB/s. approx is true
+// when derived from memory busy time instead of GPM DRAM throughput. ok is
+// false when no sample is available (unsupported, first GPM tick, or error).
+func (c *nvmlCollector) memBandwidth(i int, device nvmlDevice, memUtil uint32) (bw float64, approx bool, ok bool) {
+	state := &c.memBw[i]
+	if !state.detected {
+		c.detectMemBw(i, device)
+	}
+	if state.peak == 0 {
+		return 0, false, false
+	}
+	if !state.gpm {
+		return gpuMemBandwidthFromUtil(float64(memUtil), state.peak), true, true
+	}
+
+	next := 1 - state.cur
+	if ret := nvmlGpmSampleGet(device, state.samples[next]); ret != nvmlReturn(nvmlSuccess) {
+		c.gpmFailed(i, state, ret)
+		return 0, false, false
+	}
+	if !state.hasPrev {
+		state.cur, state.hasPrev = next, true
+		return 0, false, false
+	}
+	req := &c.gpmReq
+	*req = nvmlGpmMetricsGet{
+		Version:    nvmlGpmMetricsGetVersion,
+		NumMetrics: 1,
+		Sample1:    state.samples[state.cur],
+		Sample2:    state.samples[next],
+	}
+	req.Metrics[0].MetricId = nvmlGpmMetricDramBwUtil
+	state.cur = next
+	if ret := nvmlGpmMetricsGetFn(req); ret != nvmlReturn(nvmlSuccess) || req.Metrics[0].NvmlReturn != int32(nvmlSuccess) {
+		if ret == nvmlReturn(nvmlSuccess) {
+			ret = nvmlReturn(req.Metrics[0].NvmlReturn)
+		}
+		c.gpmFailed(i, state, ret)
+		return 0, false, false
+	}
+	// A non-finite or negative DRAM_BW_UTIL would poison the MemBandwidth
+	// accumulator for the life of the process (NaN - NaN stays NaN), and one
+	// NaN in Stats makes the hub store the whole record as null.
+	if v := req.Metrics[0].Value; math.IsNaN(v) || math.IsInf(v, 0) || v < 0 {
+		slog.Debug("NVML: GPM DRAM_BW_UTIL not finite", "gpu", i, "value", v)
+		c.gpmFailed(i, state, nvmlReturn(nvmlSuccess))
+		return 0, false, false
+	}
+	state.failures = 0
+	return gpuMemBandwidthFromUtil(req.Metrics[0].Value, state.peak), false, true
+}
+
+func (c *nvmlCollector) gpmFailed(i int, state *nvmlMemBw, ret nvmlReturn) {
+	state.hasPrev = false
+	state.failures++
+	slog.Debug("NVML: GPM sample failed", "gpu", i, "ret", ret, "failures", state.failures)
+	if state.failures >= nvmlGpmMaxFailures {
+		slog.Debug("NVML: GPM disabled, memory bandwidth is approximate", "gpu", i)
+		c.disableGpm(state)
+	}
+}
+
+// disableGpm frees a device's GPM samples and switches it to the fallback.
+func (c *nvmlCollector) disableGpm(state *nvmlMemBw) {
+	for j, sample := range state.samples {
+		if sample != 0 {
+			nvmlGpmSampleFree(sample)
+			state.samples[j] = 0
+		}
+	}
+	state.gpm, state.hasPrev = false, false
+}
+
+func (c *nvmlCollector) freeGpmSamples() {
+	for i := range c.memBw {
+		if c.memBw[i].gpm {
+			c.disableGpm(&c.memBw[i])
+		}
 	}
 }
 

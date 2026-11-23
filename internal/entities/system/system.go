@@ -67,6 +67,15 @@ type Stats struct {
 	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
 	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
 	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
+
+	// MemBandwidth is system memory bandwidth [read GB/s, write GB/s] (decimal GB).
+	MemBandwidth    [2]float64 `json:"mbw,omitzero" cbor:"43,keyasint,omitzero"`
+	MaxMemBandwidth [2]float64 `json:"mbwm,omitzero" cbor:"-"` // max values for MemBandwidth
+
+	// MemBandwidthTotalOnly marks an unavailable read/write split (Jetson).
+	// Agents put total traffic in [0]; mixed-source rollups may retain writes
+	// in [1], so consumers must sum both fields for the average total.
+	MemBandwidthTotalOnly bool `json:"mbwt,omitzero" cbor:"44,keyasint,omitempty"`
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
@@ -139,6 +148,15 @@ type GPUData struct {
 	Count       float64            `json:"-"`
 	Engines     map[string]float64 `json:"e,omitempty" cbor:"5,keyasint,omitempty"`
 	PowerPkg    float64            `json:"pp,omitzero" cbor:"6,keyasint,omitempty"`
+	// MemBandwidth is average device memory bandwidth in GB/s (decimal). It is
+	// omitted when zero; MemBandwidthPeak is present whenever the interval had at
+	// least one bandwidth sample, so a present peak with a missing value means 0.
+	MemBandwidth     float64 `json:"bw,omitzero" cbor:"7,keyasint,omitempty"`
+	MemBandwidthPeak float64 `json:"bwp,omitzero" cbor:"8,keyasint,omitempty"` // theoretical peak GB/s
+	// MemBandwidthApprox marks values derived from memory busy time (NVML
+	// utilization.memory) rather than measured DRAM throughput.
+	MemBandwidthApprox bool    `json:"bwa,omitzero" cbor:"9,keyasint,omitempty"`
+	MemBandwidthCount  float64 `json:"-" cbor:"-"` // number of accumulated bandwidth samples (agent-side only)
 }
 
 type FsStats struct {
