@@ -34,6 +34,10 @@ type Config struct {
 	// IPVersion restricts the probe to one address family: IPVersionAuto (0),
 	// IPVersion4 or IPVersion6. For DNS monitors it selects the A or AAAA record.
 	IPVersion uint8 `cbor:"7,keyasint,omitempty" db:"ipVersion"`
+	// StatusCodes lists the HTTP status codes that count as a successful probe, as
+	// comma-separated codes and inclusive ranges such as "200-299,401". Empty means
+	// any status below 400. Only used when Protocol is "http".
+	StatusCodes string `cbor:"8,keyasint,omitempty" db:"statusCodes"`
 }
 
 const (

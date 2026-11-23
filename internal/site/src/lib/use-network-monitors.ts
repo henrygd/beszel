@@ -82,7 +82,7 @@ async function fetchMonitorStats(
 }
 
 const NETWORK_MONITOR_FIELDS =
-	"id,system,target,protocol,port,server,interval,skipTlsVerify,ipVersion,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,certInfo,updated"
+	"id,system,target,protocol,port,server,interval,skipTlsVerify,ipVersion,statusCodes,res,resMin1h,resMax1h,resAvg1h,loss1h,enabled,certInfo,updated"
 
 interface UseNetworkMonitorsProps {
 	systemId?: string
@@ -113,6 +113,7 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 
 	// subscribe to updates
 	useEffect(() => {
+		let cancelled = false
 		let unsubscribe: (() => void) | undefined
 
 		function flushPendingMonitorEvents() {
@@ -137,6 +138,7 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 				unsubscribe = await pb.collection<NetworkMonitorRecord>("network_monitors").subscribe(
 					"*",
 					(event) => {
+						if (cancelled) return
 						pendingMonitorEvents.current.set(event.record.id, event)
 						if (!monitorBatchTimeout.current) {
 							monitorBatchTimeout.current = setTimeout(flushPendingMonitorEvents, 50)
@@ -144,12 +146,14 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 					},
 					pbOptions
 				)
+				if (cancelled) unsubscribe()
 			} catch (error) {
 				console.error("Failed to subscribe to monitors", error)
 			}
 		})()
 
 		return () => {
+			cancelled = true
 			if (monitorBatchTimeout.current !== null) {
 				clearTimeout(monitorBatchTimeout.current)
 				monitorBatchTimeout.current = null

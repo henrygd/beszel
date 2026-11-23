@@ -52,40 +52,47 @@ export async function loadLogin(
 	signal: AbortSignal,
 	timeoutMs = 10_000
 ) {
-	const [{ firstRun }, authMethods] = await Promise.all([
-		pb
-			.send<{ firstRun: boolean }>("/api/beszel/first-run", { signal, requestKey: null })
-			.catch(() => ({ firstRun: false })),
-		loadAuthMethods(pb, signal),
-	])
-	const result = { firstRun, authMethods, authenticated: false }
-	// Only probe when the server can authenticate an anonymous request. Other flows are
-	// handled by their existing forms.
-	if (
-		!autoLogin ||
-		signal.aborted ||
-		firstRun ||
-		route === "forgot_password" ||
-		route === "request_otp" ||
-		new URLSearchParams(search).get("code") ||
-		(!authMethods.password.enabled && authMethods.oauth2.providers.length === 1 && !loggedOut)
-	) {
-		return result
-	}
-
 	const controller = new AbortController()
 	const abort = () => controller.abort()
 	signal.addEventListener("abort", abort, { once: true })
-	// A stalled probe must not prevent access to the regular login form.
-	const timeout = setTimeout(abort, timeoutMs)
+	if (signal.aborted) abort()
+	// Bound initial requests as well as the later automatic authentication probe.
+	let timeout = setTimeout(abort, timeoutMs)
 	try {
-		await pb.collection("users").authRefresh({ signal: controller.signal, requestKey: null })
-		result.authenticated = pb.authStore.isValid
-	} catch {
-		// Rejected or timed out: fall back to the login form.
+		const [{ firstRun }, authMethods] = await Promise.all([
+			pb
+				.send<{ firstRun: boolean }>("/api/beszel/first-run", { signal: controller.signal, requestKey: null })
+				.catch(() => ({ firstRun: false })),
+			loadAuthMethods(pb, controller.signal).catch((error) => {
+				if (signal.aborted || !controller.signal.aborted) throw error
+				return fallbackAuthMethods
+			}),
+		])
+		const result = { firstRun, authMethods, authenticated: false }
+		// Only probe when the server can authenticate an anonymous request.
+		if (
+			!autoLogin ||
+			controller.signal.aborted ||
+			firstRun ||
+			route === "forgot_password" ||
+			route === "request_otp" ||
+			new URLSearchParams(search).get("code") ||
+			(!authMethods.password.enabled && authMethods.oauth2.providers.length === 1 && !loggedOut)
+		) {
+			return result
+		}
+
+		clearTimeout(timeout)
+		timeout = setTimeout(abort, timeoutMs)
+		try {
+			await pb.collection("users").authRefresh({ signal: controller.signal, requestKey: null })
+			result.authenticated = pb.authStore.isValid
+		} catch {
+			// Rejected or timed out: fall back to the login form.
+		}
+		return result
 	} finally {
 		clearTimeout(timeout)
 		signal.removeEventListener("abort", abort)
 	}
-	return result
 }

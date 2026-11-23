@@ -697,6 +697,8 @@ export interface NetworkMonitorRecord {
 	skipTlsVerify: boolean
 	/** Address family the agent probes over: 0 (auto), 4 (IPv4), or 6 (IPv6). */
 	ipVersion: 0 | 4 | 6
+	/** Accepted HTTP status codes and ranges, such as "200-299,401". Empty means any status below 400. */
+	statusCodes: string
 	res: number
 	resMin1h: number
 	resMax1h: number

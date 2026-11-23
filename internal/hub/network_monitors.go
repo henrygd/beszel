@@ -3,6 +3,7 @@ package hub
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"ganigeorgiev.com/pocketbase/pocketbase/core"
@@ -38,6 +39,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		ipVersion := e.Record.GetInt("ipVersion")
 		if ipVersion < 0 || ipVersion > 255 || !monitor.ValidIPVersion(uint8(ipVersion)) {
 			return fmt.Errorf("invalid IP version: %d", ipVersion)
+		}
+		// the field pattern can't compare range bounds, and a reversed range would fail every probe
+		if err := validateStatusCodeRanges(e.Record.GetString("statusCodes")); err != nil {
+			return err
 		}
 		return e.Next()
 	})
@@ -99,9 +104,10 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 		if protocol != "dns" {
 			e.Record.Set("server", "")
 		}
-		// only http uses TLS verification - clear it for other protocols
+		// only http uses TLS verification and status codes - clear them for other protocols
 		if protocol != "http" {
 			e.Record.Set("skipTlsVerify", false)
+			e.Record.Set("statusCodes", "")
 		}
 		ID := generateMonitorID(systemID, *monitorConfigFromRecord(e.Record))
 		if ID != e.Record.Id {
@@ -141,6 +147,23 @@ func bindNetworkMonitorsEvents(hub *Hub) {
 	})
 }
 
+// validateStatusCodeRanges rejects ranges whose start is greater than their end, such as
+// "299-200". The format itself is enforced by the statusCodes field pattern.
+func validateStatusCodeRanges(spec string) error {
+	for entry := range strings.SplitSeq(spec, ",") {
+		low, high, isRange := strings.Cut(entry, "-")
+		if !isRange {
+			continue
+		}
+		first, err1 := strconv.Atoi(low)
+		last, err2 := strconv.Atoi(high)
+		if err1 == nil && err2 == nil && first > last {
+			return fmt.Errorf("invalid status code range: %s", entry)
+		}
+	}
+	return nil
+}
+
 // monitorConfigFromRecord builds a monitor config from a network_monitors record.
 func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 	return &monitor.Config{
@@ -153,6 +176,7 @@ func monitorConfigFromRecord(record *core.Record) *monitor.Config {
 		// SkipTLSVerify is a probe option, not part of the monitor's identity, so it does not affect the ID.
 		SkipTLSVerify: record.GetBool("skipTlsVerify"),
 		IPVersion:     uint8(record.GetInt("ipVersion")),
+		StatusCodes:   record.GetString("statusCodes"),
 	}
 }
 
@@ -177,7 +201,7 @@ func copyMonitorToNewRecord(oldRecord *core.Record, newID string) *core.Record {
 	collection := oldRecord.Collection()
 	newRecord := core.NewRecord(collection)
 	newRecord.Id = newID
-	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "ipVersion"}
+	fields := []string{"system", "target", "protocol", "port", "server", "interval", "enabled", "skipTlsVerify", "ipVersion", "statusCodes"}
 	for _, field := range fields {
 		newRecord.Set(field, oldRecord.Get(field))
 	}

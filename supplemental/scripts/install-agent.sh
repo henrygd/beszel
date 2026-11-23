@@ -1372,6 +1372,10 @@ ProtectSystem=strict
 PrivateTmp=yes
 RemoveIPC=yes
 RestrictSUIDSGID=true
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+UMask=0077
 
 $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${NVIDIA_DEVICES}"; fi)
 
