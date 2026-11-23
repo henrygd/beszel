@@ -26,7 +26,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.59.0
 	golang.org/x/exp v0.0.0-20261109185158-a52e3aef5920
-	golang.org/x/net v0.62.0
+	golang.org/x/net v0.63.0
 	golang.org/x/oauth2 v0.38.0
 	golang.org/x/sys v0.50.0
 	gopkg.in/yaml.v3 v3.0.1
