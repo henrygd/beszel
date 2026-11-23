@@ -197,7 +197,7 @@ export default function AlertsHistoryDataTable() {
 			const r = row.original
 			csvRows.push(
 				Object.values(cells)
-					.map((val) => val(r))
+					.map((val) => `"${String(val(r) ?? "").replaceAll('"', '""')}"`)
 					.join(",")
 			)
 		}
