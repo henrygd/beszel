@@ -17,6 +17,13 @@ function AlertTriggeredDesc({ alert }: { alert: AlertRecord }) {
 	if (alert.name === "NetworkMonitorLoss") {
 		return <Trans>One or more monitors exceed {alert.value}% loss</Trans>
 	}
+	if (alert.name === "NetworkMonitorDown") {
+		return (
+			<Trans>
+				One or more monitors failed <Plural value={alert.value} one="# check" other="# checks" /> in a row
+			</Trans>
+		)
+	}
 	if (alert.name === "NetworkMonitorCert") {
 		return (
 			<Trans>
