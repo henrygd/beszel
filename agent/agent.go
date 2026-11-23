@@ -170,6 +170,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	if agent.systemdManager != nil {
 		agent.systemInfo.SystemdLogs = agent.systemdManager.logsEnabled
 	}
+	agent.systemInfo.PowerCommands = powerActionsEnabled()
 
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {

@@ -30,6 +30,8 @@ const (
 	GetPackageUpdates
 	// Request recent logs for a systemd service from the agent.
 	GetSystemdLogs
+	// Request a supported power action from the agent.
+	RunPowerAction
 	// Add new actions here...
 )
 
@@ -90,4 +92,25 @@ type SystemdInfoRequest struct {
 
 type SystemdLogsRequest struct {
 	ServiceName string `cbor:"0,keyasint"`
+}
+
+// PowerActionRequest contains a fixed, allowlisted operation. It never accepts
+// executable names or arguments from the hub.
+type PowerActionRequest struct {
+	Action PowerAction `cbor:"0,keyasint"`
+}
+
+type PowerAction string
+
+const (
+	PowerActionShutdown  PowerAction = "shutdown"
+	PowerActionReboot    PowerAction = "reboot"
+	PowerActionSuspend   PowerAction = "suspend"
+	PowerActionHibernate PowerAction = "hibernate"
+)
+
+// PowerActionResponse means the agent acknowledged and queued the operation;
+// the machine may disconnect before the operation can be confirmed complete.
+type PowerActionResponse struct {
+	Accepted bool `cbor:"0,keyasint" json:"accepted"`
 }

@@ -98,8 +98,8 @@ msgid "{value, plural, one {# day} other {# days}}"
 msgstr "{value, plural, one {# dan} two {# dneva} few {# dni} other {# dni}}"
 
 #: src/lib/utils.ts
-msgid "1 hour"
-msgstr "1 ura"
+#~ msgid "1 hour"
+#~ msgstr "1 ura"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -107,16 +107,16 @@ msgid "1 min"
 msgstr "1 min"
 
 #: src/lib/utils.ts
-msgid "1 minute"
-msgstr "1 minuta"
+#~ msgid "1 minute"
+#~ msgstr "1 minuta"
 
 #: src/lib/utils.ts
-msgid "1 week"
-msgstr "1 teden"
+#~ msgid "1 week"
+#~ msgstr "1 teden"
 
 #: src/lib/utils.ts
-msgid "12 hours"
-msgstr "12 ur"
+#~ msgid "12 hours"
+#~ msgstr "12 ur"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -124,17 +124,21 @@ msgid "15 min"
 msgstr "15 min"
 
 #: src/lib/utils.ts
-msgid "24 hours"
-msgstr "24 ur"
+#~ msgid "24 hours"
+#~ msgstr "24 ur"
 
 #: src/lib/utils.ts
-msgid "30 days"
-msgstr "30 dni"
+#~ msgid "30 days"
+#~ msgstr "30 dni"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 min"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Accepted status codes"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -239,6 +243,23 @@ msgstr "Vsi kontejnerji"
 msgid "All Systems"
 msgstr "Vsi sistemi"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "AP · client avg"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
 #: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ali ste prepričani, da želite izbrisati {name}?"
@@ -248,17 +269,22 @@ msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 msgid "Are you sure?"
 msgstr "Ali ste prepričani?"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Za samodejno kopiranje je potreben varen kontekst."
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "Na voljo"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "Na voljo"
 
@@ -410,7 +436,9 @@ msgstr "Lahko ustavi"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/system-actions-button.tsx
 #: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Prekliči"
@@ -499,6 +527,14 @@ msgstr "Preverite storitev obveščanja"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Checked {0}"
 msgstr "Preverjeno {0}"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an A record exists."
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an AAAA record exists."
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
@@ -591,6 +627,7 @@ msgstr "Vsebniki"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/system-actions-button.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Nadaljuj"
 
@@ -653,6 +690,10 @@ msgstr "Kopirajte namestitveni ukaz za agenta spodaj ali registrirajte agente sa
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Kopirajte<0>docker-compose.yml</0> vsebino za agenta spodaj ali registrirajte agente samodejno z <1>univerzalnim žetonom</1>."
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
 msgid "Copy token"
@@ -711,6 +752,11 @@ msgstr "Ustvari"
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Ustvari račun"
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
@@ -942,6 +988,7 @@ msgstr "Prehodni"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -953,6 +1000,10 @@ msgstr "Prehodni"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Napaka"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
@@ -981,6 +1032,14 @@ msgstr "Izhod aktivno"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Poteklo"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -1246,6 +1305,15 @@ msgstr "Interval (sekunde)"
 msgid "Invalid email address."
 msgstr "Napačen e-poštni naslov."
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP Version"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jezik"
@@ -1468,6 +1536,10 @@ msgstr "Omrežni promet javnih vmesnikov"
 msgid "Network unit"
 msgstr "Enota omrežja"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Never"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1570,6 +1642,10 @@ msgstr "Enkratno geslo"
 #: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Odpri menu"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to any status code below 400."
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Optional. Defaults to the agent's system resolver."
@@ -1746,6 +1822,14 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "Vrata"
 
+#: src/components/system-actions-button.tsx
+msgid "Power command accepted"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Power command failed"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1778,6 +1862,10 @@ msgstr "Javni ključ"
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "Javni ključ"
+
+#: src/components/system-actions-button.tsx
+msgid "Put {name} to sleep?"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average queue depth"
@@ -1814,6 +1902,14 @@ msgstr "Preberano"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "Napake pri branju"
+
+#: src/components/system-actions-button.tsx
+msgid "Reboot"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Reboot {name}?"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1887,6 +1983,26 @@ msgstr "Pokaži žeton"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
 msgstr "Revizija"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2023,6 +2139,10 @@ msgstr "Pošiljajte občasne odhodne pinge zunanji storitvi za spremljanje, da b
 msgid "Send test heartbeat"
 msgstr "Pošlji testni srčni utrip"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "Poslano"
@@ -2066,6 +2186,14 @@ msgstr "Nastavitve so shranjene"
 msgid "Show timestamps"
 msgstr "Prikaži časovne žige"
 
+#: src/components/system-actions-button.tsx
+msgid "Shut down"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Shut down {name}?"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Prijavite se"
@@ -2073,6 +2201,10 @@ msgstr "Prijavite se"
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "Jakost signala povezanih vmesnikov Wi-Fi"
+
+#: src/components/system-actions-button.tsx
+msgid "Sleep"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -2176,8 +2308,13 @@ msgstr "Cilj"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval[,server]]]]"
+msgid "target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]"
 msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#~ msgid "target[,protocol[,port[,interval[,server]]]]"
+#~ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2214,9 +2351,17 @@ msgstr "Testni srčni utrip"
 msgid "Test notification sent"
 msgstr "Testno obvestilo je poslano"
 
+#: src/components/system-actions-button.tsx
+msgid "The agent acknowledged the request."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
 msgstr "Splošno stanje je <0>v redu</0>, ko vsi sistemi delujejo, <1>opozorilo</1>, ko se sprožijo opozorila, in <2>napaka</2>, ko kateri koli sistem ne deluje."
+
+#: src/components/system-actions-button.tsx
+msgid "The system will disconnect while the power command runs. The hub cannot confirm when it completes."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."

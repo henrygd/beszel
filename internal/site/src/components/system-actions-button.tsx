@@ -5,12 +5,15 @@ import {
 	BellIcon,
 	CopyIcon,
 	MoreHorizontalIcon,
+	MoonIcon,
 	PauseCircleIcon,
 	PenBoxIcon,
 	PlayCircleIcon,
+	PowerIcon,
+	RotateCcwIcon,
 	Trash2Icon,
 } from "lucide-react"
-import { memo, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useMemo, useRef, useState } from "react"
 import { SystemDialog } from "@/components/add-system"
 import { AlertDialogContent as AlertsSheetContent, alertsSheetClassName } from "@/components/alerts/alerts-sheet"
 import { $router, navigate } from "@/components/router"
@@ -34,7 +37,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { toast } from "@/components/ui/use-toast"
+import { isAdmin, isReadOnlyUser, pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $alerts } from "@/lib/stores"
 import { cn, copyToClipboard } from "@/lib/utils"
@@ -73,9 +77,24 @@ export const ActionsButton = memo(({ system, variant = "ghost", showAlerts = fal
 	const [editOpen, setEditOpen] = useState(false)
 	const editOpened = useRef(false)
 	const [alertsOpen, setAlertsOpen] = useState(false)
+	const [powerAction, setPowerAction] = useState<"shutdown" | "reboot" | "sleep" | null>(null)
+	const [powerPending, setPowerPending] = useState(false)
 	const alertsOpened = useRef(false)
 	const { t } = useLingui()
 	const { id, status, host, name } = system
+	const submitPowerAction = useCallback(async () => {
+		if (!powerAction) return
+		setPowerPending(true)
+		try {
+			await pb.send("/api/beszel/power", { method: "POST", body: { system: id, action: powerAction } })
+			toast({ title: t`Power command accepted`, description: t`The agent acknowledged the request.` })
+		} catch (error) {
+			toast({ variant: "destructive", title: t`Power command failed`, description: (error as Error)?.message })
+		} finally {
+			setPowerPending(false)
+			setPowerAction(null)
+		}
+	}, [id, powerAction, t])
 
 	return useMemo(() => {
 		return (
@@ -112,6 +131,23 @@ export const ActionsButton = memo(({ system, variant = "ghost", showAlerts = fal
 								<PenBoxIcon className="me-2.5 size-4" />
 								<Trans>Edit</Trans>
 							</DropdownMenuItem>
+						)}
+						{system.info?.pc && isAdmin() && (
+							<>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onSelect={() => setPowerAction("sleep")}>
+									<MoonIcon className="me-2.5 size-4" />
+									<Trans>Sleep</Trans>
+								</DropdownMenuItem>
+								<DropdownMenuItem onSelect={() => setPowerAction("reboot")}>
+									<RotateCcwIcon className="me-2.5 size-4" />
+									<Trans>Reboot</Trans>
+								</DropdownMenuItem>
+								<DropdownMenuItem onSelect={() => setPowerAction("shutdown")}>
+									<PowerIcon className="me-2.5 size-4" />
+									<Trans>Shut down</Trans>
+								</DropdownMenuItem>
+							</>
 						)}
 						<DropdownMenuItem
 							className={cn(isReadOnlyUser() && "hidden")}
@@ -187,7 +223,40 @@ export const ActionsButton = memo(({ system, variant = "ghost", showAlerts = fal
 						</AlertDialogFooter>
 					</AlertDialogContent>
 				</AlertDialog>
+				{/* power action confirmation */}
+				<AlertDialog open={powerAction !== null} onOpenChange={(open) => !open && setPowerAction(null)}>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>
+								{powerAction === "sleep" ? (
+									<Trans>Put {name} to sleep?</Trans>
+								) : powerAction === "reboot" ? (
+									<Trans>Reboot {name}?</Trans>
+								) : (
+									<Trans>Shut down {name}?</Trans>
+								)}
+							</AlertDialogTitle>
+							<AlertDialogDescription>
+								<Trans>
+									The system will disconnect while the power command runs. The hub cannot confirm when it completes.
+								</Trans>
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>
+								<Trans>Cancel</Trans>
+							</AlertDialogCancel>
+							<AlertDialogAction
+								disabled={powerPending}
+								onClick={submitPowerAction}
+								className={cn(buttonVariants({ variant: "destructive" }))}
+							>
+								<Trans>Continue</Trans>
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			</>
 		)
-	}, [id, status, host, name, system, t, deleteOpen, editOpen, alertsOpen, variant, showAlerts])
+	}, [id, status, host, name, system, t, deleteOpen, editOpen, alertsOpen, powerAction, powerPending, submitPowerAction, variant, showAlerts])
 })

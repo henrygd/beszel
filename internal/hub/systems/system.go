@@ -912,6 +912,16 @@ func (sys *System) FetchPackageUpdatesFromAgent() (system.PackageUpdates, error)
 	return result, err
 }
 
+// RunPowerAction asks the agent to queue one supported host power operation.
+// An accepted response means queued, not that completion was observed.
+func (sys *System) RunPowerAction(action common.PowerAction) (common.PowerActionResponse, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result common.PowerActionResponse
+	err := sys.request(ctx, common.RunPowerAction, common.PowerActionRequest{Action: action}, &result)
+	return result, err
+}
+
 // FetchZfsDataFromAgent fetches ZFS detail data from the agent.
 func (sys *System) FetchZfsDataFromAgent(force bool) (*zfs.ZfsData, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)

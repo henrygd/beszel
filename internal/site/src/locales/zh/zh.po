@@ -98,8 +98,8 @@ msgid "{value, plural, one {# day} other {# days}}"
 msgstr "{value, plural, one {# 天} other {# 天}}"
 
 #: src/lib/utils.ts
-msgid "1 hour"
-msgstr "1小時"
+#~ msgid "1 hour"
+#~ msgstr "1小時"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -107,16 +107,16 @@ msgid "1 min"
 msgstr "1 分鐘"
 
 #: src/lib/utils.ts
-msgid "1 minute"
-msgstr "1 分鐘"
+#~ msgid "1 minute"
+#~ msgstr "1 分鐘"
 
 #: src/lib/utils.ts
-msgid "1 week"
-msgstr "1週"
+#~ msgid "1 week"
+#~ msgstr "1週"
 
 #: src/lib/utils.ts
-msgid "12 hours"
-msgstr "12小時"
+#~ msgid "12 hours"
+#~ msgstr "12小時"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
@@ -124,17 +124,21 @@ msgid "15 min"
 msgstr "15 分鐘"
 
 #: src/lib/utils.ts
-msgid "24 hours"
-msgstr "24小時"
+#~ msgid "24 hours"
+#~ msgstr "24小時"
 
 #: src/lib/utils.ts
-msgid "30 days"
-msgstr "30天"
+#~ msgid "30 days"
+#~ msgstr "30天"
 
 #. Load average
 #: src/components/routes/system/charts/load-average-chart.tsx
 msgid "5 min"
 msgstr "5 分鐘"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Accepted status codes"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/quiet-hours.tsx
@@ -239,6 +243,23 @@ msgstr "所有容器"
 msgid "All Systems"
 msgstr "所有系統"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "AP · client avg"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API key"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "API Keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "API keys let scripts and integrations use the Beszel API as your user. A key has the same access as your account and works until it expires or is revoked."
+msgstr ""
+
 #: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
@@ -248,17 +269,22 @@ msgstr "您確定要刪除 {name} 嗎？"
 msgid "Are you sure?"
 msgstr "您確定嗎？"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "只有在受保護的環境（HTTPS）才能自動複製。"
 
-#: src/components/routes/system/storage-pools-table.tsx
-msgctxt "Disk space available"
+#. Package version available to install
+#: src/components/routes/system/package-updates-table.tsx
 msgid "Available"
 msgstr "可用"
 
-#. Package version available to install
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/routes/system/storage-pools-table.tsx
+msgctxt "Disk space available"
 msgid "Available"
 msgstr "可用"
 
@@ -410,7 +436,9 @@ msgstr "可停止"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/quiet-hours.tsx
+#: src/components/system-actions-button.tsx
 #: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -499,6 +527,14 @@ msgstr "檢查您的通知服務"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Checked {0}"
 msgstr "已於 {0} 檢查"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an A record exists."
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Checks that an AAAA record exists."
+msgstr ""
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Checksum errors"
@@ -591,6 +627,7 @@ msgstr "容器"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/system-actions-button.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "繼續"
 
@@ -653,6 +690,10 @@ msgstr "以下方指令安裝 Agent ，或使用<0>通用 Token</0>進行自動�
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "以下方<0>docker-compose.yml</0>執行 Agent，或使用<1>通用 Token</1>進行自動註冊。"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Copy this key now. It won't be shown again."
+msgstr ""
+
 #: src/components/token-value.tsx
 #: src/components/token-value.tsx
 msgid "Copy token"
@@ -711,6 +752,11 @@ msgstr "建立"
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "建立帳號"
+
+#: src/components/routes/settings/api-keys.tsx
+#: src/components/routes/settings/api-keys.tsx
+msgid "Create API key"
+msgstr ""
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
@@ -942,6 +988,7 @@ msgstr "臨時"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/api-keys.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/heartbeat.tsx
@@ -953,6 +1000,10 @@ msgstr "臨時"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "錯誤"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Every API key you have created will stop working immediately, and you will be signed out of other devices."
+msgstr ""
 
 #: src/components/routes/settings/heartbeat.tsx
 msgid "Example:"
@@ -981,6 +1032,14 @@ msgstr "結束"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "已過期"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires {expires}"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Expires after"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
@@ -1246,6 +1305,15 @@ msgstr "間隔 (秒)"
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
 
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP"
+msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/network-monitors-columns.tsx
+msgid "IP Version"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
@@ -1468,6 +1536,10 @@ msgstr "公開介面的網路流量"
 msgid "Network unit"
 msgstr "網路單位"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Never"
+msgstr ""
+
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1570,6 +1642,10 @@ msgstr "一次性密碼"
 #: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "開啟選單"
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Optional. Defaults to any status code below 400."
+msgstr ""
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 msgid "Optional. Defaults to the agent's system resolver."
@@ -1746,6 +1822,14 @@ msgctxt "Container ports"
 msgid "Ports"
 msgstr "Port 映射"
 
+#: src/components/system-actions-button.tsx
+msgid "Power command accepted"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Power command failed"
+msgstr ""
+
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
@@ -1778,6 +1862,10 @@ msgstr "公鑰"
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "公鑰"
+
+#: src/components/system-actions-button.tsx
+msgid "Put {name} to sleep?"
+msgstr ""
 
 #: src/components/routes/system/disk-io-sheet.tsx
 msgctxt "Disk I/O average queue depth"
@@ -1814,6 +1902,14 @@ msgstr "讀取"
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Read errors"
 msgstr "讀取錯誤"
+
+#: src/components/system-actions-button.tsx
+msgid "Reboot"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Reboot {name}?"
+msgstr ""
 
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Received"
@@ -1887,6 +1983,26 @@ msgstr "顯示權杖"
 #: src/components/routes/system/package-updates-table.tsx
 msgid "Revision"
 msgstr "修訂"
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke all API keys?"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoke API keys"
+msgstr ""
+
+#: src/components/routes/settings/api-keys.tsx
+msgid "Revoking invalidates all of your API keys and signs you out of other devices. Changing your password has the same effect."
+msgstr ""
 
 #: src/components/routes/system/charts/disk-charts.tsx
 #: src/components/routes/system/charts/disk-charts.tsx
@@ -2023,6 +2139,10 @@ msgstr "定期發送 Outbound Ping 至外部監控服務，讓您無需將 Besze
 msgid "Send test heartbeat"
 msgstr "發送測試 Heartbeat"
 
+#: src/components/routes/settings/api-keys.tsx
+msgid "Send the key in the <0>Authorization</0> header of each request:"
+msgstr ""
+
 #: src/components/routes/system/charts/network-charts.tsx
 msgid "Sent"
 msgstr "傳送"
@@ -2066,6 +2186,14 @@ msgstr "已儲存設定"
 msgid "Show timestamps"
 msgstr "顯示時間戳記"
 
+#: src/components/system-actions-button.tsx
+msgid "Shut down"
+msgstr ""
+
+#: src/components/system-actions-button.tsx
+msgid "Shut down {name}?"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "登入"
@@ -2073,6 +2201,10 @@ msgstr "登入"
 #: src/components/routes/system/charts/wifi-chart.tsx
 msgid "Signal strength of connected Wi-Fi interfaces"
 msgstr "已連線 Wi-Fi 介面的訊號強度"
+
+#: src/components/system-actions-button.tsx
+msgid "Sleep"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -2176,8 +2308,13 @@ msgstr "目標"
 
 #: src/components/network-monitors-table/monitor-dialog.tsx
 #: src/components/network-monitors-table/monitor-dialog.tsx
-msgid "target[,protocol[,port[,interval[,server]]]]"
+msgid "target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]"
 msgstr ""
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#: src/components/network-monitors-table/monitor-dialog.tsx
+#~ msgid "target[,protocol[,port[,interval[,server]]]]"
+#~ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
@@ -2214,9 +2351,17 @@ msgstr "測試 Heartbeat"
 msgid "Test notification sent"
 msgstr "已發送測試通知"
 
+#: src/components/system-actions-button.tsx
+msgid "The agent acknowledged the request."
+msgstr ""
+
 #: src/components/routes/settings/heartbeat.tsx
 msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
 msgstr "當所有系統都正常運行時，整體狀態為 <0>正常</0>；當觸發警報時為 <1>警告</1>；當任何系統故障時為 <2>錯誤</2>。"
+
+#: src/components/system-actions-button.tsx
+msgid "The system will disconnect while the power command runs. The hub cannot confirm when it completes."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
