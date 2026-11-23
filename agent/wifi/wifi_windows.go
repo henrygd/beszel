@@ -74,6 +74,7 @@ func collect(ctx context.Context) map[string]system.WiFi {
 				connection := (*wlanConnection)(data)
 				if connection.State == 1 && connection.SSIDLength <= 32 {
 					reading.SSID = validSSID(string(connection.SSID[:connection.SSIDLength]))
+					reading.Profile = profileName(connection.Profile[:], reading.SSID)
 				}
 			}
 			wlanFree.Call(uintptr(data))
@@ -91,6 +92,15 @@ func collect(ctx context.Context) map[string]system.WiFi {
 		result[interfaceName(&iface.GUID)] = reading
 	}
 	return result
+}
+
+// profileName returns the WLAN profile name when it differs from the SSID, so
+// connections through different profiles for the same SSID can be told apart.
+func profileName(profile []uint16, ssid string) string {
+	if name := windows.UTF16ToString(profile); name != ssid {
+		return name
+	}
+	return ""
 }
 
 func queryWLAN(handle windows.Handle, guid *windows.GUID, opcode uintptr) (unsafe.Pointer, uint32) {

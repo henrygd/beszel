@@ -13,12 +13,24 @@ func (h *Hub) GetSystemManager() *systems.SystemManager {
 
 // TESTING ONLY: GetPubkey returns the public key
 func (h *Hub) GetPubkey() string {
+	h.sshKeyMu.Lock()
+	defer h.sshKeyMu.Unlock()
 	return h.pubKey
 }
 
 // TESTING ONLY: SetPubkey sets the public key
 func (h *Hub) SetPubkey(pubkey string) {
+	h.sshKeyMu.Lock()
+	defer h.sshKeyMu.Unlock()
 	h.pubKey = pubkey
+}
+
+// TESTING ONLY: ResetSSHKey clears the cached signer and public key
+func (h *Hub) ResetSSHKey() {
+	h.sshKeyMu.Lock()
+	defer h.sshKeyMu.Unlock()
+	h.signer = nil
+	h.pubKey = ""
 }
 
 func (h *Hub) SetCollectionAuthSettings() error {

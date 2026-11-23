@@ -97,12 +97,12 @@ export const formatDay = (timestamp: string) => {
 }
 
 export const updateFavicon = (() => {
-	let prevDownCount = 0
-	return (downCount = 0) => {
-		if (downCount === prevDownCount) {
+	let prevAlertCount = 0
+	return (alertCount = 0) => {
+		if (alertCount === prevAlertCount) {
 			return
 		}
-		prevDownCount = downCount
+		prevAlertCount = alertCount
 		const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 70">
   <defs>
@@ -112,10 +112,10 @@ export const updateFavicon = (() => {
     </linearGradient>
   </defs>
   <path fill="url(#gradient)" d="M35 70H0V0h35q4.4 0 8.2 1.7a21.4 21.4 0 0 1 6.6 4.5q2.9 2.8 4.5 6.6Q56 16.7 56 21a15.4 15.4 0 0 1-.3 3.2 17.6 17.6 0 0 1-.2.8 19.4 19.4 0 0 1-1.5 4 17 17 0 0 1-2.4 3.4 13.5 13.5 0 0 1-2.6 2.3 12.5 12.5 0 0 1-.4.3q1.7 1 3 2.5Q53 39.1 54 41a18.3 18.3 0 0 1 1.5 4 17.4 17.4 0 0 1 .5 3 15.3 15.3 0 0 1 0 1q0 4.4-1.7 8.2a21.4 21.4 0 0 1-4.5 6.6q-2.8 2.9-6.6 4.6Q39.4 70 35 70ZM14 14v14h21a7 7 0 0 0 2.3-.3 6.6 6.6 0 0 0 .4-.2Q39 27 40 26a6.9 6.9 0 0 0 1.5-2.2q.5-1.3.5-2.8a7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 17 40 16a7 7 0 0 0-2.3-1.4 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Zm0 28v14h21a7 7 0 0 0 2.3-.4 6.6 6.6 0 0 0 .4-.1Q39 54.9 40 54a7 7 0 0 0 1.5-2.2 6.9 6.9 0 0 0 .5-2.6 7.9 7.9 0 0 0 0-.2 7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 45 40 44a7 7 0 0 0-2.3-1.5 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Z"/>
-  ${downCount > 0 &&
+  ${alertCount > 0 &&
 			`
 		<circle cx="40" cy="50" r="22" fill="#f00"/>
-  	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${downCount}</text>
+  	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${alertCount}</text>
 	`
 			}
 </svg>
@@ -130,7 +130,7 @@ export const chartTimeData: ChartTimeData = {
 	"1m": {
 		type: "1m",
 		expectedInterval: 2000, // allow a bit of latency for one second updates (#1247)
-		label: () => t`1 minute`,
+		label: () => formatTimeUnit(1, "minute"),
 		format: (timestamp: string) => hourWithSeconds(timestamp),
 		ticks: 3,
 		getOffset: (endTime: Date) => timeMinute.offset(endTime, -1),
@@ -139,7 +139,7 @@ export const chartTimeData: ChartTimeData = {
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
-		label: () => t`1 hour`,
+		label: () => formatTimeUnit(1, "hour"),
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
@@ -147,7 +147,7 @@ export const chartTimeData: ChartTimeData = {
 	"12h": {
 		type: "10m",
 		expectedInterval: 60_000 * 10,
-		label: () => t`12 hours`,
+		label: () => formatTimeUnit(12, "hour"),
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
@@ -155,14 +155,14 @@ export const chartTimeData: ChartTimeData = {
 	"24h": {
 		type: "20m",
 		expectedInterval: 60_000 * 20,
-		label: () => t`24 hours`,
+		label: () => formatTimeUnit(24, "hour"),
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	"1w": {
 		type: "120m",
 		expectedInterval: 60_000 * 120,
-		label: () => t`1 week`,
+		label: () => formatTimeUnit(1, "week"),
 		ticks: 7,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
@@ -170,7 +170,7 @@ export const chartTimeData: ChartTimeData = {
 	"30d": {
 		type: "480m",
 		expectedInterval: 60_000 * 480,
-		label: () => t`30 days`,
+		label: () => formatTimeUnit(30, "day"),
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
@@ -190,6 +190,16 @@ function numberLocale() {
 /** Format number using the app's selected language (e.g. decimal and grouping separators) */
 export function formatNumber(num: number) {
 	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
+}
+
+/** Format an amount of a time unit in the app's selected language (e.g. "7 days", "7 Tage") */
+export function formatTimeUnit(num: number, unit: "minute" | "hour" | "day" | "week" | "month" | "year") {
+	return new Intl.NumberFormat(numberLocale(), {
+		style: "unit",
+		unit,
+		unitDisplay: "long",
+		numberingSystem: "latn",
+	}).format(num)
 }
 
 const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()

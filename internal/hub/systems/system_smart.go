@@ -125,6 +125,9 @@ func (sys *System) upsertSmartDeviceRecord(app core.App, collection *core.Collec
 		}
 		record = core.NewRecord(collection)
 		record.Set("id", recordID)
+	} else if record.GetString("system") != sys.Id {
+		// ID collision with another system's device: never take it over.
+		return nil
 	}
 
 	name := device.DiskName

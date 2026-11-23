@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -1745,5 +1746,41 @@ func TestUpdateEndpoint(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		scenario.Test(t)
+	}
+}
+
+func TestGetInfoConcurrentWithGetSSHKey(t *testing.T) {
+	hub, handler := firstUserTestMux(t)
+	t.Cleanup(hub.Cleanup)
+
+	user, err := beszelTests.CreateUserWithRole(hub, "user@example.com", "password123", "user")
+	require.NoError(t, err)
+	token, err := user.NewAuthToken()
+	require.NoError(t, err)
+
+	dir := t.TempDir()
+	codes := make([]int, 8)
+	errs := make([]error, 8)
+	var wg sync.WaitGroup
+	for i := 0; i < 8; i++ {
+		wg.Add(2)
+		go func(i int) {
+			defer wg.Done()
+			hub.ResetSSHKey()
+			_, errs[i] = hub.GetSSHKey(dir)
+		}(i)
+		go func(i int) {
+			defer wg.Done()
+			req := httptest.NewRequest(http.MethodGet, "/api/beszel/info", nil)
+			req.Header.Set("Authorization", token)
+			recorder := httptest.NewRecorder()
+			handler.ServeHTTP(recorder, req)
+			codes[i] = recorder.Code
+		}(i)
+	}
+	wg.Wait()
+	for i := range codes {
+		require.NoError(t, errs[i])
+		require.Equal(t, http.StatusOK, codes[i])
 	}
 }

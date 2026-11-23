@@ -138,6 +138,9 @@ func (sys *System) upsertZfsPoolRecord(app core.App, collection *core.Collection
 		}
 		record = core.NewRecord(collection)
 		record.Set("id", recordID)
+	} else if record.GetString("system") != sys.Id {
+		// ID collision with another system's pool: never take it over.
+		return nil
 	}
 
 	record.Set("system", sys.Id)
@@ -191,6 +194,9 @@ func (sys *System) syncZfsPoolHealth(app core.App, pools map[string]*system.ZfsP
 			if err := app.SaveNoValidate(record); err != nil {
 				return fmt.Errorf("creating ZFS pool summary %q: %w", name, err)
 			}
+			continue
+		}
+		if record.GetString("system") != sys.Id {
 			continue
 		}
 		if record.GetString("health") == pool.Health && record.GetBool("raw") == pool.Raw && record.GetString("display_name") == pool.DisplayName {

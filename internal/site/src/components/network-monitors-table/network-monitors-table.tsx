@@ -55,6 +55,7 @@ import {
 	EyeIcon,
 	GlobeIcon,
 	LandmarkIcon,
+	Layers2Icon,
 	LoaderCircleIcon,
 	ServerIcon,
 	Settings2Icon,
@@ -707,7 +708,8 @@ function NetworkMonitorSheetContent({
 	const hasMonitorStats = comparing
 		? monitorStats.some((record) => record.stats != null)
 		: monitorStats.some((record) => record.stats?.[monitor.id] != null)
-	const monitorLabel = getMonitorTarget(monitor)
+	// The IP version is shown in the description row, so leave it out of the title.
+	const monitorLabel = getMonitorTarget({ ...monitor, ipVersion: 0 })
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -722,6 +724,13 @@ function NetworkMonitorSheetContent({
 						<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 						<ArrowLeftRightIcon className="size-3.5 text-muted-foreground -me-0.5" />
 						{getMonitorProtocolLabel(monitor).toUpperCase()}
+						{!!monitor.ipVersion && (
+							<>
+								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+								<Layers2Icon className="size-3.5 text-muted-foreground" />
+								<span>IPv{monitor.ipVersion}</span>
+							</>
+						)}
 						{monitor.protocol === "tcp" && monitor.port > 0 && (
 							<>
 								<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
