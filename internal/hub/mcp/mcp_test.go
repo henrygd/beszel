@@ -1135,6 +1135,41 @@ func TestMcpListAlertEvents(t *testing.T) {
 	require.Len(t, data["events"].([]any), 2)
 }
 
+// For system alerts the history value is the configured threshold (copied
+// from the alert record), so the output schema must say so; otherwise a model
+// reads an 80% CPU threshold as the measured CPU usage.
+func TestMcpListAlertEventsValueSchemaDescribesThreshold(t *testing.T) {
+	_, user, _, server, _ := setupHub(t)
+	session := mcpClient(t, server.URL, user.Token)
+	listResult, err := session.ListTools(context.Background(), nil)
+	require.NoError(t, err)
+	var outputSchema any
+	for _, tool := range listResult.Tools {
+		if tool.Name == "list_alert_events" {
+			outputSchema = tool.OutputSchema
+		}
+	}
+	require.NotNil(t, outputSchema)
+	raw, err := json.Marshal(outputSchema)
+	require.NoError(t, err)
+	var schema struct {
+		Properties struct {
+			Events struct {
+				Items struct {
+					Properties map[string]struct {
+						Description string `json:"description"`
+					} `json:"properties"`
+				} `json:"items"`
+			} `json:"events"`
+		} `json:"properties"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &schema))
+	value, ok := schema.Properties.Events.Items.Properties["value"]
+	require.True(t, ok, "events[].value should be in the output schema")
+	require.Contains(t, value.Description, "threshold")
+	require.Contains(t, value.Description, "not the measured value")
+}
+
 // getSystemIdByName returns a system's id by exact name.
 func getSystemIdByName(t *testing.T, hub *beszelTests.TestHub, name string) string {
 	t.Helper()
