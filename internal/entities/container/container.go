@@ -184,6 +184,7 @@ var DockerHealthStrings = map[string]DockerHealth{
 
 // Docker container stats
 type Stats struct {
+	Max         *Peaks    `json:"mx,omitempty" cbor:"-"`
 	Name        string    `json:"n" cbor:"0,keyasint"`
 	Cpu         float64   `json:"c" cbor:"1,keyasint"`
 	Mem         float64   `json:"m" cbor:"2,keyasint"`

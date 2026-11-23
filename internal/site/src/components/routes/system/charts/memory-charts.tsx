@@ -50,6 +50,7 @@ export function MemoryChart({
 			grid={grid}
 			title={t`Memory Usage`}
 			description={t`Precise utilization at the recorded time`}
+			maxSelectable={false}
 			cornerEl={maxValSelect}
 		>
 			<AreaChartDefault
@@ -67,24 +68,24 @@ export function MemoryChart({
 							showMax ? (stats?.memm ?? gbToBytes(stats?.mm)) : (stats?.mem?.[1] ?? gbToBytes(stats?.mu)),
 						color: 2,
 						opacity: 0.4,
-						stackId: "1",
+						stackId: showMax ? undefined : "1",
 						order: 3,
 					},
 					{
 						label: "ZFS ARC",
 						// undefined when zero to keep ZFS ARC out of the tooltip on systems without ZFS
-						dataKey: ({ stats }) => (showMax ? null : (stats?.mem?.[3] ?? gbToBytes(stats?.mz)) || undefined),
+						dataKey: ({ stats }) => (stats?.mem?.[3] ?? gbToBytes(stats?.mz)) || undefined,
 						color: "hsla(175 60% 45% / 0.8)",
 						opacity: 0.5,
-						stackId: "1",
+						stackId: showMax ? undefined : "1",
 						order: 2,
 					},
 					{
 						label: t`Cache / Buffers`,
-						dataKey: ({ stats }) => (showMax ? null : (stats?.mem?.[2] ?? gbToBytes(stats?.mb))),
+						dataKey: ({ stats }) => stats?.mem?.[2] ?? gbToBytes(stats?.mb),
 						color: "hsla(160 60% 45% / 0.5)",
 						opacity: 0.4,
-						stackId: "1",
+						stackId: showMax ? undefined : "1",
 						order: 1,
 					},
 				]}
