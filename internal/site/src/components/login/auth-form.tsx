@@ -16,7 +16,6 @@ import { $router, Link, basePath, prependBasePath } from "../router"
 import { toast } from "../ui/use-toast"
 import { OtpInputForm } from "./otp-forms"
 
-const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.rfcEmail(t`Invalid email address.`))
 const passwordSchema = v.pipe(
 	v.string(),
@@ -26,13 +25,11 @@ const passwordSchema = v.pipe(
 )
 
 const LoginSchema = v.looseObject({
-	website: honeypot,
 	email: emailSchema,
 	password: passwordSchema,
 })
 
 const RegisterSchema = v.looseObject({
-	website: honeypot,
 	email: emailSchema,
 	password: passwordSchema,
 	passwordConfirm: passwordSchema,
@@ -287,23 +284,6 @@ export function UserAuthForm({
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
 							)}
-							<div className="sr-only" aria-hidden="true">
-								{/* honeypot */}
-								<label htmlFor="website">Website</label>
-								<input
-									id="website"
-									type="text"
-									name="website"
-									tabIndex={-1}
-									readOnly
-									autoComplete="off"
-									data-1p-ignore
-									data-lpignore="true"
-									data-bwignore
-									data-form-type="other"
-									data-protonpass-ignore
-								/>
-							</div>
 							<button className={cn(buttonVariants())} disabled={isLoading}>
 								{isLoading ? (
 									<LoaderCircle className="me-2 h-4 w-4 animate-spin" />
