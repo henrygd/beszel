@@ -434,6 +434,34 @@ User=beszel
 Restart=always
 RestartSec=5
 
+# Security/sandboxing settings
+# The hub only needs to write its data directory and open network sockets.
+ReadWritePaths=$HUB_DIR/beszel_data
+# The hub shares the beszel user with the agent, which may be in the docker group.
+# The hub never needs container sockets, so hide them from it.
+InaccessiblePaths=-/run/docker.sock -/var/run/docker.sock -/run/podman
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectProc=invisible
+ProcSubset=pid
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+KeyringMode=private
+SystemCallArchitectures=native
+
 [Install]
 WantedBy=multi-user.target
 EOF

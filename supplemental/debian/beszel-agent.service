@@ -23,6 +23,10 @@ ProtectSystem=strict
 PrivateTmp=yes
 RemoveIPC=yes
 RestrictSUIDSGID=true
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target
