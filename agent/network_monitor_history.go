@@ -30,8 +30,10 @@ const (
 type monitorHistory struct {
 	mu          sync.Mutex
 	sampleCount int64
-	samples     []monitorSample
-	buckets     [monitorMinuteBucketLen]monitorBucket
+	// failStreak counts failed attempts since the last successful one.
+	failStreak int64
+	samples    []monitorSample
+	buckets    [monitorMinuteBucketLen]monitorBucket
 }
 
 func newMonitorHistory() *monitorHistory {
@@ -46,6 +48,7 @@ func (h *monitorHistory) clone() *monitorHistory {
 	cloned.samples = append(cloned.samples, h.samples...)
 	cloned.buckets = h.buckets
 	cloned.sampleCount = h.sampleCount
+	cloned.failStreak = h.failStreak
 	return cloned
 }
 
@@ -67,6 +70,8 @@ func (h *monitorHistory) record(sample monitorSample) monitor.Result {
 type monitorSample struct {
 	responseUs int64 // -1 means loss
 	timestamp  time.Time
+	// failStreak is the number of consecutive failed attempts ending with this one.
+	failStreak int64
 }
 
 // monitorBucket stores one minute of aggregated monitor data.
@@ -189,11 +194,30 @@ func (h *monitorHistory) resultLocked(duration time.Duration, now time.Time) (mo
 	result.MaxResponse1h = hourAgg.maxUs
 	result.PacketLoss1h = hourAgg.lossPercentage()
 	result.SampleCount = h.sampleCount
+	result.FailStreak, result.FailStreakMax = h.failStreaksLocked(duration, now)
 
 	if hourAgg.successCount == 0 {
 		result.MinResponse1h, result.MaxResponse1h = 0, 0
 	}
 	return result, true
+}
+
+// failStreaksLocked returns the current run of failed attempts and the longest run
+// reached within the window, so a run that ends between two hub requests is not missed.
+// Without samples in the window, both describe the latest sample.
+func (h *monitorHistory) failStreaksLocked(duration time.Duration, now time.Time) (current, peak int64) {
+	if len(h.samples) == 0 {
+		return h.failStreak, h.failStreak
+	}
+	current = h.samples[len(h.samples)-1].failStreak
+	peak = current
+	cutoff := now.Add(-duration)
+	for _, sample := range h.samples {
+		if !sample.timestamp.Before(cutoff) {
+			peak = max(peak, sample.failStreak)
+		}
+	}
+	return current, peak
 }
 
 // latestSampleAggregateLocked returns an aggregate containing only the most recent sample, if any.
@@ -245,6 +269,12 @@ func aggregateBucketsSince(buckets []monitorBucket, cutoff, now time.Time) monit
 // addSampleLocked stores a fresh sample in both raw and per-minute retention buffers.
 func (h *monitorHistory) addSampleLocked(sample monitorSample) {
 	h.sampleCount++
+	if sample.responseUs < 0 {
+		h.failStreak++
+	} else {
+		h.failStreak = 0
+	}
+	sample.failStreak = h.failStreak
 	cutoff := sample.timestamp.Add(-monitorRawRetention)
 	start := 0
 	for i := range h.samples {

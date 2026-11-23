@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon } from "lucide-react"
+import { ContainerIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon, ServerCrashIcon, ServerIcon, ShieldCheckIcon, UnplugIcon } from "lucide-react"
 import { computed } from "nanostores"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
@@ -72,6 +72,16 @@ export const alertInfo: Record<string, AlertInfo> = {
     max: 99.9,
     step: 0.1,
     start: 5,
+  },
+  NetworkMonitorDown: {
+    name: () => t`Network Monitor Down`,
+    unit: "",
+    icon: UnplugIcon,
+    desc: () => t`Triggers when checks fail several times in a row`,
+    noDuration: true,
+    min: 1,
+    max: 20,
+    start: 3,
   },
   NetworkMonitorCert: {
     name: () => t`Certificate Expiration`,

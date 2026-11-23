@@ -363,6 +363,14 @@ export function AlertContent({
 												<Plural value={value} one="# day" other="# days" />
 											</strong>
 										</Trans>
+									) : alertKey === "NetworkMonitorDown" ? (
+										<Trans>
+											After{" "}
+											<strong className="text-foreground">
+												<Plural value={value} one="# failed check" other="# failed checks" />
+											</strong>{" "}
+											in a row
+										</Trans>
 									) : alertData.invert ? (
 										<Trans>
 											Average drops below{" "}
@@ -399,8 +407,8 @@ export function AlertContent({
 											if (!Number.isNaN(val)) {
 												// keep values on the step grid so the unit can be inferred on reload
 												if (unit) val = roundToStep(val, inputStep)
-												// certificate thresholds are whole days
-												else if (alertKey === "NetworkMonitorCert") val = Math.round(val)
+												// certificate thresholds are whole days, down thresholds whole checks
+												else if (alertKey === "NetworkMonitorCert" || alertKey === "NetworkMonitorDown") val = Math.round(val)
 												if (valueMax != null) val = Math.min(val, valueMax)
 												if (inputMin != null) val = Math.max(val, inputMin)
 												setValue(val)

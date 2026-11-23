@@ -18,6 +18,9 @@ import (
 const (
 	alertNameNetworkMonitorLoss = "NetworkMonitorLoss"
 	alertNameNetworkMonitorCert = "NetworkMonitorCert"
+	alertNameNetworkMonitorDown = "NetworkMonitorDown"
+	// maxDownAlertFailures is the largest number of consecutive failures for down alerts.
+	maxDownAlertFailures = 20
 	// maxCertAlertDays is the largest certificate expiry threshold in days.
 	maxCertAlertDays = 365
 )
@@ -39,8 +42,11 @@ type monitorObservation struct {
 
 // isNetworkMonitorAlert reports whether an alert tracks incidents per network monitor.
 func isNetworkMonitorAlert(name string) bool {
-	return name == alertNameNetworkMonitorLoss || name == alertNameNetworkMonitorCert
+	return name == alertNameNetworkMonitorLoss || name == alertNameNetworkMonitorCert || name == alertNameNetworkMonitorDown
 }
+
+// networkMonitorAlertNames lists the alerts that track incidents per network monitor.
+var networkMonitorAlertNames = []any{alertNameNetworkMonitorLoss, alertNameNetworkMonitorCert, alertNameNetworkMonitorDown}
 
 // networkMonitorThresholdError describes why a threshold is invalid, or returns "" if it is valid.
 func networkMonitorThresholdError(name string, value float64) string {
@@ -52,6 +58,10 @@ func networkMonitorThresholdError(name string, value float64) string {
 	case alertNameNetworkMonitorCert:
 		if math.IsNaN(value) || value < 1 || value > maxCertAlertDays || value != math.Trunc(value) {
 			return fmt.Sprintf("Certificate expiry threshold must be a whole number of days from 1 to %d", maxCertAlertDays)
+		}
+	case alertNameNetworkMonitorDown:
+		if math.IsNaN(value) || value < 1 || value > maxDownAlertFailures || value != math.Trunc(value) {
+			return fmt.Sprintf("Consecutive failures must be a whole number from 1 to %d", maxDownAlertFailures)
 		}
 	}
 	return ""
@@ -156,7 +166,13 @@ func networkMonitorTransitionPending(alerts []CachedAlertData, monitors map[stri
 				continue
 			}
 			_, active := alert.MonitorStates[id]
-			if (result.PacketLoss1h > alert.Value) != active {
+			var triggered bool
+			if alert.Name == alertNameNetworkMonitorDown {
+				triggered = monitorDownTriggered(result, alert.Value, active)
+			} else {
+				triggered = result.PacketLoss1h > alert.Value
+			}
+			if triggered != active {
 				return true
 			}
 		}
@@ -169,7 +185,7 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 	err := app.RunInTransaction(func(tx core.App) error {
 		// Read configuration inside the transaction so concurrent threshold changes,
 		// disabling, and evaluations cannot overwrite each other's incident state.
-		alerts, err := tx.FindAllRecords("alerts", dbx.HashExp{"system": systemID, "name": []any{alertNameNetworkMonitorLoss, alertNameNetworkMonitorCert}})
+		alerts, err := tx.FindAllRecords("alerts", dbx.HashExp{"system": systemID, "name": networkMonitorAlertNames})
 		if err != nil || len(alerts) == 0 {
 			return err
 		}
@@ -216,17 +232,20 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 			if system.GetString("status") == "up" {
 				name, threshold := alert.GetString("name"), alert.GetFloat("value")
 				for _, m := range monitors {
+					historyID, active := states[m.Id]
 					var obs monitorObservation
 					var ok bool
-					if name == alertNameNetworkMonitorCert {
+					switch name {
+					case alertNameNetworkMonitorCert:
 						obs, ok = observeMonitorCert(m, threshold, now)
-					} else {
+					case alertNameNetworkMonitorDown:
+						obs, ok = observeMonitorDown(results[m.Id], m, threshold, active, now)
+					default:
 						obs, ok = observeMonitorLoss(results[m.Id], m, threshold, now)
 					}
 					if !ok {
 						continue
 					}
-					historyID, active := states[m.Id]
 					if obs.triggered == active {
 						continue
 					}
@@ -294,6 +313,24 @@ func observeMonitorLoss(result monitor.Result, m *core.Record, threshold float64
 	return monitorObservation{triggered: result.PacketLoss1h > threshold, value: result.PacketLoss1h}, true
 }
 
+// observeMonitorDown compares a fresh result's consecutive failures with the threshold.
+func observeMonitorDown(result monitor.Result, m *core.Record, threshold float64, active bool, now time.Time) (monitorObservation, bool) {
+	if !monitorResultReady(result, m.GetInt("interval"), now) {
+		return monitorObservation{}, false
+	}
+	return monitorObservation{triggered: monitorDownTriggered(result, threshold, active), value: float64(result.FailStreakMax)}, true
+}
+
+// monitorDownTriggered reports whether a monitor is down. A monitor goes down once a run
+// of failures in the window reaches the threshold, even if a later attempt succeeded, and
+// stays down until an attempt succeeds, like retries in Uptime Kuma.
+func monitorDownTriggered(result monitor.Result, threshold float64, active bool) bool {
+	if active {
+		return result.FailStreak > 0
+	}
+	return float64(result.FailStreakMax) >= threshold
+}
+
 // observeMonitorCert compares the stored certificate expiry with a threshold in days.
 // Monitors without certificate info (non-HTTPS or never checked) are skipped.
 func observeMonitorCert(m *core.Record, threshold float64, now time.Time) (monitorObservation, bool) {
@@ -333,6 +370,14 @@ func networkMonitorAlertMessage(name string, obs monitorObservation, label, syst
 			return fmt.Sprintf("Certificate expiry recovered on %s: %s", systemName, label),
 				fmt.Sprintf("%s on %s: certificate expires in %s (%s), which is beyond the %d-day threshold.", label, systemName, pluralDays(days), date, int(threshold))
 		}
+	}
+	if name == alertNameNetworkMonitorDown {
+		if obs.triggered {
+			return fmt.Sprintf("Network monitor down on %s: %s", systemName, label),
+				fmt.Sprintf("%s on %s: %d consecutive checks failed, which reaches the threshold of %d.", label, systemName, int(obs.value), int(threshold))
+		}
+		return fmt.Sprintf("Network monitor up on %s: %s", systemName, label),
+			fmt.Sprintf("%s on %s: the latest check succeeded.", label, systemName)
 	}
 	state, comparison := "loss", "exceeds"
 	if !obs.triggered {

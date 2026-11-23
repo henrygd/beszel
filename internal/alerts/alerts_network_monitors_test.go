@@ -508,3 +508,107 @@ func TestNetworkMonitorAlertCacheAfterRollback(t *testing.T) {
 	require.NoError(t, am.HandleNetworkMonitorAlerts(system, results))
 	assert.Equal(t, count+1, hub.TestMailer.TotalSend())
 }
+
+func downResult(streak, peak int64) monitor.Result {
+	result := monitorResult(0)
+	result.FailStreak, result.FailStreakMax = streak, peak
+	return result
+}
+
+func TestNetworkMonitorDownAlertLifecycle(t *testing.T) {
+	hub, system, alert, monitors := networkAlertSetup(t)
+	alert.Set("name", "NetworkMonitorDown")
+	alert.Set("value", 3)
+	require.NoError(t, hub.Save(alert))
+	am := alerts.NewTestAlertManagerWithoutWorker(hub)
+	count := hub.TestMailer.TotalSend()
+	m := monitors[0].Id
+	check := func(result monitor.Result, active bool, sent int) {
+		t.Helper()
+		require.NoError(t, am.HandleNetworkMonitorAlerts(system, map[string]monitor.Result{m: result}))
+		record, err := hub.FindRecordById("alerts", alert.Id)
+		require.NoError(t, err)
+		assert.Equal(t, active, record.GetBool("triggered"))
+		assert.Equal(t, count+sent, hub.TestMailer.TotalSend())
+	}
+	check(downResult(2, 2), false, 0)
+	check(downResult(3, 3), true, 1)
+	message := hub.TestMailer.Messages()[count]
+	assert.Contains(t, message.Subject, "Network monitor down")
+	assert.Contains(t, message.Text, "gateway.example.com")
+	assert.Contains(t, message.Text, "3 consecutive checks failed")
+	// Further failures and a shorter failing run keep the incident open.
+	check(downResult(5, 5), true, 1)
+	check(downResult(1, 5), true, 1)
+	// The first successful check recovers the monitor.
+	check(downResult(0, 5), false, 2)
+	assert.Contains(t, hub.TestMailer.Messages()[count+1].Subject, "Network monitor up")
+	// A run that reached the threshold between two requests is still reported,
+	// then recovers on the next request.
+	check(downResult(0, 4), true, 3)
+	check(downResult(0, 0), false, 4)
+	histories, err := hub.FindAllRecords("alerts_history", dbx.HashExp{"alert_id": alert.Id})
+	require.NoError(t, err)
+	require.Len(t, histories, 2)
+	for _, history := range histories {
+		assert.False(t, history.GetDateTime("resolved").IsZero())
+	}
+}
+
+func TestNetworkMonitorDownAlertAPI(t *testing.T) {
+	for _, tc := range []struct {
+		name   string
+		value  float64
+		status int
+	}{
+		{name: "single failure", value: 1, status: 200},
+		{name: "maximum threshold", value: 20, status: 200},
+		{name: "zero threshold", value: 0, status: 400},
+		{name: "fractional threshold", value: 2.5, status: 400},
+		{name: "too large threshold", value: 21, status: 400},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			hub, user := beszelTests.GetHubWithUser(t)
+			defer hub.Cleanup()
+			systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
+			require.NoError(t, err)
+			token, err := user.NewAuthToken()
+			require.NoError(t, err)
+			for _, direct := range []bool{false, true} {
+				body := map[string]any{"name": "NetworkMonitorDown", "value": tc.value, "min": 10, "systems": []string{systems[0].Id}, "overwrite": true}
+				url := "/api/beszel/user-alerts"
+				if direct {
+					url = "/api/collections/alerts/records"
+					body["system"], body["user"] = systems[0].Id, user.Id
+					existing, err := hub.FindAllRecords("alerts")
+					require.NoError(t, err)
+					for _, record := range existing {
+						require.NoError(t, hub.Delete(record))
+					}
+				}
+				content := `"status":400`
+				if tc.status == 200 {
+					content = `"NetworkMonitorDown"`
+					if !direct {
+						content = `"success":true`
+					}
+				}
+				scenario := beszelTests.ApiScenario{
+					Name: tc.name, Method: "POST", URL: url, Body: jsonReader(body),
+					Headers: map[string]string{"Authorization": token}, ExpectedStatus: tc.status, ExpectedContent: []string{content},
+					TestAppFactory: func(testing.TB) *pbTests.TestApp { return hub.TestApp },
+				}
+				scenario.Test(t)
+				records, err := hub.FindAllRecords("alerts")
+				require.NoError(t, err)
+				if tc.status != 200 {
+					assert.Empty(t, records)
+					continue
+				}
+				require.Len(t, records, 1)
+				assert.Equal(t, tc.value, records[0].GetFloat("value"))
+				assert.Zero(t, records[0].GetInt("min"))
+			}
+		})
+	}
+}

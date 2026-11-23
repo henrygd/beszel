@@ -52,7 +52,7 @@ func TestCollectionRulesDefault(t *testing.T) {
 	assert.Equal(t, isUserMatchesUser+` && @request.body.user:changed = false && @request.body.system:changed = false && system.users.id ?= @request.auth.id`, *alertsCollection.UpdateRule)
 	assert.Equal(t, isUserMatchesUser, *alertsCollection.DeleteRule)
 	alertNames := alertsCollection.Fields.GetByName("name").(*core.SelectField).Values
-	for _, name := range []string{"CPUIOWait", "CPUSteal", "NetworkMonitorCert"} {
+	for _, name := range []string{"CPUIOWait", "CPUSteal", "NetworkMonitorCert", "NetworkMonitorDown"} {
 		assert.Contains(t, alertNames, name)
 	}
 	for _, name := range []string{"CPUSystem", "CPUUser", "CPUIdle", "CPUOther"} {

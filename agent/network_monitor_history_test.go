@@ -152,3 +152,39 @@ func TestMonitorHistorySampleCount(t *testing.T) {
 	require.True(t, ok)
 	assert.EqualValues(t, 4, result.SampleCount)
 }
+
+func TestMonitorHistoryFailStreaks(t *testing.T) {
+	history := newMonitorHistory()
+	now := time.Now()
+	record := func(offset time.Duration, responseUs int64) {
+		history.record(monitorSample{responseUs: responseUs, timestamp: now.Add(offset)})
+	}
+	// A run of four failures starts before the window and ends inside it.
+	record(-80*time.Second, -1)
+	record(-70*time.Second, -1)
+	record(-50*time.Second, -1)
+	record(-40*time.Second, -1)
+	record(-30*time.Second, 10)
+	record(-20*time.Second, -1)
+	result, ok := history.result(time.Minute, now)
+	require.True(t, ok)
+	assert.EqualValues(t, 1, result.FailStreak)
+	assert.EqualValues(t, 4, result.FailStreakMax, "a run that ended before the request still counts")
+
+	// Without samples in the window, both describe the latest sample.
+	fallback, ok := history.result(time.Second, now)
+	require.True(t, ok)
+	assert.EqualValues(t, 1, fallback.FailStreak)
+	assert.EqualValues(t, 1, fallback.FailStreakMax)
+
+	// Clones used for config updates keep counting the same run.
+	cloned := history.clone()
+	cloned.record(monitorSample{responseUs: -1, timestamp: now.Add(-10 * time.Second)})
+	result, _ = cloned.result(time.Minute, now)
+	assert.EqualValues(t, 2, result.FailStreak)
+
+	record(-10*time.Second, 10)
+	result, _ = history.result(time.Minute, now)
+	assert.Zero(t, result.FailStreak)
+	assert.EqualValues(t, 4, result.FailStreakMax)
+}

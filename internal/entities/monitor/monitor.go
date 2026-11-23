@@ -125,6 +125,11 @@ type Result struct {
 	ResponseSum  int64 `cbor:"12,keyasint"`
 	// Cert is set for HTTPS targets when a certificate check has new info the hub has not stored yet.
 	Cert *CertInfo `cbor:"13,keyasint,omitempty"`
+	// FailStreak is the number of consecutive failed attempts up to the latest one.
+	FailStreak int64 `cbor:"14,keyasint,omitempty"`
+	// FailStreakMax is the longest run of consecutive failed attempts reached in the
+	// current response window (or latest-sample fallback). Older agents send neither.
+	FailStreakMax int64 `cbor:"15,keyasint,omitempty"`
 }
 
 // Stats holds response times in microseconds and packet loss percentage (0-100).
