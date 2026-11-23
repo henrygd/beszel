@@ -173,7 +173,7 @@ export function normalizeHttpTarget(target: string, port = 0) {
 
 	// avoid converting "http://localhost:8090" to "http://localhost:8090/" - keep the original formatting if the URL is just an origin
 	if (hasOriginOnlyTarget && parsedUrl.pathname === "/" && !parsedUrl.search && !parsedUrl.hash) {
-		return parsedUrl.origin
+		return parsedUrl.toString().slice(0, -1)
 	}
 
 	return parsedUrl.toString()

@@ -17,6 +17,9 @@ const { normalizeHttpTarget } = await import("../src/components/network-monitors
 
 describe("HTTP monitor target normalization", () => {
 	test.each([
+		["user:pass@example.com", 0, "https://user:pass@example.com"],
+		["user:pass@example.com", 8080, "https://user:pass@example.com:8080"],
+		["https://user:pass@example.com", 0, "https://user:pass@example.com"],
 		["example.com/health", 8080, "https://example.com:8080/health"],
 		["example.com?ready=1", 8080, "https://example.com:8080/?ready=1"],
 		["example.com/#probe", 8080, "https://example.com:8080/#probe"],
