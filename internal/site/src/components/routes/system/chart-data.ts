@@ -32,10 +32,8 @@ export function appendData<T extends { created: string | number | null }>(
 	maxLen?: number
 ): T[] {
 	if (!newRecords.length) return prev
-	// Pre-trim prev so the single slice() below is the only copy we make
-	const trimmed = maxLen && prev.length >= maxLen ? prev.slice(-(maxLen - newRecords.length)) : prev
-	const result = trimmed.slice()
-	let prevTime = (trimmed.at(-1)?.created as number) ?? 0
+	const result = prev.slice()
+	let prevTime = (prev.at(-1)?.created as number) ?? 0
 	for (const record of newRecords) {
 		if (record.created !== null) {
 			if (typeof record.created === "string") {
@@ -47,6 +45,9 @@ export function appendData<T extends { created: string | number | null }>(
 			prevTime = record.created as number
 		}
 		result.push(record)
+	}
+	if (maxLen && result.length > maxLen) {
+		result.splice(0, result.length - maxLen)
 	}
 	return result
 }
