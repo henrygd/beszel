@@ -95,19 +95,42 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 	const [isLoading, setIsLoading] = useState(true)
 	const pendingMonitorEvents = useRef(new Map<string, RecordSubscription<NetworkMonitorRecord>>())
 	const monitorBatchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+	const snapshotEvents = useRef<Map<string, RecordSubscription<NetworkMonitorRecord>> | null>(null)
 
-	// initial load
+	// Load initially and refetch changes missed while the realtime connection was down.
 	useEffect(() => {
 		let cancelled = false
+		let requestId = 0
+		let unsubscribe: (() => void) | undefined
 		setIsLoading(true)
 		setMonitors([])
-		fetchMonitors(systemId).then((monitors) => {
-			if (cancelled) return
-			setMonitors(monitors)
+
+		async function loadMonitors() {
+			const currentRequest = ++requestId
+			snapshotEvents.current = new Map()
+			const monitors = await fetchMonitors(systemId)
+			if (cancelled || currentRequest !== requestId) return
+			const events = snapshotEvents.current
+			snapshotEvents.current = null
+			if (monitors) setMonitors(applyMonitorEvents(monitors, events?.values() ?? [], systemId))
 			setIsLoading(false)
-		})
+		}
+
+		loadMonitors()
+		pb.realtime
+			.subscribe("PB_CONNECT", () => {
+				if (!cancelled) loadMonitors()
+			})
+			.then((unsub) => {
+				if (cancelled) unsub()
+				else unsubscribe = unsub
+			})
+			.catch((error) => console.error("Failed to subscribe to monitor connection updates", error))
+
 		return () => {
 			cancelled = true
+			snapshotEvents.current = null
+			unsubscribe?.()
 		}
 	}, [systemId])
 
@@ -139,6 +162,7 @@ export function useNetworkMonitors(props: UseNetworkMonitorsProps) {
 					"*",
 					(event) => {
 						if (cancelled) return
+						snapshotEvents.current?.set(event.record.id, event)
 						pendingMonitorEvents.current.set(event.record.id, event)
 						if (!monitorBatchTimeout.current) {
 							monitorBatchTimeout.current = setTimeout(flushPendingMonitorEvents, 50)
@@ -364,6 +388,7 @@ export function useCompareMonitors(system: string, protocol: string, enabled = t
 async function fetchMonitors(system?: string) {
 	try {
 		return await pb.collection<NetworkMonitorRecord>("network_monitors").getFullList({
+			requestKey: null,
 			fields: NETWORK_MONITOR_FIELDS,
 			filter: system ? pb.filter("system={:system}", { system }) : undefined,
 		})
@@ -373,7 +398,7 @@ async function fetchMonitors(system?: string) {
 			description: (error as Error)?.message,
 			variant: "destructive",
 		})
-		return []
+		return null
 	}
 }
 
