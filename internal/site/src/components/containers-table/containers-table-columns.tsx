@@ -28,12 +28,14 @@ const unitSeconds = [
 	["d", 86400],
 	["w", 604800],
 	["mo", 2592000],
+	["y", 31536000],
 ] as const
 // Convert docker status string to number of seconds ("Up X minutes", "Up X hours", etc.)
 function getStatusValue(status: string): number {
-	const [_, num, unit] = status.split(" ")
+	const [_, num, unit = ""] = status.split(" ")
 	// Docker uses "a" or "an" instead of "1" for singular units (e.g., "Up a minute", "Up an hour")
 	const numValue = num === "a" || num === "an" ? 1 : Number(num)
+	if (!Number.isFinite(numValue)) return 0
 	for (const [unitName, value] of unitSeconds) {
 		if (unit.startsWith(unitName)) {
 			return numValue * value
