@@ -7,7 +7,7 @@ import { DirectionProvider } from "@radix-ui/react-direction"
 import { lazy, memo, Suspense, useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import Navbar from "@/components/navbar.tsx"
-import { $router } from "@/components/router.tsx"
+import { $router, openDefaultPage } from "@/components/router.tsx"
 import Settings from "@/components/routes/settings/layout.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "@/components/ui/toaster.tsx"
@@ -51,8 +51,10 @@ const App = memo(() => {
 				pb.send<UpdateInfo>("/api/beszel/update", {}).then($newVersion.set)
 			}
 		})
-		// get user settings
-		updateUserSettings()
+		// get user settings, then open the user's default page if the app started on the systems page.
+		// App mounts on initial load and after login, so later visits to the systems page aren't redirected.
+		const startPath = $router.get()?.path
+		updateUserSettings().then(() => openDefaultPage($userSettings.get().defaultPage, startPath))
 		// need to get system list before alerts
 		systemsManager.init()
 		systemsManager
