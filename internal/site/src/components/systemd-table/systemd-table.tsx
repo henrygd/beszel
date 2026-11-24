@@ -81,8 +81,8 @@ export default function SystemdTable({ systemId }: { systemId?: string }) {
 				})
 				.then(
 					({ items }) =>
-						items.length &&
 						setData((curItems) => {
+							if (!items.length) return []
 							const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
 							const systemdNames = new Set()
 							const newItems: SystemdRecord[] = []
