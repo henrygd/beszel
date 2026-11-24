@@ -504,6 +504,23 @@ func TestAverageSystemStatsSlice_GPUData(t *testing.T) {
 	assert.Equal(t, 20.0, gpu.Engines["Video"])
 }
 
+func TestAverageSystemStatsSlice_GPUPowerPkg(t *testing.T) {
+	input := []system.Stats{
+		{GPUData: map[string]system.GPUData{
+			"0": {Name: "Intel iGPU", Power: 2.0, PowerPkg: 10.0, Count: 1.0},
+		}},
+		{GPUData: map[string]system.GPUData{
+			"0": {Name: "Intel iGPU", Power: 4.0, PowerPkg: 20.0, Count: 1.0},
+		}},
+	}
+
+	result := records.AverageSystemStatsSlice(input)
+
+	require.NotNil(t, result.GPUData)
+	assert.Equal(t, 3.0, result.GPUData["0"].Power)
+	assert.Equal(t, 15.0, result.GPUData["0"].PowerPkg)
+}
+
 func TestAverageSystemStatsSlice_MultipleGPUs(t *testing.T) {
 	input := []system.Stats{
 		{
