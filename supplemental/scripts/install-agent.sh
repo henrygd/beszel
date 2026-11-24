@@ -298,6 +298,20 @@ warn() {
   echo "Warning: $*" >&2
 }
 
+# Exit 0 when dotted version $1 is strictly newer than $2. Components compare
+# numerically via awk, which keeps this portable to busybox/BSD (no `sort -V`).
+version_gt() {
+  awk -v a="$1" -v b="$2" 'BEGIN {
+    na = split(a, A, ".")
+    nb = split(b, B, ".")
+    for (i = 1; i <= (na > nb ? na : nb); i++) {
+      if (A[i] + 0 > B[i] + 0) exit 0
+      if (A[i] + 0 < B[i] + 0) exit 1
+    }
+    exit 1
+  }'
+}
+
 # Keep IDs within 16 bits, including on older OpenWrt versions whose account
 # helpers start automatic allocation at 65536.
 openwrt_unused_id() {
@@ -929,12 +943,25 @@ fi
 
 # Determine version to install
 if [ "$VERSION" = "latest" ]; then
+  API_RELEASE_URL="https://api.github.com/repos/henrygd/beszel/releases/latest"
   INSTALL_VERSION=$(curl -fsS --connect-timeout 10 --max-time 30 "https://get.beszel.dev/latest-version") || INSTALL_VERSION=""
   if [ -z "$INSTALL_VERSION" ]; then
     # Fallback to GitHub API
-    API_RELEASE_URL="https://api.github.com/repos/henrygd/beszel/releases/latest"
     RELEASE_JSON=$(curl -fsS --connect-timeout 10 --max-time 30 "$API_RELEASE_URL") || fail "Could not fetch the latest release from GitHub."
     INSTALL_VERSION=$(printf '%s\n' "$RELEASE_JSON" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+  else
+    # The version endpoint can serve a stale answer (#1745, #2926). When the
+    # GitHub API is reachable, prefer the newer of the two versions. A failed
+    # or unparsable check must never fail or downgrade the install.
+    RELEASE_JSON=$(curl -fsS --connect-timeout 5 --max-time 15 "$API_RELEASE_URL") || RELEASE_JSON=""
+    GITHUB_VERSION=""
+    if [ -n "$RELEASE_JSON" ]; then
+      GITHUB_VERSION=$(printf '%s\n' "$RELEASE_JSON" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v') || GITHUB_VERSION=""
+    fi
+    if [ -n "$GITHUB_VERSION" ] && version_gt "$GITHUB_VERSION" "$INSTALL_VERSION"; then
+      echo "Version endpoint reported $INSTALL_VERSION; latest GitHub release is $GITHUB_VERSION. Installing $GITHUB_VERSION."
+      INSTALL_VERSION="$GITHUB_VERSION"
+    fi
   fi
   if [ -z "$INSTALL_VERSION" ]; then
     echo "Failed to get latest version"
