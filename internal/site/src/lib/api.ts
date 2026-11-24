@@ -10,6 +10,19 @@ import { chartTimeData, debounce } from "./utils"
 /** PocketBase JS Client */
 export const pb = new PocketBase(basePath)
 
+type Batch = ReturnType<typeof pb.createBatch>
+
+/** Sends one batch request per `size` items, calling `enqueue` to add each item's request */
+export async function sendInBatches<T>(items: T[], enqueue: (batch: Batch, item: T) => void, size = 20) {
+	for (let i = 0; i < items.length; i += size) {
+		const batch = pb.createBatch()
+		for (const item of items.slice(i, i + size)) {
+			enqueue(batch, item)
+		}
+		await batch.send()
+	}
+}
+
 export const isAdmin = () => pb.authStore.record?.role === "admin"
 export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 
