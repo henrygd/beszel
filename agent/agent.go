@@ -43,6 +43,7 @@ type Agent struct {
 	sensorConfig              *SensorConfig                                         // Sensors config
 	tempsReading              atomic.Bool                                           // A temperature read is still running (possibly blocked in the kernel)
 	fansReading               atomic.Bool                                           // A fan read is still running (possibly blocked in the kernel)
+	fanControlReading         atomic.Bool                                           // A Linux PWM read is still running
 	systemInfo                system.Info                                           // Host system info (dynamic)
 	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	detailsDirty              bool                                                  // Whether system details have changed and need to be resent

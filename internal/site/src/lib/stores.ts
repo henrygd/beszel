@@ -98,6 +98,9 @@ export const $monitorFilter = atom("")
 /** Fan-speed chart filter */
 export const $fanFilter = atom("")
 
+/** Fan-control chart filter */
+export const $fanControlFilter = atom("")
+
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
 
