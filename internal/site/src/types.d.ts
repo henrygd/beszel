@@ -43,9 +43,26 @@ export interface WiFi {
 	p?: string
 }
 
+export interface CustomMetricMeta {
+	/** unit, e.g. "watts" or "bytes/s" */
+	u?: string
+	/** # HELP text */
+	h?: string
+	/** display name */
+	l?: string
+	/** title of the chart the series is drawn in; series with the same title share a chart */
+	c?: string
+	/** description of that chart, from the source's chart config */
+	cd?: string
+}
+
 export interface SystemInfo {
 	/** connected Wi-Fi interfaces */
 	wf?: Record<string, WiFi>
+	/** custom metric metadata, keyed like SystemStats.cm */
+	cmm?: Record<string, CustomMetricMeta>
+	/** metadata the hub kept for custom metrics the agent no longer reports, with when each was last reported (Unix seconds) */
+	cmr?: Record<string, CustomMetricMeta & { t: number }>
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -177,6 +194,8 @@ export interface SystemStats {
 	wf?: Record<string, number>
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** custom metric values, in the live view only; stored history is in custom_stats */
+	cm?: Record<string, number>
 }
 
 export interface GPUData {
@@ -301,6 +320,13 @@ export interface ExtraFsStats {
 export interface ContainerStatsRecord extends RecordModel {
 	system: string
 	stats: ContainerStats[]
+	created: string | number
+}
+
+/** custom metric values, keyed like `cm`, stored per record type like container_stats */
+export interface CustomStatsRecord extends RecordModel {
+	system: string
+	stats: Record<string, number>
 	created: string | number
 }
 
@@ -434,6 +460,7 @@ export interface ChartOptions {
 export interface ChartData extends ChartOptions {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
+	customData: CustomStatsRecord[]
 }
 
 export interface AlertInfo {
