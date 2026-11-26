@@ -68,11 +68,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		return null
 	}
 
-	const hasContainers = containerData.length > 0
+	// system info hints let tabs and charts render before stats load, avoiding layout shift
+	const hasContainers = !!system.info.cn || containerData.length > 0
 	const maybeHasSmartData = compareSemVer(chartData.agentVersion, SEMVER_0_15_0) >= 0
 	const hasContainersTable = hasContainers && compareSemVer(chartData.agentVersion, SEMVER_0_14_0) >= 0
 	const hasSystemd = system.info.sv
-	const hasGpu = hasGpuData || hasGpuPowerData
+	const hasGpu = system.info.g !== undefined || hasGpuData || hasGpuPowerData
 	const hasZfs = Object.keys(systemStats.at(-1)?.stats?.z ?? {}).length > 0
 	const hasNetworkMonitors = supportsNetworkMonitors(system)
 	// counts key the table so it refetches the list only after a new check

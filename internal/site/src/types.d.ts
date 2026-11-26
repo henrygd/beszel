@@ -80,8 +80,10 @@ export interface SystemInfo {
 	jl?: boolean
 	/** system is using podman */
 	p?: boolean
-	/** highest gpu utilization */
+	/** highest gpu utilization (present, even if 0, when the system has GPU data) */
 	g?: number
+	/** number of containers */
+	cn?: number
 	/** dashboard display temperature */
 	dt?: number
 	/** operating system */
