@@ -424,6 +424,13 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
 		}
 	}
+	// Mark state explicitly: "above"/"below" alone doesn't say whether the alert
+	// fired or resolved (Battery is inverted). Matches status/systemd/container alerts.
+	if alert.triggered {
+		subject += " \U0001F534" // Red alert emoji
+	} else {
+		subject += " \u2705" // Green checkmark emoji
+	}
 	minutesLabel := "minute"
 	if alert.min > 1 {
 		minutesLabel += "s"
