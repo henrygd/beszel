@@ -17,7 +17,8 @@ errors: No known data errors
 	invalid.  Sufficient replicas exist for the pool to continue functioning in a
 	degraded state.
   scan: scrub in progress since Sun Jun  8 01:00:00 2025
-	10.00% done, 01:30:00 to go, 0.00/s
+	1.20T / 12.0T scanned at 1.10G/s, 1.20T / 12.0T issued at 1.10G/s
+	0B repaired, 10.00% done, 02:43:38 to go
 config:
 
 	NAME        STATE     READ WRITE CKSUM
