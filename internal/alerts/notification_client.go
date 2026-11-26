@@ -140,11 +140,19 @@ var cgnatNetwork = &net.IPNet{
 	Mask: net.CIDRMask(10, 32),
 }
 
+// benchmarkNetwork is 198.18.0.0/15 (RFC 2544), reserved for network
+// benchmarking and not globally reachable, but it can be routed inside a network.
+var benchmarkNetwork = &net.IPNet{
+	IP:   net.IPv4(198, 18, 0, 0),
+	Mask: net.CIDRMask(15, 32),
+}
+
 func isInternalIP(ip net.IP) bool {
 	return ip.IsPrivate() ||
 		ip.IsLoopback() ||
 		ip.IsUnspecified() ||
 		ip.IsLinkLocalUnicast() ||
 		ip.IsMulticast() ||
-		cgnatNetwork.Contains(ip)
+		cgnatNetwork.Contains(ip) ||
+		benchmarkNetwork.Contains(ip)
 }

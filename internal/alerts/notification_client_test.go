@@ -18,14 +18,14 @@ import (
 )
 
 func TestCheckNotificationAddress(t *testing.T) {
-	for _, host := range []string{"127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.0.1", "169.254.169.254", "100.64.0.0", "100.127.255.255", "0.0.0.0", "224.0.0.1", "255.255.255.255", "::1", "::", "fc00::1", "fe80::1", "ff02::1", "::ffff:127.0.0.1", "::ffff:169.254.169.254", "fe80::1%lo", "localhost", "consul"} {
+	for _, host := range []string{"127.0.0.1", "10.0.0.1", "172.16.0.1", "192.168.0.1", "169.254.169.254", "100.64.0.0", "100.127.255.255", "198.18.0.0", "198.19.255.255", "::ffff:198.18.0.2", "0.0.0.0", "224.0.0.1", "255.255.255.255", "::1", "::", "fc00::1", "fe80::1", "ff02::1", "::ffff:127.0.0.1", "::ffff:169.254.169.254", "fe80::1%lo", "localhost", "consul"} {
 		t.Run(host, func(t *testing.T) {
 			if err := checkNotificationAddress(net.JoinHostPort(host, "80")); !errors.Is(err, errInternalDestination) {
 				t.Fatalf("expected blocked address, got %v", err)
 			}
 		})
 	}
-	for _, host := range []string{"8.8.8.8", "100.63.255.255", "100.128.0.0", "2001:4860:4860::8888"} {
+	for _, host := range []string{"8.8.8.8", "100.63.255.255", "100.128.0.0", "198.17.255.255", "198.20.0.0", "2001:4860:4860::8888"} {
 		if err := checkNotificationAddress(net.JoinHostPort(host, "443")); err != nil {
 			t.Errorf("public address %s: %v", host, err)
 		}
