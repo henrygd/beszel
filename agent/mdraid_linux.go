@@ -252,10 +252,10 @@ func isMdraidBlockName(name string) bool {
 	return true
 }
 
-// readMdraidBlockCapacityBytes converts block size metadata into bytes.
+// readMdraidBlockCapacityBytes converts the block size, which sysfs reports in
+// 512-byte sectors regardless of the logical block size, into bytes.
 func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 	sizePath := filepath.Join(root, "block", blockName, "size")
-	lbsPath := filepath.Join(root, "block", blockName, "queue", "logical_block_size")
 
 	sizeStr, ok := utils.ReadStringFileOK(sizePath)
 	if !ok {
@@ -266,12 +266,5 @@ func readMdraidBlockCapacityBytes(blockName, root string) (uint64, bool) {
 		return 0, false
 	}
 
-	logicalBlockSize := uint64(512)
-	if lbsStr, ok := utils.ReadStringFileOK(lbsPath); ok {
-		if parsed, err := strconv.ParseUint(lbsStr, 10, 64); err == nil && parsed > 0 {
-			logicalBlockSize = parsed
-		}
-	}
-
-	return sectors * logicalBlockSize, true
+	return sectors * 512, true
 }
