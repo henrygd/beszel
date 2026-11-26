@@ -139,7 +139,6 @@ func readLifeTime(deviceDir string) (uint8, uint8, bool) {
 
 func readBlockCapacityBytes(blockName string) (uint64, bool) {
 	sizePath := filepath.Join(emmcSysfsRoot, "class", "block", blockName, "size")
-	lbsPath := filepath.Join(emmcSysfsRoot, "class", "block", blockName, "queue", "logical_block_size")
 
 	sizeStr, ok := utils.ReadStringFileOK(sizePath)
 	if !ok {
@@ -150,15 +149,7 @@ func readBlockCapacityBytes(blockName string) (uint64, bool) {
 		return 0, false
 	}
 
-	lbsStr, ok := utils.ReadStringFileOK(lbsPath)
-	logicalBlockSize := uint64(512)
-	if ok {
-		if parsed, err := strconv.ParseUint(lbsStr, 10, 64); err == nil && parsed > 0 {
-			logicalBlockSize = parsed
-		}
-	}
-
-	return sectors * logicalBlockSize, true
+	return sectors * 512, true
 }
 
 func readHexByteFile(path string) (uint8, bool) {
