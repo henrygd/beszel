@@ -69,3 +69,26 @@ func TestEmmcMockSysfsScanAndCollect(t *testing.T) {
 		t.Fatalf("attributes len=%d, want >= 3", len(got.Attributes))
 	}
 }
+
+func TestReadBlockCapacityBytesUsesSectors(t *testing.T) {
+	tmp := t.TempDir()
+	prev := emmcSysfsRoot
+	emmcSysfsRoot = tmp
+	t.Cleanup(func() { emmcSysfsRoot = prev })
+
+	queueDir := filepath.Join(tmp, "class", "block", "mmcblk0", "queue")
+	if err := os.MkdirAll(queueDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(queueDir, "logical_block_size"), []byte("4096\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tmp, "class", "block", "mmcblk0", "size"), []byte("1024\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := readBlockCapacityBytes("mmcblk0")
+	if !ok || got != 1024*512 {
+		t.Fatalf("readBlockCapacityBytes() = (%d, %v), want (%d, true)", got, ok, 1024*512)
+	}
+}
