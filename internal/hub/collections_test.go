@@ -701,6 +701,80 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			},
 		},
 		{
+			Name:   "User 1 cannot create a system by appending user 2 with the users+ modifier",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:               strings.NewReader(fmt.Sprintf(`{"name":"modifier-injected","host":"127.0.0.9","users":["%s"],"users+":["%s"]}`, user1.Id, user2.Id)),
+			ExpectedStatus:     400,
+			ExpectedContent:    []string{"Failed to create record"},
+			NotExpectedContent: []string{`"name":"modifier-injected"`},
+			TestAppFactory:     testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				systemsCount, _ := app.CountRecords("systems")
+				assert.EqualValues(t, 3, systemsCount, "rejected system must not be stored")
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "modifier-injected"})
+				assert.EqualValues(t, 0, count, "modifier-injected system must not exist")
+			},
+		},
+		{
+			Name:   "User 1 cannot create a system with a duplicated other user id",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:               strings.NewReader(fmt.Sprintf(`{"name":"dup-injected","host":"127.0.0.9","users":["%s","%s"]}`, user2.Id, user2.Id)),
+			ExpectedStatus:     400,
+			ExpectedContent:    []string{"Failed to create record"},
+			NotExpectedContent: []string{`"name":"dup-injected"`},
+			TestAppFactory:     testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				systemsCount, _ := app.CountRecords("systems")
+				assert.EqualValues(t, 3, systemsCount, "rejected system must not be stored")
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "dup-injected"})
+				assert.EqualValues(t, 0, count, "dup-injected system must not exist")
+			},
+		},
+		{
+			Name:   "User 1 can create a system with a duplicated own user id",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:            strings.NewReader(fmt.Sprintf(`{"name":"own-system-dup","host":"127.0.0.9","users":["%s","%s"]}`, user1.Id, user1.Id)),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"name":"own-system-dup"`},
+			TestAppFactory:  testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				systemsCount, _ := app.CountRecords("systems")
+				assert.EqualValues(t, 4, systemsCount)
+				system, err := app.FindFirstRecordByFilter("systems", `name = "own-system-dup"`)
+				require.NoError(t, err)
+				assert.ElementsMatch(t, []string{user1.Id}, system.GetStringSlice("users"), "duplicated own id must be deduplicated")
+			},
+		},
+		{
+			Name:   "Readonly user cannot create a system for themselves",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": userReadonlyToken,
+			},
+			Body:               strings.NewReader(fmt.Sprintf(`{"name":"readonly-system","host":"127.0.0.9","users":["%s"]}`, userReadonly.Id)),
+			ExpectedStatus:     400,
+			ExpectedContent:    []string{"Failed to create record"},
+			NotExpectedContent: []string{`"name":"readonly-system"`},
+			TestAppFactory:     testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				systemsCount, _ := app.CountRecords("systems")
+				assert.EqualValues(t, 4, systemsCount, "rejected system must not be stored")
+			},
+		},
+		{
 			Name:   "Admin can create a system shared with other users",
 			Method: http.MethodPost,
 			URL:    "/api/collections/systems/records",
@@ -713,7 +787,7 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
 				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 4, systemsCount)
+				assert.EqualValues(t, 5, systemsCount)
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "admin-shared-system"})
 				assert.EqualValues(t, 1, count)
 			},
@@ -737,7 +811,7 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 				t.Setenv("SHARE_ALL_SYSTEMS", "")
 				hub.SetCollectionAuthSettings()
 				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 5, systemsCount)
+				assert.EqualValues(t, 6, systemsCount)
 			},
 		},
 		{
@@ -760,9 +834,33 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 				t.Setenv("SHARE_ALL_SYSTEMS", "")
 				hub.SetCollectionAuthSettings()
 				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 5, systemsCount, "rejected system must not be stored")
+				assert.EqualValues(t, 6, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "shareall-injected"})
 				assert.EqualValues(t, 0, count, "injected system must not exist")
+			},
+		},
+		{
+			Name:   "User 1 cannot create a system with an empty users array if SHARE_ALL_SYSTEMS is enabled",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:               strings.NewReader(`{"name":"shareall-empty","host":"127.0.0.9","users":[]}`),
+			ExpectedStatus:     400,
+			NotExpectedContent: []string{`"name":"shareall-empty"`},
+			TestAppFactory:     testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				t.Setenv("SHARE_ALL_SYSTEMS", "true")
+				hub.SetCollectionAuthSettings()
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				t.Setenv("SHARE_ALL_SYSTEMS", "")
+				hub.SetCollectionAuthSettings()
+				systemsCount, _ := app.CountRecords("systems")
+				assert.EqualValues(t, 6, systemsCount, "rejected system must not be stored")
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "shareall-empty"})
+				assert.EqualValues(t, 0, count, "empty-users system must not exist")
 			},
 		},
 	}
