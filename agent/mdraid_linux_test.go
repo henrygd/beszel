@@ -212,3 +212,22 @@ func TestMdraidSmartStatus(t *testing.T) {
 		t.Fatalf("mdraidSmartStatus(unknown) = %q, want UNKNOWN", got)
 	}
 }
+
+func TestReadMdraidBlockCapacityBytesUsesSectors(t *testing.T) {
+	tmp := t.TempDir()
+	queueDir := filepath.Join(tmp, "block", "md0", "queue")
+	if err := os.MkdirAll(queueDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(queueDir, "logical_block_size"), []byte("4096\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tmp, "block", "md0", "size"), []byte("2048\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	got, ok := readMdraidBlockCapacityBytes("md0", tmp)
+	if !ok || got != 2048*512 {
+		t.Fatalf("readMdraidBlockCapacityBytes() = (%d, %v), want (%d, true)", got, ok, 2048*512)
+	}
+}
