@@ -17,7 +17,7 @@ func TestStandaloneAlertManagerStopsBeforeDatabaseCleanup(t *testing.T) {
 			hub, user := beszelTests.GetHubWithUser(t)
 			cleanup := sync.OnceFunc(hub.Cleanup)
 			defer cleanup()
-			setStatusAlertEmail(t, hub, user.Id, "shutdown@example.com")
+			setStatusAlertEmail(t, hub, "shutdown@example.com")
 			systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "paused")
 			require.NoError(t, err)
 			_, err = beszelTests.CreateRecord(hub, "alerts", map[string]any{

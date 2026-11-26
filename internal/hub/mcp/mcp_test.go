@@ -514,11 +514,11 @@ func TestMcpListAlerts(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
 	session := mcpClient(t, server.URL, user.Token)
 	_, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-		"name": "CPU", "user": user.Record.Id, "system": userSystem.Id, "value": 90,
+		"name": "CPU", "system": userSystem.Id, "value": 90,
 	})
 	require.NoError(t, err)
 
-	// regular user sees only their own alerts
+	// regular user sees alerts of their systems
 	data := callTool(t, session, "list_alerts", nil)
 	alerts := data["alerts"].([]any)
 	require.Len(t, alerts, 1)
@@ -544,7 +544,7 @@ func TestMcpListAlerts(t *testing.T) {
 func TestMcpListAlertsStructuredState(t *testing.T) {
 	hub, user, _, server, userSystem := setupHub(t)
 	_, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
-		"name": "NetworkMonitorLoss", "user": user.Record.Id, "system": userSystem.Id, "value": 10,
+		"name": "NetworkMonitorLoss", "system": userSystem.Id, "value": 10,
 		"state": map[string]any{"monitors": map[string]string{"monitor-1": "down"}},
 	})
 	require.NoError(t, err)
@@ -1101,20 +1101,20 @@ func TestMcpTruncatedNetworkMonitors(t *testing.T) {
 }
 
 func TestMcpListAlertEvents(t *testing.T) {
-	hub, user, other, server, userSystem := setupHub(t)
+	hub, user, _, server, userSystem := setupHub(t)
 	_, err := beszelTests.CreateRecord(hub, "alerts_history", map[string]any{
-		"user": user.Record.Id, "system": userSystem.Id, "alert_id": "alert-1",
+		"system": userSystem.Id, "alert_id": "alert-1",
 		"name": "CPU", "value": 95.5,
 	})
 	require.NoError(t, err)
 	_, err = beszelTests.CreateRecord(hub, "alerts_history", map[string]any{
-		"user": other.Record.Id, "system": getSystemIdByName(t, hub, "other-system"), "alert_id": "alert-2",
+		"system": getSystemIdByName(t, hub, "other-system"), "alert_id": "alert-2",
 		"name": "Memory", "value": 91,
 	})
 	require.NoError(t, err)
 	session := mcpClient(t, server.URL, user.Token)
 	data := callTool(t, session, "list_alert_events", nil)
-	// regular user sees only their own alert events
+	// regular user sees alert events of their systems
 	events := data["events"].([]any)
 	require.Len(t, events, 1)
 	event := events[0].(map[string]any)

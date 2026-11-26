@@ -209,9 +209,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// create static API keys for the current user, or revoke all of them
 	apiAuth.POST("/api-keys", createApiKey).BindFunc(requireSessionToken)
 	apiAuth.POST("/api-keys/revoke", revokeApiKeys).BindFunc(requireSessionToken)
-	// update / delete user alerts
-	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
-	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
+	// update / delete alerts (admin only)
+	apiAuth.POST("/alerts", alerts.UpsertAlerts)
+	apiAuth.DELETE("/alerts", alerts.DeleteAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData).BindFunc(excludeReadOnlyRole)
 	// refresh ZFS pool details for a system

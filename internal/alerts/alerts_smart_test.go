@@ -184,11 +184,8 @@ func TestSmartDeviceAlertMultipleUsers(t *testing.T) {
 	user2, err := beszelTests.CreateUser(hub, "test2@example.com", "password")
 	assert.NoError(t, err)
 
-	// Create user settings for the second user
-	_, err = beszelTests.CreateRecord(hub, "user_settings", map[string]any{
-		"user":     user2.Id,
-		"settings": `{"emails":["test2@example.com"],"webhooks":[]}`,
-	})
+	// Automatic alerts go to every default channel
+	_, err = beszelTests.CreateChannel(hub, "second", "test2@example.com", true)
 	assert.NoError(t, err)
 
 	// Create a system with both users

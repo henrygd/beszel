@@ -9,6 +9,7 @@ import {
 	CalendarIcon,
 	ActivityIcon,
 	PenSquareIcon,
+	BellIcon,
 } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -37,9 +38,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
 import { pb } from "@/lib/api"
+import { $notificationChannels } from "@/lib/notification-channels"
 import { $systems } from "@/lib/stores"
 import { formatShortDate } from "@/lib/utils"
-import type { QuietHoursRecord, SystemRecord } from "@/types"
+import type { NotificationChannelRecord, QuietHoursRecord, SystemRecord } from "@/types"
+
+/** Select value for windows that apply to all channels (Select items can't be empty) */
+const allChannels = "all"
 
 export function QuietHours() {
 	const { t } = useLingui()
@@ -49,11 +54,12 @@ export function QuietHours() {
 	const [editingRecord, setEditingRecord] = useState<QuietHoursRecord | null>(null)
 	const { toast } = useToast()
 	const systems = useStore($systems)
+	const channels = useStore($notificationChannels)
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
-			expand: "system",
-			fields: "id,user,system,type,start,end,expand.system.name",
+			expand: "system,channel",
+			fields: "id,channel,system,type,start,end,expand.system.name,expand.channel.name",
 		}
 		// Initial load
 		pb.collection<QuietHoursRecord>("quiet_hours")
@@ -167,6 +173,7 @@ export function QuietHours() {
 					<p className="text-sm text-muted-foreground leading-relaxed">
 						<Trans>
 							Schedule quiet hours where notifications will not be sent, such as during maintenance periods.
+							Each window applies to all channels or to a single channel.
 						</Trans>
 					</p>
 				</div>
@@ -179,7 +186,13 @@ export function QuietHours() {
 							</span>
 						</Button>
 					</DialogTrigger>
-					<QuietHoursDialog editingRecord={editingRecord} systems={systems} onClose={closeDialog} toast={toast} />
+					<QuietHoursDialog
+						editingRecord={editingRecord}
+						systems={systems}
+						channels={channels}
+						onClose={closeDialog}
+						toast={toast}
+					/>
 				</Dialog>
 			</div>
 			{data.length > 0 && (
@@ -187,6 +200,12 @@ export function QuietHours() {
 					<Table>
 						<TableHeader>
 							<TableRow className="border-border/50">
+								<TableHead className="px-4">
+									<span className="flex items-center gap-2">
+										<BellIcon className="size-4" />
+										<Trans>Channel</Trans>
+									</span>
+								</TableHead>
 								<TableHead className="px-4">
 									<span className="flex items-center gap-2">
 										<ServerIcon className="size-4" />
@@ -219,6 +238,13 @@ export function QuietHours() {
 						<TableBody>
 							{data.map((record) => (
 								<TableRow key={record.id}>
+									<TableCell className="px-4 py-3">
+										{record.channel ? (
+											record.expand?.channel?.name || record.channel
+										) : (
+											<Trans>All channels</Trans>
+										)}
+									</TableCell>
 									<TableCell className="px-4 py-3">
 										{record.system ? record.expand?.system?.name || record.system : <Trans>All Systems</Trans>}
 									</TableCell>
@@ -284,16 +310,19 @@ function formatDateTimeLocal(date: Date): string {
 function QuietHoursDialog({
 	editingRecord,
 	systems,
+	channels,
 	onClose,
 	toast,
 }: {
 	editingRecord: QuietHoursRecord | null
 	systems: SystemRecord[]
+	channels: NotificationChannelRecord[]
 	onClose: () => void
 	toast: ReturnType<typeof useToast>["toast"]
 }) {
 	const { t } = useLingui()
 	const quietHoursTranslation = t`Quiet Hours`
+	const [selectedChannel, setSelectedChannel] = useState(editingRecord?.channel || allChannels)
 	const [selectedSystem, setSelectedSystem] = useState(editingRecord?.system || "")
 	const [isGlobal, setIsGlobal] = useState(!editingRecord?.system)
 	const [windowType, setWindowType] = useState<"one-time" | "daily">(editingRecord?.type || "one-time")
@@ -304,6 +333,7 @@ function QuietHoursDialog({
 
 	useEffect(() => {
 		if (editingRecord) {
+			setSelectedChannel(editingRecord.channel || allChannels)
 			setSelectedSystem(editingRecord.system || "")
 			setIsGlobal(!editingRecord.system)
 			setWindowType(editingRecord.type)
@@ -329,6 +359,7 @@ function QuietHoursDialog({
 			const onePm = new Date(today)
 			onePm.setHours(13, 0, 0, 0)
 
+			setSelectedChannel(allChannels)
 			setSelectedSystem("")
 			setIsGlobal(true)
 			setWindowType("one-time")
@@ -364,8 +395,8 @@ function QuietHoursDialog({
 			}
 
 			const data = {
-				user: pb.authStore.record?.id,
-				system: isGlobal ? undefined : selectedSystem,
+				channel: selectedChannel === allChannels ? "" : selectedChannel,
+				system: isGlobal ? "" : selectedSystem,
 				type: windowType,
 				start: startValue,
 				end: endValue,
@@ -398,10 +429,31 @@ function QuietHoursDialog({
 					)}
 				</DialogTitle>
 				<DialogDescription>
-					<Trans>Schedule quiet hours where notifications will not be sent.</Trans>
+					<Trans>Schedule quiet hours where notifications will not be sent, for all channels or a single channel.</Trans>
 				</DialogDescription>
 			</DialogHeader>
 			<form onSubmit={handleSubmit} className="space-y-4">
+				<div className="grid gap-2">
+					<Label htmlFor="channel">
+						<Trans>Channel</Trans>
+					</Label>
+					<Select value={selectedChannel} onValueChange={setSelectedChannel}>
+						<SelectTrigger id="channel">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value={allChannels}>
+								<Trans>All channels</Trans>
+							</SelectItem>
+							{channels.map((channel) => (
+								<SelectItem key={channel.id} value={channel.id}>
+									{channel.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+
 				<Tabs value={isGlobal ? "global" : "system"} onValueChange={(value) => setIsGlobal(value === "global")}>
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="global">

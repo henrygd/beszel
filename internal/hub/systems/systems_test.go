@@ -170,14 +170,6 @@ func TestStatusAlertRecoveryAfterPendingTransition(t *testing.T) {
 	hub, user := tests.GetHubWithUser(t)
 	defer hub.Cleanup()
 
-	userSettings, err := hub.FindFirstRecordByFilter("user_settings", "user={:user}", map[string]any{"user": user.Id})
-	require.NoError(t, err)
-	userSettings.Set("settings", map[string]any{
-		"emails":   []string{"test@example.com"},
-		"webhooks": []string{},
-	})
-	require.NoError(t, hub.Save(userSettings))
-
 	record, err := tests.CreateRecord(hub, "systems", map[string]any{
 		"name":  "changed-address",
 		"host":  "192.0.2.1",

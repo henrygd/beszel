@@ -37,18 +37,18 @@ func (rm *RecordManager) DeleteOldRecords() {
 	})
 }
 
-// Delete old alerts history records
+// Delete old alerts history records, keeping the most recent countToKeep per system
 func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) error {
 	db := app.DB()
-	var users []struct {
-		Id string `db:"user"`
+	var systems []struct {
+		Id string `db:"system"`
 	}
-	err := db.NewQuery("SELECT user, COUNT(*) as count FROM alerts_history GROUP BY user HAVING count > {:countBeforeDeletion}").Bind(dbx.Params{"countBeforeDeletion": countBeforeDeletion}).All(&users)
+	err := db.NewQuery("SELECT system, COUNT(*) as count FROM alerts_history GROUP BY system HAVING count > {:countBeforeDeletion}").Bind(dbx.Params{"countBeforeDeletion": countBeforeDeletion}).All(&systems)
 	if err != nil {
 		return err
 	}
-	for _, user := range users {
-		_, err = db.NewQuery("DELETE FROM alerts_history WHERE user = {:user} AND id NOT IN (SELECT id FROM alerts_history WHERE user = {:user} ORDER BY created DESC LIMIT {:countToKeep})").Bind(dbx.Params{"user": user.Id, "countToKeep": countToKeep}).Execute()
+	for _, system := range systems {
+		_, err = db.NewQuery("DELETE FROM alerts_history WHERE system = {:system} AND id NOT IN (SELECT id FROM alerts_history WHERE system = {:system} ORDER BY created DESC LIMIT {:countToKeep})").Bind(dbx.Params{"system": system.Id, "countToKeep": countToKeep}).Execute()
 		if err != nil {
 			return err
 		}
