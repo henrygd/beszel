@@ -56,7 +56,7 @@ func parseZpoolStatusOutput(out []byte) ([]PoolStatus, error) {
 	var current *PoolStatus
 	inConfig := false
 	inStatus := false         // next indented line continues the status: message
-	scanContinuation := false // next non-blank line continues the scan line (progress)
+	scanContinuation := false // indented lines after scan: carry the progress
 
 	scanner := bufio.NewScanner(bytes.NewReader(out))
 	for scanner.Scan() {
@@ -82,23 +82,26 @@ func parseZpoolStatusOutput(out []byte) ([]PoolStatus, error) {
 			inStatus = false
 		case strings.HasPrefix(trimmed, "scan:"):
 			current.Scrub = parseScanLine(trimmed)
-			// zpool status prints the progress percentage on the line after scan.
 			scanContinuation = true
 			inStatus = false
 		case trimmed == "config:":
 			inConfig = true
 			inStatus = false
+			scanContinuation = false
 		case inStatus && trimmed != "" && (strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t")):
 			// The status message wraps onto indented continuation lines.
 			current.Status = strings.TrimSpace(current.Status + " " + strings.Join(strings.Fields(trimmed), " "))
 		case inStatus:
 			inStatus = false
 		case scanContinuation:
-			// The line after scan: may be an indented progress continuation.
+			// The percentage follows the scanned/issued line, e.g.
+			// "0B repaired, 16.91% done, 00:00:04 to go".
 			if m := progressRe.FindStringSubmatch(trimmed); m != nil {
 				current.Scrub.Progress = m[1] + "%"
+				scanContinuation = false
+			} else if !strings.HasPrefix(line, "\t") {
+				scanContinuation = false
 			}
-			scanContinuation = false
 		case inConfig && (line == "" || strings.HasPrefix(line, " ") || strings.HasPrefix(line, "\t")):
 			// Table rows are indented; blank lines separate sections. The
 			// column header and the pool's own row are skipped.
