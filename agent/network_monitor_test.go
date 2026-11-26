@@ -272,18 +272,19 @@ func TestMonitorHTTP(t *testing.T) {
 		probe := networkMonitorProbe(staticMonitorHTTPClients(server.Client()))
 		config := monitor.Config{Protocol: "http", Target: server.URL}
 
-		responseUs, err := probe(context.Background(), config)
-		assert.Equal(t, int64(-1), responseUs)
+		responses, err := probe(context.Background(), config)
+		assert.Empty(t, responses)
 		require.Error(t, err, "401 fails by default")
 
 		config.StatusCodes = "200-299,401"
-		responseUs, err = probe(context.Background(), config)
+		responses, err = probe(context.Background(), config)
 		require.NoError(t, err)
-		assert.GreaterOrEqual(t, responseUs, int64(0))
+		require.Len(t, responses, 1)
+		assert.GreaterOrEqual(t, responses[0], int64(0))
 
 		config.StatusCodes = "200-299"
-		responseUs, err = probe(context.Background(), config)
-		assert.Equal(t, int64(-1), responseUs)
+		responses, err = probe(context.Background(), config)
+		assert.Empty(t, responses)
 		require.Error(t, err)
 	})
 
@@ -295,14 +296,15 @@ func TestMonitorHTTP(t *testing.T) {
 		probe := newMonitorManager(nil).probe
 		config := monitor.Config{Protocol: "http", Target: server.URL}
 
-		responseUs, err := probe(context.Background(), config)
-		assert.Equal(t, int64(-1), responseUs)
+		responses, err := probe(context.Background(), config)
+		assert.Empty(t, responses)
 		require.Error(t, err)
 
 		config.SkipTLSVerify = true
-		responseUs, err = probe(context.Background(), config)
+		responses, err = probe(context.Background(), config)
 		require.NoError(t, err)
-		assert.GreaterOrEqual(t, responseUs, int64(0))
+		require.Len(t, responses, 1)
+		assert.GreaterOrEqual(t, responses[0], int64(0))
 	})
 }
 
@@ -413,8 +415,8 @@ func TestMonitorHTTPIPVersion(t *testing.T) {
 
 	// The IPv6 client must not reuse the idle IPv4 connection from the previous request.
 	config.IPVersion = monitor.IPVersion6
-	responseUs, err := probe(t.Context(), config)
-	assert.Equal(t, int64(-1), responseUs)
+	responses, err := probe(t.Context(), config)
+	assert.Empty(t, responses)
 	require.Error(t, err)
 
 	config.IPVersion = 5
