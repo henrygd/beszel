@@ -36,6 +36,7 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 	if !ok {
 		gpuData = &system.GPUData{Name: "GPU", Engines: make(map[string]float64)}
 		gm.GpuDataMap[id] = gpuData
+		gm.setGpuVendor(id, gpuVendorIntel)
 	}
 
 	gpuData.Power += sample.PowerGPU
