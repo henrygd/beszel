@@ -339,7 +339,9 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		info := struct {
 			system.Info
 			GpuPct *float64 `json:"g,omitempty"`
-		}{Info: data.Info}
+			// Lets the UI show container tabs and charts before stats load
+			Containers int `json:"cn,omitzero"`
+		}{Info: data.Info, Containers: len(data.Containers)}
 		if len(data.Stats.GPUData) > 0 {
 			info.GpuPct = &data.Info.GpuPct
 		}
