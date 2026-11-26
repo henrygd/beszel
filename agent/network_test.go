@@ -3,6 +3,7 @@
 package agent
 
 import (
+	"net/netip"
 	"testing"
 	"time"
 
@@ -506,6 +507,62 @@ func TestApplyNetworkTotals(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCountTcpConnections(t *testing.T) {
+	conns := []psutilNet.ConnectionStat{
+		{Status: "ESTABLISHED"},
+		{Status: "ESTABLISHED"},
+		{Status: "TIME_WAIT"},
+		{Status: "LISTEN"},
+		{Status: "CLOSE_WAIT"},
+		{Status: "SYN_RECV"},
+		{Status: "SYN_RECEIVED"}, // windows spelling
+		{Status: "SYN_SENT"},
+		{Status: "FIN_WAIT2"},
+	}
+	assert.Equal(t, [6]uint32{2, 1, 9, 1, 2, 1}, countTcpConnections(conns))
+	assert.Equal(t, [6]uint32{}, countTcpConnections(nil))
+}
+
+// TestUpdateTcpConnectionsRealtimeReusesSnapshot verifies that non-default
+// intervals don't list connections and reuse the last default-interval counts.
+func TestUpdateTcpConnectionsRealtimeReusesSnapshot(t *testing.T) {
+	a := &Agent{
+		tcpConnections: [6]uint32{7, 3, 12, 2, 1, 1},
+		tcpInterfaces:  map[string][5]uint32{"eth0": {5, 1, 2, 1, 0}},
+	}
+	var stats system.Stats
+	a.updateTcpConnections(1000, &stats)
+	assert.Equal(t, [6]uint32{7, 3, 12, 2, 1, 1}, stats.TcpConnections)
+	assert.Equal(t, map[string][5]uint32{"eth0": {5, 1, 2, 1, 0}}, stats.TcpInterfaces)
+}
+
+func TestCountTcpConnectionsByInterface(t *testing.T) {
+	addrs := map[netip.Addr]string{
+		netip.MustParseAddr("192.168.1.10"): "eth0",
+		netip.MustParseAddr("2001:db8::10"): "eth0",
+		netip.MustParseAddr("10.0.0.5"):     "wlan0",
+	}
+	conns := []psutilNet.ConnectionStat{
+		{Status: "ESTABLISHED", Laddr: psutilNet.Addr{IP: "192.168.1.10"}},
+		{Status: "TIME_WAIT", Laddr: psutilNet.Addr{IP: "2001:db8::10"}},
+		// IPv4-mapped address on a dual-stack socket
+		{Status: "ESTABLISHED", Laddr: psutilNet.Addr{IP: "::ffff:192.168.1.10"}},
+		{Status: "CLOSE_WAIT", Laddr: psutilNet.Addr{IP: "10.0.0.5"}},
+		{Status: "SYN_RECV", Laddr: psutilNet.Addr{IP: "192.168.1.10"}},
+		{Status: "SYN_SENT", Laddr: psutilNet.Addr{IP: "10.0.0.5"}},
+		// wildcard listener, loopback and unparsable addresses are not attributed
+		{Status: "LISTEN", Laddr: psutilNet.Addr{IP: "0.0.0.0"}},
+		{Status: "ESTABLISHED", Laddr: psutilNet.Addr{IP: "127.0.0.1"}},
+		{Status: "ESTABLISHED", Laddr: psutilNet.Addr{IP: ""}},
+	}
+	assert.Equal(t, map[string][5]uint32{
+		"eth0":  {2, 1, 0, 1, 0},
+		"wlan0": {0, 0, 1, 0, 1},
+	}, countTcpConnectionsByInterface(conns, addrs))
+	assert.Nil(t, countTcpConnectionsByInterface(conns, nil))
+	assert.Nil(t, countTcpConnectionsByInterface(conns[6:], addrs))
 }
 
 func TestSumAndTrackPerNicDeltasKeepsCountersWhenMacReadFails(t *testing.T) {

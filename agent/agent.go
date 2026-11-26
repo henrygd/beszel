@@ -39,6 +39,8 @@ type Agent struct {
 	netInterfaces             map[string]bool                                       // Valid network interfaces; true if byte counters come from MAC stats (Jetson nvethernet)
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
+	tcpConnections            [6]uint32                                             // Last TCP connection counts [established, time_wait, total, close_wait, syn_recv, syn_sent]
+	tcpInterfaces             map[string][5]uint32                                  // Last TCP connection counts per network interface [established, time_wait, close_wait, syn_recv, syn_sent]
 	dockerManager             *dockerManager                                        // Manages Docker API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
 	tempsReading              atomic.Bool                                           // A temperature read is still running (possibly blocked in the kernel)
