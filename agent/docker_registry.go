@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -238,7 +239,9 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 			Digest    string
 			Platform  *struct {
 				registryImagePlatform
-				OSVersion string `json:"os.version"`
+				OSVersion  string   `json:"os.version"`
+				OSFeatures []string `json:"os.features"`
+				Features   []string
 			}
 		}
 	}
@@ -248,10 +251,16 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	if index.SchemaVersion != 2 || index.Manifests == nil || (index.MediaType != "" && index.MediaType != mediaType) {
 		return "", fmt.Errorf("invalid image index")
 	}
-	// Track all comparable digests before deciding whether ambiguity matters.
+	// Keep the first descriptor for each equivalent platform. Different
+	// platform requirements may still be ambiguous without host metadata.
+	type platformKey struct {
+		variant, version, osFeatures, features string
+	}
+	seen := make(map[platformKey]bool)
+	localBuild := windowsImageBuild(local.OSVersion)
 	var candidate, unqualified digest.Digest
 	ambiguous, matchesLocal, nested, nestedBeforeCandidate := false, false, false, false
-	unqualifiedAllMatch := true
+	allMatchesLocal, unqualifiedAllMatch := true, true
 	for _, manifest := range index.Manifests {
 		p := manifest.Platform
 		if manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList {
@@ -294,20 +303,32 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		if !compatibleImageVariant(local.Architecture, local.Variant, p.Variant) {
 			continue
 		}
-		// Windows descriptors may share OS/architecture but target different
-		// OS versions. Match exact image metadata, not host compatibility.
-		if local.OS == "windows" && local.OSVersion != "" && p.OSVersion != "" && p.OSVersion != local.OSVersion {
-			continue
+		// A Windows revision need not match the installed image's revision.
+		// Keep candidates from the same build; the host determines compatibility.
+		if local.OS == "windows" && localBuild != "" {
+			if build := windowsImageBuild(p.OSVersion); build != "" && build != localBuild {
+				continue
+			}
 		}
 		d, err := digest.Parse(manifest.Digest)
 		if err != nil {
 			return "", fmt.Errorf("invalid platform manifest digest: %w", err)
 		}
+		key := platformKey{
+			normalizedImageVariant(local.Architecture, p.Variant),
+			p.OSVersion, platformFeaturesKey(p.OSFeatures), platformFeaturesKey(p.Features),
+		}
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
 		if candidate != "" && candidate != d {
 			ambiguous = true
 		}
 		candidate = d
-		matchesLocal = matchesLocal || slices.Contains(local.RepoDigests, d.String())
+		match := slices.Contains(local.RepoDigests, d.String())
+		matchesLocal = matchesLocal || match
+		allMatchesLocal = allMatchesLocal && match
 	}
 	// If an unqualified descriptor could precede the first declared
 	// match, only locally recorded digests establish that no update is
@@ -317,7 +338,7 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		if nested && (candidate == "" || nestedBeforeCandidate || ambiguous || !matchesLocal) {
 			return "", fmt.Errorf("image index contains unresolved nested manifests")
 		}
-		if unqualifiedAllMatch && (candidate == "" || (!ambiguous && matchesLocal)) {
+		if unqualifiedAllMatch && allMatchesLocal {
 			return unqualified.String(), nil
 		}
 		return indexDigest.String(), nil
@@ -329,10 +350,13 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		return "", fmt.Errorf("image index has no comparable platform manifest for %s/%s", local.OS, local.Architecture)
 	}
 	if ambiguous {
-		// If all possible platform manifests changed, the index mismatch
-		// is sufficient to report an update without selecting a variant.
-		// Preserve the existing Windows index fallback.
-		if local.OS == "windows" || (!matchesLocal && !nested) {
+		// Without host metadata, distinct requirements can leave the
+		// selection unknown. Preserve the index comparison rather than
+		// clearing a possible update because one candidate matches.
+		if !nested && allMatchesLocal {
+			return candidate.String(), nil
+		}
+		if local.OS == "windows" || !nested {
 			return indexDigest.String(), nil
 		}
 		return "", fmt.Errorf("ambiguous platform manifests for %s/%s", local.OS, local.Architecture)
@@ -343,6 +367,30 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		return "", fmt.Errorf("image index contains unresolved nested manifests")
 	}
 	return candidate.String(), nil
+}
+
+// Feature requirements are sets, not ordered lists.
+func platformFeaturesKey(features []string) string {
+	features = slices.Clone(features)
+	slices.Sort(features)
+	return fmt.Sprintf("%q", slices.Compact(features))
+}
+
+// Windows versions contain major, minor, build and optionally revision.
+// Unrecognized versions cannot safely exclude a descriptor.
+func windowsImageBuild(version string) string {
+	parts := strings.Split(version, ".")
+	if len(parts) < 3 || len(parts) > 4 {
+		return ""
+	}
+	for i, part := range parts {
+		n, err := strconv.ParseUint(part, 10, 32)
+		if err != nil {
+			return ""
+		}
+		parts[i] = strconv.FormatUint(n, 10)
+	}
+	return strings.Join(parts[:3], ".")
 }
 
 // An omitted local variant is unknown; compare all possible matches.
