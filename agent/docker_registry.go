@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"mime"
 	"net/http"
 	"net/url"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -35,7 +35,6 @@ type registryImagePlatform struct {
 
 type registryLocalImageMetadata struct {
 	RepoDigests []string
-	OSVersion   string
 	registryImagePlatform
 }
 
@@ -194,7 +193,13 @@ func (dm *dockerManager) registryImageDigest(registry, repository, tag string, l
 	if !slices.Contains(local.RepoDigests, d.String()) {
 		mediaType, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if mediaType == ociImageIndex || mediaType == dockerManifestList {
-			return registryPlatformDigest(client, req, d, mediaType, local)
+			platformDigest, err := registryPlatformDigest(client, req, d, mediaType, local)
+			if err == nil {
+				return platformDigest, nil
+			}
+			// The HEAD digest is valid. An optional GET must not clear an
+			// update that the original index comparison would report.
+			slog.Debug("Image platform digest comparison failed", "repository", repository, "tag", tag, "err", err)
 		}
 	}
 	return d.String(), nil
@@ -205,7 +210,7 @@ func (dm *dockerManager) registryImageDigest(registry, repository, tag string, l
 // digest rather than the tag, which could have changed since the HEAD request.
 func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, indexDigest digest.Digest, mediaType string, local *registryLocalImageMetadata) (string, error) {
 	if local.OS == "" || local.Architecture == "" {
-		return "", fmt.Errorf("image inspect returned no platform")
+		return indexDigest.String(), nil
 	}
 	req := manifestRequest.Clone(manifestRequest.Context())
 	req.Method = http.MethodGet
@@ -251,122 +256,74 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	if index.SchemaVersion != 2 || index.Manifests == nil || (index.MediaType != "" && index.MediaType != mediaType) {
 		return "", fmt.Errorf("invalid image index")
 	}
-	// Keep the first descriptor for each equivalent platform. Different
-	// platform requirements may still be ambiguous without host metadata.
+	// The image describes what was installed, not the host's full platform
+	// capabilities. Only replace the index comparison when every possible
+	// selection for the installed OS/architecture is locally recorded.
+	// Keep descriptor order for equivalent platform requirements.
 	type platformKey struct {
 		variant, version, osFeatures, features string
 	}
 	seen := make(map[platformKey]bool)
-	localBuild := windowsImageBuild(local.OSVersion)
-	var candidate, unqualified digest.Digest
-	ambiguous, matchesLocal, nested, nestedBeforeCandidate := false, false, false, false
-	allMatchesLocal, unqualifiedAllMatch := true, true
+	var current digest.Digest
+	uncertain := false
 	for _, manifest := range index.Manifests {
+		nested := manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList
+		if !nested && manifest.MediaType != ociImageManifest && manifest.MediaType != dockerImageManifest {
+			continue
+		}
 		p := manifest.Platform
-		if manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList {
-			// Missing platform metadata cannot rule out a nested index.
-			if p != nil && ((p.OS != "" && p.OS != "unknown" && p.OS != local.OS) ||
-				(p.Architecture != "" && p.Architecture != "unknown" && p.Architecture != local.Architecture) ||
-				(p.Architecture == local.Architecture && p.Variant != "" && p.Variant != "unknown" &&
-					!compatibleImageVariant(local.Architecture, local.Variant, p.Variant))) {
+		if p != nil {
+			// Explicit unknown leaf platforms are not runnable platform
+			// candidates (for example, attestations).
+			if !nested && (p.OS == "unknown" || p.Architecture == "unknown") {
 				continue
 			}
-			if _, err := digest.Parse(manifest.Digest); err != nil {
-				return "", fmt.Errorf("invalid nested index digest: %w", err)
-			}
-			nested = true
-			nestedBeforeCandidate = nestedBeforeCandidate || candidate == ""
-			continue
-		}
-		if manifest.MediaType != ociImageManifest && manifest.MediaType != dockerImageManifest {
-			continue
-		}
-		// OCI permits omitting platform. A runtime may obtain it from the
-		// image config, so this descriptor cannot be ruled out.
-		if p == nil {
-			if mediaType != ociImageIndex {
-				continue
-			}
-			d, err := digest.Parse(manifest.Digest)
-			if err != nil {
-				return "", fmt.Errorf("invalid platform manifest digest: %w", err)
-			}
-			if candidate == "" {
-				unqualified = d
-				unqualifiedAllMatch = unqualifiedAllMatch && slices.Contains(local.RepoDigests, d.String())
-			}
-			continue
-		}
-		if p.OS != local.OS || p.Architecture != local.Architecture {
-			continue
-		}
-		if !compatibleImageVariant(local.Architecture, local.Variant, p.Variant) {
-			continue
-		}
-		// A Windows revision need not match the installed image's revision.
-		// Keep candidates from the same build; the host determines compatibility.
-		if local.OS == "windows" && localBuild != "" {
-			if build := windowsImageBuild(p.OSVersion); build != "" && build != localBuild {
+			if (p.OS != "" && p.OS != "unknown" && p.OS != local.OS) ||
+				(p.Architecture != "" && p.Architecture != "unknown" && p.Architecture != local.Architecture) {
 				continue
 			}
 		}
 		d, err := digest.Parse(manifest.Digest)
 		if err != nil {
+			if nested {
+				return "", fmt.Errorf("invalid nested index digest: %w", err)
+			}
 			return "", fmt.Errorf("invalid platform manifest digest: %w", err)
 		}
-		key := platformKey{
-			normalizedImageVariant(local.Architecture, p.Variant),
-			p.OSVersion, platformFeaturesKey(p.OSFeatures), platformFeaturesKey(p.Features),
+		if p != nil && p.OS == local.OS && p.Architecture == local.Architecture {
+			key := platformKey{
+				normalizedImageVariant(local.Architecture, p.Variant),
+				p.OSVersion, platformFeaturesKey(p.OSFeatures), platformFeaturesKey(p.Features),
+			}
+			if seen[key] {
+				continue
+			}
+			// A later descriptor with the same requirements cannot
+			// supersede an earlier direct manifest.
+			if !nested {
+				seen[key] = true
+			}
 		}
-		if seen[key] {
+		// Do not guess the host's variant/Windows compatibility or
+		// recursively resolve an index. Missing OCI platform is allowed;
+		// incomplete declared metadata is not sufficient for comparison.
+		if nested || (p == nil && mediaType != ociImageIndex) ||
+			(p != nil && (p.OS != local.OS || p.Architecture != local.Architecture)) {
+			uncertain = true
 			continue
 		}
-		seen[key] = true
-		if candidate != "" && candidate != d {
-			ambiguous = true
+		if slices.Contains(local.RepoDigests, d.String()) {
+			current = d
+		} else {
+			uncertain = true
 		}
-		candidate = d
-		match := slices.Contains(local.RepoDigests, d.String())
-		matchesLocal = matchesLocal || match
-		allMatchesLocal = allMatchesLocal && match
 	}
-	// If an unqualified descriptor could precede the first declared
-	// match, only locally recorded digests establish that no update is
-	// needed. Otherwise retain the original index comparison. A later
-	// unqualified descriptor does not override an earlier declared match.
-	if unqualified != "" {
-		if nested && (candidate == "" || nestedBeforeCandidate || ambiguous || !matchesLocal) {
-			return "", fmt.Errorf("image index contains unresolved nested manifests")
-		}
-		if unqualifiedAllMatch && allMatchesLocal {
-			return unqualified.String(), nil
-		}
-		return indexDigest.String(), nil
+	if !uncertain && current != "" {
+		return current.String(), nil
 	}
-	if candidate == "" {
-		if local.OS == "windows" {
-			return indexDigest.String(), nil
-		}
-		return "", fmt.Errorf("image index has no comparable platform manifest for %s/%s", local.OS, local.Architecture)
-	}
-	if ambiguous {
-		// Without host metadata, distinct requirements can leave the
-		// selection unknown. Preserve the index comparison rather than
-		// clearing a possible update because one candidate matches.
-		if !nested && allMatchesLocal {
-			return candidate.String(), nil
-		}
-		if local.OS == "windows" || !nested {
-			return indexDigest.String(), nil
-		}
-		return "", fmt.Errorf("ambiguous platform manifests for %s/%s", local.OS, local.Architecture)
-	}
-	// A potentially matching nested index can precede the first direct
-	// candidate, so a matching sibling alone does not prove it is current.
-	if nested && (nestedBeforeCandidate || !matchesLocal) {
-		return "", fmt.Errorf("image index contains unresolved nested manifests")
-	}
-	return candidate.String(), nil
+	// A well-formed but inconclusive index is not a registry error.
+	// Preserve the original digest comparison, including possible updates.
+	return indexDigest.String(), nil
 }
 
 // Feature requirements are sets, not ordered lists.
@@ -374,29 +331,6 @@ func platformFeaturesKey(features []string) string {
 	features = slices.Clone(features)
 	slices.Sort(features)
 	return fmt.Sprintf("%q", slices.Compact(features))
-}
-
-// Windows versions contain major, minor, build and optionally revision.
-// Unrecognized versions cannot safely exclude a descriptor.
-func windowsImageBuild(version string) string {
-	parts := strings.Split(version, ".")
-	if len(parts) < 3 || len(parts) > 4 {
-		return ""
-	}
-	for i, part := range parts {
-		n, err := strconv.ParseUint(part, 10, 32)
-		if err != nil {
-			return ""
-		}
-		parts[i] = strconv.FormatUint(n, 10)
-	}
-	return strings.Join(parts[:3], ".")
-}
-
-// An omitted local variant is unknown; compare all possible matches.
-// Normalize only equivalent spellings, not CPU compatibility levels.
-func compatibleImageVariant(arch, local, remote string) bool {
-	return local == "" || normalizedImageVariant(arch, local) == normalizedImageVariant(arch, remote)
 }
 
 // Omitted platform defaults and ARM aliases follow containerd's platform
