@@ -236,7 +236,7 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		Manifests     []struct {
 			MediaType string
 			Digest    string
-			Platform  struct {
+			Platform  *struct {
 				registryImagePlatform
 				OSVersion string `json:"os.version"`
 			}
@@ -245,27 +245,47 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	if err := json.Unmarshal(body, &index); err != nil {
 		return "", fmt.Errorf("decode image index: %w", err)
 	}
-	if index.SchemaVersion != 2 || (index.MediaType != "" && index.MediaType != mediaType) {
+	if index.SchemaVersion != 2 || index.Manifests == nil || (index.MediaType != "" && index.MediaType != mediaType) {
 		return "", fmt.Errorf("invalid image index")
 	}
 	// Track all comparable digests before deciding whether ambiguity matters.
-	var candidate digest.Digest
+	var candidate, unqualified digest.Digest
 	ambiguous, matchesLocal, nested, nestedBeforeCandidate := false, false, false, false
+	unqualifiedAllMatch := true
 	for _, manifest := range index.Manifests {
 		p := manifest.Platform
 		if manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList {
 			// Missing platform metadata cannot rule out a nested index.
-			if (p.OS != "" && p.OS != "unknown" && p.OS != local.OS) ||
+			if p != nil && ((p.OS != "" && p.OS != "unknown" && p.OS != local.OS) ||
 				(p.Architecture != "" && p.Architecture != "unknown" && p.Architecture != local.Architecture) ||
 				(p.Architecture == local.Architecture && p.Variant != "" && p.Variant != "unknown" &&
-					!compatibleImageVariant(local.Architecture, local.Variant, p.Variant)) {
+					!compatibleImageVariant(local.Architecture, local.Variant, p.Variant))) {
 				continue
+			}
+			if _, err := digest.Parse(manifest.Digest); err != nil {
+				return "", fmt.Errorf("invalid nested index digest: %w", err)
 			}
 			nested = true
 			nestedBeforeCandidate = nestedBeforeCandidate || candidate == ""
 			continue
 		}
 		if manifest.MediaType != ociImageManifest && manifest.MediaType != dockerImageManifest {
+			continue
+		}
+		// OCI permits omitting platform. A runtime may obtain it from the
+		// image config, so this descriptor cannot be ruled out.
+		if p == nil {
+			if mediaType != ociImageIndex {
+				continue
+			}
+			d, err := digest.Parse(manifest.Digest)
+			if err != nil {
+				return "", fmt.Errorf("invalid platform manifest digest: %w", err)
+			}
+			if candidate == "" {
+				unqualified = d
+				unqualifiedAllMatch = unqualifiedAllMatch && slices.Contains(local.RepoDigests, d.String())
+			}
 			continue
 		}
 		if p.OS != local.OS || p.Architecture != local.Architecture {
@@ -288,6 +308,19 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		}
 		candidate = d
 		matchesLocal = matchesLocal || slices.Contains(local.RepoDigests, d.String())
+	}
+	// If an unqualified descriptor could precede the first declared
+	// match, only locally recorded digests establish that no update is
+	// needed. Otherwise retain the original index comparison. A later
+	// unqualified descriptor does not override an earlier declared match.
+	if unqualified != "" {
+		if nested && (candidate == "" || nestedBeforeCandidate || ambiguous || !matchesLocal) {
+			return "", fmt.Errorf("image index contains unresolved nested manifests")
+		}
+		if unqualifiedAllMatch && (candidate == "" || (!ambiguous && matchesLocal)) {
+			return unqualified.String(), nil
+		}
+		return indexDigest.String(), nil
 	}
 	if candidate == "" {
 		if local.OS == "windows" {

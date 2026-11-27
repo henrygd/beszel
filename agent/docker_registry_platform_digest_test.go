@@ -30,6 +30,10 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 	}
 	winOld := windows(child, "10.0.17763.1")
 	winNew := windows(other, "10.0.20348.1")
+	missingPlatform := func(d string) string {
+		return fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123}`, ociImageManifest, d)
+	}
+	missingChild, missingOther := missingPlatform(child), missingPlatform(other)
 	nestedMissingPlatform := fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123}`, ociImageIndex, child)
 	nestedWindows := fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"windows","architecture":"amd64"}}`, ociImageIndex, child)
 	for _, tc := range []struct {
@@ -89,6 +93,39 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 		{name: "review nested preceding root match fast path", arch: "amd64", local: other, entries: nestedMissingPlatform + "," + amd, mediaType: ociImageIndex, rootMatch: true},
 		{name: "review ARM nested precedes matching child", arch: "arm", variant: "v6", local: child, entries: descriptor(old, "arm", "v6", ociImageIndex) + "," + armV6 + "," + armV7, mediaType: ociImageIndex, wantErr: true, errContains: "image index contains unresolved nested manifests", get: 1},
 		{name: "review ARM incompatible variant nested first", arch: "arm", variant: "v6", local: child, entries: descriptor(old, "arm", "v7", ociImageIndex) + "," + armV6, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform changed", arch: "arm64", local: old, entries: missingChild, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review null platform treated as omitted", arch: "arm64", local: old, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":null}`, ociImageManifest, child), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform unchanged", arch: "arm64", local: child, entries: missingChild, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platforms all changed", arch: "arm64", local: old, entries: missingChild + "," + missingOther, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform duplicate unchanged", arch: "arm64", local: child, entries: missingChild + "," + missingChild, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platforms all locally recorded", arch: "arm64", local: child, extraLocal: other, entries: missingChild + "," + missingOther, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platforms mixed digests", arch: "arm64", local: child, entries: missingChild + "," + missingOther, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platforms mixed digests reversed", arch: "arm64", local: child, entries: missingOther + "," + missingChild, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform and other architecture changed", arch: "arm64", local: old, entries: amd + "," + missingChild, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform and other architecture unchanged", arch: "arm64", local: child, entries: amd + "," + missingChild, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform precedes matching child", arch: "arm64", local: child, entries: missingOther + "," + arm, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform precedes identical child", arch: "arm64", local: child, entries: missingChild + "," + arm, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform precedes changed child", arch: "arm64", local: other, entries: missingOther + "," + arm, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform follows matching child", arch: "arm64", local: child, entries: arm + "," + missingOther, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform around matching child", arch: "arm64", local: child, entries: missingChild + "," + arm + "," + missingOther, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform then matching child and later nested", arch: "arm64", local: child, entries: missingChild + "," + arm + "," + nestedMissingPlatform, mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform then nested before matching child", arch: "arm64", local: child, entries: missingChild + "," + nestedMissingPlatform + "," + arm, mediaType: ociImageIndex, wantErr: true, errContains: "image index contains unresolved nested manifests", get: 1},
+		{name: "review omitted platform follows changed child", arch: "arm64", local: other, entries: arm + "," + missingOther, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review omitted platform before incompatible nested", arch: "arm64", local: child, entries: missingChild + "," + descriptor(other, "amd64", "", ociImageIndex), mediaType: ociImageIndex, get: 1},
+		{name: "review omitted platform before potential nested", arch: "arm64", local: child, entries: missingChild + "," + nestedMissingPlatform, mediaType: ociImageIndex, wantErr: true, errContains: "image index contains unresolved nested manifests", get: 1},
+		{name: "review potential nested before omitted platform", arch: "arm64", local: child, entries: nestedMissingPlatform + "," + missingChild, mediaType: ociImageIndex, wantErr: true, errContains: "image index contains unresolved nested manifests", get: 1},
+		{name: "review omitted platform invalid digest", arch: "arm64", local: child, entries: missingPlatform("invalid"), mediaType: ociImageIndex, wantErr: true, errContains: "invalid platform manifest digest", get: 1},
+		{name: "review omitted platform invalid digest after match", arch: "arm64", local: child, entries: arm + "," + missingPlatform("invalid"), mediaType: ociImageIndex, wantErr: true, errContains: "invalid platform manifest digest", get: 1},
+		{name: "review omitted platform index root fast path", arch: "arm64", local: child, entries: missingChild, mediaType: ociImageIndex, rootMatch: true},
+		{name: "review Windows OCI omitted platform unchanged", os: "windows", arch: "amd64", local: child, entries: missingChild, mediaType: ociImageIndex, get: 1},
+		{name: "review Windows OCI omitted platform changed", os: "windows", arch: "amd64", local: old, entries: missingChild, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review missing platform Docker list", arch: "arm64", local: child, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123}`, dockerImageManifest, child), mediaType: dockerManifestList, wantErr: true, get: 1},
+		{name: "review OCI Docker child omitted platform", arch: "arm64", local: old, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123}`, dockerImageManifest, child), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review unknown media type without platform ignored", arch: "arm64", local: child, entries: fmt.Sprintf(`{"mediaType":"application/example","digest":%q,"size":123}`, other) + "," + arm, mediaType: ociImageIndex, get: 1},
+		{name: "review partial platform not unqualified", arch: "arm64", local: child, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"linux"}}`, ociImageManifest, child), mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review explicit unknown attestation before matching child", arch: "arm64", local: child, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"unknown","architecture":"unknown"}}`, ociImageManifest, other) + "," + arm, mediaType: ociImageIndex, get: 1},
+		{name: "review invalid nested digest after match", arch: "arm64", local: child, entries: arm + "," + descriptor("invalid", "arm64", "", ociImageIndex), mediaType: ociImageIndex, wantErr: true, errContains: "invalid nested index digest", get: 1},
+		{name: "review invalid incompatible nested digest ignored", arch: "arm64", local: child, entries: descriptor("invalid", "amd64", "", ociImageIndex) + "," + arm, mediaType: ociImageIndex, get: 1},
 		{name: "review Windows nested precedes exact child", os: "windows", arch: "amd64", osVersion: "10.0.17763.1", local: child, entries: nestedWindows + "," + winOld + "," + winNew, mediaType: dockerManifestList, wantErr: true, errContains: "image index contains unresolved nested manifests", get: 1},
 		{name: "review Windows exact child", os: "windows", arch: "amd64", osVersion: "10.0.17763.1", local: child, entries: winNew + "," + winOld, mediaType: dockerManifestList, get: 1},
 		{name: "review Windows changed child", os: "windows", arch: "amd64", osVersion: "10.0.20348.1", local: child, entries: winOld + "," + winNew, mediaType: dockerManifestList, want: true, get: 1},
@@ -178,6 +215,8 @@ func TestCheckImageUpdateRejectsInvalidIndexPayload(t *testing.T) {
 	child := registryDigest('a')
 	for _, tc := range []struct{ name, body, want string }{
 		{"malformed JSON", `{"schemaVersion":`, "decode image index"},
+		{"missing manifests", `{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json"}`, "invalid image index"},
+		{"null manifests", `{"schemaVersion":2,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":null}`, "invalid image index"},
 		{"unsupported schema", `{"schemaVersion":1,"mediaType":"application/vnd.oci.image.index.v1+json","manifests":[]}`, "invalid image index"},
 		{"oversized index", string(make([]byte, maxImageIndexSize+1)), "image index exceeds size limit"},
 	} {
