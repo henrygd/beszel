@@ -34,6 +34,7 @@ type registryImagePlatform struct {
 
 type registryLocalImageMetadata struct {
 	RepoDigests []string
+	OSVersion   string
 	registryImagePlatform
 }
 
@@ -235,7 +236,10 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		Manifests     []struct {
 			MediaType string
 			Digest    string
-			Platform  registryImagePlatform
+			Platform  struct {
+				registryImagePlatform
+				OSVersion string `json:"os.version"`
+			}
 		}
 	}
 	if err := json.Unmarshal(body, &index); err != nil {
@@ -249,18 +253,30 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	var candidate digest.Digest
 	nested := false
 	for _, manifest := range index.Manifests {
+		p := manifest.Platform
 		if manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList {
+			// Missing platform metadata cannot rule out a nested index.
+			if (p.OS != "" && p.OS != "unknown" && p.OS != local.OS) ||
+				(p.Architecture != "" && p.Architecture != "unknown" && p.Architecture != local.Architecture) ||
+				(p.Architecture == local.Architecture && p.Variant != "" && p.Variant != "unknown" &&
+					!compatibleImageVariant(local.Architecture, local.Variant, p.Variant)) {
+				continue
+			}
 			nested = true
 			continue
 		}
 		if manifest.MediaType != ociImageManifest && manifest.MediaType != dockerImageManifest {
 			continue
 		}
-		p := manifest.Platform
 		if p.OS != local.OS || p.Architecture != local.Architecture {
 			continue
 		}
 		if !compatibleImageVariant(local.Architecture, local.Variant, p.Variant) {
+			continue
+		}
+		// Windows descriptors may share OS/architecture but target different
+		// OS versions. Match exact image metadata, not host compatibility.
+		if local.OS == "windows" && local.OSVersion != "" && p.OSVersion != "" && p.OSVersion != local.OSVersion {
 			continue
 		}
 		d, err := digest.Parse(manifest.Digest)
@@ -268,11 +284,19 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 			return "", fmt.Errorf("invalid platform manifest digest: %w", err)
 		}
 		if candidate != "" && candidate != d {
+			// Windows version selection can be inconclusive; preserve the
+			// original index comparison instead of suppressing updates.
+			if local.OS == "windows" {
+				return indexDigest.String(), nil
+			}
 			return "", fmt.Errorf("ambiguous platform manifests for %s/%s", local.OS, local.Architecture)
 		}
 		candidate = d
 	}
 	if candidate == "" {
+		if local.OS == "windows" {
+			return indexDigest.String(), nil
+		}
 		return "", fmt.Errorf("image index has no comparable platform manifest for %s/%s", local.OS, local.Architecture)
 	}
 	if nested && !slices.Contains(local.RepoDigests, candidate.String()) {
