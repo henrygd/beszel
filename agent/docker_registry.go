@@ -250,7 +250,7 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	}
 	// Track all comparable digests before deciding whether ambiguity matters.
 	var candidate digest.Digest
-	ambiguous, matchesLocal, nested := false, false, false
+	ambiguous, matchesLocal, nested, nestedBeforeCandidate := false, false, false, false
 	for _, manifest := range index.Manifests {
 		p := manifest.Platform
 		if manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList {
@@ -262,6 +262,7 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 				continue
 			}
 			nested = true
+			nestedBeforeCandidate = nestedBeforeCandidate || candidate == ""
 			continue
 		}
 		if manifest.MediaType != ociImageManifest && manifest.MediaType != dockerImageManifest {
@@ -303,7 +304,9 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		}
 		return "", fmt.Errorf("ambiguous platform manifests for %s/%s", local.OS, local.Architecture)
 	}
-	if nested && !matchesLocal {
+	// A potentially matching nested index can precede the first direct
+	// candidate, so a matching sibling alone does not prove it is current.
+	if nested && (nestedBeforeCandidate || !matchesLocal) {
 		return "", fmt.Errorf("image index contains unresolved nested manifests")
 	}
 	return candidate.String(), nil
