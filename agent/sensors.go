@@ -43,6 +43,7 @@ type SensorConfig struct {
 	fanSensors     sensorFilter
 	sensorShadow   string
 	firstRun       bool
+	ipmi           ipmiSource // BMC sensors, nil unless IPMI=true
 }
 
 func (a *Agent) newSensorConfig() *SensorConfig {
@@ -59,6 +60,11 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 	fanSensorsEnvVal, fanSensorsSet := utils.GetEnv("FAN_SENSORS")
 	config.skipFans = fanSensorsSet && fanSensorsEnvVal == ""
 	config.fanSensors = parseSensorFilter(fanSensorsEnvVal)
+
+	// Skip IPMI when neither temperatures nor fans are collected
+	if !config.skipCollection || !config.skipFans {
+		config.ipmi = newIPMISource()
+	}
 
 	return config
 }
@@ -159,11 +165,16 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		}
 		if err != nil {
 			slog.Warn("Error updating temperatures", "err", err)
-			if len(systemStats.Temperatures) > 0 {
-				systemStats.Temperatures = make(map[string]float64)
-			}
-			return
+			temps = nil
 		}
+	}
+	// BMC readings are cached separately, so a failed host read doesn't drop them
+	temps = append(temps, a.sensorConfig.ipmiTemps()...)
+	if err != nil && len(temps) == 0 {
+		if len(systemStats.Temperatures) > 0 {
+			systemStats.Temperatures = make(map[string]float64)
+		}
+		return
 	}
 	slog.Debug("Temperature", "sensors", temps)
 

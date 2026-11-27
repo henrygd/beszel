@@ -28,28 +28,15 @@ func newFanSensorCache(root string) func() ([]fanSensor, error) {
 }
 
 // updateFans populates systemStats.Fans from the host's hwmon sysfs tree, or on
-// Windows from the LHM helper (see fans_windows.go). No-op on other platforms.
+// Windows from the LHM helper (see fans_windows.go), plus BMC fans when IPMI is
+// enabled.
 func (a *Agent) updateFans(systemStats *system.Stats) {
 	if a.sensorConfig != nil && a.sensorConfig.skipFans {
 		return
 	}
-	if platformFans != nil {
-		if fans := a.sensorConfig.filterFanKeys(platformFans()); len(fans) > 0 {
-			systemStats.Fans = fans
-		}
-		return
-	}
-	if hwmonRoot == "" {
-		return
-	}
-	fans, err := a.readFansWithTimeout(getFanSensors)
-	if err != nil {
-		if errors.Is(err, errFanFetchTimeout) {
-			slog.Warn("Error reading fans", "err", err)
-		} else {
-			slog.Debug("Error reading fans", "err", err)
-		}
-		return
+	fans := a.readHostFans()
+	if a.sensorConfig != nil {
+		fans = a.sensorConfig.addIPMIFans(fans)
 	}
 	if len(fans) == 0 {
 		return
@@ -66,6 +53,26 @@ func (a *Agent) updateFans(systemStats *system.Stats) {
 	// 		a.systemInfo.DashboardFan = rpm
 	// 	}
 	// }
+}
+
+// readHostFans reads fans from the platform source: LHM on Windows, hwmon on Linux.
+func (a *Agent) readHostFans() map[string]uint16 {
+	if platformFans != nil {
+		return a.sensorConfig.filterFanKeys(platformFans())
+	}
+	if hwmonRoot == "" {
+		return nil
+	}
+	fans, err := a.readFansWithTimeout(getFanSensors)
+	if err != nil {
+		if errors.Is(err, errFanFetchTimeout) {
+			slog.Warn("Error reading fans", "err", err)
+		} else {
+			slog.Debug("Error reading fans", "err", err)
+		}
+		return nil
+	}
+	return fans
 }
 
 // readFansWithTimeout discovers and reads fan sensors without letting a blocked
