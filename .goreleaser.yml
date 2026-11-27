@@ -103,6 +103,13 @@ archives:
     formats: [tar.gz]
     ids:
       - beszel-agent
+    files:
+      # keep goreleaser's defaults, which setting `files` replaces
+      - LICENSE*
+      - readme*
+      # launcher script installed by Homebrew formulas next to the agent
+      - src: supplemental/scripts/beszel-agent-launcher.sh
+        strip_parent: true
     name_template: >-
       {{ .Binary }}_
       {{- .Os }}_
@@ -216,16 +223,18 @@ brews:
     license: MIT
     skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
     extra_install: |
-      (bin/"beszel-agent-launcher").write <<~EOS
-        #!/bin/bash
-        set -a
-        if [ -f "$HOME/.config/beszel/beszel-agent.env" ]; then
-          source "$HOME/.config/beszel/beszel-agent.env"
-        fi
-        set +a
-        exec #{bin}/beszel-agent "$@"
-      EOS
-      (bin/"beszel-agent-launcher").chmod 0755
+      bin.install "beszel-agent-launcher.sh" => "beszel-agent-launcher"
+    caveats: |
+      The henrygd/beszel tap is deprecated. beszel-agent is now in homebrew-core.
+
+      Because homebrew-core takes priority, `brew services start/restart beszel-agent`
+      may load the homebrew-core service, which does not read
+      ~/.config/beszel/beszel-agent.env, and the agent will fail to start.
+
+      To migrate to homebrew-core and keep your configuration, run:
+        curl -sL https://get.beszel.dev/brew -o /tmp/install-agent.sh && chmod +x /tmp/install-agent.sh && /tmp/install-agent.sh
+
+      Details: https://beszel.dev/guide/agent-installation
     service: |
       run ["#{bin}/beszel-agent-launcher"]
       log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"

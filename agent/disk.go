@@ -23,6 +23,7 @@ type fsRegistrationContext struct {
 	filesystem     string // device part of optional FILESYSTEM env var
 	filesystemName string // optional custom name from FILESYSTEM=device__name
 	isWindows      bool
+	isDarwin       bool
 	efPath         string // path to extra filesystems (default "/extra-filesystems")
 	diskIoCounters map[string]disk.IOCountersStat
 }
@@ -121,6 +122,26 @@ func uniqueFsStatsKey(existing map[string]*system.FsStats, mountpoint string) st
 	}
 }
 
+// apfsPhysicalDisk returns the physical disk backing an APFS volume
+// (e.g. disk13s1 -> disk12), or "" when it can't be resolved. It is
+// implemented with diskutil on darwin. Also acts as a seam so tests can fake the
+// APFS volume -> physical disk topology on any platform.
+var apfsPhysicalDisk = diskutilPhysicalDisk
+
+// apfsIoDevice returns the physical disk I/O key for an APFS volume on
+// darwin, if it has I/O counters.
+func (ctx fsRegistrationContext) apfsIoDevice(device string) (string, bool) {
+	if !ctx.isDarwin || !filepath.IsAbs(device) {
+		return "", false
+	}
+	physical := apfsPhysicalDisk(device)
+	if physical == "" {
+		return "", false
+	}
+	_, ok := ctx.diskIoCounters[physical]
+	return physical, ok
+}
+
 // registerFilesystemStats resolves the tracked key and stats payload for a
 // filesystem before it is inserted into fsStats.
 func registerFilesystemStats(existing map[string]*system.FsStats, device, mountpoint string, root bool, customName string, ctx fsRegistrationContext) (string, *system.FsStats, bool) {
@@ -138,6 +159,16 @@ func registerFilesystemStats(existing map[string]*system.FsStats, device, mountp
 				if base := filepath.Base(resolved); base != key {
 					resolvedKey = base
 				}
+			}
+		}
+		// APFS volumes sit on a synthesized container disk (disk13s1 in
+		// container disk13) that IOKit reports no counters for, and whose
+		// number is unrelated to the physical disk (disk12). Resolve the
+		// physical store up front so the prefix fallback below can't pick an
+		// unrelated disk (disk1 is a prefix of disk13s1).
+		if _, ioMatch := ctx.diskIoCounters[key]; !ioMatch {
+			if physical, ok := ctx.apfsIoDevice(device); ok {
+				key = physical
 			}
 		}
 	}
@@ -258,7 +289,15 @@ func (d *diskDiscovery) addPartitionRootFs(device, mountpoint string) bool {
 	// device is passed through as-is: findIoDevice normalizes it, and
 	// filepath.Base would turn a Windows volume name such as "C:" into "\"
 	// on the way in (#2417).
-	fs, match := findIoDevice(device, d.ctx.diskIoCounters)
+	// An APFS root (e.g. disk3s1s1 on Apple Silicon) never prefix-matches its
+	// physical disk (disk0), so resolve it before the generic lookup.
+	fs, match := "", false
+	if _, exact := d.ctx.diskIoCounters[normalizeDeviceName(device)]; !exact {
+		fs, match = d.ctx.apfsIoDevice(device)
+	}
+	if !match {
+		fs, match = findIoDevice(device, d.ctx.diskIoCounters)
+	}
 	if !match {
 		return false
 	}
@@ -390,6 +429,7 @@ func (a *Agent) initializeDiskInfo() {
 		filesystem:     filesystem,
 		filesystemName: filesystemName,
 		isWindows:      isWindows,
+		isDarwin:       runtime.GOOS == "darwin",
 		diskIoCounters: diskIoCounters,
 		efPath:         "/extra-filesystems",
 	}

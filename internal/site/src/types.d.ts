@@ -8,6 +8,7 @@ declare global {
 		HUB_VERSION: string
 		HUB_URL: string
 		OAUTH_DISABLE_POPUP: boolean
+		AUTO_LOGIN?: boolean
 	}
 }
 
@@ -36,6 +37,10 @@ export interface SystemRecord extends RecordModel {
 export interface WiFi {
 	s?: string
 	r?: number
+	/** access point; r is the average RSSI of associated clients */
+	a?: boolean
+	/** connection profile name (Windows), only sent when it differs from the SSID */
+	p?: string
 }
 
 export interface SystemInfo {
@@ -104,22 +109,28 @@ export interface SystemStats {
 	cpus?: number[]
 	/** load average */
 	la?: [number, number, number]
-	/** total memory (gb) */
-	m: number
-	/** memory used (gb) */
-	mu: number
+	/** memory bytes [total, used, buffer + cache, zfs arc] */
+	mem?: [number, number, number, number]
+	/** max used memory (bytes) */
+	memm?: number
+	/** swap bytes [total, used] */
+	swap?: [number, number]
+	/** @deprecated total memory (gb) - records before 0.21.1 */
+	m?: number
+	/** @deprecated memory used (gb) - records before 0.21.1 */
+	mu?: number
 	/** memory percent */
 	mp: number
-	/** memory buffer + cache (gb) */
-	mb: number
-	/** max used memory (gb) */
+	/** @deprecated memory buffer + cache (gb) - records before 0.21.1 */
+	mb?: number
+	/** @deprecated max used memory (gb) - records before 0.21.1 */
 	mm?: number
-	/** zfs arc memory (gb) */
+	/** @deprecated zfs arc memory (gb) - records before 0.21.1 */
 	mz?: number
-	/** swap space (gb) */
-	s: number
-	/** swap used (gb) */
-	su: number
+	/** @deprecated swap space (gb) - records before 0.21.1 */
+	s?: number
+	/** @deprecated swap used (gb) - records before 0.21.1 */
+	su?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */
@@ -684,6 +695,10 @@ export interface NetworkMonitorRecord {
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Address family the agent probes over: 0 (auto), 4 (IPv4), or 6 (IPv6). */
+	ipVersion: 0 | 4 | 6
+	/** Accepted HTTP status codes and ranges, such as "200-299,401". Empty means any status below 400. */
+	statusCodes: string
 	res: number
 	resMin1h: number
 	resMax1h: number

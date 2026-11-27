@@ -13,11 +13,11 @@ import (
 	"testing"
 	"testing/synctest"
 
+	pbTests "ganigeorgiev.com/pocketbase/pocketbase/tests"
 	beszelTests "github.com/henrygd/beszel/internal/tests"
-	pbTests "github.com/pocketbase/pocketbase/tests"
 
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

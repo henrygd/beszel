@@ -1,3 +1,4 @@
+import { i18n } from "@lingui/core"
 import { plural, t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
 import { listenKeys } from "nanostores"
@@ -7,7 +8,7 @@ import { twMerge } from "tailwind-merge"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { HourFormat, Unit } from "./enums"
-import { $copyContent, $textMeasureVersion, $userSettings } from "./stores"
+import { $copyContent, $userSettings } from "./stores"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -96,12 +97,12 @@ export const formatDay = (timestamp: string) => {
 }
 
 export const updateFavicon = (() => {
-	let prevDownCount = 0
-	return (downCount = 0) => {
-		if (downCount === prevDownCount) {
+	let prevAlertCount = 0
+	return (alertCount = 0) => {
+		if (alertCount === prevAlertCount) {
 			return
 		}
-		prevDownCount = downCount
+		prevAlertCount = alertCount
 		const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 70">
   <defs>
@@ -111,10 +112,10 @@ export const updateFavicon = (() => {
     </linearGradient>
   </defs>
   <path fill="url(#gradient)" d="M35 70H0V0h35q4.4 0 8.2 1.7a21.4 21.4 0 0 1 6.6 4.5q2.9 2.8 4.5 6.6Q56 16.7 56 21a15.4 15.4 0 0 1-.3 3.2 17.6 17.6 0 0 1-.2.8 19.4 19.4 0 0 1-1.5 4 17 17 0 0 1-2.4 3.4 13.5 13.5 0 0 1-2.6 2.3 12.5 12.5 0 0 1-.4.3q1.7 1 3 2.5Q53 39.1 54 41a18.3 18.3 0 0 1 1.5 4 17.4 17.4 0 0 1 .5 3 15.3 15.3 0 0 1 0 1q0 4.4-1.7 8.2a21.4 21.4 0 0 1-4.5 6.6q-2.8 2.9-6.6 4.6Q39.4 70 35 70ZM14 14v14h21a7 7 0 0 0 2.3-.3 6.6 6.6 0 0 0 .4-.2Q39 27 40 26a6.9 6.9 0 0 0 1.5-2.2q.5-1.3.5-2.8a7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 17 40 16a7 7 0 0 0-2.3-1.4 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Zm0 28v14h21a7 7 0 0 0 2.3-.4 6.6 6.6 0 0 0 .4-.1Q39 54.9 40 54a7 7 0 0 0 1.5-2.2 6.9 6.9 0 0 0 .5-2.6 7.9 7.9 0 0 0 0-.2 7 7 0 0 0-.4-2.3 6.6 6.6 0 0 0-.1-.4Q40.9 45 40 44a7 7 0 0 0-2.3-1.5 6.9 6.9 0 0 0-2.5-.6 7.9 7.9 0 0 0-.2 0H14Z"/>
-  ${downCount > 0 &&
+  ${alertCount > 0 &&
 			`
 		<circle cx="40" cy="50" r="22" fill="#f00"/>
-  	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${downCount}</text>
+  	<text x="40" y="60" font-size="34" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">${alertCount}</text>
 	`
 			}
 </svg>
@@ -129,7 +130,7 @@ export const chartTimeData: ChartTimeData = {
 	"1m": {
 		type: "1m",
 		expectedInterval: 2000, // allow a bit of latency for one second updates (#1247)
-		label: () => t`1 minute`,
+		label: () => formatTimeUnit(1, "minute"),
 		format: (timestamp: string) => hourWithSeconds(timestamp),
 		ticks: 3,
 		getOffset: (endTime: Date) => timeMinute.offset(endTime, -1),
@@ -138,7 +139,7 @@ export const chartTimeData: ChartTimeData = {
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
-		label: () => t`1 hour`,
+		label: () => formatTimeUnit(1, "hour"),
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
@@ -146,7 +147,7 @@ export const chartTimeData: ChartTimeData = {
 	"12h": {
 		type: "10m",
 		expectedInterval: 60_000 * 10,
-		label: () => t`12 hours`,
+		label: () => formatTimeUnit(12, "hour"),
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
@@ -154,14 +155,14 @@ export const chartTimeData: ChartTimeData = {
 	"24h": {
 		type: "20m",
 		expectedInterval: 60_000 * 20,
-		label: () => t`24 hours`,
+		label: () => formatTimeUnit(24, "hour"),
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	"1w": {
 		type: "120m",
 		expectedInterval: 60_000 * 120,
-		label: () => t`1 week`,
+		label: () => formatTimeUnit(1, "week"),
 		ticks: 7,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
@@ -169,7 +170,7 @@ export const chartTimeData: ChartTimeData = {
 	"30d": {
 		type: "480m",
 		expectedInterval: 60_000 * 480,
-		label: () => t`30 days`,
+		label: () => formatTimeUnit(30, "day"),
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
@@ -181,19 +182,42 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
-const decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
+/** Locale used for number formatting: the app's selected language, not the browser's */
+function numberLocale() {
+	return i18n.locale || undefined
+}
+
+/** Format number using the app's selected language (e.g. decimal and grouping separators) */
+export function formatNumber(num: number) {
+	return num.toLocaleString(numberLocale(), { numberingSystem: "latn" })
+}
+
+/** Format an amount of a time unit in the app's selected language (e.g. "7 days", "7 Tage") */
+export function formatTimeUnit(num: number, unit: "minute" | "hour" | "day" | "week" | "month" | "year") {
+	return new Intl.NumberFormat(numberLocale(), {
+		style: "unit",
+		unit,
+		unitDisplay: "long",
+		numberingSystem: "latn",
+	}).format(num)
+}
+
+const decimalFormatters: Map<string, Intl.NumberFormat> = new Map()
 /** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
 	if (digits === 0) {
 		return Math.ceil(num).toString()
 	}
-	let formatter = decimalFormatters.get(digits)
+	const locale = numberLocale()
+	const key = `${locale}:${digits}`
+	let formatter = decimalFormatters.get(key)
 	if (!formatter) {
-		formatter = new Intl.NumberFormat(undefined, {
+		formatter = new Intl.NumberFormat(locale, {
 			minimumFractionDigits: digits,
 			maximumFractionDigits: digits,
+			numberingSystem: "latn",
 		})
-		decimalFormatters.set(digits, formatter)
+		decimalFormatters.set(key, formatter)
 	}
 	return formatter.format(num)
 }
@@ -209,15 +233,15 @@ export function formatMicroseconds(microseconds: number, fixedDigits = true): st
 
 	const digitFormatter = fixedDigits ? decimalString : toFixedFloat
 
-	if (microseconds < 1_000_000) {
-		const milliseconds = microseconds / 1000
-		const digits = milliseconds >= 10 ? 1 : 2
-		return `${digitFormatter(milliseconds, digits)}ms`
+	// Thresholds are where the printed value rounds up to the next unit or
+	// digit count (999.95ms -> 1.00s, 9.995ms -> 10.0ms, 9.995s -> 10.0s)
+	if (microseconds < 999_950) {
+		const digits = microseconds >= 9_995 ? 1 : 2
+		return `${digitFormatter(microseconds / 1000, digits)}ms`
 	}
 
-	const seconds = microseconds / 1_000_000
-	const digits = seconds >= 10 ? 1 : 2
-	return `${digitFormatter(seconds, digits)}s`
+	const digits = microseconds >= 9_995_000 ? 1 : 2
+	return `${digitFormatter(microseconds / 1_000_000, digits)}s`
 }
 
 /** Get value from local or session storage */
@@ -430,6 +454,25 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 	}
 }
 
+/** Debounce separately per key, so a pending call for one key is never replaced by a call for another */
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
+export function debounceByKey<T extends (...args: any[]) => any>(
+	func: T,
+	wait: number
+): (key: string, ...args: Parameters<T>) => void {
+	const timeouts = new Map<string, ReturnType<typeof setTimeout>>()
+	return (key: string, ...args: Parameters<T>) => {
+		clearTimeout(timeouts.get(key))
+		timeouts.set(
+			key,
+			setTimeout(() => {
+				timeouts.delete(key)
+				func(...args)
+			}, wait)
+		)
+	}
+}
+
 // Cache for runOnce
 // biome-ignore lint/complexity/noBannedTypes: Function is used to allow any function to be passed in
 const runOnceCache = new WeakMap<Function, { done: boolean; result: unknown }>()
@@ -450,92 +493,6 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	}) as T
 }
 
-const visualWidthCache = new Map<string, number>()
-
-let measureContext: CanvasRenderingContext2D | null | undefined
-let measureFont = ""
-
-/** Canvas context for measuring text in the font the app renders with, or null where canvas is unavailable.
- *  Only relative widths matter here, so the font size is arbitrary.
- */
-function getMeasureContext(): CanvasRenderingContext2D | null {
-	if (measureContext === undefined) {
-		measureContext = document.createElement("canvas").getContext("2d")
-		// the fallback font has different metrics, so re-measure whenever a font finishes loading.
-		// loadingdone also covers fonts that start loading after the first measurement,
-		// which fonts.ready does not if it has already resolved.
-		if (measureContext && "fonts" in document) {
-			document.fonts.addEventListener("loadingdone", invalidateVisualWidths)
-		}
-	}
-	if (measureContext) {
-		const { fontFamily, fontWeight } = getComputedStyle(document.body)
-		const font = `${fontWeight} 16px ${fontFamily}`
-		if (font !== measureFont) {
-			const isFirstFont = !measureFont
-			measureFont = font
-			measureContext.font = font
-			visualWidthCache.clear()
-			// defer so stores aren't updated in the middle of a comparison or a render
-			if (!isFirstFont) {
-				queueMicrotask(invalidateVisualWidths)
-			}
-		}
-	}
-	return measureContext
-}
-
-/** Drop cached widths and notify anything holding a result from isVisuallyLonger */
-function invalidateVisualWidths() {
-	visualWidthCache.clear()
-	$textMeasureVersion.set($textMeasureVersion.get() + 1)
-}
-
-/** Get the visual width of a string, accounting for full-width and narrow punctuation characters.
- *  Don't use for monospaced fonts, use .length instead
- */
-function getVisualStringWidth(str: string): number {
-	const cached = visualWidthCache.get(str)
-	if (cached !== undefined) {
-		return cached
-	}
-	const measured = getMeasureContext()?.measureText(str).width
-	if (measured !== undefined) {
-		visualWidthCache.set(str, measured)
-		return measured
-	}
-	let width = 0
-	for (const char of str) {
-		if (char === ".") {
-			width += 0.7
-			continue
-		}
-		const code = char.codePointAt(0) || 0
-		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
-		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
-			width += 1.8
-			continue
-		}
-		// Count CJK and other full-width characters as 2 units, others as 1
-		// Arabic and Cyrillic are counted as 1
-		const isFullWidth =
-			(code >= 0x2e80 && code <= 0x9fff) || // CJK Radicals, Symbols, and Ideographs
-			(code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
-			(code >= 0xfe30 && code <= 0xfe6f) || // CJK Compatibility Forms
-			(code >= 0xff00 && code <= 0xff60) || // Fullwidth Forms
-			(code >= 0xffe0 && code <= 0xffe6) || // Fullwidth Symbols
-			code > 0xffff // Emojis and other supplementary plane characters
-		width += isFullWidth ? 2 : 1
-	}
-	visualWidthCache.set(str, width)
-	return width
-}
-
-/** Compare the visual width of two strings imprecisely */
-export function isVisuallyLonger(str1: string, str2: string): boolean {
-	return getVisualStringWidth(str1) > getVisualStringWidth(str2)
-}
-
 /** Parses a filter string into OR'd groups of AND'd terms: "a b, c" -> [["a","b"], ["c"]] */
 export function parseFilterGroups(value: string): string[][] {
 	return value
@@ -553,7 +510,7 @@ export function matchesFilterGroups(searchString: string, groups: string[][]): b
 /** Format seconds to hours, minutes, or seconds */
 export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"): string {
 	const count = Math.floor(seconds / (unit === "hour" ? 3600 : unit === "minute" ? 60 : 86400))
-	const countString = count.toLocaleString()
+	const countString = formatNumber(count)
 	switch (unit) {
 		case "minute":
 			return plural(count, {

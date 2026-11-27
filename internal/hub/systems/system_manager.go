@@ -17,10 +17,10 @@ import (
 
 	"github.com/henrygd/beszel"
 
+	"ganigeorgiev.com/pocketbase/dbx"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/tools/store"
 	"github.com/blang/semver"
-	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/store"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -380,7 +380,7 @@ func (sm *SystemManager) resetFailedSmartFetchState(systemID string) {
 func (sm *SystemManager) GetMonitorConfigsForSystem(systemID string) ([]monitor.Config, error) {
 	var configs []monitor.Config
 	err := sm.hub.DB().
-		NewQuery("SELECT id, target, protocol, port, interval, server, skipTlsVerify FROM network_monitors WHERE system = {:system} AND enabled = true").
+		NewQuery("SELECT id, target, protocol, port, interval, server, skipTlsVerify, ipVersion, statusCodes FROM network_monitors WHERE system = {:system} AND enabled = true").
 		Bind(dbx.Params{"system": systemID}).
 		All(&configs)
 	return configs, err

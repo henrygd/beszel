@@ -8,7 +8,7 @@ msgstr ""
 "Language: sv\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-10-20 17:17\n"
+"PO-Revision-Date: 2026-10-22 17:15\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -26,9 +26,14 @@ msgstr "{0} tillgänglig"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} av {1} rad(er) valda."
+
+#. placeholder {0}: table.getFilteredRowModel().rows.length
+#: src/components/ui/data-table-pagination.tsx
+msgid "{0} row(s)"
+msgstr "{0} rad(er)"
 
 #. placeholder {0}: selectedIds.size
 #: src/components/network-monitors-table/monitor-dialog.tsx
@@ -87,6 +92,10 @@ msgstr "{total, plural, one {# uppdatering} other {# uppdateringar}}"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "{totalCount, plural, one {# service} other {# services}}"
 msgstr "{totalCount, plural, one {# tjänst} other {# tjänster}}"
+
+#: src/components/alerts-history-columns.tsx
+msgid "{value, plural, one {# day} other {# days}}"
+msgstr "{value, plural, one {# dag} other {# dagar}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -209,6 +218,7 @@ msgstr "Larmhistorik"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/system-actions-button.tsx
 msgid "Alerts"
 msgstr "Larm"
 
@@ -229,7 +239,7 @@ msgstr "Alla behållare"
 msgid "All Systems"
 msgstr "Alla system"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Är du säker på att du vill ta bort {name}?"
 
@@ -401,7 +411,7 @@ msgstr "Kan stoppa"
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -426,6 +436,10 @@ msgstr "Celsius (°C)"
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Certificate"
 msgstr "Certifikat"
+
+#: src/lib/alerts.ts
+msgid "Certificate Expiration"
+msgstr "Certifikatets utgång"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 msgid "Certificate expired {expires}"
@@ -576,7 +590,7 @@ msgstr "Containrar"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Continue"
 msgstr "Fortsätt"
 
@@ -610,7 +624,7 @@ msgctxt "Copy alerts from another system"
 msgid "Copy from"
 msgstr "Kopiera från"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy host"
 msgstr "Kopiera värd"
 
@@ -619,7 +633,7 @@ msgstr "Kopiera värd"
 msgid "Copy Linux command"
 msgstr "Kopiera Linux-kommando"
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Copy name"
 msgstr "Kopiera namn"
 
@@ -638,6 +652,11 @@ msgstr "Kopiera installationskommandot för agenten nedan, eller registrera agen
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
 msgstr "Kopiera <0>docker-compose.yml</0>-innehållet för agenten nedan, eller registrera agenter automatiskt med en <1>universal token</1>."
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Copy token"
+msgstr "Kopiera token"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -761,7 +780,7 @@ msgstr "Standardtidsperiod"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Delete"
 msgstr "Ta bort"
 
@@ -857,7 +876,7 @@ msgstr "Varaktighet"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 #: src/components/routes/settings/quiet-hours.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Edit"
 msgstr "Redigera"
 
@@ -958,6 +977,7 @@ msgstr "Befintliga system som inte definieras i <0>config.yml</0> kommer att tas
 msgid "Exited active"
 msgstr "Avslutades aktivt"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/network-monitors-table/network-monitors-columns.tsx
 msgid "Expired"
 msgstr "Utgången"
@@ -965,6 +985,10 @@ msgstr "Utgången"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
 msgstr "Upphör efter en timme eller vid hub-omstart."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Expires within <0>{value, plural, one {# day} other {# days}}</0>"
+msgstr "Går ut inom <0>{value, plural, one {# dag} other {# dagar}}</0>"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1142,6 +1166,11 @@ msgstr "Heartbeat skickades framgångsrikt"
 msgid "Hide timestamps"
 msgstr "Dölj tidsstämplar"
 
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Hide token"
+msgstr "Dölj token"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -1183,6 +1212,10 @@ msgstr "Vilande"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Om du har glömt lösenordet till ditt administratörskonto kan du återställa det med följande kommando."
+
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Ignore TLS certificate errors"
+msgstr "Ignorera TLS-certifikatfel"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -1269,6 +1302,7 @@ msgstr "Laddar..."
 msgid "Log Out"
 msgstr "Logga ut"
 
+#: src/components/login/login.tsx
 #: src/components/login/login.tsx
 msgid "Login"
 msgstr "Logga in"
@@ -1500,6 +1534,11 @@ msgstr "Stöd för OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Vid varje omstart kommer systemen i databasen att uppdateras för att matcha systemen som definieras i filen."
 
+#. placeholder {0}: alert.value
+#: src/components/active-alerts.tsx
+msgid "One or more certificates expire within {0, plural, one {# day} other {# days}}"
+msgstr "Ett eller flera certifikat går ut inom {0, plural, one {# dag} other {# dagar}}"
+
 #: src/lib/alerts.ts
 msgid "One or more containers are unhealthy"
 msgstr "En eller flera containrar är i ett ohälsosamt tillstånd"
@@ -1528,7 +1567,7 @@ msgstr "Engångslösenord"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/routes/system/storage-pools-table.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Open menu"
 msgstr "Öppna menyn"
 
@@ -1571,11 +1610,8 @@ msgid "Page"
 msgstr "Sida"
 
 #. placeholder {0}: pageIndex + 1
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: Math.max(table.getPageCount(), 1)
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#. placeholder {1}: Math.max(1, pageCount)
+#: src/components/ui/data-table-pagination.tsx
 msgid "Page {0} of {1}"
 msgstr "Sida {0} av {1}"
 
@@ -1591,6 +1627,10 @@ msgstr "Lösenord"
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "Lösenordet måste vara minst 8 tecken."
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be at most 71 characters."
+msgstr "Lösenordet får innehålla högst 71 tecken."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1610,7 +1650,7 @@ msgid "Patch"
 msgstr ""
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Pause"
 msgstr "Paus"
 
@@ -1683,6 +1723,10 @@ msgstr "Vänligen se <0>dokumentationen</0> för instruktioner."
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Vänligen logga in på ditt konto"
+
+#: src/components/login/auth-form.tsx
+msgid "Please wait a moment and try again."
+msgstr "Vänta en stund och försök igen."
 
 #: src/components/routes/system/storage-pools-table.tsx
 msgid "Pool Health"
@@ -1830,9 +1874,14 @@ msgid "Restarts"
 msgstr "Omstarter"
 
 #: src/components/network-monitors-table/network-monitors-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "Resume"
 msgstr "Återuppta"
+
+#: src/components/token-value.tsx
+#: src/components/token-value.tsx
+msgid "Reveal token"
+msgstr "Visa token"
 
 #. Package version
 #: src/components/routes/system/package-updates-table.tsx
@@ -1850,8 +1899,7 @@ msgstr "Rot"
 msgid "Rotate token"
 msgstr "Rotera token"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/package-updates-table.tsx
+#: src/components/ui/data-table-pagination.tsx
 msgid "Rows per page"
 msgstr "Rader per sida"
 
@@ -2006,7 +2054,6 @@ msgstr "Ställ in följande miljövariabler på din Beszel-hubb för att aktiver
 #: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
-#: src/components/routes/system/info-bar.tsx
 msgid "Settings"
 msgstr "Inställningar"
 
@@ -2175,7 +2222,7 @@ msgstr "Den övergripande statusen är <0>ok</0> när alla system är uppe, <1>v
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Logga sedan in på backend och återställ ditt användarkontos lösenord i användartabellen."
 
-#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/system-actions-button.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Den här åtgärden kan inte ångras. Detta kommer permanent att ta bort alla aktuella poster för {name} från databasen."
 
@@ -2205,6 +2252,15 @@ msgstr "Till e-postadress(er)"
 msgid "Token"
 msgstr "Nyckel"
 
+#. placeholder {0}: fingerprint.expand.system.name
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token for {0}"
+msgstr "Token för {0}"
+
+#: src/components/token-value.tsx
+msgid "Token hidden"
+msgstr "Token dold"
+
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -2218,6 +2274,10 @@ msgstr "Tokens tillåter agenter att ansluta och registrera. Fingeravtryck är s
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens och fingeravtryck används för att autentisera WebSocket-anslutningar till hubben."
+
+#: src/components/login/auth-form.tsx
+msgid "Too many login attempts"
+msgstr "För många inloggningsförsök"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -2267,6 +2327,10 @@ msgstr "Utlöses när 5-minuters genomsnittlig belastning överskrider ett trös
 #: src/lib/alerts.ts
 msgid "Triggers when a container's health check reports unhealthy"
 msgstr "Utlöses när en containers hälsokontroll rapporterar ett ohälsosamt tillstånd"
+
+#: src/lib/alerts.ts
+msgid "Triggers when an HTTPS certificate nears expiration"
+msgstr "Utlöses när ett HTTPS-certifikat närmar sig utgång"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -2337,6 +2401,7 @@ msgid "Unit preferences"
 msgstr "Enhetsinställningar"
 
 #: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Universell nyckel"
@@ -2413,6 +2478,10 @@ msgstr "Användning"
 msgid "Usage of storage pool {displayName}"
 msgstr "Användning av lagringspool {displayName}"
 
+#: src/components/network-monitors-table/monitor-dialog.tsx
+msgid "Use for self-signed certificates."
+msgstr "Använd för självsignerade certifikat."
+
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/charts/memory-charts.tsx
 #: src/components/routes/system/storage-pools-table.tsx
@@ -2436,6 +2505,7 @@ msgid "Value"
 msgstr "Värde"
 
 #: src/components/network-monitors-table/network-monitors-table.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Visa"
@@ -2463,6 +2533,7 @@ msgstr "Visa dina 200 senaste larm."
 msgid "Visible Fields"
 msgstr "Synliga fält"
 
+#: src/components/charts/chart-no-values.tsx
 #: src/components/routes/system/chart-card.tsx
 msgid "Waiting for enough records to display"
 msgstr "Väntar på tillräckligt med poster att visa"
@@ -2537,4 +2608,3 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dina användarinställningar har uppdaterats."
-

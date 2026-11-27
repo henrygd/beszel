@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 import LineChartDefault from "@/components/charts/line-chart"
-import { connectedWiFi, wifiColor } from "@/lib/wifi"
+import { connectedWiFi, wifiColor, wifiNetworkName } from "@/lib/wifi"
 import type { ChartData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartCard } from "../chart-card"
 
@@ -21,11 +21,14 @@ export function WiFiChart({
 		([id, wifi]) => wifi.r !== undefined || chartData.systemStats.some((record) => record.stats?.wf?.[id] !== undefined)
 	)
 	if (!hasSignal) return null
-	const dataPoints = interfaces.map(([id, current]) => ({
-		label: current.s ? `${id} (${current.s})` : id,
-		color: wifiColor(id),
-		dataKey: ({ stats }: SystemStatsRecord) => stats?.wf?.[id],
-	}))
+	const dataPoints = interfaces.map(([id, current]) => {
+		const network = wifiNetworkName(current)
+		return {
+			label: network ? `${id} (${network})` : id,
+			color: wifiColor(id),
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.wf?.[id],
+		}
+	})
 	return (
 		<ChartCard
 			empty={dataEmpty}

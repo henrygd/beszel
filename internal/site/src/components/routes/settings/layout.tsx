@@ -8,6 +8,7 @@ import {
 	FileSlidersIcon,
 	FingerprintIcon,
 	HeartPulseIcon,
+	KeyRoundIcon,
 	SettingsIcon,
 } from "lucide-react"
 import { lazy, useEffect } from "react"
@@ -26,6 +27,7 @@ const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
 const heartbeatSettingsImport = () => import("./heartbeat.tsx")
+const apiKeysSettingsImport = () => import("./api-keys.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
 const NotificationsSettings = lazy(notificationsSettingsImport)
@@ -33,6 +35,7 @@ const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 const HeartbeatSettings = lazy(heartbeatSettingsImport)
+const ApiKeysSettings = lazy(apiKeysSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -72,6 +75,12 @@ export default function SettingsLayout() {
 			icon: FingerprintIcon,
 			noReadOnly: true,
 			preload: fingerprintsSettingsImport,
+		},
+		{
+			title: t`API Keys`,
+			href: getPagePath($router, "settings", { name: "api-keys" }),
+			icon: KeyRoundIcon,
+			preload: apiKeysSettingsImport,
 		},
 		{
 			title: t`Alert History`,
@@ -148,5 +157,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <AlertsHistoryDataTableSettings />
 		case "heartbeat":
 			return <HeartbeatSettings />
+		case "api-keys":
+			return <ApiKeysSettings />
 	}
 }

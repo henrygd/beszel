@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/pocketbase/pocketbase/core"
+	"ganigeorgiev.com/pocketbase/pocketbase/core"
 )
 
 const (
@@ -232,7 +233,12 @@ func (am *AlertManager) sendContainerHealthAlert(unhealthy bool, systemName stri
 
 	message := body.String()
 	if len(message) > containerAlertMessageMaxChars {
-		message = message[:containerAlertMessageMaxChars] + "\n…(truncated)"
+		// back up to a rune boundary so the cut never splits a multi-byte character
+		cut := containerAlertMessageMaxChars
+		for i := 0; i < utf8.UTFMax-1 && !utf8.RuneStart(message[cut]); i++ {
+			cut--
+		}
+		message = message[:cut] + "\n…(truncated)"
 	}
 
 	claimed, err := am.claimPendingContainerAlert(alertData)
@@ -312,7 +318,12 @@ func buildContainerLogExcerpt(raw string) string {
 
 	excerpt := strings.TrimSpace(strings.Join(selected, "\n"))
 	if len(excerpt) > containerLogExcerptMaxChars {
-		excerpt = "…" + excerpt[len(excerpt)-containerLogExcerptMaxChars:]
+		// move forward to a rune boundary so the cut never splits a multi-byte character
+		start := len(excerpt) - containerLogExcerptMaxChars
+		for i := 0; i < utf8.UTFMax-1 && !utf8.RuneStart(excerpt[start]); i++ {
+			start++
+		}
+		excerpt = "…" + excerpt[start:]
 	}
 	return excerpt
 }

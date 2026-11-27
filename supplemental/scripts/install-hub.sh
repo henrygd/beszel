@@ -4,6 +4,19 @@ is_freebsd() {
   [ "$(uname -s)" = "FreeBSD" ]
 }
 
+# If SELinux is enabled, reset the binary to the label its path should have.
+# The binary is extracted in a temp dir and moved, so it keeps the temp label
+# (user_tmp_t) that systemd is not allowed to execute.
+restore_selinux_context() {
+  if command -v getenforce >/dev/null 2>&1 && command -v restorecon >/dev/null 2>&1; then
+    SELINUX_MODE=$(getenforce) || return 0
+    if [ "$SELINUX_MODE" != "Disabled" ]; then
+      echo "SELinux is enabled (${SELINUX_MODE} mode). Restoring context of $1..."
+      restorecon -v "$1" >/dev/null 2>&1 || echo "Warning: Failed to restore SELinux context for $1."
+    fi
+  fi
+}
+
 # Function to ensure the proxy URL ends with a /
 ensure_trailing_slash() {
   if [ -n "$1" ]; then
@@ -358,6 +371,7 @@ fi
 chmod +x "$TEMP_DIR/beszel"
 mv "$TEMP_DIR/beszel" "$BIN_PATH"
 chown beszel:beszel "$BIN_PATH"
+restore_selinux_context "$BIN_PATH"
 rm -rf "$TEMP_DIR"
 
 if is_freebsd; then
@@ -420,6 +434,34 @@ User=beszel
 Restart=always
 RestartSec=5
 
+# Security/sandboxing settings
+# The hub only needs to write its data directory and open network sockets.
+ReadWritePaths=$HUB_DIR/beszel_data
+# The hub shares the beszel user with the agent, which may be in the docker group.
+# The hub never needs container sockets, so hide them from it.
+InaccessiblePaths=-/run/docker.sock -/var/run/docker.sock -/run/podman
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectProc=invisible
+ProcSubset=pid
+NoNewPrivileges=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+KeyringMode=private
+SystemCallArchitectures=native
+
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -452,6 +494,7 @@ Wants=beszel-hub.service
 
 [Service]
 Type=oneshot
+WorkingDirectory=$HUB_DIR
 ExecStart=$BIN_PATH update
 EOF
 

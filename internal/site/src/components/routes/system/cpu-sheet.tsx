@@ -99,14 +99,14 @@ export default memo(function CpuCoresSheet({
 			stackId: "a",
 		},
 		{
-			label: t`SoftIRQ`,
+			label: "SoftIRQ",
 			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[6],
 			color: "hsl(50, 80%, 52%)",
 			opacity: 0.35,
 			stackId: "a",
 		},
 		{
-			label: t`Nice`,
+			label: "Nice",
 			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[7],
 			color: "hsl(300, 60%, 55%)",
 			opacity: 0.35,

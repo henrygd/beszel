@@ -5,6 +5,7 @@ package health
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -15,11 +16,8 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	// Override healthFile to use a temporary directory for this test.
-	originalHealthFile := healthFile
-	tmpDir := t.TempDir()
-	healthFile = filepath.Join(tmpDir, "beszel_health_test")
-	defer func() { healthFile = originalHealthFile }()
+	// Override healthFiles to use a temporary directory for this test.
+	healthFile := useHealthFiles(t, filepath.Join(t.TempDir(), "beszel_health_test"))[0]
 
 	t.Run("check with no health file", func(t *testing.T) {
 		err := Check()
@@ -62,4 +60,133 @@ func TestHealth(t *testing.T) {
 			assert.Equal(t, "unhealthy", err.Error(), "Check() returned wrong error")
 		})
 	})
+}
+
+// The health file path is shared by every agent on the host, so a second removal must not be
+// reported as a failure: it reaches the caller as the error returned by Agent.Start.
+func TestCleanUpIsIdempotent(t *testing.T) {
+	healthFile := useHealthFiles(t, filepath.Join(t.TempDir(), "beszel_health"))[0]
+
+	require.NoError(t, Update())
+	require.FileExists(t, healthFile)
+	require.NoError(t, CleanUp())
+	require.NoFileExists(t, healthFile)
+	assert.NoError(t, CleanUp(), "removing a health file that is already gone is not an error")
+}
+
+// A candidate the agent never wrote can be impossible to remove: under systemd ProtectSystem=strict
+// without PrivateTmp, /tmp is read-only and unlink fails with EROFS even for a missing file, and in
+// the sticky /dev/shm another user's file fails with EPERM. Neither may fail the shutdown.
+func TestCleanUpSkipsCandidatesItDidNotWrite(t *testing.T) {
+	dir := t.TempDir()
+	ours := filepath.Join(dir, "beszel_health")
+	// A non-empty directory stands in for a candidate that cannot be removed: os.Remove fails on it
+	// on every platform and regardless of privileges.
+	unremovable := filepath.Join(dir, "unremovable")
+	require.NoError(t, os.MkdirAll(filepath.Join(unremovable, "child"), 0o755))
+	useHealthFiles(t, ours, unremovable)
+
+	require.NoError(t, Update())
+	require.NoError(t, CleanUp())
+	assert.NoFileExists(t, ours)
+	assert.DirExists(t, unremovable)
+}
+
+// The file in another location may belong to another agent on the host, so CleanUp leaves it.
+func TestCleanUpLeavesOtherAgentsFile(t *testing.T) {
+	dir := t.TempDir()
+	ours := filepath.Join(dir, "shm_beszel_health")
+	other := filepath.Join(dir, "tmp_beszel_health")
+	useHealthFiles(t, ours, other)
+	require.NoError(t, os.WriteFile(other, nil, 0o644))
+
+	require.NoError(t, Update())
+	require.NoError(t, CleanUp())
+	assert.NoFileExists(t, ours)
+	assert.FileExists(t, other)
+}
+
+// If the preferred location becomes writable while the agent runs, Update switches to it; CleanUp
+// removes the earlier fallback file as well.
+func TestCleanUpRemovesEveryFileItWrote(t *testing.T) {
+	dir := t.TempDir()
+	preferredDir := filepath.Join(dir, "shm")
+	preferred := filepath.Join(preferredDir, "beszel_health")
+	fallback := filepath.Join(dir, "beszel_health")
+	useHealthFiles(t, preferred, fallback)
+
+	require.NoError(t, Update())
+	require.FileExists(t, fallback)
+	require.NoError(t, os.Mkdir(preferredDir, 0o755))
+	require.NoError(t, Update())
+	require.FileExists(t, preferred)
+
+	require.NoError(t, CleanUp())
+	assert.NoFileExists(t, preferred)
+	assert.NoFileExists(t, fallback)
+}
+
+// useHealthFiles points the package at the given candidate paths for one test.
+func useHealthFiles(t *testing.T, paths ...string) []string {
+	t.Helper()
+	originalFiles, originalWritten := healthFiles, written
+	healthFiles, written = paths, nil
+	t.Cleanup(func() { healthFiles, written = originalFiles, originalWritten })
+	return paths
+}
+
+// `agent health` runs package init and Check in its own process. If either wrote the file, a
+// hung agent's stale timestamp would be refreshed by the very check meant to catch it.
+func TestGetHealthFilePathsDoesNotWrite(t *testing.T) {
+	shmDir := t.TempDir()
+	paths := getHealthFilePaths(shmDir)
+	if runtime.GOOS == "linux" {
+		assert.Equal(t, filepath.Join(shmDir, "beszel_health"), paths[0])
+	}
+	assert.NoFileExists(t, filepath.Join(shmDir, "beszel_health"))
+}
+
+func TestCheckDoesNotTouchHealthFile(t *testing.T) {
+	healthFile := useHealthFiles(t, filepath.Join(t.TempDir(), "beszel_health"))[0]
+	require.NoError(t, Update())
+	stale := time.Now().Add(-2 * time.Minute)
+	require.NoError(t, os.Chtimes(healthFile, stale, stale))
+
+	err := Check()
+	require.Error(t, err)
+	assert.Equal(t, "unhealthy", err.Error())
+
+	info, err := os.Stat(healthFile)
+	require.NoError(t, err)
+	assert.True(t, info.ModTime().Equal(stale), "Check changed the health file's mtime")
+}
+
+// The first location is not always writable (#1455), so Update falls back to the next one and
+// Check finds the file there.
+func TestHealthFileFallback(t *testing.T) {
+	dir := t.TempDir()
+	unwritable := filepath.Join(dir, "missing-dir", "beszel_health")
+	fallback := filepath.Join(dir, "beszel_health")
+	useHealthFiles(t, unwritable, fallback)
+
+	require.NoError(t, Update())
+	assert.NoFileExists(t, unwritable)
+	assert.FileExists(t, fallback)
+	assert.NoError(t, Check())
+}
+
+// A file another agent left behind (say, root's, which a non-root agent cannot overwrite) must not
+// hide the one the running agent keeps fresh.
+func TestCheckIgnoresStaleFileInOtherLocation(t *testing.T) {
+	dir := t.TempDir()
+	stalePath := filepath.Join(dir, "shm_beszel_health")
+	freshPath := filepath.Join(dir, "tmp_beszel_health")
+	useHealthFiles(t, stalePath, freshPath)
+
+	require.NoError(t, os.WriteFile(stalePath, nil, 0o644))
+	stale := time.Now().Add(-time.Hour)
+	require.NoError(t, os.Chtimes(stalePath, stale, stale))
+	require.NoError(t, os.WriteFile(freshPath, nil, 0o644))
+
+	assert.NoError(t, Check())
 }

@@ -1,4 +1,4 @@
-import { alertInfo } from "@/lib/alerts"
+import { $activeAlerts, alertInfo } from "@/lib/alerts"
 import { $alerts, $allSystemsById } from "@/lib/stores"
 import { useBrowserStorage } from "@/lib/utils"
 import type { AlertRecord } from "@/types"
@@ -55,30 +55,25 @@ function AlertLabel({ alert, systemName }: { alert: AlertRecord; systemName?: st
 /** Banner showing the number of triggered alerts, with a sheet listing them. */
 export const ActiveAlerts = ({ className }: { className?: string }) => {
 	const alerts = useStore($alerts)
+	const activeAlerts = useStore($activeAlerts)
 	const systems = useStore($allSystemsById)
 	const [open, setOpen] = useState(false)
 	// ids of the alerts that were active when the banner was last dismissed.
 	// session storage because a retrigger while the page is closed keeps the same id.
 	const [dismissedIds, setDismissedIds] = useBrowserStorage<string[]>("dismissedAlerts", [], sessionStorage)
 
-	const { activeAlerts, systemCount, alertsKey } = useMemo(() => {
-		const activeAlerts: AlertRecord[] = []
+	const { systemCount, alertsKey } = useMemo(() => {
 		const systemIds = new Set<string>()
 		// key to prevent re-rendering if alerts change but active alerts didn't
 		const alertsKey: string[] = []
 
-		for (const systemId of Object.keys(alerts)) {
-			for (const alert of alerts[systemId].values()) {
-				if (alert.triggered && alert.name in alertInfo) {
-					activeAlerts.push(alert)
-					systemIds.add(alert.system)
-					alertsKey.push(`${alert.id}${alert.value}${alert.min}`)
-				}
-			}
+		for (const alert of activeAlerts) {
+			systemIds.add(alert.system)
+			alertsKey.push(`${alert.id}${alert.value}${alert.min}`)
 		}
 
-		return { activeAlerts, systemCount: systemIds.size, alertsKey: alertsKey.join("") }
-	}, [alerts])
+		return { systemCount: systemIds.size, alertsKey: alertsKey.join("") }
+	}, [activeAlerts])
 
 	// forget dismissed alerts once they resolve so they show again if they retrigger.
 	// skipped while alerts are still loading so a reload doesn't clear the dismissal,

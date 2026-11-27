@@ -11,25 +11,30 @@ import (
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
-// WiFi describes a currently connected station interface. Keys in WiFi maps are
-// OS interface identities, not SSIDs. Signal is native dBm only; nil means the
-// OS confirmed association but could not supply RSSI (never convert quality %).
+// WiFi describes a currently connected station interface, or an access point
+// when AP is set. Keys in WiFi maps are OS interface identities, not SSIDs.
+// Signal is native dBm only; nil means the OS confirmed association but could
+// not supply RSSI (never convert quality %). For an AP, Signal is the average
+// RSSI of associated clients, and nil means no client reported one.
 type WiFi struct {
 	SSID   string   `json:"s,omitempty" cbor:"0,keyasint,omitempty"`
 	Signal *float64 `json:"r,omitempty" cbor:"1,keyasint,omitempty"`
+	AP     bool     `json:"a,omitzero" cbor:"2,keyasint,omitempty"`
+	// Profile is the connection profile name (Windows only), set when it differs from the SSID
+	Profile string `json:"p,omitempty" cbor:"3,keyasint,omitempty"`
 }
 
 type Stats struct {
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
 	MaxCpu         float64             `json:"cpum,omitzero" cbor:"-"`
-	Mem            float64             `json:"m" cbor:"2,keyasint"`
-	MaxMem         float64             `json:"mm,omitzero" cbor:"-"`
-	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
+	Mem            float64             `json:"m" cbor:"2,keyasint"`  // Deprecated: GB, use MemBytes. Memory GB fields are kept for older hubs and integrations.
+	MaxMem         float64             `json:"mm,omitzero" cbor:"-"` // Deprecated: GB, use MaxMemBytes.
+	MemUsed        float64             `json:"mu" cbor:"3,keyasint"` // Deprecated: GB, use MemBytes.
 	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
-	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`
-	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
-	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`
-	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"`
+	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`                    // Deprecated: GB, use MemBytes.
+	MemZfsArc      float64             `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // Deprecated: GB, use MemBytes.
+	Swap           float64             `json:"s,omitzero" cbor:"7,keyasint,omitempty"`  // Deprecated: GB, use SwapBytes.
+	SwapUsed       float64             `json:"su,omitzero" cbor:"8,keyasint,omitempty"` // Deprecated: GB, use SwapBytes.
 	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
 	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
@@ -59,7 +64,9 @@ type Stats struct {
 	ZfsPools          map[string]*ZfsPool  `json:"z,omitempty" cbor:"39,keyasint,omitempty"`  // ZFS pool metrics, keyed by pool name
 	DiskIOTotal       [2]uint64            `json:"diot,omitzero" cbor:"38,keyasint,omitzero"` // [total read bytes, total write bytes] cumulative device counters
 	WiFi              map[string]int8      `json:"wf,omitempty" cbor:"40,keyasint,omitempty"` // RSSI dBm keyed by interface; unavailable readings omitted
-
+	MemBytes          [4]uint64            `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
+	MaxMemBytes       uint64               `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
+	SwapBytes         [2]uint64            `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
 }
 
 // ZfsPool holds per-pool ZFS metrics for a single collection interval.
@@ -92,6 +99,18 @@ func (s Uint8Slice) MarshalJSON() ([]byte, error) {
 	return json.Marshal(arr)
 }
 
+// UnmarshalJSON accepts the numeric array written by MarshalJSON. Without it,
+// encoding/json/v2 (used by PocketBase to read record JSON fields) only accepts
+// base64 strings for byte slices and rejects the whole value.
+func (s *Uint8Slice) UnmarshalJSON(data []byte) error {
+	var arr []uint8
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	*s = arr
+	return nil
+}
+
 // Battery stores the representative battery's percent and charge state.
 // Its custom JSON encoding keeps the public and persisted representation as a
 // numeric tuple under both encoding/json v1 and v2.
@@ -99,6 +118,15 @@ type Battery [2]uint8
 
 func (b Battery) MarshalJSON() ([]byte, error) {
 	return json.Marshal([2]uint16{uint16(b[0]), uint16(b[1])})
+}
+
+func (b *Battery) UnmarshalJSON(data []byte) error {
+	var arr [2]uint8
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	*b = arr
+	return nil
 }
 
 type GPUData struct {

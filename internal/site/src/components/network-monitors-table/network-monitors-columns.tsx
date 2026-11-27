@@ -17,6 +17,7 @@ import {
 	CopyIcon,
 	ShieldCheckIcon,
 	ShieldOffIcon,
+	Layers2Icon,
 } from "lucide-react"
 import { t } from "@lingui/core/macro"
 import type { NetworkMonitorRecord, SystemRecord } from "@/types"
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Plural, Trans } from "@lingui/react/macro"
 import { $allSystemsById } from "@/lib/stores"
-import type { ReadableAtom } from "nanostores"
 import { useStore } from "@nanostores/react"
 import { SystemStatus } from "@/lib/enums"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -74,19 +74,15 @@ const SYSTEM_STATUS_COLORS = {
 const isMuted = (record: NetworkMonitorRecord, systemRecord: SystemRecord | undefined) =>
 	!record.enabled || systemRecord?.status !== SystemStatus.Up
 
-export function getMonitorColumns(
-	longestTarget = "",
-	$longestSystemName: ReadableAtom<string>,
-	{
-		onEdit,
-		onDelete,
-		onSetEnabled,
-	}: {
-		onEdit?: (monitor: NetworkMonitorRecord) => void
-		onDelete?: (monitors: NetworkMonitorRecord[]) => void | Promise<void>
-		onSetEnabled?: (monitors: NetworkMonitorRecord[], enabled: boolean) => void | Promise<void>
-	} = {}
-): ColumnDef<NetworkMonitorRecord>[] {
+export function getMonitorColumns({
+	onEdit,
+	onDelete,
+	onSetEnabled,
+}: {
+	onEdit?: (monitor: NetworkMonitorRecord) => void
+	onDelete?: (monitors: NetworkMonitorRecord[]) => void | Promise<void>
+	onSetEnabled?: (monitors: NetworkMonitorRecord[], enabled: boolean) => void | Promise<void>
+} = {}): ColumnDef<NetworkMonitorRecord>[] {
 	return [
 		{
 			id: "select",
@@ -128,7 +124,6 @@ export function getMonitorColumns(
 			header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 			cell: ({ getValue }) => {
 				const system = useStore($allSystemsById)[getValue() as string] as SystemRecord | undefined
-				const longestSystemName = useStore($longestSystemName)
 				const name = system?.name
 				const status = system?.status as SystemStatus // undefined val is fine but makes lsp mad
 
@@ -136,15 +131,10 @@ export function getMonitorColumns(
 					() => (
 						<div className="ms-1.5 max-w-44 flex gap-2 items-center tabular-nums">
 							<span className={cn("shrink-0 size-2 rounded-full", SYSTEM_STATUS_COLORS[status])} />
-							<div className="relative w-fit min-w-0 max-w-full">
-								<span className="invisible block whitespace-nowrap" aria-hidden="true">
-									{longestSystemName}
-								</span>
-								<span className="absolute inset-0 truncate">{name}</span>
-							</div>
+							<span className="truncate">{name}</span>
 						</div>
 					),
-					[status, name, longestSystemName]
+					[status, name]
 				)
 			},
 		},
@@ -153,7 +143,8 @@ export function getMonitorColumns(
 			meta: { label: t`Target` },
 			sortingFn: (a, b) =>
 				(a.getValue("target") as string).localeCompare(b.getValue("target") as string, undefined, { numeric: true }),
-			accessorFn: (record) => getMonitorTarget(record),
+			// The protocol column shows the IP version as a badge, so leave it out of the target.
+			accessorFn: (record) => getMonitorTarget({ ...record, ipVersion: 0 }),
 			header: ({ column }) => <HeaderButton column={column} name={t`Target`} Icon={GlobeIcon} />,
 			cell: ({ row, getValue }) => {
 				const monitor = row.original
@@ -170,12 +161,7 @@ export function getMonitorColumns(
 				return (
 					<div className="ms-1.5 max-w-64 flex gap-2 items-center tabular-nums">
 						<span className={cn("shrink-0 size-2 rounded-full", color)} />
-						<div className="relative w-fit min-w-0 max-w-full">
-							<span className="invisible block overflow-hidden whitespace-nowrap" aria-hidden="true">
-								{longestTarget}
-							</span>
-							<span className="absolute inset-0 truncate">{getValue() as string}</span>
-						</div>
+						<span className="truncate">{getValue() as string}</span>
 					</div>
 				)
 			},
@@ -196,6 +182,16 @@ export function getMonitorColumns(
 					)
 				}
 				return <Badge className={cn("uppercase", protocolColors[protocol])}>{protocol}</Badge>
+			},
+		},
+		{
+			id: "ipVersion",
+			meta: { label: t`IP Version` },
+			accessorFn: (record) => record.ipVersion ?? 0,
+			header: ({ column }) => <HeaderButton column={column} name={t`IP`} Icon={Layers2Icon} />,
+			cell: ({ getValue }) => {
+				const ipVersion = getValue() as number
+				return <Badge variant="secondary">{ipVersion ? `IPv${ipVersion}` : <Trans>Auto</Trans>}</Badge>
 			},
 		},
 		{

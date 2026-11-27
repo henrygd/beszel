@@ -6,6 +6,7 @@ package ghupdate
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -81,7 +82,15 @@ type updater struct {
 	currentVersion string
 }
 
+// ErrSelfUpdateDisabled is returned by Update when the binary was built with
+// the no_self_update build tag.
+var ErrSelfUpdateDisabled = errors.New("self-update is disabled in this build; use your package manager to update")
+
 func Update(config Config) (updated bool, err error) {
+	if SelfUpdateDisabled {
+		return false, ErrSelfUpdateDisabled
+	}
+
 	p := &updater{
 		currentVersion: beszel.Version,
 		config:         config,

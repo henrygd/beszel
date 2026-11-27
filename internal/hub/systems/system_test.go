@@ -102,6 +102,39 @@ func TestCombinedData_MigrateDeprecatedFields(t *testing.T) {
 		}
 	})
 
+	t.Run("Migrate memory GB fields to bytes", func(t *testing.T) {
+		const gb = 1024 * 1024 * 1024
+		cd := &system.CombinedData{
+			Stats: system.Stats{Mem: 16, MemUsed: 4.5, MemBuffCache: 2, MemZfsArc: 1, Swap: 4, SwapUsed: 0.5},
+		}
+		migrateDeprecatedFields(cd, true)
+
+		require.Equal(t, [4]uint64{16 * gb, 4.5 * gb, 2 * gb, 1 * gb}, cd.Stats.MemBytes)
+		require.Equal(t, [2]uint64{4 * gb, 0.5 * gb}, cd.Stats.SwapBytes)
+		// GB fields are kept for third-party integrations
+		require.Equal(t, 16.0, cd.Stats.Mem)
+		require.Equal(t, 4.5, cd.Stats.MemUsed)
+		require.Equal(t, 0.5, cd.Stats.SwapUsed)
+	})
+
+	t.Run("Keep memory bytes and GB fields from newer agents", func(t *testing.T) {
+		cd := &system.CombinedData{
+			Stats: system.Stats{
+				Mem: 0.06, MemUsed: 0.01, Swap: 0.03, SwapUsed: 0.01,
+				MemBytes:  [4]uint64{64 << 20, 12 << 20, 3 << 20, 0},
+				SwapBytes: [2]uint64{32 << 20, 1 << 20},
+			},
+		}
+		migrateDeprecatedFields(cd, true)
+
+		require.Equal(t, [4]uint64{64 << 20, 12 << 20, 3 << 20, 0}, cd.Stats.MemBytes)
+		require.Equal(t, [2]uint64{32 << 20, 1 << 20}, cd.Stats.SwapBytes)
+		require.Equal(t, 0.06, cd.Stats.Mem)
+		require.Equal(t, 0.01, cd.Stats.MemUsed)
+		require.Equal(t, 0.03, cd.Stats.Swap)
+		require.Equal(t, 0.01, cd.Stats.SwapUsed)
+	})
+
 	t.Run("Migrate Info fields to Details struct", func(t *testing.T) {
 		cd := &system.CombinedData{
 			Stats: system.Stats{

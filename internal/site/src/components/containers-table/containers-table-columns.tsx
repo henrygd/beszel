@@ -16,7 +16,7 @@ import {
 import { EthernetIcon, HourglassIcon, SquareArrowRightEnterIcon } from "../ui/icons"
 import { Badge } from "../ui/badge"
 import { t } from "@lingui/core/macro"
-import { $allSystemsById, $longestSystemName } from "@/lib/stores"
+import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
@@ -28,12 +28,14 @@ const unitSeconds = [
 	["d", 86400],
 	["w", 604800],
 	["mo", 2592000],
+	["y", 31536000],
 ] as const
 // Convert docker status string to number of seconds ("Up X minutes", "Up X hours", etc.)
 function getStatusValue(status: string): number {
-	const [_, num, unit] = status.split(" ")
+	const [_, num, unit = ""] = status.split(" ")
 	// Docker uses "a" or "an" instead of "1" for singular units (e.g., "Up a minute", "Up an hour")
 	const numValue = num === "a" || num === "an" ? 1 : Number(num)
+	if (!Number.isFinite(numValue)) return 0
 	for (const [unitName, value] of unitSeconds) {
 		if (unit.startsWith(unitName)) {
 			return numValue * value
@@ -68,15 +70,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			const longestName = useStore($longestSystemName)
-			return (
-				<div className="ms-1 relative w-fit max-w-40">
-					<span className="invisible block whitespace-nowrap" aria-hidden="true">
-						{longestName}
-					</span>
-					<span className="absolute inset-0 truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
-				</div>
-			)
+			return <div className="ms-1 max-w-40 truncate">{allSystems[getValue() as string]?.name ?? ""}</div>
 		},
 	},
 	// {

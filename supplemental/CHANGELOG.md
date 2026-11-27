@@ -1,20 +1,149 @@
+## 0.21.2
+
+- Add an actions menu with alert settings to the system detail page (#2803)
+
+- Add `FAN_SENSORS` to include or exclude fan sensors (#2713)
+
+- Add styled HTML alert emails (#2697)
+
+- Add `no_self_update` build tag to disable hub and agent self-updates (#2724)
+
+- Add warnings for missing automatic login users and trusted proxy configuration (#2824, #2812)
+
+- Add video encode/decode engine usage to GPU metrics when using nvtop (#2749)
+
+- Limit sign-in attempts to 10 per minute per address (#2642)
+
+- Improve GPU collection retries and back off slow or repeatedly failing reads (#2705, #2687, #2709, #2656)
+
+- Fix hub crashes caused by null entries in agent data (#2834)
+
+- Fix agent health checks incorrectly reporting disconnected agents as healthy (#2825)
+
+- Fix agent connections timing out while waiting for a slow hub (#2772)
+
+- Fix container requests being canceled by requests for other systems (#2838)
+
+- Fix agents being able to overwrite another system's container, service, S.M.A.R.T., or ZFS records (#2835)
+
+- Fix non-admin users being able to change system users
+
+- Fix missing permission checks when moving network monitors between systems (#2714)
+
+- Fix container refreshes overlapping the initial load on the All Containers page
+
+- Fix system users being overwritten when editing a system
+
+- Fix network monitors remaining on the old agent after moving to another system (#2739)
+
+- Fix bulk monitor copy and import for URLs containing commas (#2716)
+
+- Fix alerts not all being saved when enabling multiple alerts quickly (#2781)
+
+- Fix automatic login briefly showing the login form and making redundant requests (#2810)
+
+- Fix password validation on the initial setup form (#2744, #2745)
+
+- Fix hub updates failing due to database access, working directory, or SELinux context issues (#2800, #2801, #2794)
+
+- Fix historical averages including records from the previous interval (#2807)
+
+- Fix failed systemd services being omitted when they have never been active (#2776, #2777)
+
+- Fix NVMe S.M.A.R.T. data being lost when large counters exceed 64 bits (#2732)
+
+- Fix degraded RAID1 arrays with remaining redundancy being reported as failed (#2760)
+
+- Fix LXC memory usage incorrectly subtracting the host's ZFS ARC (#2767)
+
+- Fix swap reporting on macOS (#2778)
+
+- Fix container CPU counts to respect assigned CPU sets (#2728)
+
+- Fix AMD GPU memory usage including GTT on devices without unified memory (#2715)
+
+- Fix stale dnf5 metadata in package update checks (#2790)
+
+- Fix battery data decoding with Go's experimental JSON implementation (#2746, #2748)
+
+- Fix the agent's `-k` flag not accepting a key file path (#2764, #2765)
+
+- Fix unreported S.M.A.R.T. power-on hours and cycles showing as zero (#2719)
+
+- Update Go and Go dependencies
+
 ## 0.21.1
 
 For developers using the agent as a Go package, `Agent.Start` now requires a `context.Context`.
 
+For authors of integrations, please note that existing memory fields other than memory percentage are deprecated in favor of new fields which provide raw byte values. The deprecated fields are still populated, but will be removed in a future version.
+
+```go
+type Stats struct {
+  // Deprecated fields (populated on hubs <= 0.21.1; will be removed in a future version)
+	Mem            float64     `json:"m" cbor:"2,keyasint"`  // Deprecated: GB, use MemBytes. Memory GB fields are kept for older hubs and integrations.
+	MaxMem         float64     `json:"mm,omitzero" cbor:"-"` // Deprecated: GB, use MaxMemBytes.
+	MemUsed        float64     `json:"mu" cbor:"3,keyasint"` // Deprecated: GB, use MemBytes.
+	MemBuffCache   float64     `json:"mb" cbor:"5,keyasint"` // Deprecated: GB, use MemBytes.
+	MemZfsArc      float64     `json:"mz,omitzero" cbor:"6,keyasint,omitempty"` // Deprecated: GB, use MemBytes.
+	Swap           float64     `json:"s,omitzero" cbor:"7,keyasint,omitempty"`  // Deprecated: GB, use SwapBytes.
+	SwapUsed       float64     `json:"su,omitzero" cbor:"8,keyasint,omitempty"` // Deprecated: GB, use SwapBytes.
+  // New fields (populated on hub version 0.21.1+ for all agents)
+	MemBytes       [4]uint64   `json:"mem,omitzero" cbor:"41,keyasint,omitzero"`  // [total, used, buff/cache, zfs arc] bytes
+	MaxMemBytes    uint64      `json:"memm,omitzero" cbor:"-"`                    // max used memory bytes
+	SwapBytes      [2]uint64   `json:"swap,omitzero" cbor:"42,keyasint,omitzero"` // [total, used] bytes
+}
+```
+
+- Add TLS certificate expiry alert for network monitors (#2627)
+
 - Add opt-in cgroup CPU and memory accounting (#2505)
 
-- Add `HUB_HEADERS` environment variable to set custom WebSocket headers on the agent (#2585)
+- Add pagination with a shared rows-per-page setting to data tables (#2444)
+
+- Add IRQ, SoftIRQ and Nice to the CPU usage breakdown (#2647)
 
 - Add `OAUTH_DEFAULT_USER_ROLE` environment variable to set the role of new OAuth users (#2516)
+
+- Add `HUB_HEADERS` environment variable to set custom WebSocket headers on the agent (#2585)
 
 - Add option to ignore TLS errors for HTTPS monitors (#2500)
 
 - Add zpool status messages to ZFS pool health (#2509)
 
+- Add CPU socket count to the system page (#2646)
+
+- Add `CONTAINER_NAME_LABEL` environment variable to name containers from a label (#2644)
+
+- Add `env` and `envFrom` options to the Helm chart (#2626)
+
+- Add Brazilian Portuguese (pt-BR) and Catalan translations (#2635)
+
 - Add xbps support to package update checks (#2522)
 
+- Change agent tokens to be masked until explicitly revealed (#2625)
+
 - Change the user created from `USER_EMAIL` to be an admin (#2516)
+
+- Fix users being able to reassign record ownership through updates (#2632)
+
+- Fix dashboard universal tokens appearing in request URLs (#2630)
+
+- Fix fan sensor reads blocking collection indefinitely (#2638, #2639)
+
+- Fix HTTPS monitor certificates not being re-checked (now hourly) (#2673)
+
+- Fix scheduled monitor probes running while the hub isn't requesting stats
+
+- Fix sensor names being changed by exclude filters (#2645)
+
+- Fix Libre Hardware Monitor helper stopping after sensor failures (#2624)
+
+- Fix arm/v6 Docker images being built with the wrong GOARM setting (#2637)
+
+- Fix numbers not using the app language for formatting (#2621)
+
+- Fix systems table showing no loading spinner until systems are loaded
 
 - Fix btrfs pool health when sysfs device info is unavailable (#2489)
 
