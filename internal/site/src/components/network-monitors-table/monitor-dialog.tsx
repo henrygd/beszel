@@ -53,7 +53,7 @@ type NormalizedMonitorValues = Omit<MonitorValues, "system" | "interval"> & {
 }
 
 type BulkMonitorLineSource = Pick<NetworkMonitorRecord, "target" | "protocol" | "port" | "interval" | "server"> &
-	Partial<Pick<NetworkMonitorRecord, "ipVersion">>
+	Partial<Pick<NetworkMonitorRecord, "ipVersion" | "statusCodes">>
 
 const defaultInterval = 30
 
@@ -209,14 +209,26 @@ function getMonitorIdentityKey({ system, target, protocol, port, server, ipVersi
 	return `${system}${target}${protocol}${port}${protocol === "dns" ? server : ""}${ipVersion ? `/v${ipVersion}` : ""}`
 }
 
-function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
+export function parseBulkMonitorLine(line: string, lineNumber: number, system: string) {
 	let fields: string[]
 	try {
 		fields = parseMonitorFields(line)
 	} catch (err) {
 		throw new Error(`Line ${lineNumber}: ${err instanceof Error ? err.message : "invalid monitor entry"}`)
 	}
-	const [rawTarget = "", rawProtocol = "", rawPort = "", rawInterval = "", rawServer = "", rawIpVersion = ""] = fields
+	const [
+		rawTarget = "",
+		rawProtocol = "",
+		rawPort = "",
+		rawInterval = "",
+		rawServer = "",
+		rawIpVersion = "",
+		statusCodes = "",
+		...extraFields
+	] = fields
+	if (extraFields.some((field) => field.trim())) {
+		throw new Error(`Line ${lineNumber}: expected at most 7 fields. Quote comma-separated status codes.`)
+	}
 	const parsed = v.safeParse(BulkMonitorSchema, {
 		target: rawTarget,
 		protocol: rawProtocol,
@@ -240,7 +252,7 @@ function parseBulkMonitorLine(line: string, lineNumber: number, system: string) 
 		interval: parsed.output.interval || `${defaultInterval}`,
 		skipTlsVerify: false,
 		ipVersion: parseBulkIpVersion(parsed.output.ipVersion),
-		statusCodes: "",
+		statusCodes,
 	})
 }
 
@@ -255,8 +267,9 @@ export function formatBulkMonitorLine(monitor: BulkMonitorLineSource) {
 	const interval = monitor.interval === defaultInterval ? "" : `${monitor.interval}`
 	const server = monitor.protocol !== "dns" ? "" : monitor.server
 	const ipVersion = monitor.ipVersion ? `ipv${monitor.ipVersion}` : ""
+	const statusCodes = monitor.protocol === "http" ? (monitor.statusCodes ?? "") : ""
 	return formatMonitorFields(
-		trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, ipVersion])
+		trimTrailingEmptyFields([monitor.target, monitor.protocol, port, interval, server, ipVersion, statusCodes])
 	)
 }
 
@@ -682,7 +695,7 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 							<Trans>Bulk Add {{ foo: t`Network Monitors` }}</Trans>
 						</SheetTitle>
 						<SheetDescription>
-							<Trans>target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]</Trans>
+							<Trans>target[,protocol[,port[,interval[,server[,ipv4|ipv6[,statusCodes]]]]]]</Trans>
 						</SheetDescription>
 					</SheetHeader>
 					<form ref={bulkFormRef} onSubmit={handleBulkSubmit} className="flex h-full flex-col overflow-hidden">
@@ -720,13 +733,14 @@ export function AddMonitorDialog({ systemId, monitors }: { systemId?: string; mo
 										"1.1.1.1",
 										"example.com,tcp",
 										"https://example.com,http,,60",
+										'https://example.com/private,http,,,,,"200-299,401"',
 										"example.com,dns,,,1.1.1.1",
 										"example.com,icmp,,,,ipv6",
 									].join("\n")}
 									required
 								/>
 								<p className="text-xs text-muted-foreground">
-									<Trans>target[,protocol[,port[,interval[,server[,ipv4|ipv6]]]]]</Trans>
+									<Trans>target[,protocol[,port[,interval[,server[,ipv4|ipv6[,statusCodes]]]]]]</Trans>
 								</p>
 							</div>
 						</div>

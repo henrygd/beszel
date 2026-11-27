@@ -5,6 +5,17 @@ mock.module("@lingui/core/macro", () => ({
 	plural: (_count: number, forms: { other?: string }) => forms.other ?? "",
 }))
 
+mock.module("@lingui/react/macro", () => ({
+	Trans: () => null,
+	useLingui: () => ({ t: (strings: TemplateStringsArray) => strings[0] }),
+}))
+
+mock.module("../src/lib/api", () => ({ pb: { authStore: { isValid: false, record: null } } }))
+
+const { formatBulkMonitorLine, parseBulkMonitorLine } = await import(
+	"../src/components/network-monitors-table/monitor-dialog"
+)
+
 const {
 	formatMonitorFields,
 	getMonitorStats,
@@ -131,6 +142,45 @@ describe("merging stats across monitors", () => {
 })
 
 describe("bulk monitor rows", () => {
+	test("preserves accepted status codes when copying an HTTP monitor", () => {
+		const line = formatBulkMonitorLine({
+			target: "https://example.com/private?ids=1,2",
+			protocol: "http",
+			port: 0,
+			interval: 60,
+			server: "",
+			ipVersion: 4,
+			statusCodes: "200-299,401",
+		})
+		expect(line).toBe('"https://example.com/private?ids=1,2",http,,60,,ipv4,"200-299,401"')
+		expect(parseBulkMonitorLine(line, 1, "system-b")).toMatchObject({
+			system: "system-b",
+			target: "https://example.com/private?ids=1,2",
+			protocol: "http",
+			interval: 60,
+			ipVersion: 4,
+			statusCodes: "200-299,401",
+		})
+	})
+
+	test("uses the default accepted status codes for older rows", () => {
+		expect(parseBulkMonitorLine("https://example.com,http,,60,,ipv6", 1, "system-b")).toMatchObject({
+			ipVersion: 6,
+			statusCodes: "",
+		})
+	})
+
+	test("normalizes quoted status codes in pasted rows", () => {
+		const monitor = parseBulkMonitorLine('https://example.com,http,,,,,"200-299, 401"', 1, "system-b")
+		expect(monitor.statusCodes).toBe("200-299,401")
+	})
+
+	test("rejects unquoted status code lists instead of dropping codes", () => {
+		expect(() => parseBulkMonitorLine("https://example.com,http,,,,,200-299,401", 1, "system-b")).toThrow(
+			"Quote comma-separated status codes"
+		)
+	})
+
 	test.each(
 		[
 			["1.1.1.1", "icmp"],
