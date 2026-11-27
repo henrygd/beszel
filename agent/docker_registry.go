@@ -248,10 +248,9 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	if index.SchemaVersion != 2 || (index.MediaType != "" && index.MediaType != mediaType) {
 		return "", fmt.Errorf("invalid image index")
 	}
-	// Multiple distinct descriptors for the same platform are ambiguous.
-	// Do not report an update based on an arbitrary selection.
+	// Track all comparable digests before deciding whether ambiguity matters.
 	var candidate digest.Digest
-	nested := false
+	ambiguous, matchesLocal, nested := false, false, false
 	for _, manifest := range index.Manifests {
 		p := manifest.Platform
 		if manifest.MediaType == ociImageIndex || manifest.MediaType == dockerManifestList {
@@ -284,14 +283,10 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 			return "", fmt.Errorf("invalid platform manifest digest: %w", err)
 		}
 		if candidate != "" && candidate != d {
-			// Windows version selection can be inconclusive; preserve the
-			// original index comparison instead of suppressing updates.
-			if local.OS == "windows" {
-				return indexDigest.String(), nil
-			}
-			return "", fmt.Errorf("ambiguous platform manifests for %s/%s", local.OS, local.Architecture)
+			ambiguous = true
 		}
 		candidate = d
+		matchesLocal = matchesLocal || slices.Contains(local.RepoDigests, d.String())
 	}
 	if candidate == "" {
 		if local.OS == "windows" {
@@ -299,13 +294,22 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		}
 		return "", fmt.Errorf("image index has no comparable platform manifest for %s/%s", local.OS, local.Architecture)
 	}
-	if nested && !slices.Contains(local.RepoDigests, candidate.String()) {
+	if ambiguous {
+		// If all possible platform manifests changed, the index mismatch
+		// is sufficient to report an update without selecting a variant.
+		// Preserve the existing Windows index fallback.
+		if local.OS == "windows" || (!matchesLocal && !nested) {
+			return indexDigest.String(), nil
+		}
+		return "", fmt.Errorf("ambiguous platform manifests for %s/%s", local.OS, local.Architecture)
+	}
+	if nested && !matchesLocal {
 		return "", fmt.Errorf("image index contains unresolved nested manifests")
 	}
 	return candidate.String(), nil
 }
 
-// An omitted local variant is unknown; the caller rejects ambiguous matches.
+// An omitted local variant is unknown; compare all possible matches.
 // Normalize only equivalent spellings, not CPU compatibility levels.
 func compatibleImageVariant(arch, local, remote string) bool {
 	return local == "" || normalizedImageVariant(arch, local) == normalizedImageVariant(arch, remote)

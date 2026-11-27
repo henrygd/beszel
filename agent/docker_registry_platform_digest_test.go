@@ -14,11 +14,17 @@ import (
 func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 	child := registryDigest('a')
 	other := registryDigest('b')
+	old := registryDigest('c')
 	descriptor := func(d, arch, variant, mediaType string) string {
 		return fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"linux","architecture":%q,"variant":%q}}`, mediaType, d, arch, variant)
 	}
 	arm := descriptor(child, "arm64", "v8", ociImageManifest)
 	amd := descriptor(other, "amd64", "", ociImageManifest)
+	armV6 := descriptor(child, "arm", "v6", ociImageManifest)
+	armV7 := descriptor(other, "arm", "v7", ociImageManifest)
+	armV9 := descriptor(other, "arm64", "v9", ociImageManifest)
+	amdV3 := descriptor(child, "amd64", "v3", ociImageManifest)
+	invalidARM := descriptor("invalid", "arm", "v7", ociImageManifest)
 	windows := func(d, version string) string {
 		return fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"windows","architecture":"amd64","os.version":%q}}`, dockerImageManifest, d, version)
 	}
@@ -28,6 +34,7 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 	nestedWindows := fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"windows","architecture":"amd64"}}`, ociImageIndex, child)
 	for _, tc := range []struct {
 		name, arch, variant, local, entries, mediaType, os, osVersion string
+		extraLocal, errContains                                       string
 		rootMatch, corrupt, failGET, wrongHeader, want, wantErr       bool
 		get                                                           int
 	}{
@@ -44,6 +51,23 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 		{name: "arm64 baseline alias", arch: "arm64", variant: "v8.0", local: child, entries: arm, mediaType: ociImageIndex, get: 1},
 		{name: "amd64 nonbaseline distinct", arch: "amd64", variant: "v3", local: other, entries: amd + "," + descriptor(child, "amd64", "v3", ociImageManifest), mediaType: ociImageIndex, want: true, get: 1},
 		{name: "unknown variant ambiguous", arch: "arm64", local: child, entries: arm + "," + descriptor(other, "arm64", "v9", ociImageManifest), mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review arm unknown variant all changed", arch: "arm", local: old, entries: armV6 + "," + armV7, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review arm unknown variant all changed reversed", arch: "arm", local: old, entries: armV7 + "," + armV6, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review arm unknown variant first matches", arch: "arm", local: child, entries: armV6 + "," + armV7, mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review arm unknown variant last matches", arch: "arm", local: child, entries: armV7 + "," + armV6, mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review arm matching second repo digest", arch: "arm", local: old, extraLocal: child, entries: armV7 + "," + armV6, mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review arm explicit variant changed", arch: "arm", variant: "v7", local: child, entries: armV6 + "," + armV7, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review arm explicit variant unchanged", arch: "arm", variant: "v6", local: child, entries: armV6 + "," + armV7, mediaType: ociImageIndex, get: 1},
+		{name: "review arm64 unknown variant all changed", arch: "arm64", local: old, entries: arm + "," + armV9, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review amd64 unknown variant all changed", arch: "amd64", local: old, entries: amd + "," + amdV3, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review duplicate candidate unchanged", arch: "arm", local: child, entries: armV6 + "," + armV6, mediaType: ociImageIndex, get: 1},
+		{name: "review duplicate candidate changed", arch: "arm", local: old, entries: armV6 + "," + armV6, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review ambiguous with incompatible nested index", arch: "arm", local: old, entries: armV6 + "," + armV7 + "," + descriptor(child, "amd64", "", ociImageIndex), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review ambiguous with unresolved nested index", arch: "arm", local: old, entries: armV6 + "," + armV7 + "," + nestedMissingPlatform, mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review ambiguous with possible nested index first", arch: "arm", local: old, entries: descriptor(child, "arm", "v6", ociImageIndex) + "," + armV6 + "," + armV7, mediaType: ociImageIndex, wantErr: true, get: 1},
+		{name: "review ambiguous with invalid digest last", arch: "arm", local: old, entries: armV6 + "," + armV7 + "," + invalidARM, mediaType: ociImageIndex, wantErr: true, errContains: "invalid platform manifest digest", get: 1},
+		{name: "review Windows ambiguous with invalid digest last", os: "windows", arch: "amd64", local: old, entries: winOld + "," + winNew + "," + windows("invalid", "10.0.17763.1"), mediaType: dockerManifestList, wantErr: true, errContains: "invalid platform manifest digest", get: 1},
+		{name: "review ambiguous root match fast path", arch: "arm", local: old, entries: armV6 + "," + armV7, mediaType: ociImageIndex, rootMatch: true},
 		{name: "missing local platform", local: child, entries: arm, mediaType: ociImageIndex, wantErr: true},
 		{name: "only other platform", arch: "amd64", local: child, entries: arm, mediaType: ociImageIndex, wantErr: true, get: 1},
 		{name: "invalid child digest", arch: "arm64", local: child, entries: descriptor("invalid", "arm64", "v8", ociImageManifest), mediaType: ociImageIndex, wantErr: true, get: 1},
@@ -78,7 +102,11 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 			if os == "" {
 				os = "linux"
 			}
-			inspect := fmt.Sprintf(`{"Os":%q,"Architecture":%q,"Variant":%q,"OsVersion":%q,"RepoDigests":["docker.io/library/alpine@%s"]}`, os, tc.arch, tc.variant, tc.osVersion, local)
+			repoDigests := fmt.Sprintf("%q", "docker.io/library/alpine@"+local)
+			if tc.extraLocal != "" {
+				repoDigests += "," + fmt.Sprintf("%q", "docker.io/library/alpine@"+tc.extraLocal)
+			}
+			inspect := fmt.Sprintf(`{"Os":%q,"Architecture":%q,"Variant":%q,"OsVersion":%q,"RepoDigests":[%s]}`, os, tc.arch, tc.variant, tc.osVersion, repoDigests)
 			gets, heads, auth := 0, 0, 0
 			dm := newRegistryChecker(t, inspect, registryTransportFunc(func(req *http.Request) (*http.Response, error) {
 				switch {
@@ -118,6 +146,9 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 			available, err := dm.checkImageUpdate("alpine")
 			if tc.wantErr {
 				require.Error(t, err)
+				if tc.errContains != "" {
+					require.ErrorContains(t, err, tc.errContains)
+				}
 				require.False(t, available)
 			} else {
 				require.NoError(t, err)
