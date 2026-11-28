@@ -34,7 +34,7 @@ import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
 import { getPagePath } from "@nanostores/router"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
-import { getLogTimestampDecorations } from "@/lib/logs"
+import { getLogDecorations } from "@/lib/logs"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -279,7 +279,7 @@ async function getLogsHtml(container: ContainerRecord): Promise<string> {
 			? highlighter.codeToHtml(logsHtml.logs, {
 					lang: "log",
 					theme: syntaxTheme,
-					decorations: getLogTimestampDecorations(logsHtml.logs),
+					decorations: getLogDecorations(logsHtml.logs),
 				})
 			: t`No results.`
 	} catch (error) {
