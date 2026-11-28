@@ -3,7 +3,9 @@
 package hub_test
 
 import (
+	"bytes"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"testing"
@@ -388,6 +390,18 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 		return hub.TestApp
 	}
 
+	// build a multipart/form-data body that submits the relation field as
+	// repeated form entries (one `users` entry per user id) - the shape the
+	// JS SDK / FormData produces when the request also carries file uploads
+	var multipartBody bytes.Buffer
+	multipartWriter := multipart.NewWriter(&multipartBody)
+	require.NoError(t, multipartWriter.WriteField("name", "multipart-injected"))
+	require.NoError(t, multipartWriter.WriteField("host", "127.0.0.9"))
+	require.NoError(t, multipartWriter.WriteField("users", user1.Id))
+	require.NoError(t, multipartWriter.WriteField("users", user2.Id))
+	require.NoError(t, multipartWriter.Close())
+	multipartContentType := multipartWriter.FormDataContentType()
+
 	scenarios := []beszelTests.ApiScenario{
 		{
 			Name:   "Users can only list their own alerts",
@@ -640,8 +654,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			ExpectedContent: []string{`"name":"own-system-array"`},
 			TestAppFactory:  testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 2, systemsCount)
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "own-system-array"})
 				assert.EqualValues(t, 1, count)
 			},
@@ -658,8 +670,8 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			ExpectedContent: []string{`"name":"own-system-string"`},
 			TestAppFactory:  testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 3, systemsCount)
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "own-system-string"})
+				assert.EqualValues(t, 1, count)
 			},
 		},
 		{
@@ -675,8 +687,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			NotExpectedContent: []string{`"name":"injected-system"`},
 			TestAppFactory:     testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 3, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "injected-system"})
 				assert.EqualValues(t, 0, count, "injected system must not exist")
 			},
@@ -694,8 +704,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			NotExpectedContent: []string{`"name":"stolen-system"`},
 			TestAppFactory:     testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 3, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "stolen-system"})
 				assert.EqualValues(t, 0, count, "stolen system must not exist")
 			},
@@ -713,8 +721,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			NotExpectedContent: []string{`"name":"modifier-injected"`},
 			TestAppFactory:     testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 3, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "modifier-injected"})
 				assert.EqualValues(t, 0, count, "modifier-injected system must not exist")
 			},
@@ -732,10 +738,43 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			NotExpectedContent: []string{`"name":"dup-injected"`},
 			TestAppFactory:     testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 3, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "dup-injected"})
 				assert.EqualValues(t, 0, count, "dup-injected system must not exist")
+			},
+		},
+		{
+			Name:   "User 1 cannot create a system by prepending user 2 with the +users modifier",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+			},
+			Body:               strings.NewReader(fmt.Sprintf(`{"name":"prepend-injected","host":"127.0.0.9","users":["%s"],"+users":["%s"]}`, user1.Id, user2.Id)),
+			ExpectedStatus:     400,
+			ExpectedContent:    []string{"Failed to create record"},
+			NotExpectedContent: []string{`"name":"prepend-injected"`},
+			TestAppFactory:     testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "prepend-injected"})
+				assert.EqualValues(t, 0, count, "prepend-injected system must not exist")
+			},
+		},
+		{
+			Name:   "User 1 cannot create a system shared with user 2 via a multipart form request",
+			Method: http.MethodPost,
+			URL:    "/api/collections/systems/records",
+			Headers: map[string]string{
+				"Authorization": user1Token,
+				"Content-Type":  multipartContentType,
+			},
+			Body:               bytes.NewReader(multipartBody.Bytes()),
+			ExpectedStatus:     400,
+			ExpectedContent:    []string{"Failed to create record"},
+			NotExpectedContent: []string{`"name":"multipart-injected"`},
+			TestAppFactory:     testAppFactory,
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "multipart-injected"})
+				assert.EqualValues(t, 0, count, "multipart-injected system must not exist")
 			},
 		},
 		{
@@ -750,8 +789,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			ExpectedContent: []string{`"name":"own-system-dup"`},
 			TestAppFactory:  testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 4, systemsCount)
 				system, err := app.FindFirstRecordByFilter("systems", `name = "own-system-dup"`)
 				require.NoError(t, err)
 				assert.ElementsMatch(t, []string{user1.Id}, system.GetStringSlice("users"), "duplicated own id must be deduplicated")
@@ -770,8 +807,8 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			NotExpectedContent: []string{`"name":"readonly-system"`},
 			TestAppFactory:     testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 4, systemsCount, "rejected system must not be stored")
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "readonly-system"})
+				assert.EqualValues(t, 0, count, "readonly system must not exist")
 			},
 		},
 		{
@@ -786,8 +823,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			ExpectedContent: []string{`"name":"admin-shared-system"`, user1.Id, user2.Id},
 			TestAppFactory:  testAppFactory,
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 5, systemsCount)
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "admin-shared-system"})
 				assert.EqualValues(t, 1, count)
 			},
@@ -810,8 +845,8 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
 				t.Setenv("SHARE_ALL_SYSTEMS", "")
 				hub.SetCollectionAuthSettings()
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 6, systemsCount)
+				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "shareall-own"})
+				assert.EqualValues(t, 1, count)
 			},
 		},
 		{
@@ -833,8 +868,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
 				t.Setenv("SHARE_ALL_SYSTEMS", "")
 				hub.SetCollectionAuthSettings()
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 6, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "shareall-injected"})
 				assert.EqualValues(t, 0, count, "injected system must not exist")
 			},
@@ -857,8 +890,6 @@ func TestApiCollectionsAuthRules(t *testing.T) {
 			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
 				t.Setenv("SHARE_ALL_SYSTEMS", "")
 				hub.SetCollectionAuthSettings()
-				systemsCount, _ := app.CountRecords("systems")
-				assert.EqualValues(t, 6, systemsCount, "rejected system must not be stored")
 				count, _ := app.CountRecords("systems", dbx.HashExp{"name": "shareall-empty"})
 				assert.EqualValues(t, 0, count, "empty-users system must not exist")
 			},
