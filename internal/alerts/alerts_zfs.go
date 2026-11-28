@@ -70,6 +70,13 @@ func (am *AlertManager) handleZfsPoolHealthAlert(e *core.RecordEvent, oldHealth 
 			Message:  message,
 			Link:     am.hub.MakeLink("system", systemID),
 			LinkText: "View " + systemName,
+			Kind:     NotificationKindZfs,
+			State:    newHealth,
+			Vars: map[string]string{
+				"pool":       poolName,
+				"old_health": oldHealth,
+				"new_health": newHealth,
+			},
 		}); err != nil {
 			e.App.Logger().Error("Failed to send ZFS alert", "err", err, "userID", userID)
 		}

@@ -260,6 +260,9 @@ func (am *AlertManager) evaluateNetworkMonitorAlerts(app core.App, systemID stri
 						UserID: alert.GetString("user"), SystemID: systemID,
 						Title: title, Message: message,
 						Link: am.hub.MakeLink("system", systemID), LinkText: "View " + system.GetString("name"),
+						Kind:  NotificationKindMonitor,
+						State: networkMonitorTemplateState(name, obs),
+						Vars:  networkMonitorTemplateVars(name, obs, label, threshold),
 					})
 				}
 			}
@@ -340,6 +343,38 @@ func networkMonitorAlertMessage(name string, obs monitorObservation, label, syst
 	}
 	return fmt.Sprintf("Network monitor %s on %s: %s", state, systemName, label),
 		fmt.Sprintf("%s on %s: loss over the past hour is %.2f%%, which %s the %.2f%% threshold.", label, systemName, obs.value, comparison, threshold)
+}
+
+// networkMonitorTemplateState is the {state} placeholder value: expired, expiring or
+// recovered for certificate alerts, loss or recovered for loss alerts.
+func networkMonitorTemplateState(name string, obs monitorObservation) string {
+	switch {
+	case !obs.triggered:
+		return "recovered"
+	case name == alertNameNetworkMonitorCert && obs.value < 0:
+		return "expired"
+	case name == alertNameNetworkMonitorCert:
+		return "expiring"
+	default:
+		return "loss"
+	}
+}
+
+// networkMonitorTemplateVars returns the kind specific placeholder values.
+func networkMonitorTemplateVars(name string, obs monitorObservation, label string, threshold float64) map[string]string {
+	vars := map[string]string{
+		"monitor":   label,
+		"check":     "loss",
+		"value":     fmt.Sprintf("%.2f", obs.value),
+		"threshold": strconv.FormatFloat(threshold, 'f', -1, 64),
+		"expires":   "",
+	}
+	if name == alertNameNetworkMonitorCert {
+		vars["check"] = "certificate"
+		vars["value"] = strconv.Itoa(int(obs.value))
+		vars["expires"] = time.UnixMilli(obs.certExpires).UTC().Format(time.DateOnly)
+	}
+	return vars
 }
 
 func pluralDays(days int) string {

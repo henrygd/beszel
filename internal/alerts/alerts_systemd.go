@@ -2,6 +2,7 @@ package alerts
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -117,6 +118,10 @@ func (am *AlertManager) sendSystemdAlert(triggered bool, systemName string, aler
 	}
 
 	systemID := alertData.SystemID
+	state := "recovered"
+	if triggered {
+		state = "failed"
+	}
 
 	return am.SendAlert(AlertMessageData{
 		UserID:   alertData.UserID,
@@ -125,6 +130,12 @@ func (am *AlertManager) sendSystemdAlert(triggered bool, systemName string, aler
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),
 		LinkText: "View " + systemName,
+		Kind:     NotificationKindSystemd,
+		State:    state,
+		Vars: map[string]string{
+			"services": strings.Join(failed, ", "),
+			"count":    strconv.Itoa(len(failed)),
+		},
 	})
 }
 
