@@ -954,8 +954,14 @@ cd "$TEMP_DIR" || exit 1
 curl -fsSL --connect-timeout 10 --max-time 60 "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" -o checksums.txt || fail "Could not download checksums. Try --mirror if GitHub is unreachable."
 CHECKSUM=$(awk -v name="$FILE_NAME" '$2 == name { print $1 }' checksums.txt)
 if [ -z "$CHECKSUM" ] || ! echo "$CHECKSUM" | grep -qE "^[a-fA-F0-9]{64}$"; then
-  echo "Failed to get checksum or invalid checksum format"
-  echo "Try again with --mirror (or --mirror <url>) if GitHub is not reachable."
+  # A checksums file that lists other agent builds means the download worked
+  if [ -z "$CHECKSUM" ] && grep -qE "^[a-fA-F0-9]{64}  beszel-agent_" checksums.txt; then
+    echo "No beszel-agent binary for ${OS}/${ARCH} in v${INSTALL_VERSION} ($FILE_NAME is not in the release)."
+    echo "This system architecture may not be supported."
+  else
+    echo "Failed to get checksum or invalid checksum format"
+    echo "Try again with --mirror (or --mirror <url>) if GitHub is not reachable."
+  fi
   rm -rf "$TEMP_DIR"
   exit 1
 fi
