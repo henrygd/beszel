@@ -185,6 +185,17 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 		{name: "wrong GET digest header", arch: "arm64", local: child, entries: arm, mediaType: ociImageIndex, wrongHeader: true, wantErr: true, get: 1},
 		{name: "GET error", arch: "arm64", local: child, entries: arm, mediaType: ociImageIndex, failGET: true, wantErr: true, get: 1},
 		{name: "review V8 GET transport error", arch: "arm64", local: child, entries: arm, mediaType: ociImageIndex, failTransport: true, wantErr: true, get: 1},
+		{name: "review V9 alias before current", arch: "arm64", local: child, entries: descriptor(other, "aarch64", "8", ociImageManifest) + "," + arm, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V9 alias after current", arch: "arm64", local: child, entries: arm + "," + descriptor(other, "aarch64", "8", ociImageManifest), mediaType: ociImageIndex, get: 1},
+		{name: "review V9 local alias", arch: "aarch64", variant: "8", local: child, entries: arm, mediaType: ociImageIndex, get: 1},
+		{name: "review V9 alias nested first", arch: "arm64", local: child, entries: descriptor(other, "aarch64", "v8", ociImageIndex) + "," + arm, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V9 alias nested last", arch: "arm64", local: child, entries: arm + "," + descriptor(other, "aarch64", "v8", ociImageIndex), mediaType: ociImageIndex, get: 1},
+		{name: "review V9 invalid alias digest", arch: "arm64", local: child, entries: descriptor("invalid", "aarch64", "", ociImageManifest) + "," + arm, mediaType: ociImageIndex, wantErr: true, errContains: "invalid platform manifest digest", get: 1},
+		{name: "review V9 partial unknown architecture", arch: "arm64", local: child, entries: arm + "," + descriptor(other, "unknown", "", ociImageManifest), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V9 partial unknown OS", arch: "arm64", local: child, entries: arm + "," + fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"unknown","architecture":"arm64"}}`, ociImageManifest, other), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V9 unknown local architecture", arch: "unknown", local: child, entries: missingChild, mediaType: ociImageIndex, want: true},
+		{name: "review V9 unknown local OS", os: "unknown", arch: "arm64", local: child, entries: missingChild, mediaType: ociImageIndex, want: true},
+		{name: "review V9 uppercase attestation", arch: "arm64", local: child, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"UNKNOWN","architecture":"UNKNOWN"}}`, ociImageManifest, other) + "," + arm, mediaType: ociImageIndex, get: 1},
 		{name: "single manifest mismatch", arch: "arm64", local: child, mediaType: ociImageManifest, want: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -430,6 +441,85 @@ func TestCheckImageUpdatePlatformDecisionMatrix(t *testing.T) {
 					require.Equal(t, want, !isCurrent)
 					if want {
 						require.Equal(t, root.String(), got)
+					}
+					require.Equal(t, 1, gets)
+				})
+			}
+		}
+	}
+}
+
+// Alias normalization must affect local metadata, exclusion, ordering and
+// nested-index uncertainty consistently, not just the variant comparison.
+func TestCheckImageUpdatePlatformAliasMatrix(t *testing.T) {
+	current, changed := registryDigest('a'), registryDigest('b')
+	for _, pair := range []struct {
+		name             string
+		canonical, alias registryImagePlatform
+	}{
+		{"aarch64", registryImagePlatform{"linux", "arm64", "v8"}, registryImagePlatform{"linux", "aarch64", "8"}},
+		{"armhf", registryImagePlatform{"linux", "arm", "v7"}, registryImagePlatform{"linux", "armhf", ""}},
+		{"armel", registryImagePlatform{"linux", "arm", "v6"}, registryImagePlatform{"linux", "armel", ""}},
+		{"i386", registryImagePlatform{"linux", "386", ""}, registryImagePlatform{"linux", "i386", ""}},
+		{"x86_64", registryImagePlatform{"linux", "amd64", ""}, registryImagePlatform{"linux", "x86_64", "v1"}},
+		{"x86-64", registryImagePlatform{"linux", "amd64", ""}, registryImagePlatform{"linux", "x86-64", ""}},
+		{"macos", registryImagePlatform{"darwin", "arm64", ""}, registryImagePlatform{"macos", "arm64", "v8"}},
+		{"mixed case", registryImagePlatform{"linux", "amd64", "v3"}, registryImagePlatform{"LINUX", "AMD64", "V3"}},
+		{"variant case", registryImagePlatform{"linux", "arm64", "v8"}, registryImagePlatform{"linux", "arm64", "V8"}},
+	} {
+		desc := func(d, media string, p registryImagePlatform) string {
+			return fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":%q,"architecture":%q,"variant":%q}}`, media, d, p.OS, p.Architecture, p.Variant)
+		}
+		c := desc(current, ociImageManifest, pair.canonical)
+		a := desc(current, ociImageManifest, pair.alias)
+		cChanged := desc(changed, ociImageManifest, pair.canonical)
+		aChanged := desc(changed, ociImageManifest, pair.alias)
+		cNested := desc(changed, ociImageIndex, pair.canonical)
+		aNested := desc(changed, ociImageIndex, pair.alias)
+		for _, local := range []struct {
+			name     string
+			platform registryImagePlatform
+		}{
+			{"canonical", pair.canonical},
+			{"alias", pair.alias},
+		} {
+			for _, tc := range []struct {
+				name, entries string
+				want          bool
+			}{
+				{"alias_changed_first", aChanged + "," + c, true},
+				{"alias_changed_last", c + "," + aChanged, false},
+				{"alias_current_first", a + "," + cChanged, false},
+				{"alias_current_last", cChanged + "," + a, true},
+				{"alias_only_current", a, false},
+				{"canonical_only_current", c, false},
+				{"alias_nested_first", aNested + "," + c, true},
+				{"alias_nested_last", c + "," + aNested, false},
+				{"canonical_nested_first", cNested + "," + a, true},
+				{"canonical_nested_last", a + "," + cNested, false},
+			} {
+				t.Run(pair.name+"/"+local.name+"/"+tc.name, func(t *testing.T) {
+					body := fmt.Sprintf(`{"schemaVersion":2,"mediaType":%q,"manifests":[%s]}`, ociImageIndex, tc.entries)
+					root := digest.FromString(body)
+					metadata := &registryLocalImageMetadata{
+						RepoDigests:           []string{current},
+						registryImagePlatform: local.platform,
+					}
+					req, err := http.NewRequest(http.MethodHead, "https://example.invalid/v2/example/manifests/latest", nil)
+					require.NoError(t, err)
+					gets := 0
+					client := &http.Client{Transport: registryTransportFunc(func(req *http.Request) (*http.Response, error) {
+						gets++
+						require.Equal(t, http.MethodGet, req.Method)
+						require.Equal(t, "/v2/example/manifests/"+root.String(), req.URL.Path)
+						return registryResponse(http.StatusOK, body), nil
+					})}
+					got, err := registryPlatformDigest(client, req, root, ociImageIndex, metadata)
+					require.NoError(t, err)
+					if tc.want {
+						require.Equal(t, root.String(), got)
+					} else {
+						require.Equal(t, current, got)
 					}
 					require.Equal(t, 1, gets)
 				})

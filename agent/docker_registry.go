@@ -209,7 +209,8 @@ func (dm *dockerManager) registryImageDigest(registry, repository, tag string, l
 // platform. Reuse the authenticated HEAD request, but fetch the immutable index
 // digest rather than the tag, which could have changed since the HEAD request.
 func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, indexDigest digest.Digest, mediaType string, local *registryLocalImageMetadata) (string, error) {
-	if local.OS == "" || local.Architecture == "" {
+	localPlatform := normalizedImagePlatform(local.registryImagePlatform)
+	if localPlatform.OS == "" || localPlatform.OS == "unknown" || localPlatform.Architecture == "" || localPlatform.Architecture == "unknown" {
 		return indexDigest.String(), nil
 	}
 	req := manifestRequest.Clone(manifestRequest.Context())
@@ -272,14 +273,17 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 			continue
 		}
 		p := manifest.Platform
+		var platform registryImagePlatform
 		if p != nil {
-			// Explicit unknown leaf platforms are not runnable platform
-			// candidates (for example, attestations).
-			if !nested && (p.OS == "unknown" || p.Architecture == "unknown") {
+			platform = normalizedImagePlatform(p.registryImagePlatform)
+			// Explicit unknown/unknown leaves are not runnable platform
+			// candidates (for example, attestations). Partial metadata is
+			// inconclusive rather than proof of incompatibility.
+			if !nested && platform.OS == "unknown" && platform.Architecture == "unknown" {
 				continue
 			}
-			if (p.OS != "" && p.OS != "unknown" && p.OS != local.OS) ||
-				(p.Architecture != "" && p.Architecture != "unknown" && p.Architecture != local.Architecture) {
+			if (platform.OS != "" && platform.OS != "unknown" && platform.OS != localPlatform.OS) ||
+				(platform.Architecture != "" && platform.Architecture != "unknown" && platform.Architecture != localPlatform.Architecture) {
 				continue
 			}
 		}
@@ -290,9 +294,10 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 			}
 			return "", fmt.Errorf("invalid platform manifest digest: %w", err)
 		}
-		if p != nil && p.OS == local.OS && p.Architecture == local.Architecture {
+		samePlatform := p != nil && platform.OS == localPlatform.OS && platform.Architecture == localPlatform.Architecture
+		if samePlatform {
 			key := platformKey{
-				normalizedImageVariant(local.Architecture, p.Variant),
+				platform.Variant,
 				p.OSVersion, platformFeaturesKey(p.OSFeatures), platformFeaturesKey(p.Features),
 			}
 			if seen[key] {
@@ -308,7 +313,7 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		// recursively resolve an index. Missing OCI platform is allowed;
 		// incomplete declared metadata is not sufficient for comparison.
 		if nested || (p == nil && mediaType != ociImageIndex) ||
-			(p != nil && (p.OS != local.OS || p.Architecture != local.Architecture)) {
+			(p != nil && !samePlatform) {
 			uncertain = true
 			continue
 		}
@@ -331,6 +336,32 @@ func platformFeaturesKey(features []string) string {
 	features = slices.Clone(features)
 	slices.Sort(features)
 	return fmt.Sprintf("%q", slices.Compact(features))
+}
+
+// Normalize platform spellings before comparing or excluding descriptors.
+// Match containerd's documented aliases without filling absent fields with
+// the agent's own runtime platform (the inspected image can be remote).
+func normalizedImagePlatform(p registryImagePlatform) registryImagePlatform {
+	p.OS = strings.ToLower(p.OS)
+	if p.OS == "macos" {
+		p.OS = "darwin"
+	}
+	p.Architecture = strings.ToLower(p.Architecture)
+	p.Variant = strings.ToLower(p.Variant)
+	switch p.Architecture {
+	case "aarch64":
+		p.Architecture = "arm64"
+	case "x86_64", "x86-64":
+		p.Architecture = "amd64"
+	case "i386":
+		p.Architecture, p.Variant = "386", ""
+	case "armhf":
+		p.Architecture, p.Variant = "arm", "v7"
+	case "armel":
+		p.Architecture, p.Variant = "arm", "v6"
+	}
+	p.Variant = normalizedImageVariant(p.Architecture, p.Variant)
+	return p
 }
 
 // Omitted platform defaults and ARM aliases follow containerd's platform
