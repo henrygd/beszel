@@ -70,11 +70,14 @@ func setCollectionAuthSettings(app core.App) error {
 
 	// Only admins can change which users a system is shared with.
 	systemsUpdateRule := systemsWriteRule + ` && (@request.body.users:changed = false || @request.auth.role = "admin")`
+	// Only admins can create a system shared with other users. Non-admins
+	// can create a system for themselves only, matching the update rule.
+	systemsCreateRule := systemsWriteRule + ` && (@request.auth.role = "admin" || (users.id ?= @request.auth.id && @request.body.users:length = 1))`
 
 	if err := applyCollectionRules(app, []string{"systems"}, collectionRules{
 		list:   &systemsReadRule,
 		view:   &systemsReadRule,
-		create: &systemsWriteRule,
+		create: &systemsCreateRule,
 		update: &systemsUpdateRule,
 		delete: &systemsWriteRule,
 	}); err != nil {
