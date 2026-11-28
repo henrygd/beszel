@@ -21,7 +21,7 @@ func TestCheckCertReadsUnverifiedLeaf(t *testing.T) {
 	defer server.Close()
 
 	// httptest uses a self-signed certificate, which must still be reported.
-	info, err := checkCert(context.Background(), server.URL)
+	info, err := checkCert(context.Background(), server.URL, monitor.IPVersionAuto)
 	require.NoError(t, err)
 	leaf := server.Certificate()
 	assert.Equal(t, leaf.NotAfter.UnixMilli(), info.Expires)
@@ -58,7 +58,7 @@ func TestRefreshCertCadence(t *testing.T) {
 		var calls int
 		var fail error
 		expires := time.Now().Add(365 * 24 * time.Hour).UnixMilli()
-		check := func(context.Context, string) (monitor.CertInfo, error) {
+		check := func(context.Context, string, uint8) (monitor.CertInfo, error) {
 			calls++
 			if fail != nil {
 				return monitor.CertInfo{}, fail
@@ -115,7 +115,7 @@ func TestCertCheckEnabled(t *testing.T) {
 func TestRefreshCertSkipsNonHTTPS(t *testing.T) {
 	task := newMonitorTask(monitor.Config{ID: "test", Target: "http://example.test", Protocol: "http"})
 	defer task.cancel()
-	task.refreshCert(func(context.Context, string) (monitor.CertInfo, error) {
+	task.refreshCert(func(context.Context, string, uint8) (monitor.CertInfo, error) {
 		t.Fatal("certificate check must not run for non-https targets")
 		return monitor.CertInfo{}, nil
 	})

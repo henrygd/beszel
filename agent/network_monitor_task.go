@@ -133,7 +133,7 @@ func (task *monitorTask) refreshCert(check certChecker) {
 	task.certChecking = true
 	task.certMu.Unlock()
 
-	info, err := check(task.ctx, task.config.Target)
+	info, err := check(task.ctx, task.config.Target, task.config.IPVersion)
 
 	task.certMu.Lock()
 	defer task.certMu.Unlock()

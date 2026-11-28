@@ -6,3 +6,6 @@ package agent
 // subdirectory (hwmon0, hwmon1, …) is one chip; fan*_input files inside it
 // expose RPM readings.
 const hwmonRoot = "/sys/class/hwmon"
+
+// platformFans is nil on Linux, where fan speeds come from hwmon.
+var platformFans func() map[string]uint16

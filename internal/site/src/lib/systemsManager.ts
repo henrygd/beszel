@@ -9,7 +9,6 @@ import {
 	$systemsLoaded,
 	$upSystems,
 } from "@/lib/stores"
-import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
@@ -41,7 +40,6 @@ export function init() {
 		}
 
 		if (!newSystem) {
-			onSystemsChanged()
 			return
 		}
 
@@ -63,15 +61,7 @@ export function init() {
 			removeFromStore(newSystem, $downSystems)
 			removeFromStore(newSystem, $pausedSystems)
 		}
-
-		// run things that need to be done when systems change
-		onSystemsChanged()
 	})
-}
-
-/** Update the favicon based on system status */
-function onSystemsChanged() {
-	updateFavicon(Object.keys($downSystems.get()).length)
 }
 
 /** Fetch systems from collection */

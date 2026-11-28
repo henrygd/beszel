@@ -243,8 +243,11 @@ func (h *Hub) getInfo(e *core.RequestEvent) error {
 		Version     string `json:"v"`
 		CheckUpdate bool   `json:"cu"`
 	}
+	h.sshKeyMu.Lock()
+	pubKey := h.pubKey
+	h.sshKeyMu.Unlock()
 	info := infoResponse{
-		Key:     h.pubKey,
+		Key:     pubKey,
 		Version: beszel.Version,
 	}
 	if optIn, _ := utils.GetEnv("CHECK_UPDATES"); optIn == "true" {

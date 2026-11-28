@@ -37,6 +37,10 @@ export interface SystemRecord extends RecordModel {
 export interface WiFi {
 	s?: string
 	r?: number
+	/** access point; r is the average RSSI of associated clients */
+	a?: boolean
+	/** connection profile name (Windows), only sent when it differs from the SSID */
+	p?: string
 }
 
 export interface SystemInfo {
@@ -691,6 +695,10 @@ export interface NetworkMonitorRecord {
 	server: string
 	/** Skip TLS certificate verification for HTTPS targets. */
 	skipTlsVerify: boolean
+	/** Address family the agent probes over: 0 (auto), 4 (IPv4), or 6 (IPv6). */
+	ipVersion: 0 | 4 | 6
+	/** Accepted HTTP status codes and ranges, such as "200-299,401". Empty means any status below 400. */
+	statusCodes: string
 	res: number
 	resMin1h: number
 	resMax1h: number
