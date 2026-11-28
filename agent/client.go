@@ -442,6 +442,7 @@ func stopHeartbeat(conn *gws.Conn) {
 func (client *WebSocketClient) heartbeatLoop(conn *gws.Conn, done <-chan struct{}, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	var pingInFlight atomic.Bool
 	for {
 		select {
 		case <-done:
@@ -452,16 +453,44 @@ func (client *WebSocketClient) heartbeatLoop(conn *gws.Conn, done <-chan struct{
 			}
 			if client.inboundStale() {
 				slog.Warn("WebSocket heartbeat lost", "host", client.hubURL.Host)
-				client.Close()
+				// Force-close the captured connection instead of client.Close():
+				// WriteClose would first take the write mutex of the very socket
+				// this recovery is escaping, and Close's fresh lookup could close
+				// a replacement connection installed after the identity check
+				// above. The abrupt transport close wakes the read loop, which
+				// dispatches OnClose so the normal disconnect cleanup runs.
+				forceCloseConn(conn)
 				return
 			}
 			// A failed ping tears the socket down via gws's write-error path,
-			// which surfaces as WebSocketDisconnect through OnClose.
-			if err := conn.WritePing(nil); err != nil {
-				return
+			// which surfaces as WebSocketDisconnect through OnClose. Ping I/O
+			// runs off this goroutine so a wedged ping write cannot stall the
+			// wall-clock audit, and at most one ping is in flight at a time.
+			if !pingInFlight.CompareAndSwap(false, true) {
+				continue
 			}
+			go func() {
+				defer pingInFlight.Store(false)
+				if err := conn.WritePing(nil); err != nil {
+					forceCloseConn(conn)
+				}
+			}()
 		}
 	}
+}
+
+// forceCloseConn closes conn's underlying transport directly, without a
+// WebSocket close frame. A wedged write can hold gws's write mutex
+// indefinitely, and a socket write deadline may not fire after a system
+// suspend, so recovery must not depend on the graceful WriteClose path.
+// A *tls.Conn is unwrapped so its Close does not first attempt a close_notify
+// write on the same wedged transport.
+func forceCloseConn(conn *gws.Conn) {
+	raw := conn.NetConn()
+	if tlsConn, ok := raw.(*tls.Conn); ok {
+		raw = tlsConn.NetConn()
+	}
+	_ = raw.Close()
 }
 
 // handleAuthChallenge verifies the authenticity of the hub and returns the system's fingerprint.

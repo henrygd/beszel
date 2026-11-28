@@ -778,6 +778,10 @@ func newTestWSUpstream(t *testing.T, handler gws.Event) (*WebSocketClient, *http
 	t.Setenv("BESZEL_AGENT_TOKEN", "test-token")
 	client, err := newWebSocketClient(agent)
 	require.NoError(t, err)
+	// httptest.Server.Close does not close hijacked WebSocket connections, so
+	// without this the client's socket, read loop, and heartbeat goroutine
+	// outlive every test that uses this helper.
+	t.Cleanup(client.Close)
 	return client, server
 }
 
@@ -863,10 +867,15 @@ func TestWebSocketClient_HeartbeatPingsKeepConnAlive(t *testing.T) {
 	require.True(t, bound, "Connect should bind a heartbeat to the connection")
 	client.startHeartbeat(conn, 15*time.Millisecond)
 
+	inboundBefore := client.lastInbound.Load()
 	require.Eventually(t, func() bool { return handler.pings.Load() >= 3 },
 		2*time.Second, 5*time.Millisecond, "heartbeat should ping the hub")
 	assert.NotNil(t, client.getConn(), "healthy connection must stay open")
 	assert.False(t, client.inboundStale(), "pong replies should refresh inbound liveness")
+	// Connect initializes the liveness timestamp, so inboundStale alone would
+	// pass even if pongs never refreshed it: assert it actually advanced.
+	assert.Greater(t, client.lastInbound.Load(), inboundBefore,
+		"pong replies must advance inbound liveness, not just the initial connection timestamp")
 	assert.Empty(t, agent.connectionManager.eventChan)
 }
 
