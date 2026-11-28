@@ -22,7 +22,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTablePagination, usePagination } from "@/components/ui/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { LogsDisplay, LogsFullscreenDialog, LogsIconButton, LogsTimestampToggle } from "@/components/logs-display"
-import { getLogTimestampDecorations } from "@/lib/logs"
+import { getLogDecorations } from "@/lib/logs"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { pb } from "@/lib/api"
@@ -46,7 +46,7 @@ async function getSystemdLogsHtml(systemId: string, serviceName: string): Promis
 		? highlighter.codeToHtml(logs, {
 				lang: "log",
 				theme: syntaxTheme,
-				decorations: getLogTimestampDecorations(logs),
+				decorations: getLogDecorations(logs),
 			})
 		: ""
 }

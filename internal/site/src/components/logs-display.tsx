@@ -9,6 +9,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { $showLogTimestamps, toggleLogTimestamps } from "@/lib/stores"
 import { cn } from "@/lib/utils"
 
+// Links are added by getLogLinkDecorations; underline each highlighted token in its own color.
+const logLinkClassName = "[&_.log-link_span]:underline [&_.log-link_span]:underline-offset-2"
+
 type LogsDisplayProps = {
 	logsDisplay: string
 	containerRef: RefObject<HTMLDivElement | null>
@@ -58,6 +61,7 @@ export function LogsDisplay({ logsDisplay, containerRef }: LogsDisplayProps) {
 			ref={containerRef}
 			className={cn(
 				"max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
+				logLinkClassName,
 				!showTimestamps && "[&_.log-timestamp]:hidden",
 				!logsDisplay && ["animate-pulse", "h-full"]
 			)}
@@ -103,6 +107,7 @@ export function LogsFullscreenDialog({
 					<div
 						className={cn(
 							"min-h-full w-full px-3 leading-relaxed rounded-md bg-gh-dark text-sm",
+							logLinkClassName,
 							!showTimestamps && "[&_.log-timestamp]:hidden"
 						)}
 					>
