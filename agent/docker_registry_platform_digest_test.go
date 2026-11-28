@@ -23,6 +23,8 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 	armV6 := descriptor(child, "arm", "v6", ociImageManifest)
 	armV7 := descriptor(other, "arm", "v7", ociImageManifest)
 	armV9 := descriptor(other, "arm64", "v9", ociImageManifest)
+	x86 := descriptor(child, "386", "", ociImageManifest)
+	nativeARM64 := descriptor(other, "arm64", "v8", ociImageManifest)
 	amdV3 := descriptor(child, "amd64", "v3", ociImageManifest)
 	invalidARM := descriptor("invalid", "arm", "v7", ociImageManifest)
 	windows := func(d, version string) string {
@@ -196,6 +198,37 @@ func TestCheckImageUpdateSinglePlatformDigest(t *testing.T) {
 		{name: "review V9 unknown local architecture", arch: "unknown", local: child, entries: missingChild, mediaType: ociImageIndex, want: true},
 		{name: "review V9 unknown local OS", os: "unknown", arch: "arm64", local: child, entries: missingChild, mediaType: ociImageIndex, want: true},
 		{name: "review V9 uppercase attestation", arch: "arm64", local: child, entries: fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"UNKNOWN","architecture":"UNKNOWN"}}`, ociImageManifest, other) + "," + arm, mediaType: ociImageIndex, get: 1},
+		// A fallback image does not prove the host lacks its native counterpart.
+		{name: "review V10 386 native first", arch: "386", local: child, entries: amd + "," + x86, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 386 native last", arch: "386", local: child, entries: x86 + "," + amd, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 386 local and native aliases", arch: "i386", local: child, entries: descriptor(other, "x86_64", "v1", ociImageManifest) + "," + x86, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 386 nested first", arch: "386", local: child, entries: descriptor(other, "amd64", "", ociImageIndex) + "," + x86, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 386 nested last", arch: "386", local: child, entries: x86 + "," + descriptor(other, "x86-64", "", ociImageIndex), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 386 native digest recorded", arch: "386", local: child, extraLocal: other, entries: x86 + "," + amd, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 386 invalid native digest", arch: "386", local: child, entries: x86 + "," + descriptor("invalid", "amd64", "", ociImageManifest), mediaType: ociImageIndex, wantErr: true, errContains: "invalid platform manifest digest", get: 1},
+		{name: "review V10 arm native first", arch: "arm", variant: "v6", local: child, entries: nativeARM64 + "," + armV6, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 arm native last", arch: "arm", variant: "v6", local: child, entries: armV6 + "," + nativeARM64, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 armhf local and native aliases", arch: "armhf", local: child, entries: descriptor(child, "arm", "v7", ociImageManifest) + "," + descriptor(other, "aarch64", "8", ociImageManifest), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 arm nested first", arch: "arm", variant: "v6", local: child, entries: descriptor(other, "arm64", "v8", ociImageIndex) + "," + armV6, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 armel nested last", arch: "armel", local: child, entries: armV6 + "," + descriptor(other, "aarch64", "8", ociImageIndex), mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 arm native digest recorded", arch: "arm", variant: "v6", local: child, extraLocal: other, entries: nativeARM64 + "," + armV6, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 arm invalid nested native digest", arch: "arm", variant: "v6", local: child, entries: armV6 + "," + descriptor("invalid", "arm64", "v8", ociImageIndex), mediaType: ociImageIndex, wantErr: true, errContains: "invalid nested index digest", get: 1},
+		{name: "review V10 Docker list native 386", arch: "386", local: child, entries: descriptor(child, "386", "", dockerImageManifest) + "," + descriptor(other, "amd64", "", dockerImageManifest), mediaType: dockerManifestList, want: true, get: 1},
+		{name: "review V10 Docker list native arm", arch: "arm", variant: "v6", local: child, entries: descriptor(other, "arm64", "", dockerImageManifest) + "," + descriptor(child, "arm", "v6", dockerImageManifest), mediaType: dockerManifestList, want: true, get: 1},
+		// Cross-OS and unrelated architectures are still excluded. A native
+		// 64-bit image must not be marked stale only because its fallback differs.
+		{name: "review V10 386 foreign OS", arch: "386", local: child, entries: x86 + "," + winNew, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 arm foreign OS", arch: "arm", variant: "v6", local: child, entries: armV6 + "," + fmt.Sprintf(`{"mediaType":%q,"digest":%q,"size":123,"platform":{"os":"windows","architecture":"arm64"}}`, ociImageManifest, other), mediaType: ociImageIndex, get: 1},
+		{name: "review V10 386 unrelated architecture", arch: "386", local: child, entries: x86 + "," + nativeARM64, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 arm unrelated architecture", arch: "arm", variant: "v6", local: child, entries: amd + "," + armV6, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 386 only current", arch: "386", local: child, entries: x86, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 amd64 fallback first", arch: "amd64", local: other, entries: x86 + "," + amd, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 amd64 fallback last", arch: "amd64", local: other, entries: amd + "," + x86, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 arm64 fallback first", arch: "arm64", local: other, entries: armV6 + "," + nativeARM64, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 arm64 fallback last", arch: "arm64", local: other, entries: nativeARM64 + "," + armV6, mediaType: ociImageIndex, get: 1},
+		{name: "review V10 amd64 native removed", arch: "amd64", local: other, entries: x86, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 arm64 native removed", arch: "arm64", local: other, entries: armV6, mediaType: ociImageIndex, want: true, get: 1},
+		{name: "review V10 root match transition", arch: "386", local: child, entries: x86 + "," + amd, mediaType: ociImageIndex, rootMatch: true},
 		{name: "single manifest mismatch", arch: "arm64", local: child, mediaType: ociImageManifest, want: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

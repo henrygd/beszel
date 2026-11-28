@@ -258,8 +258,9 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 		return "", fmt.Errorf("invalid image index")
 	}
 	// The image describes what was installed, not the host's full platform
-	// capabilities. Only replace the index comparison when every possible
-	// selection for the installed OS/architecture is locally recorded.
+	// capabilities. Only replace the index comparison when every relevant
+	// selection for the installed platform is locally recorded, and no
+	// potentially preferred native architecture remains unresolved.
 	// Keep descriptor order for equivalent platform requirements.
 	type platformKey struct {
 		variant, version, osFeatures, features string
@@ -283,7 +284,9 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 				continue
 			}
 			if (platform.OS != "" && platform.OS != "unknown" && platform.OS != localPlatform.OS) ||
-				(platform.Architecture != "" && platform.Architecture != "unknown" && platform.Architecture != localPlatform.Architecture) {
+				(platform.Architecture != "" && platform.Architecture != "unknown" &&
+					platform.Architecture != localPlatform.Architecture &&
+					!potentiallyPreferredArchitecture(localPlatform.Architecture, platform.Architecture)) {
 				continue
 			}
 		}
@@ -329,6 +332,14 @@ func registryPlatformDigest(client *http.Client, manifestRequest *http.Request, 
 	// A well-formed but inconclusive index is not a registry error.
 	// Preserve the original digest comparison, including possible updates.
 	return indexDigest.String(), nil
+}
+
+// A 32-bit image may have been selected as a fallback on a 64-bit host.
+// A newly available native counterpart may supersede it. Do not infer host
+// architecture or treat lower-ranked 32-bit fallbacks as native competitors.
+func potentiallyPreferredArchitecture(installed, candidate string) bool {
+	return (installed == "386" && candidate == "amd64") ||
+		(installed == "arm" && candidate == "arm64")
 }
 
 // Feature requirements are sets, not ordered lists.
